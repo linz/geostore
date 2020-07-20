@@ -1,2 +1,4 @@
-# linz-data-llake3
-New Generation LINZ Data Lake
+# Architecture (very early WIP)
+
+
+![architecture](images/high-level-architecture.png)
