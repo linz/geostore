@@ -1,3 +1,5 @@
-# Geospatial Data Lake 3
+# Geospatial Data Lake
 
-Developed by Land Inforamtion New Zealand
+Central storage, management and access for important geospatial datasets
+
+Developed by (Land Information New Zealand)[https://github.com/linz]
