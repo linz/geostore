@@ -38,9 +38,9 @@ $ pip install -r requirements-dev.txt
 $ pre-commit install --hook-type commit-msg
 ```
 
-* Install automatic Flake8 code checks for your editor or run it by hand
+* Install automatic Pylint code checks for your editor or run it by hand
 ```
-$ flake8 .
+$ pylint <DIRECTORY-PATH>
 ```
 
 * Install automatic Black code formatting for your editor or run it by hand
