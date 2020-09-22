@@ -1,3 +1,5 @@
+[![GitHub Actions Status](https://github.com/linz/geospatial-data-lake/workflows/Build/badge.svg)](https://github.com/linz/geospatial-data-lake/actions)
+
 # Geospatial Data Lake
 Central storage, management and access for important geospatial datasets
 Developed by [Land Information New Zealand](https://github.com/linz)
