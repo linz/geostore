@@ -8,7 +8,9 @@ jobs:
       matrix:
         python: ["3.6", "3.7"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Python ${{ matrix.python }}
         uses: actions/setup-python@v1
         with:
@@ -42,7 +44,7 @@ jobs:
       matrix:
         python: ["3.6", "3.7"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Use Python ${{ matrix.python }}
         uses: actions/setup-python@v1
         with:
