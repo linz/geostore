@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # this is to enable gitlint to check all PR commit messages
       - name: Use Python ${{ matrix.python }}
         uses: actions/setup-python@v1
         with:
