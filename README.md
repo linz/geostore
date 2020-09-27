@@ -67,7 +67,7 @@ $ python ./setup.py install
 * Install Python CDK dependencies
 
 ```bash
-$ pip install -r requirements-infra.txt
+$ pip install -r infra/requirements.txt
 ```
 
 * Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
