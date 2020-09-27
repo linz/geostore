@@ -16,6 +16,7 @@
 * Python 3 - CLI
 * [AWS Python CDK](https://aws.amazon.com/cdk/) - AWS infrastructure
     provisioning
+* [Localstack](https://www.pylint.org/) - local AWS development environment
 
 
 # Software Development Conventions
@@ -33,7 +34,7 @@
 * release tag naming convention is `<MAJOR>.<MINOR>.<PATCH>` (ex.: `1.3.1`)
 
 # Python Development Conventions
-* code must be checked by [Flake8](https://flake8.pycqa.org/en/latest/) and
+* code must be checked by [Pylint](https://www.pylint.org/) and
     issue free
 * code must be formatted by [Black](https://github.com/psf/black)
 
