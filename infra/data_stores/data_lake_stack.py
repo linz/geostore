@@ -11,6 +11,5 @@ class DataLakeStack(core.Stack):
     # pylint: disable=redefined-builtin
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-    # pylint: enable=redefined-builtin
 
-        # The code that defines your stack goes here
+    # pylint: enable=redefined-builtin
