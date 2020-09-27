@@ -32,7 +32,7 @@ jobs:
           black . --check --diff
       - name: Lint
         run: |
-          pylint sample.py
+          pylint infra/
       - name: Import Sorting
         run: |
           isort -rc . --check --diff
