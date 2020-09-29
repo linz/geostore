@@ -1,6 +1,8 @@
 black==20.8b1
+boto3==1.15.7
 gitlint==0.13.1
 isort==5.4.2
 pre-commit==2.7.1
 pylint==2.6.0
 pytest==6.0.2
+pytest-localstack==0.4.1

@@ -3,6 +3,7 @@
 ```
 ├── cli             - command line interface code
 ├── infra           - AWS infrastructure code
+├── tests           - unit tests
 ├── .github         - CI/CD code
 │   └── workflows
 │       └── ci.yml
