@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+CDK application entry point file.
+"""
+
 from aws_cdk import core
 from data_stores.data_lake_stack import DataLakeStack
 
