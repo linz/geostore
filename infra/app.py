@@ -23,4 +23,10 @@ DataLakeStack(
     env={"region": "ap-southeast-2", "account": "715898075157"},
 )
 
+
+# tag all resources in stack
+core.Tag.add(app, "CostCentre", "1050")
+core.Tag.add(app, "ApplicationName", "geospatial-data-lake")
+core.Tag.add(app, "Owner", "Bill M. Nelson")
+
 app.synth()
