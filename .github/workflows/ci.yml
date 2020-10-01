@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.6", "3.7"]
+        python: ["3.6"]
     steps:
       - uses: actions/checkout@v2
 
@@ -106,6 +106,7 @@ jobs:
         #if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
         run: cdk deploy data-lake-nonprod
         working-directory: infra
+
 
       - name: (Prod) Configure AWS Credentials
         if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
