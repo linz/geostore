@@ -25,7 +25,7 @@ class DataLakeStack(core.Stack):
 
         datalake = aws_s3.Bucket(
             self,
-            "datalake",
+            "data-lake-storage-bucket",
             bucket_name=f"linz-geospatial-data-lake-{env}",
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
