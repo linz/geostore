@@ -63,8 +63,10 @@ jobs:
           pytest
 
   test-infra:
-    runs-on: ubuntu-latest
+    # TODO: add "SKIP-INFRA-TEST" label check
     needs: [linter, test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     strategy:
       matrix:
         python: ["3.6"]
@@ -103,13 +105,17 @@ jobs:
           mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      - name: Deploy AWS infrastructure for testing
+      - name: Destroy previous test AWS infra if exists
         run: |
           cdk destroy --force data-lake-dev || true
+        working-directory: infra
+
+      - name: Deploy AWS infra for testing
+        run: |
           cdk deploy data-lake-dev
         working-directory: infra
 
-      - name: Destroy AWS infrastructure used for testing
+      - name: Destroy AWS infra used for testing
         run: cdk destroy --force data-lake-dev
         working-directory: infra
 
@@ -146,7 +152,7 @@ jobs:
       - name: get cdk version
         run: cdk --version
 
-
+      # NONPROD DEPLOYMENT
       - name: (NonProd) Configure AWS Credentials
         if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
         uses: aws-actions/configure-aws-credentials@v1
@@ -162,7 +168,7 @@ jobs:
         run: cdk deploy data-lake-nonprod
         working-directory: infra
 
-
+      # PROD DEPLOYMENT
       - name: (Prod) Configure AWS Credentials
         if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
         uses: aws-actions/configure-aws-credentials@v1
