@@ -11,6 +11,13 @@ app = core.App()
 
 DataLakeStack(
     app,
+    "data-lake-dev",
+    stack_name="geospatial-data-lake-dev",
+    env={"region": "ap-southeast-2", "account": "632223577832"},
+)
+
+DataLakeStack(
+    app,
     "data-lake-nonprod",
     stack_name="geospatial-data-lake-nonprod",
     env={"region": "ap-southeast-2", "account": "632223577832"},

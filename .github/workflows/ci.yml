@@ -46,18 +46,52 @@ jobs:
         python: ["3.6", "3.7"]
     steps:
       - uses: actions/checkout@v2
+
       - name: Use Python ${{ matrix.python }}
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python }}
+
       - name: Install
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install -r infra/requirements.txt
+
       - name: Test
         run: |
           pytest
+
+      - name: Use Node.js 12.x for CDK deployment
+        uses: actions/setup-node@v2.1.1
+        with:
+          node-version: "12.x"
+          registry-url: https://registry.npmjs.org
+
+      - name: Install aws-cdk
+        run: npm install -g aws-cdk
+
+      - name: get cdk version
+        run: cdk --version
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+          mask-aws-account-id: true
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
+
+      - name: Deploy AWS infrastructure for testing
+        run: |
+          cdk destroy --force data-lake-dev | true
+          cdk deploy data-lake-dev
+        working-directory: infra
+
+      - name: Deploy AWS infrastructure used for testing
+        run: cdk destroy --force data-lake-dev
+        working-directory: infra
 
   deploy:
     needs: [linter, test]
@@ -80,7 +114,7 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r infra/requirements.txt
 
-      - name: Use Node.js 12.x
+      - name: Use Node.js 12.x for CDK deployment
         uses: actions/setup-node@v2.1.1
         with:
           node-version: "12.x"
@@ -94,19 +128,17 @@ jobs:
 
 
       - name: (NonProd) Configure AWS Credentials
-        #if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        if: github.event_name == 'push'
+        if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
-          mask-account-id: true
+          mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
       - name: (NonProd) Deploy
-        #if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        if: github.event_name == 'push'
+        if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
         run: cdk deploy data-lake-nonprod
         working-directory: infra
 
@@ -118,7 +150,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
-          mask-account-id: true
+          mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
 
       - name: (Prod) Deploy
