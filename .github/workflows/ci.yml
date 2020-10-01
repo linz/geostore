@@ -61,7 +61,7 @@ jobs:
 
       - name: Test
         run: |
-          pytest
+          pytest tests/
 
   test-infra:
     needs: [linter, test]
@@ -114,6 +114,10 @@ jobs:
         run: |
           cdk deploy data-lake-dev
         working-directory: infra
+
+      - name: Test
+        run: |
+          pytest infra/tests/
 
       - name: Destroy AWS infra used for testing
         run: cdk destroy --force data-lake-dev
