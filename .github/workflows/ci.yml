@@ -39,8 +39,9 @@ jobs:
           isort -rc . --check --diff
 
   test:
-    runs-on: ubuntu-latest
     needs: linter
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     strategy:
       matrix:
         python: ["3.6", "3.7"]
@@ -63,7 +64,6 @@ jobs:
           pytest
 
   test-infra:
-    # TODO: add "SKIP-INFRA-TEST" label check
     needs: [linter, test]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
