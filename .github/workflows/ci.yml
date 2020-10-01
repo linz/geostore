@@ -123,6 +123,7 @@ jobs:
     needs: [linter, test, test-infra]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'release')
     strategy:
       matrix:
         python: ["3.6"]
