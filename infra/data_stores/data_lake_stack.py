@@ -21,8 +21,6 @@ class DataLakeStack(core.Stack):
             removal_policy = core.RemovalPolicy.DESTROY
 
         # The datalake s3 bucket
-        # pylint: disable=unused-variable #temp datalake variable to be used
-
         datalake = aws_s3.Bucket(
             self,
             "data-lake-storage-bucket",
@@ -32,3 +30,4 @@ class DataLakeStack(core.Stack):
             versioned=True,
             removal_policy=removal_policy,
         )
+        core.Tag.add(datalake, "ApplicationLayer", "data-lake-storage-bucket")
