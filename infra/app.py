@@ -10,15 +10,15 @@ from aws_cdk import core
 from data_stores.data_lake_stack import DataLakeStack
 
 if "ENVIRONMENT_TYPE" in os.environ:
-    env = os.environ["ENVIRONMENT_TYPE"]
+    ENV = os.environ["ENVIRONMENT_TYPE"]
 else:
-    env = "dev"
+    ENV = "dev"
 
 app = core.App()
 DataLakeStack(
     app,
     "geospatial-data-lake",
-    stack_name=f"geospatial-data-lake-{env}",
+    stack_name=f"geospatial-data-lake-{ENV}",
     env={"region": "ap-southeast-2"},
 )
 
