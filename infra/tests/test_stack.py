@@ -3,6 +3,7 @@ AWS infrastructure tests.
 """
 
 import os
+
 import boto3
 
 CF = boto3.client("cloudformation")
