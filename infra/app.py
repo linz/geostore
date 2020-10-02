@@ -5,9 +5,9 @@ CDK application entry point file.
 """
 
 import os
+
 from aws_cdk import core
 from data_stores.data_lake_stack import DataLakeStack
-
 
 if "ENVIRONMENT_TYPE" in os.environ:
     env = os.environ["ENVIRONMENT_TYPE"]
