@@ -17,7 +17,7 @@ else:
 app = core.App()
 DataLakeStack(
     app,
-    f"geospatial-data-lake",
+    "geospatial-data-lake",
     stack_name=f"geospatial-data-lake-{env}",
     env={"region": "ap-southeast-2"},
 )
