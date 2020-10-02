@@ -105,14 +105,14 @@ jobs:
           mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      - name: Destroy previous test AWS infra if exists
+      - name: Set unique environment type variable for AWS infra deployment
         run: |
-          cdk destroy --force data-lake-dev || true
-        working-directory: infra
+          ENVIRONMENT_TYPE=ci$(date +%s)
+          echo ::set-env name=ENVIRONMENT_TYPE::"$ENVIRONMENT_TYPE"
 
       - name: Deploy AWS infra for testing
         run: |
-          cdk deploy data-lake-dev
+          cdk deploy geospatial-data-lake
         working-directory: infra
 
       - name: Test
@@ -120,7 +120,8 @@ jobs:
           pytest infra/tests/
 
       - name: Destroy AWS infra used for testing
-        run: cdk destroy --force data-lake-dev
+        run: |
+          cdk destroy --force geospatial-data-lake
         working-directory: infra
 
   deploy:

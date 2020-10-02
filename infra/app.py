@@ -4,30 +4,22 @@
 CDK application entry point file.
 """
 
+import os
 from aws_cdk import core
 from data_stores.data_lake_stack import DataLakeStack
 
+
+if "ENVIRONMENT_TYPE" in os.environ:
+    env = os.environ["ENVIRONMENT_TYPE"]
+else:
+    env = "dev"
+
 app = core.App()
-
 DataLakeStack(
     app,
-    "data-lake-dev",
-    stack_name="geospatial-data-lake-dev",
+    f"geospatial-data-lake",
+    stack_name=f"geospatial-data-lake-{env}",
     env={"region": "ap-southeast-2"},
-)
-
-DataLakeStack(
-    app,
-    "data-lake-nonprod",
-    stack_name="geospatial-data-lake-nonprod",
-    env={"region": "ap-southeast-2", "account": "632223577832"},
-)
-
-DataLakeStack(
-    app,
-    "data-lake-prod",
-    stack_name="geospatial-data-lake-prod",
-    env={"region": "ap-southeast-2", "account": "715898075157"},
 )
 
 app.synth()
