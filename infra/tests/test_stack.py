@@ -13,6 +13,7 @@ if "ENVIRONMENT_TYPE" in os.environ:
 else:
     env = "dev"
 
+
 def test_stack_create_complete():
     """Test if CloudFormation stack is successfully created."""
     response = CF.describe_stacks(StackName=f"geospatial-data-lake-{env}")
