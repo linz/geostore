@@ -105,7 +105,7 @@ jobs:
           mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      - name: Set unique environment type variable for AWS infra deployment
+      - name: Set unique environment type variable for AWS infra tests
         run: |
           ENVIRONMENT_TYPE=ci$(date +%s)
           echo ::set-env name=ENVIRONMENT_TYPE::"$ENVIRONMENT_TYPE"
