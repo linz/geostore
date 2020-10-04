@@ -73,13 +73,14 @@ $ pip install -r infra/requirements.txt
 * Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
 ```bash
-$ aws-azure-login -p <linz-data-lake-nonprod|linz-data-lake-prod>
+$ aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
 ```
 
 * Deploy CDK stack
 
 ```bash
-$ cdk deploy --profile <linz-data-lake-nonprod|linz-data-lake-prod> <data-lake-raster-nonprod|data-lake-raster-prod>
+$ export ENVIRONMENT_TYPE=dev|nonprod|prod
+$ cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
 ```
 
 
