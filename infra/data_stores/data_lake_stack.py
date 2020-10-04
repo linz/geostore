@@ -3,6 +3,7 @@ Data Lake AWS resources definitions.
 """
 
 from aws_cdk import aws_s3, core
+from aws_cdk.core import Tags
 
 
 class DataLakeStack(core.Stack):
@@ -14,20 +15,21 @@ class DataLakeStack(core.Stack):
 
         env = self.stack_name.split("-")[-1]
 
-        # S3 buckets removal policy
         if env == "prod":
             removal_policy = core.RemovalPolicy.RETAIN
         else:
             removal_policy = core.RemovalPolicy.DESTROY
 
-        # The datalake s3 bucket
+        # Data Lake Storage S3 Bucket
         datalake = aws_s3.Bucket(
             self,
             "data-lake-storage-bucket",
-            bucket_name=f"linz-geospatial-data-lake-{env}",
+            bucket_name="{}-{}".format(
+                self.node.try_get_context("data-lake-storage-bucket-name"), env
+            ),
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=removal_policy,
         )
-        core.Tag.add(datalake, "ApplicationLayer", "data-lake-storage-bucket")
+        Tags.of(datalake).add("ApplicationLayer", "data-lake-storage")
