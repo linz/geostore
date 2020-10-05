@@ -33,3 +33,5 @@ class DataLakeStack(core.Stack):
             removal_policy=removal_policy,
         )
         Tags.of(datalake).add("ApplicationLayer", "data-lake-storage")
+        Tags.of(datalake).add("BackupPolicy", "TODO")
+        Tags.of(datalake).add("DRPolicy", "TODO")
