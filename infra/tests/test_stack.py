@@ -1,5 +1,5 @@
 """
-AWS infrastructure tests.
+Data Lake stack tests.
 """
 
 import os
@@ -18,4 +18,7 @@ else:
 def test_stack_create_complete():
     """Test if CloudFormation stack is successfully created."""
     response = CF.describe_stacks(StackName=f"geospatial-data-lake-{ENV}")
-    assert response["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
+    assert response["Stacks"][0]["StackStatus"] in (
+        "CREATE_COMPLETE",
+        "UPDATE_COMPLETE",
+    )
