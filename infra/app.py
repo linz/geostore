@@ -24,8 +24,11 @@ DataLakeStack(
 
 
 # tag all resources in stack
-core.Tag.add(app, "CostCentre", "1050")
+core.Tag.add(app, "CostCentre", "100005")
 core.Tag.add(app, "ApplicationName", "geospatial-data-lake")
 core.Tag.add(app, "Owner", "Bill M. Nelson")
+core.Tag.add(app, "EnvironmentType", f"{ENV}")
+core.Tag.add(app, "SupportType", "Dev")
+core.Tag.add(app, "HoursOfOperation", "24x7")
 
 app.synth()
