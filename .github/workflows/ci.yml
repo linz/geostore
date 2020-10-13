@@ -44,7 +44,7 @@ jobs:
 
       - name: Check Python code import statements
         run: |
-          isort -rc . --check --diff
+          isort . --check --diff
 
 
   test:
