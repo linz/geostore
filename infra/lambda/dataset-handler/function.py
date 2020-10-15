@@ -10,10 +10,4 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument
 
 
 if __name__ == "__main__":
-    lambda_handler(
-        {
-            "x": "x",
-            "y": "y"
-        },
-        "context"
-    )
+    lambda_handler({"x": "x", "y": "y"}, "context")
