@@ -2,8 +2,7 @@
 Data Lake AWS resources definitions.
 """
 
-from aws_cdk import core
-from aws_cdk import aws_s3, aws_dynamodb, aws_lambda
+from aws_cdk import aws_dynamodb, aws_lambda, aws_s3, core
 from aws_cdk.core import Tags
 
 
