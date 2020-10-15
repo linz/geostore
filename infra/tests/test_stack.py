@@ -9,8 +9,8 @@ import boto3
 CF = boto3.client("cloudformation")
 
 
-if "ENVIRONMENT_TYPE" in os.environ:
-    ENV = os.environ["ENVIRONMENT_TYPE"]
+if "DEPLOY_ENV" in os.environ:
+    ENV = os.environ["DEPLOY_ENV"]
 else:
     ENV = "dev"
 

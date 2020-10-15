@@ -119,8 +119,8 @@ jobs:
 
       - name: Set unique deployment environment type variable
         run: |
-          ENVIRONMENT_TYPE=ci$(date +%s)
-          echo ::set-env name=ENVIRONMENT_TYPE::"$ENVIRONMENT_TYPE"
+          DEPLOY_ENV=ci$(date +%s)
+          echo ::set-env name=DEPLOY_ENV::"$DEPLOY_ENV"
 
       - name: Deploy AWS stack for testing
         run: |
@@ -184,7 +184,7 @@ jobs:
 
       - name: (NonProd) Deploy AWS stack
         if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        run: ENVIRONMENT_TYPE=nonprod cdk deploy geospatial-data-lake
+        run: DEPLOY_ENV=nonprod cdk deploy geospatial-data-lake
         working-directory: infra
 
       # PROD DEPLOYMENT
@@ -200,5 +200,5 @@ jobs:
 
       - name: (Prod) Deploy AWS stack
         if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
-        run: ENVIRONMENT_TYPE=prod cdk deploy geospatial-data-lake
+        run: DEPLOY_ENV=prod cdk deploy geospatial-data-lake
         working-directory: infra
