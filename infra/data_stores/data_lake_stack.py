@@ -41,9 +41,9 @@ class DataLakeStack(core.Stack):
             "data-lake-application-db",
             table_name="datasets",
             partition_key=aws_dynamodb.Attribute(
-                name="id", type=aws_dynamodb.AttributeType("STRING")
+                name="pk", type=aws_dynamodb.AttributeType("STRING")
             ),
-            sort_key=aws_dynamodb.Attribute(name="type", type=aws_dynamodb.AttributeType("STRING")),
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType("STRING")),
             point_in_time_recovery=True,
             removal_policy=REMOVAL_POLICY,
         )
