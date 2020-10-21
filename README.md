@@ -80,6 +80,7 @@ $ aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
 
 ```bash
 $ export ENVIRONMENT_TYPE=dev|nonprod|prod
+$ cdk --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> bootstrap aws://unknown-account/ap-southeast-2
 $ cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
 ```
 
