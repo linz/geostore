@@ -124,7 +124,8 @@ jobs:
 
       - name: Deploy AWS stack for testing
         run: |
-          cdk deploy geospatial-data-lake
+          cdk bootstrap aws://unknown-account/ap-southeast-2
+          cdk deploy --require-approval never geospatial-data-lake
         working-directory: infra
 
       - name: Run AWS infra tests
@@ -184,7 +185,9 @@ jobs:
 
       - name: (NonProd) Deploy AWS stack
         if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        run: DEPLOY_ENV=nonprod cdk deploy geospatial-data-lake
+        run: |
+          cdk bootstrap aws://unknown-account/ap-southeast-2
+          DEPLOY_ENV=nonprod cdk deploy --require-approval never geospatial-data-lake
         working-directory: infra
 
       # PROD DEPLOYMENT
@@ -200,5 +203,7 @@ jobs:
 
       - name: (Prod) Deploy AWS stack
         if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
-        run: DEPLOY_ENV=prod cdk deploy geospatial-data-lake
+        run: |
+          cdk bootstrap aws://unknown-account/ap-southeast-2
+          DEPLOY_ENV=prod cdk deploy --require-approval never geospatial-data-lake
         working-directory: infra
