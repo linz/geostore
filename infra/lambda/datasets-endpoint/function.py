@@ -29,8 +29,10 @@ REQUEST_SCHEMA = {
 # TODO: don't assume that all Dataset attributes are strings ("S")
 
 
-def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsistent-return-statements
+# fmt: off
+def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsistent-return-statements,too-many-return-statements
     """Main Lambda entry point."""
+# fmt: on
 
     # request validation
     try:
