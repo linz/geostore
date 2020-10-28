@@ -3,3 +3,4 @@ aws-cdk.aws-iam
 aws-cdk.aws-dynamodb
 aws-cdk.aws-lambda
 awscli
+jsonschema

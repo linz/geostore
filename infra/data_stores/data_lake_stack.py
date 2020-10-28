@@ -52,10 +52,30 @@ class DataLakeStack(core.Stack):
         # Lambda Handler Functions
         dataset_handler_function = aws_lambda.Function(
             self,
-            "dataset-handler-function",
+            "datasets-endpoint-function",
+            function_name="datasets-endpoint",
             handler="function.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
-            code=aws_lambda.Code.from_asset(path="lambda/dataset-handler"),
+            code=aws_lambda.Code.from_asset(
+                path="lambda/datasets-endpoint",
+                bundling=core.BundlingOptions(
+                    image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
+                    command=[
+                        "bash",
+                        "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
+                    ],
+                ),
+            ),
+        )
+        db_datasets_table.add_global_secondary_index(
+            index_name="datasets_title",
+            partition_key=aws_dynamodb.Attribute(
+                name="sk", type=aws_dynamodb.AttributeType("STRING")
+            ),
+            sort_key=aws_dynamodb.Attribute(
+                name="title", type=aws_dynamodb.AttributeType("STRING")
+            ),
         )
         db_datasets_table.grant_read_write_data(dataset_handler_function)
         Tags.of(dataset_handler_function).add("ApplicationLayer", "api")
