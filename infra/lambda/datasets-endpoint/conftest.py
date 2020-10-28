@@ -10,7 +10,7 @@ DYNAMODB = boto3.resource("dynamodb")
 
 def pytest_configure():
     """Share Dataset ID and title values between tests."""
-    return {"dataset_id": None, "dataset_type": None, "dataset_title": None}
+    return {"dataset_id": None, "dataset_type": None, "dataset_title": None, "owning_group": None}
 
 
 @pytest.fixture()

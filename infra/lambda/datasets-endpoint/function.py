@@ -46,6 +46,9 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsiste
     if method == "GET" and "id" in event["body"] and "type" in event["body"]:
         return get_method_single(event)
 
+    if method == "GET" and ("title" in event["body"] or "owning_group" in event["body"]):
+        return get_method_filter(event)
+
     if method == "GET" and event["body"] == {}:
         return get_method_all()
 
@@ -104,7 +107,7 @@ def post_method(payload):
             ":type": {"S": f"TYPE#{pk['type']}"},
             ":title": {"S": f"{attr['title']}"},
         },
-        KeyConditionExpression="#title = :title AND #type = :type",
+        KeyConditionExpression="#type = :type AND #title = :title",
         Select="COUNT",
     )
     if int(db_resp["Count"]) > 0:
@@ -208,6 +211,85 @@ def get_method_single(payload):
         }
 
 
+def get_method_filter(payload):  # pylint:disable=too-many-locals
+    """GET: Get Datasets by filter."""
+
+    BODY_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["IMAGE", "RASTER"],
+            },
+            "title": {"type": "string"},
+            "owning_group": {"type": "string"},
+        },
+        "required": ["type"],
+        "minProperties": 2,
+        "maxProperties": 2,
+    }
+
+    # request body validation
+    try:
+        req_body = payload["body"]
+        validate(req_body, BODY_SCHEMA)
+    except ValidationError as err:
+        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+
+    # get PKs
+    pk = {}
+    for k in DS_PRIMARY_KEYS:
+        if k in payload["body"]:
+            pk[k] = payload["body"][k]
+
+    # get attributes
+    attr = {}
+    for a in DS_ATTRIBUTES:
+        if a in payload["body"]:
+            attr[a] = payload["body"][a]
+
+    # dataset query by filter
+    if "title" in attr:
+        index_name = "datasets_title"
+
+        expression_attribute_names = {"#title": "title"}
+        expression_attribute_values = {":title": {"S": attr["title"]}}
+        key_condition_expression = "#type = :type AND #title = :title"
+
+    if "owning_group" in attr:
+        index_name = "datasets_owning_group"
+
+        expression_attribute_names = {"#owning_group": "owning_group"}
+        expression_attribute_values = {":owning_group": {"S": attr["owning_group"]}}
+        key_condition_expression = "#type = :type AND #owning_group = :owning_group"
+
+    db_resp = DYNAMODB.query(
+        TableName="datasets",
+        IndexName=index_name,
+        ExpressionAttributeNames={"#type": "sk", **expression_attribute_names},
+        ExpressionAttributeValues={
+            ":type": {"S": f"TYPE#{pk['type']}"},
+            **expression_attribute_values,
+        },
+        KeyConditionExpression=key_condition_expression,
+        Select="ALL_ATTRIBUTES",
+        ConsistentRead=False,
+    )
+
+    resp_body = []
+    for i in db_resp["Items"]:
+        item = {}
+        item["id"] = list(i["pk"].values())[0].split("#")[1]
+        item["type"] = list(i["sk"].values())[0].split("#")[1]
+
+        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
+            item[a] = list(i[a].values())[0]
+
+        resp_body.append(item)
+
+    return {"statusCode": 200, "body": resp_body}
+
+
 def get_method_all():
     """GET: Get all Datasets."""
 
@@ -293,6 +375,7 @@ def patch_method(payload):
         },
         KeyConditionExpression="#title = :title AND #type = :type",
         Select="COUNT",
+        ConsistentRead=False,
     )
     if int(db_resp["Count"]) > 0:
         return {

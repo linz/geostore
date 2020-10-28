@@ -58,6 +58,7 @@ def test_post_method(db_truncate):  # pylint:disable=unused-argument
     pytest.dataset_id = resp["body"]["id"]
     pytest.dataset_type = resp["body"]["type"]
     pytest.dataset_title = resp["body"]["title"]
+    pytest.owning_group = resp["body"]["owning_group"]
 
 
 def test_post_method_missing_attr():
@@ -142,6 +143,58 @@ def test_get_method_all():
     assert resp["body"][0]["id"] == pytest.dataset_id
     assert resp["body"][0]["type"] == pytest.dataset_type
     assert resp["body"][0]["title"] == pytest.dataset_title
+
+
+def test_get_method_filter_title():
+    """Test filtering Datasets by title."""
+
+    method = "GET"
+    body = {}
+    body["type"] = pytest.dataset_type
+    body["title"] = pytest.dataset_title
+
+    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    logger.info(resp)
+
+    assert resp["statusCode"] == 200
+    assert len(resp["body"]) == 1
+    assert resp["body"][0]["id"] == pytest.dataset_id
+    assert resp["body"][0]["type"] == pytest.dataset_type
+    assert resp["body"][0]["title"] == pytest.dataset_title
+
+
+def test_get_method_filter_owning_group():
+    """Test filtering Datasets by owning_group."""
+
+    method = "GET"
+    body = {}
+    body["type"] = pytest.dataset_type
+    body["owning_group"] = pytest.owning_group
+
+    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    logger.info(resp)
+
+    assert resp["statusCode"] == 200
+    assert len(resp["body"]) == 1
+    assert resp["body"][0]["id"] == pytest.dataset_id
+    assert resp["body"][0]["type"] == pytest.dataset_type
+    assert resp["body"][0]["owning_group"] == pytest.owning_group
+
+
+def test_get_method_multiple_filters():
+    """Test filtering Datasets by by both title and owning_group."""
+
+    method = "GET"
+    body = {}
+    body["type"] = pytest.dataset_type
+    body["title"] = pytest.dataset_title
+    body["owning_group"] = pytest.owning_group
+
+    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    logger.info(resp)
+
+    assert resp["statusCode"] == 400
+    assert re.search("^Bad Request: .* has too many properties", resp["body"]["message"])
 
 
 def test_get_method_not_existing():

@@ -77,5 +77,14 @@ class DataLakeStack(core.Stack):
                 name="title", type=aws_dynamodb.AttributeType("STRING")
             ),
         )
+        db_datasets_table.add_global_secondary_index(
+            index_name="datasets_owning_group",
+            partition_key=aws_dynamodb.Attribute(
+                name="sk", type=aws_dynamodb.AttributeType("STRING")
+            ),
+            sort_key=aws_dynamodb.Attribute(
+                name="owning_group", type=aws_dynamodb.AttributeType("STRING")
+            ),
+        )
         db_datasets_table.grant_read_write_data(dataset_handler_function)
         Tags.of(dataset_handler_function).add("ApplicationLayer", "api")
