@@ -25,7 +25,6 @@ REQUEST_SCHEMA = {
 }
 
 # TODO: implement GET response paging
-# TODO: implement GET request filtering by title and owning_group
 # TODO: allow Dataset delete only if no Dataset Version exists
 # TODO: don't assume that all Dataset attributes are strings ("S")
 
