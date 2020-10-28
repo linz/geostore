@@ -9,8 +9,8 @@ import os
 from aws_cdk import core
 from data_stores.data_lake_stack import DataLakeStack
 
-if "ENVIRONMENT_TYPE" in os.environ:
-    ENV = os.environ["ENVIRONMENT_TYPE"]
+if "DEPLOY_ENV" in os.environ:
+    ENV = os.environ["DEPLOY_ENV"]
 else:
     ENV = "dev"
 
