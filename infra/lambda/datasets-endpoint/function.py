@@ -43,8 +43,11 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsiste
     if method == "POST":
         return post_method(event)
 
-    if method == "GET":
-        return get_method(event)
+    if method == "GET" and "id" in event["body"] and "type" in event["body"]:
+        return get_method_single(event)
+
+    if method == "GET" and event["body"] == {}:
+        return get_method_all()
 
     if method == "PATCH":
         return patch_method(event)
@@ -143,8 +146,8 @@ def post_method(payload):
     return {"statusCode": 201, "body": resp_body}
 
 
-def get_method(payload):
-    """GET: Get Dataset."""
+def get_method_single(payload):
+    """GET: Get single Dataset."""
 
     BODY_SCHEMA = {
         "type": "object",
@@ -155,6 +158,7 @@ def get_method(payload):
                 "enum": ["IMAGE", "RASTER"],
             },
         },
+        "required": ["id", "type"],
     }
 
     # request body validation
@@ -171,67 +175,69 @@ def get_method(payload):
             pk[k] = payload["body"][k]
 
     # single dataset query (if id and type specified)
-    if "id" in pk and "type" in pk:
-        db_resp = DYNAMODB.query(
-            TableName="datasets",
-            ExpressionAttributeNames={
-                "#id": "pk",
-                "#type": "sk",
-            },
-            ExpressionAttributeValues={
-                ":id": {"S": f"DATASET#{pk['id']}"},
-                ":type": {"S": f"TYPE#{pk['type']}"},
-            },
-            KeyConditionExpression="#id = :id AND #type = :type",
-            Select="ALL_ATTRIBUTES",
-            ConsistentRead=True,
-        )
+    db_resp = DYNAMODB.query(
+        TableName="datasets",
+        ExpressionAttributeNames={
+            "#id": "pk",
+            "#type": "sk",
+        },
+        ExpressionAttributeValues={
+            ":id": {"S": f"DATASET#{pk['id']}"},
+            ":type": {"S": f"TYPE#{pk['type']}"},
+        },
+        KeyConditionExpression="#id = :id AND #type = :type",
+        Select="ALL_ATTRIBUTES",
+        ConsistentRead=True,
+    )
 
-        if len(db_resp["Items"]) > 0:  # pylint:disable=no-else-return
-            resp_body = {}
-            resp_body["id"] = pk["id"]
-            resp_body["type"] = pk["type"]
+    if len(db_resp["Items"]) > 0:  # pylint:disable=no-else-return
+        resp_body = {}
+        resp_body["id"] = pk["id"]
+        resp_body["type"] = pk["type"]
 
-            for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-                resp_body[a] = list(db_resp["Items"][0][a].values())[0]
-
-            return {"statusCode": 200, "body": resp_body}
-        else:
-            return {
-                "statusCode": 404,
-                "body": {
-                    "message": f"Not Found: dataset '{pk['id']}' of type '{pk['type']}' does not exist."
-                },
-            }
-
-    # multiple datasets query
-    else:
-        db_resp = DYNAMODB.scan(
-            TableName="datasets",
-            ExpressionAttributeNames={
-                "#id": "pk",
-                "#type": "sk",
-            },
-            ExpressionAttributeValues={
-                ":id": {"S": "DATASET#"},
-                ":type": {"S": "TYPE#"},
-            },
-            FilterExpression="begins_with(#id, :id) and begins_with(#type, :type)",
-            Select="ALL_ATTRIBUTES",
-        )
-
-        resp_body = []
-        for i in db_resp["Items"]:
-            item = {}
-            item["id"] = list(i["pk"].values())[0].split("#")[1]
-            item["type"] = list(i["sk"].values())[0].split("#")[1]
-
-            for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-                item[a] = list(i[a].values())[0]
-
-            resp_body.append(item)
+        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
+            resp_body[a] = list(db_resp["Items"][0][a].values())[0]
 
         return {"statusCode": 200, "body": resp_body}
+    else:
+        return {
+            "statusCode": 404,
+            "body": {
+                "message": f"Not Found: dataset '{pk['id']}' of type '{pk['type']}' does not exist."
+            },
+        }
+
+
+def get_method_all():
+    """GET: Get all Datasets."""
+
+    # multiple datasets query
+    db_resp = DYNAMODB.scan(
+        TableName="datasets",
+        ExpressionAttributeNames={
+            "#id": "pk",
+            "#type": "sk",
+        },
+        ExpressionAttributeValues={
+            ":id": {"S": "DATASET#"},
+            ":type": {"S": "TYPE#"},
+        },
+        FilterExpression="begins_with(#id, :id) and begins_with(#type, :type)",
+        Select="ALL_ATTRIBUTES",
+    )
+
+    resp_body = []
+    for i in db_resp["Items"]:
+        item = {}
+        item["id"] = list(i["pk"].values())[0].split("#")[1]
+        item["type"] = list(i["sk"].values())[0].split("#")[1]
+
+        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
+            item[a] = list(i[a].values())[0]
+
+        resp_body.append(item)
+
+    return {"statusCode": 200, "body": resp_body}
 
 
 def patch_method(payload):
