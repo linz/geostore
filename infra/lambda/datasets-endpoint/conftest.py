@@ -78,7 +78,7 @@ def db_prepare(table_name="datasets"):
     table = DYNAMODB.Table(table_name)
 
     # get the table keys
-    key_names = [key.get("AttributeName") for key in table.key_schema]
+    key_names = [key["AttributeName"] for key in table.key_schema]
 
     # only retrieve the keys for each item in the table (minimize data transfer)
     projection_expression = ", ".join("#" + key for key in key_names)
