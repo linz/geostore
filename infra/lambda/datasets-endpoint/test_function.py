@@ -5,7 +5,6 @@ Basic Lambda function tests. Working Data Lake AWS environment is required
 
 import logging
 import re
-import uuid
 
 import function  # pylint:disable=import-error
 
@@ -43,7 +42,7 @@ def test_post_method(db_prepare):  # pylint:disable=unused-argument
     method = "POST"
     body = {}
     body["type"] = "RASTER"
-    body["title"] = "Dataset {}".format(uuid.uuid4().hex[:8])
+    body["title"] = "Dataset 123"
     body["owning_group"] = "A_XYZ_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
@@ -61,7 +60,7 @@ def test_post_method_missing_attr():
     method = "POST"
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
-    body["title"] = "Dataset {}".format(uuid.uuid4().hex[:8])
+    body["title"] = "Dataset 123"
     body["owning_group"] = "A_XYZ_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
@@ -77,7 +76,7 @@ def test_post_method_incorrect_attr_value():
     method = "POST"
     body = {}
     body["type"] = "INCORRECT_TYPE"
-    body["title"] = "Dataset {}".format(uuid.uuid4().hex[:8])
+    body["title"] = "Dataset 123"
     body["owning_group"] = "A_XYZ_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
