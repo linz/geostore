@@ -40,10 +40,8 @@ class DataLakeStack(core.Stack):
             self,
             "data-lake-application-db",
             table_name="datasets",
-            partition_key=aws_dynamodb.Attribute(
-                name="pk", type=aws_dynamodb.AttributeType("STRING")
-            ),
-            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType("STRING")),
+            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,
             removal_policy=REMOVAL_POLICY,
         )
@@ -72,20 +70,14 @@ class DataLakeStack(core.Stack):
         )
         db_datasets_table.add_global_secondary_index(
             index_name="datasets_title",
-            partition_key=aws_dynamodb.Attribute(
-                name="sk", type=aws_dynamodb.AttributeType("STRING")
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name="title", type=aws_dynamodb.AttributeType("STRING")
-            ),
+            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
         )
         db_datasets_table.add_global_secondary_index(
             index_name="datasets_owning_group",
-            partition_key=aws_dynamodb.Attribute(
-                name="sk", type=aws_dynamodb.AttributeType("STRING")
-            ),
+            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(
-                name="owning_group", type=aws_dynamodb.AttributeType("STRING")
+                name="owning_group", type=aws_dynamodb.AttributeType.STRING
             ),
         )
         db_datasets_table.grant_read_write_data(dataset_handler_function)
