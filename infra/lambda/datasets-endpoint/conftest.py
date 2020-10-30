@@ -2,21 +2,79 @@
 Pytest configuration file.
 """
 
+import logging
+
 import boto3
 import pytest
 
-DYNAMODB = boto3.resource("dynamodb")
-
-
-def pytest_configure():
-    """Share Dataset ID and title values between tests."""
-    return {"dataset_id": None, "dataset_type": None, "dataset_title": None, "owning_group": None}
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture()
-def db_truncate(table_name="datasets"):
-    """Truncate DynamoDB table."""
+def db_prepare(table_name="datasets"):
+    """
+    Prepare DB with some dataset records and clean it up after test is
+    finished.
+    """
 
+    logger.info("Running DB Setup")
+
+    DYNAMODB = boto3.client("dynamodb")
+    DYNAMODB.batch_write_item(
+        RequestItems={
+            table_name: [
+                {
+                    "PutRequest": {
+                        "Item": {
+                            "pk": {
+                                "S": "DATASET#111abc",
+                            },
+                            "sk": {
+                                "S": "TYPE#RASTER",
+                            },
+                            "title": {
+                                "S": "Dataset ABC",
+                            },
+                            "owning_group": {
+                                "S": "A_ABC_ABC",
+                            },
+                            "created_at": {
+                                "S": "2020-01-01 01:01:01.000000+00:00",
+                            },
+                        },
+                    },
+                },
+                {
+                    "PutRequest": {
+                        "Item": {
+                            "pk": {
+                                "S": "DATASET#222xyz",
+                            },
+                            "sk": {
+                                "S": "TYPE#RASTER",
+                            },
+                            "title": {
+                                "S": "Dataset XYZ",
+                            },
+                            "owning_group": {
+                                "S": "A_XYZ_XYZ",
+                            },
+                            "created_at": {
+                                "S": "2020-02-01 01:01:01.000000+00:00",
+                            },
+                        },
+                    },
+                },
+            ],
+        },
+    )
+
+    yield  # teardown
+
+    logger.info("Running DB Teardown")
+
+    DYNAMODB = boto3.resource("dynamodb")
     table = DYNAMODB.Table(table_name)
 
     # get the table keys
