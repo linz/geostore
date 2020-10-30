@@ -63,7 +63,9 @@ class DataLakeStack(core.Stack):
                     command=[
                         "bash",
                         "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
+                        "pip install --requirement=requirements.txt --target=/asset-output",
+                        "&&",
+                        "cp --archive --update . /asset-output",
                     ],
                 ),
             ),
