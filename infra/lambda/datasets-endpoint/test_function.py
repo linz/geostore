@@ -1,6 +1,6 @@
 """
-Basic Lambda function tests. Working Data Lake AWS environment is required
-(run '$ cdk deploy' before running tests).
+Dataset endpoint Lambda function tests. Working Data Lake AWS environment is
+required (run '$ cdk deploy' before running tests).
 """
 
 import logging
@@ -12,8 +12,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def test_request_no_method():
-    """Try request not containing method."""
+def test_should_fail_if_request_not_containing_method():
+    """Test if request fails correctly if not containing method attribute."""
 
     body = {}
 
@@ -24,8 +24,8 @@ def test_request_no_method():
     assert resp["body"]["message"] == "Bad Request: 'httpMethod' is a required property."
 
 
-def test_request_no_body():
-    """Try request not containing body."""
+def test_should_fail_if_request_not_containing_body():
+    """Test if request fails correctly if not containing body."""
 
     method = "POST"
 
@@ -36,14 +36,14 @@ def test_request_no_body():
     assert resp["body"]["message"] == "Bad Request: 'body' is a required property."
 
 
-def test_post_method(db_prepare):  # pylint:disable=unused-argument
+def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset creation using POST method."""
 
     method = "POST"
     body = {}
     body["type"] = "RASTER"
     body["title"] = "Dataset 123"
-    body["owning_group"] = "A_XYZ_XYZ"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -54,14 +54,14 @@ def test_post_method(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"]["owning_group"] == body["owning_group"]
 
 
-def test_post_method_missing_attr():
-    """Try to create Dataset with missing attribute."""
+def test_should_fail_if_post_request_not_containing_mandatory_attribute():
+    """Test if POST request fails correctly if not containing mandatory attribute."""
 
     method = "POST"
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
     body["title"] = "Dataset 123"
-    body["owning_group"] = "A_XYZ_XYZ"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -70,14 +70,14 @@ def test_post_method_missing_attr():
     assert resp["body"]["message"] == "Bad Request: 'type' is a required property."
 
 
-def test_post_method_incorrect_attr_value():
-    """Try to create Dataset with incorrect dataset type value."""
+def test_should_fail_if_post_request_containing_incorrect_dataset_type():
+    """Test if POST request fails correctly if containing incorrect dataset type."""
 
     method = "POST"
     body = {}
     body["type"] = "INCORRECT_TYPE"
     body["title"] = "Dataset 123"
-    body["owning_group"] = "A_XYZ_XYZ"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -86,14 +86,19 @@ def test_post_method_incorrect_attr_value():
     assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", resp["body"]["message"])
 
 
-def test_post_method_already_existing_title(db_prepare):  # pylint:disable=unused-argument
-    """Try to create Dataset with already existing title."""
+def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
+    db_prepare,
+):  # pylint:disable=unused-argument
+    """
+    Test if POST request fails correctly if containing duplicate dataset
+    title.
+    """
 
     method = "POST"
     body = {}
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -105,7 +110,7 @@ def test_post_method_already_existing_title(db_prepare):  # pylint:disable=unuse
     )
 
 
-def test_get_method_single(db_prepare):  # pylint:disable=unused-argument
+def test_should_return_single_dateset(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving single Dataset using GET method."""
 
     method = "GET"
@@ -122,7 +127,7 @@ def test_get_method_single(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"]["title"] == "Dataset ABC"
 
 
-def test_get_method_all(db_prepare):  # pylint:disable=unused-argument
+def test_should_return_all_datesets(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving all Datasets using GET method."""
 
     method = "GET"
@@ -138,8 +143,13 @@ def test_get_method_all(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"][0]["title"] in ("Dataset ABC", "Dataset XYZ")
 
 
-def test_get_method_filter_title(db_prepare):  # pylint:disable=unused-argument
-    """Test filtering Datasets by title."""
+def test_should_return_single_dataset_filtered_by_type_and_title(
+    db_prepare,
+):  # pylint:disable=unused-argument
+    """
+    Test filtering Datasets by type and title. Must return single dataset,
+    because type/title combination must be unique.
+    """
 
     method = "GET"
     body = {}
@@ -156,32 +166,41 @@ def test_get_method_filter_title(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"][0]["title"] == "Dataset ABC"
 
 
-def test_get_method_filter_owning_group(db_prepare):  # pylint:disable=unused-argument
-    """Test filtering Datasets by owning_group."""
+def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
+    db_prepare,
+):  # pylint:disable=unused-argument
+    """
+    Test filtering Datasets by type and title.
+    """
 
     method = "GET"
     body = {}
     body["type"] = "RASTER"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
 
     assert resp["statusCode"] == 200
-    assert len(resp["body"]) == 1
+    assert len(resp["body"]) == 2
     assert resp["body"][0]["id"] == "111abc"
     assert resp["body"][0]["type"] == "RASTER"
-    assert resp["body"][0]["owning_group"] == "A_ABC_ABC"
+    assert resp["body"][0]["owning_group"] == "A_ABC_XYZ"
 
 
-def test_get_method_multiple_filters(db_prepare):  # pylint:disable=unused-argument
-    """Test filtering Datasets by by both title and owning_group."""
+def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
+    db_prepare,
+):  # pylint:disable=unused-argument
+    """
+    Test if GET request fails correctly if filter contains both tile and
+    owning_group attributes.
+    """
 
     method = "GET"
     body = {}
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -190,9 +209,10 @@ def test_get_method_multiple_filters(db_prepare):  # pylint:disable=unused-argum
     assert re.search("^Bad Request: .* has too many properties", resp["body"]["message"])
 
 
-def test_get_method_not_existing():
-    """Try to retrieve not existing Dataset."""
-
+def test_should_fail_if_get_request_requests_not_existing_dataset():
+    """
+    Test if GET request fails correctly if not existing dataset ID is specified.
+    """
     method = "GET"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
@@ -208,7 +228,7 @@ def test_get_method_not_existing():
     )
 
 
-def test_patch_method(db_prepare):  # pylint:disable=unused-argument
+def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset update using PATCH method."""
 
     method = "PATCH"
@@ -216,7 +236,7 @@ def test_patch_method(db_prepare):  # pylint:disable=unused-argument
     body["id"] = "111abc"
     body["type"] = "RASTER"
     body["title"] = "New Dataset ABC"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -225,15 +245,20 @@ def test_patch_method(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"]["title"] == "New Dataset ABC"
 
 
-def test_patch_method_already_existing_title(db_prepare):  # pylint:disable=unused-argument
-    """Try to update Dataset with already existing title."""
+def test_should_fail_if_updating_with_already_existing_dataset_title(
+    db_prepare,
+):  # pylint:disable=unused-argument
+    """
+    Test if PATCH request fails correctly if trying to update dataset with
+    already existing dataset title.
+    """
 
     method = "PATCH"
     body = {}
     body["id"] = "111abc"
     body["type"] = "RASTER"
     body["title"] = "Dataset XYZ"
-    body["owning_group"] = "A_XYZ_XYZ"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -245,15 +270,17 @@ def test_patch_method_already_existing_title(db_prepare):  # pylint:disable=unus
     )
 
 
-def test_patch_method_not_existing(db_prepare):  # pylint:disable=unused-argument
-    """Try to update not existing Dataset."""
-
+def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
+    """
+    Test if PATCH request fails correctly if trying to update not existing
+    dataset.
+    """
     method = "PATCH"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
     body["title"] = "New Dataset ABC"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)
@@ -265,7 +292,7 @@ def test_patch_method_not_existing(db_prepare):  # pylint:disable=unused-argumen
     )
 
 
-def test_delete_method(db_prepare):  # pylint:disable=unused-argument
+def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset deletion using DELETE method."""
 
     method = "DELETE"
@@ -280,15 +307,18 @@ def test_delete_method(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"] == {}
 
 
-def test_delete_method_not_existing(db_prepare):  # pylint:disable=unused-argument
-    """Try to delete not existing Dataset."""
+def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
+    """
+    Test if DELETE request fails correctly if trying to update not existing
+    dataset.
+    """
 
     method = "DELETE"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_ABC"
+    body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info(resp)

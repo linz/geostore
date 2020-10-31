@@ -37,7 +37,7 @@ def db_prepare(table_name="datasets"):
                                 "S": "Dataset ABC",
                             },
                             "owning_group": {
-                                "S": "A_ABC_ABC",
+                                "S": "A_ABC_XYZ",
                             },
                             "created_at": {
                                 "S": "2020-01-01 01:01:01.000000+00:00",
@@ -58,7 +58,7 @@ def db_prepare(table_name="datasets"):
                                 "S": "Dataset XYZ",
                             },
                             "owning_group": {
-                                "S": "A_XYZ_XYZ",
+                                "S": "A_ABC_XYZ",
                             },
                             "created_at": {
                                 "S": "2020-02-01 01:01:01.000000+00:00",
