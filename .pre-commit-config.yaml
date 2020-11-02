@@ -4,6 +4,14 @@
 repos:
     - repo: local
       hooks:
+          - id: black
+            name: black
+            entry: black
+            args: [--check, --diff]
+            language: system
+            stages: [commit]
+            types: [python]
+
           - id: gitlint
             name: gitlint
             entry: gitlint
