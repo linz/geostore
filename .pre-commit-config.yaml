@@ -19,6 +19,14 @@ repos:
             language: system
             stages: [commit-msg]
 
+          - id: isort
+            name: isort
+            entry: isort
+            args: [--check, --diff]
+            language: system
+            stages: [commit]
+            types: [python]
+
           - id: yamlfmt
             name: yamlfmt
             entry: yamlfmt
