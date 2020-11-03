@@ -1,9 +1,11 @@
 # Configuration file for pre-commit (https://pre-commit.com/)
 
 repos:
--  repo: https://github.com/jorisroovers/gitlint
-   rev: v0.12.0
-   hooks:
-   -  id: gitlint
-      stages: [commit-msg]
-
+    - repo: local
+      hooks:
+          - id: gitlint
+            name: gitlint
+            entry: gitlint
+            args: ["--msg-filename"]
+            language: system
+            stages: [commit-msg]
