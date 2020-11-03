@@ -6,4 +6,4 @@ will appear in this repository.
 
 def test_i_am_ok():
     """Sample test"""
-    assert "a" == "a"
+    assert 2 + 2 == 4

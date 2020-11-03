@@ -27,6 +27,13 @@ repos:
             stages: [commit]
             types: [python]
 
+          - id: pylint
+            name: pylint
+            entry: pylint
+            language: system
+            stages: [commit]
+            types: [python]
+
           - id: yamlfmt
             name: yamlfmt
             entry: yamlfmt
