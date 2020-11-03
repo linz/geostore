@@ -1,209 +1,221 @@
+---
 name: Build
-on: [push]
+on: [push]  # yamllint disable-line rule:truthy
 
 jobs:
-  linter:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: ["3.6", "3.7"]
+    linter:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python: ['3.6', '3.7']
 
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # this is to enable gitlint to check all PR commit messages
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0  # this is to enable gitlint to check all PR commit messages
 
-      - name: Use Python ${{ matrix.python }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python }}
+            - name: Use Python ${{ matrix.python }}
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ matrix.python }}
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r infra/requirements.txt
+            - name: Install Python dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements-dev.txt
+                  pip install -r infra/requirements.txt
 
-      - name: Check last commit message
+            - name: Check last commit message
+              if: github.event_name == 'push'
+              run: |
+                  gitlint
+
+            - name: Check all commit messages in Pull Request
+              if: github.event_name == 'pull_request'
+              run: >
+                  gitlint --commits
+                  origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}
+
+            - name: Check Python code formatting
+              run: |
+                  black . --check --diff
+
+            - name: Check Python code quality
+              run: |
+                  pylint infra/
+
+            - name: Check Python code import statements
+              run: |
+                  isort . --check --diff
+
+
+    test:
+        needs: linter
+        runs-on: ubuntu-latest
         if: github.event_name == 'push'
-        run: |
-          gitlint
+        strategy:
+            matrix:
+                python: ['3.6', '3.7']
 
-      - name: Check all commit messages in Pull Request
-        if: github.event_name == 'pull_request'
-        run: |
-          gitlint --commits origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Check Python code formatting
-        run: |
-          black . --check --diff
+            - name: Use Python ${{ matrix.python }}
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ matrix.python }}
 
-      - name: Check Python code quality
-        run: |
-          pylint infra/
+            - name: Install Python dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements-dev.txt
+                  pip install -r infra/requirements.txt
 
-      - name: Check Python code import statements
-        run: |
-          isort . --check --diff
-
-
-  test:
-    needs: linter
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    strategy:
-      matrix:
-        python: ["3.6", "3.7"]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Use Python ${{ matrix.python }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r infra/requirements.txt
-
-      - name: Run unit tests
-        run: |
-          pytest tests/
+            - name: Run unit tests
+              run: |
+                  pytest tests/
 
 
-  test-infra:
-    needs: [linter, test]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    strategy:
-      matrix:
-        python: ["3.6"]
+    test-infra:
+        needs: [linter, test]
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push'
+        strategy:
+            matrix:
+                python: ['3.6']
 
-    steps:
-      - uses: actions/checkout@v2
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Use Python ${{ matrix.python }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python }}
+            - name: Use Python ${{ matrix.python }}
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ matrix.python }}
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r infra/requirements.txt
+            - name: Install Python dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements-dev.txt
+                  pip install -r infra/requirements.txt
 
-      - name: Use Node.js 12.x for CDK deployment
-        uses: actions/setup-node@v2.1.1
-        with:
-          node-version: "12.x"
-          registry-url: https://registry.npmjs.org
+            - name: Use Node.js 12.x for CDK deployment
+              uses: actions/setup-node@v2.1.1
+              with:
+                  node-version: 12.x
+                  registry-url: https://registry.npmjs.org
 
-      - name: Install AWS CDK
-        run: npm install -g aws-cdk
+            - name: Install AWS CDK
+              run: npm install -g aws-cdk
 
-      - name: Print CDK version
-        run: cdk --version
+            - name: Print CDK version
+              run: cdk --version
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
-          mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-southeast-2
+                  mask-aws-account-id: true
+                  role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      - name: Set unique deployment environment type variable
-        run: |
-          DEPLOY_ENV=ci$(date +%s)
-          echo ::set-env name=DEPLOY_ENV::"$DEPLOY_ENV"
+            - name: Set unique deployment environment type variable
+              run: |
+                  DEPLOY_ENV=ci$(date +%s)
+                  echo ::set-env name=DEPLOY_ENV::"$DEPLOY_ENV"
 
-      - name: Deploy AWS stack for testing
-        run: |
-          cdk bootstrap aws://unknown-account/ap-southeast-2
-          cdk deploy --require-approval never geospatial-data-lake
-        working-directory: infra
+            - name: Deploy AWS stack for testing
+              run: |
+                  cdk bootstrap aws://unknown-account/ap-southeast-2
+                  cdk deploy --require-approval never geospatial-data-lake
+              working-directory: infra
 
-      - name: Run AWS infra tests
-        run: |
-          pytest infra/tests/
+            - name: Run AWS infra tests
+              run: |
+                  pytest infra/tests/
 
-      - name: Destroy AWS stack used for testing
-        run: |
-          cdk destroy --force geospatial-data-lake
-        working-directory: infra
+            - name: Destroy AWS stack used for testing
+              run: |
+                  cdk destroy --force geospatial-data-lake
+              working-directory: infra
 
 
-  deploy:
-    needs: [linter, test, test-infra]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'release'))
-    strategy:
-      matrix:
-        python: ["3.6"]
+    deploy:
+        needs: [linter, test, test-infra]
+        runs-on: ubuntu-latest
+        if: >
+            github.event_name == 'push'
+            && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'release'))
+        strategy:
+            matrix:
+                python: ['3.6']
 
-    steps:
-      - uses: actions/checkout@v2
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Use Python ${{ matrix.python }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python }}
+            - name: Use Python ${{ matrix.python }}
+              uses: actions/setup-python@v1
+              with:
+                  python-version: ${{ matrix.python }}
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r infra/requirements.txt
+            - name: Install Python dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements-dev.txt
+                  pip install -r infra/requirements.txt
 
-      - name: Use Node.js 12.x for CDK deployment
-        uses: actions/setup-node@v2.1.1
-        with:
-          node-version: "12.x"
-          registry-url: https://registry.npmjs.org
+            - name: Use Node.js 12.x for CDK deployment
+              uses: actions/setup-node@v2.1.1
+              with:
+                  node-version: 12.x
+                  registry-url: https://registry.npmjs.org
 
-      - name: Install AWS CDK
-        run: npm install -g aws-cdk
+            - name: Install AWS CDK
+              run: npm install -g aws-cdk
 
-      - name: Print CDK version
-        run: cdk --version
+            - name: Print CDK version
+              run: cdk --version
 
-      # NONPROD DEPLOYMENT
-      - name: (NonProd) Configure AWS credentials
-        if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
-          mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
+            # NONPROD DEPLOYMENT
+            - name: (NonProd) Configure AWS credentials
+              if: >
+                  github.ref == 'refs/heads/master'
+                  && github.repository == 'linz/geospatial-data-lake'
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-southeast-2
+                  mask-aws-account-id: true
+                  role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      - name: (NonProd) Deploy AWS stack
-        if: github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        run: |
-          cdk bootstrap aws://unknown-account/ap-southeast-2
-          DEPLOY_ENV=nonprod cdk deploy --require-approval never geospatial-data-lake
-        working-directory: infra
+            - name: (NonProd) Deploy AWS stack
+              if: >
+                  github.ref == 'refs/heads/master'
+                  && github.repository == 'linz/geospatial-data-lake'
+              run: |
+                  cdk bootstrap aws://unknown-account/ap-southeast-2
+                  DEPLOY_ENV=nonprod cdk deploy --require-approval never geospatial-data-lake
+              working-directory: infra
 
-      # PROD DEPLOYMENT
-      - name: (Prod) Configure AWS credentials
-        if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
-          mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
+            # PROD DEPLOYMENT
+            - name: (Prod) Configure AWS credentials
+              if: >
+                  startsWith(github.ref, 'release')
+                  && github.repository == 'linz/geospatial-data-lake'
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-southeast-2
+                  mask-aws-account-id: true
+                  role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
 
-      - name: (Prod) Deploy AWS stack
-        if: startsWith(github.ref, 'release') && github.repository == 'linz/geospatial-data-lake'
-        run: |
-          cdk bootstrap aws://unknown-account/ap-southeast-2
-          DEPLOY_ENV=prod cdk deploy --require-approval never geospatial-data-lake
-        working-directory: infra
+            - name: (Prod) Deploy AWS stack
+              if: >
+                  startsWith(github.ref, 'release')
+                  && github.repository == 'linz/geospatial-data-lake'
+              run: |
+                  cdk bootstrap aws://unknown-account/ap-southeast-2
+                  DEPLOY_ENV=prod cdk deploy --require-approval never geospatial-data-lake
+              working-directory: infra
