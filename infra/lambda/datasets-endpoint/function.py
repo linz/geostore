@@ -44,14 +44,15 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsiste
     if method == "POST":
         return post_method(event)
 
-    if method == "GET" and "id" in event["body"] and "type" in event["body"]:
-        return get_method_single(event)
+    if method == "GET":
+        if "id" in event["body"] and "type" in event["body"]:
+            return get_method_single(event)
 
-    if method == "GET" and ("title" in event["body"] or "owning_group" in event["body"]):
-        return get_method_filter(event)
+        if "title" in event["body"] or "owning_group" in event["body"]:
+            return get_method_filter(event)
 
-    if method == "GET" and event["body"] == {}:
-        return get_method_all()
+        if event["body"] == {}:
+            return get_method_all()
 
     if method == "PATCH":
         return patch_method(event)
