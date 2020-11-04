@@ -42,26 +42,26 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsiste
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
 
     if method == "POST":
-        return post_method(event)
+        return create_dataset(event)
 
     if method == "GET":
         if "id" in event["body"] and "type" in event["body"]:
-            return get_method_single(event)
+            return get_dataset_single(event)
 
         if "title" in event["body"] or "owning_group" in event["body"]:
-            return get_method_filter(event)
+            return get_dataset_filter(event)
 
         if event["body"] == {}:
-            return get_method_all()
+            return get_dataset_all()
 
     if method == "PATCH":
-        return patch_method(event)
+        return update_dataset(event)
 
     if method == "DELETE":
-        return delete_method(event)
+        return delete_dataset(event)
 
 
-def post_method(payload):
+def create_dataset(payload):
     """POST: Create Dataset."""
 
     BODY_SCHEMA = {
@@ -151,7 +151,7 @@ def post_method(payload):
     return {"statusCode": 201, "body": resp_body}
 
 
-def get_method_single(payload):
+def get_dataset_single(payload):
     """GET: Get single Dataset."""
 
     BODY_SCHEMA = {
@@ -213,7 +213,7 @@ def get_method_single(payload):
         }
 
 
-def get_method_filter(payload):  # pylint:disable=too-many-locals
+def get_dataset_filter(payload):  # pylint:disable=too-many-locals
     """GET: Get Datasets by filter."""
 
     BODY_SCHEMA = {
@@ -292,7 +292,7 @@ def get_method_filter(payload):  # pylint:disable=too-many-locals
     return {"statusCode": 200, "body": resp_body}
 
 
-def get_method_all():
+def get_dataset_all():
     """GET: Get all Datasets."""
 
     # multiple datasets query
@@ -324,7 +324,7 @@ def get_method_all():
     return {"statusCode": 200, "body": resp_body}
 
 
-def patch_method(payload):
+def update_dataset(payload):
     """PATCH: Update Dataset."""
 
     BODY_SCHEMA = {
@@ -431,7 +431,7 @@ def patch_method(payload):
     return {"statusCode": 200, "body": resp_body}
 
 
-def delete_method(payload):
+def delete_dataset(payload):
     """DELETE: Delete Dataset."""
 
     BODY_SCHEMA = {
