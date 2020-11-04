@@ -3,10 +3,9 @@ Dataset Lambda handler function.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import boto3
-from dateutil.tz import gettz
 from jsonschema import ValidationError, validate
 
 DYNAMODB = boto3.client("dynamodb")
@@ -93,8 +92,7 @@ def create_dataset(payload):
     for a in DS_ATTRIBUTES:
         attr[a] = payload["body"][a]
 
-    curr_time = datetime.utcnow()
-    attr["created_at"] = str(curr_time.replace(tzinfo=gettz("UTC")))
+    attr["created_at"] = str(datetime.now(timezone.utc))
 
     # make sure that requested type/title doesn't already exist in DB
     db_resp = DYNAMODB.query(
