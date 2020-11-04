@@ -78,8 +78,8 @@ def create_dataset(payload):
     }
 
     # request body validation
+    req_body = payload["body"]
     try:
-        req_body = payload["body"]
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
@@ -167,8 +167,8 @@ def get_dataset_single(payload):
     }
 
     # request body validation
+    req_body = payload["body"]
     try:
-        req_body = payload["body"]
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
@@ -232,8 +232,8 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
     }
 
     # request body validation
+    req_body = payload["body"]
     try:
-        req_body = payload["body"]
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
@@ -346,8 +346,8 @@ def update_dataset(payload):
     }
 
     # request body validation
+    req_body = payload["body"]
     try:
-        req_body = payload["body"]
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
@@ -447,8 +447,8 @@ def delete_dataset(payload):
     }
 
     # request body validation
+    req_body = payload["body"]
     try:
-        req_body = payload["body"]
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
         return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
