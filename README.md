@@ -95,7 +95,8 @@ $ pip install -r requirements-dev.txt
 * Install commit-msg git hook
 
 ```bash
-$ pre-commit install --hook-type commit-msg
+$ pre-commit install --hook-type=commit-msg --overwrite
+$ pre-commit install --hook-type=pre-commit --overwrite
 ```
 
 * Install automatic Pylint code checks for your editor or run it by hand

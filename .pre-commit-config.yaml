@@ -1,9 +1,51 @@
-# Configuration file for pre-commit (https://pre-commit.com/)
+---
+# Configuration file for pre-commit (https://pre-commit.com/).
+# Please run `pre-commit run --all-files` when adding or changing entries.
 
 repos:
--  repo: https://github.com/jorisroovers/gitlint
-   rev: v0.12.0
-   hooks:
-   -  id: gitlint
-      stages: [commit-msg]
+    - repo: local
+      hooks:
+          - id: black
+            name: black
+            entry: black
+            args: [--check, --diff]
+            language: system
+            stages: [commit]
+            types: [python]
 
+          - id: gitlint
+            name: gitlint
+            entry: gitlint
+            args: ["--msg-filename"]
+            language: system
+            stages: [commit-msg]
+
+          - id: isort
+            name: isort
+            entry: isort
+            args: [--check, --diff]
+            language: system
+            stages: [commit]
+            types: [python]
+
+          - id: pylint
+            name: pylint
+            entry: pylint
+            language: system
+            stages: [commit]
+            types: [python]
+
+          - id: yamlfmt
+            name: yamlfmt
+            entry: yamlfmt
+            language: system
+            stages: [commit]
+            types: [yaml]
+
+          - id: yamllint
+            name: yamllint
+            entry: yamllint
+            args: [--format=parsable, --strict]
+            language: system
+            stages: [commit]
+            types: [yaml]

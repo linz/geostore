@@ -3,6 +3,6 @@ disable =
     bad-continuation,
     invalid-name
 [FORMAT]
-max-line-length=127
+max-line-length=100
 [MISCELLANEOUS]
 notes=FIXME,XXX
