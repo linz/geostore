@@ -86,7 +86,6 @@ def create_dataset(payload):
 
     # get PKs
     pk = {}
-    pk["id"] = uuid.uuid4().hex[:6]
     pk["type"] = payload["body"]["type"]
 
     # get attributes
@@ -123,6 +122,8 @@ def create_dataset(payload):
     # create Dataset record in DB
     while True:
         try:
+            pk["id"] = uuid.uuid4().hex[:6]  # must be defined in try block
+
             item_attr = {}
             for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
                 item_attr[a] = {"S": attr[a]}
