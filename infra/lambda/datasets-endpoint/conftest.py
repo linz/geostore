@@ -82,7 +82,7 @@ def db_prepare(table_name="datasets"):
 
     # only retrieve the keys for each item in the table (minimize data transfer)
     projection_expression = ", ".join("#" + key for key in key_names)
-    expression_attribute_names = {"#" + key: key for key in key_names}
+    expression_attribute_names = {f"#{key}": key for key in key_names}
 
     counter = 0
     page = table.scan(
