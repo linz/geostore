@@ -194,7 +194,7 @@ def get_dataset_single(payload):
         ConsistentRead=True,
     )
 
-    if len(db_resp["Items"]) > 0:  # pylint:disable=no-else-return
+    if db_resp["Items"]:  # pylint:disable=no-else-return
         resp_body = {}
         resp_body["id"] = pk["id"]
         resp_body["type"] = pk["type"]
