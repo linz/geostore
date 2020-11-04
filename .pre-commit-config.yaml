@@ -1,5 +1,6 @@
 ---
-# Configuration file for pre-commit (https://pre-commit.com/)
+# Configuration file for pre-commit (https://pre-commit.com/).
+# Please run `pre-commit run --all-files` when adding or changing entries.
 
 repos:
     - repo: local
