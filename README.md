@@ -49,20 +49,6 @@ $ npm install -g aws-cdk
 ```
 
 
-## Python CLI Installation
-* Install Python dependencies
-
-```bash
-$ pip install -r requirements.txt
-```
-
-* Install Data Lake
-
-```bash
-$ python ./setup.py install
-```
-
-
 ## AWS Infrastructure Deployment (CDK Stack)
 * Install Python CDK dependencies
 
