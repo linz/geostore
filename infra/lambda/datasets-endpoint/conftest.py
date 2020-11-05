@@ -81,7 +81,7 @@ def db_prepare(table_name="datasets"):
     key_names = [key["AttributeName"] for key in table.key_schema]
 
     # only retrieve the keys for each item in the table (minimize data transfer)
-    projection_expression = ", ".join("#" + key for key in key_names)
+    projection_expression = ", ".join(f"#{key}" for key in key_names)
     expression_attribute_names = {f"#{key}": key for key in key_names}
 
     counter = 0
