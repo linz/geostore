@@ -41,10 +41,10 @@ def success_response(code, body):
     return {"statusCode": code, "body": body}
 
 
-# fmt: off
-def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsistent-return-statements,too-many-return-statements
+def lambda_handler(  # pylint:disable=unused-argument,inconsistent-return-statements,too-many-return-statements
+    event, context
+):
     """Main Lambda entry point."""
-# fmt: on
 
     # request validation
     try:
@@ -121,7 +121,9 @@ def create_dataset(payload):
         Select="COUNT",
     )
     if int(db_resp["Count"]) > 0:
-        return error_response(409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists")
+        return error_response(
+            409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists"
+        )
 
     # create Dataset record in DB
     item_attr = {a: {"S": attr[a]} for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT}
@@ -358,7 +360,9 @@ def update_dataset(payload):
         ConsistentRead=False,
     )
     if int(db_resp["Count"]) > 0:
-        return error_response(409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists")
+        return error_response(
+            409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists"
+        )
 
     # update Dataset record in DB
     expression_attribute_names = {}
