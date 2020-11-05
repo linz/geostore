@@ -18,7 +18,7 @@ def test_should_fail_if_request_not_containing_method():
     body = {}
 
     resp = function.lambda_handler({"body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 400
     assert resp["body"]["message"] == "Bad Request: 'httpMethod' is a required property."
@@ -30,7 +30,7 @@ def test_should_fail_if_request_not_containing_body():
     method = "POST"
 
     resp = function.lambda_handler({"httpMethod": method}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 400
     assert resp["body"]["message"] == "Bad Request: 'body' is a required property."
@@ -46,7 +46,7 @@ def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 201
     assert resp["body"]["type"] == body["type"]
@@ -64,7 +64,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 400
     assert resp["body"]["message"] == "Bad Request: 'type' is a required property."
@@ -80,7 +80,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 400
     assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", resp["body"]["message"])
@@ -101,7 +101,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 409
     assert (
@@ -119,7 +119,7 @@ def test_should_return_single_dateset(db_prepare):  # pylint:disable=unused-argu
     body["type"] = "RASTER"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 200
     assert resp["body"]["id"] == "111abc"
@@ -134,7 +134,7 @@ def test_should_return_all_datesets(db_prepare):  # pylint:disable=unused-argume
     body = {}
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 200
     assert len(resp["body"]) == 2
@@ -157,7 +157,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     body["title"] = "Dataset ABC"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 200
     assert len(resp["body"]) == 1
@@ -179,7 +179,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 200
     assert len(resp["body"]) == 2
@@ -203,7 +203,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 400
     assert re.search("^Bad Request: .* has too many properties", resp["body"]["message"])
@@ -219,7 +219,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     body["type"] = "RASTER"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 404
     assert (
@@ -239,7 +239,7 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 200
     assert resp["body"]["title"] == "New Dataset ABC"
@@ -261,7 +261,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 409
     assert (
@@ -283,7 +283,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 404
     assert (
@@ -301,7 +301,7 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     body["type"] = "RASTER"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 204
     assert resp["body"] == {}
@@ -321,7 +321,7 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
-    logger.info(resp)
+    logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 404
     assert (

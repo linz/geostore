@@ -18,7 +18,7 @@ def db_prepare(table_name="datasets"):
     finished.
     """
 
-    logger.info("Running DB Setup")
+    logger.debug("Running DB Setup")
 
     DYNAMODB = boto3.client("dynamodb")
     DYNAMODB.batch_write_item(
@@ -72,7 +72,7 @@ def db_prepare(table_name="datasets"):
 
     yield  # teardown
 
-    logger.info("Running DB Teardown")
+    logger.debug("Running DB Teardown")
 
     DYNAMODB = boto3.resource("dynamodb")
     table = DYNAMODB.Table(table_name)
