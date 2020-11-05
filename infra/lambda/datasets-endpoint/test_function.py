@@ -110,7 +110,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     )
 
 
-def test_should_return_single_dateset(db_prepare):  # pylint:disable=unused-argument
+def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving single Dataset using GET method."""
 
     method = "GET"
@@ -127,7 +127,7 @@ def test_should_return_single_dateset(db_prepare):  # pylint:disable=unused-argu
     assert resp["body"]["title"] == "Dataset ABC"
 
 
-def test_should_return_all_datesets(db_prepare):  # pylint:disable=unused-argument
+def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving all Datasets using GET method."""
 
     method = "GET"
