@@ -49,6 +49,7 @@ def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     logger.debug("Response: %s", resp)
 
     assert resp["statusCode"] == 201
+    assert len(resp["body"]["id"]) == 32  # 32 characters long UUID
     assert resp["body"]["type"] == body["type"]
     assert resp["body"]["title"] == body["title"]
     assert resp["body"]["owning_group"] == body["owning_group"]
