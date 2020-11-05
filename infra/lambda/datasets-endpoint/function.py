@@ -41,8 +41,8 @@ def success_response(code, body):
     return {"statusCode": code, "body": body}
 
 
-def lambda_handler(  # pylint:disable=unused-argument,inconsistent-return-statements,too-many-return-statements
-    event, context
+def lambda_handler(  # pylint:disable=inconsistent-return-statements,too-many-return-statements
+    event, _context
 ):
     """Main Lambda entry point."""
 
