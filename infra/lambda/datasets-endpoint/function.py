@@ -195,7 +195,7 @@ def get_dataset_single(payload):
         resp_body["type"] = pk["type"]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_body[a] = list(db_resp["Items"][0][a].values())[0]
+            resp_body[a] = db_resp["Items"][0][a]["S"]
 
         return success_response(200, resp_body)
     else:
@@ -264,11 +264,11 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
     resp_body = []
     for item in db_resp["Items"]:
         resp_item = {}
-        resp_item["id"] = list(item["pk"].values())[0].split("#")[1]
-        resp_item["type"] = list(item["sk"].values())[0].split("#")[1]
+        resp_item["id"] = item["pk"]["S"].split("#")[1]
+        resp_item["type"] = item["sk"]["S"].split("#")[1]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_item[a] = list(item[a].values())[0]
+            resp_item[a] = item[a]["S"]
 
         resp_body.append(resp_item)
 
@@ -296,11 +296,11 @@ def get_dataset_all():
     resp_body = []
     for item in db_resp["Items"]:
         resp_item = {}
-        resp_item["id"] = list(item["pk"].values())[0].split("#")[1]
-        resp_item["type"] = list(item["sk"].values())[0].split("#")[1]
+        resp_item["id"] = item["pk"]["S"].split("#")[1]
+        resp_item["type"] = item["sk"]["S"].split("#")[1]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_item[a] = list(item[a].values())[0]
+            resp_item[a] = item[a]["S"]
 
         resp_body.append(resp_item)
 
@@ -398,7 +398,7 @@ def update_dataset(payload):
     resp_body["type"] = pk["type"]
 
     for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-        resp_body[a] = list(db_resp["Attributes"][a].values())[0]
+        resp_body[a] = db_resp["Attributes"][a]["S"]
 
     return success_response(200, resp_body)
 
