@@ -4,6 +4,7 @@ Dataset Lambda handler function.
 
 import uuid
 from datetime import datetime, timezone
+from http.client import responses as http_responses
 
 import boto3
 from jsonschema import ValidationError, validate
@@ -28,6 +29,18 @@ REQUEST_SCHEMA = {
 # TODO: don't assume that all Dataset attributes are strings ("S")
 
 
+def error_response(code, message):
+    """Return error response content as string."""
+
+    return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}."}}
+
+
+def success_response(code, body):
+    """Return success response content as string."""
+
+    return {"statusCode": code, "body": body}
+
+
 # fmt: off
 def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsistent-return-statements,too-many-return-statements
     """Main Lambda entry point."""
@@ -38,7 +51,7 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument,inconsiste
         validate(event, REQUEST_SCHEMA)
         method = event["httpMethod"]
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     if method == "POST":
         return create_dataset(event)
@@ -81,7 +94,7 @@ def create_dataset(payload):
     try:
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     # get PKs
     pk = {}
@@ -111,12 +124,7 @@ def create_dataset(payload):
         Select="COUNT",
     )
     if int(db_resp["Count"]) > 0:
-        return {
-            "statusCode": 409,
-            "body": {
-                "message": f"Conflict: dataset '{attr['title']}' of type '{pk['type']}' already exists."
-            },
-        }
+        return error_response(409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists")
 
     # create Dataset record in DB
     item_attr = {}
@@ -140,7 +148,7 @@ def create_dataset(payload):
     for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
         resp_body[a] = attr[a]
 
-    return {"statusCode": 201, "body": resp_body}
+    return success_response(201, resp_body)
 
 
 def get_dataset_single(payload):
@@ -163,7 +171,7 @@ def get_dataset_single(payload):
     try:
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     # get PKs
     pk = {}
@@ -195,14 +203,9 @@ def get_dataset_single(payload):
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
             resp_body[a] = list(db_resp["Items"][0][a].values())[0]
 
-        return {"statusCode": 200, "body": resp_body}
+        return success_response(200, resp_body)
     else:
-        return {
-            "statusCode": 404,
-            "body": {
-                "message": f"Not Found: dataset '{pk['id']}' of type '{pk['type']}' does not exist."
-            },
-        }
+        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
 
 
 def get_dataset_filter(payload):  # pylint:disable=too-many-locals
@@ -228,7 +231,7 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
     try:
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     # get PKs
     pk = {}
@@ -281,7 +284,7 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
 
         resp_body.append(item)
 
-    return {"statusCode": 200, "body": resp_body}
+    return success_response(200, resp_body)
 
 
 def get_dataset_all():
@@ -313,7 +316,7 @@ def get_dataset_all():
 
         resp_body.append(item)
 
-    return {"statusCode": 200, "body": resp_body}
+    return success_response(200, resp_body)
 
 
 def update_dataset(payload):
@@ -342,7 +345,7 @@ def update_dataset(payload):
     try:
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     # get PKs
     pk = {}
@@ -372,12 +375,7 @@ def update_dataset(payload):
         ConsistentRead=False,
     )
     if int(db_resp["Count"]) > 0:
-        return {
-            "statusCode": 409,
-            "body": {
-                "message": f"Conflict: dataset '{attr['title']}' of type '{pk['type']}' already exists."
-            },
-        }
+        return error_response(409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists")
 
     # update Dataset record in DB
     expression_attribute_names = {}
@@ -406,12 +404,7 @@ def update_dataset(payload):
         )
         # TODO: check if DB request was successful
     except DYNAMODB.exceptions.ConditionalCheckFailedException:
-        return {
-            "statusCode": 404,
-            "body": {
-                "message": f"Not Found: dataset '{pk['id']}' of type '{pk['type']}' does not exist."
-            },
-        }
+        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
 
     resp_body = {}
     resp_body["id"] = pk["id"]
@@ -420,7 +413,7 @@ def update_dataset(payload):
     for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
         resp_body[a] = list(db_resp["Attributes"][a].values())[0]
 
-    return {"statusCode": 200, "body": resp_body}
+    return success_response(200, resp_body)
 
 
 def delete_dataset(payload):
@@ -443,7 +436,7 @@ def delete_dataset(payload):
     try:
         validate(req_body, BODY_SCHEMA)
     except ValidationError as err:
-        return {"statusCode": 400, "body": {"message": f"Bad Request: {err.message}."}}
+        return error_response(400, err.message)
 
     # get PKs
     pk = {}
@@ -463,13 +456,7 @@ def delete_dataset(payload):
         )
         # TODO: check if DB request was successful
     except DYNAMODB.exceptions.ConditionalCheckFailedException:
-        return {
-            "statusCode": 404,
-            "body": {
-                "message": f"Not Found: dataset '{pk['id']}' of type '{pk['type']}' does not exist."
-            },
-        }
+        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
 
     resp_body = {}
-
-    return {"statusCode": 204, "body": resp_body}
+    return success_response(204, resp_body)
