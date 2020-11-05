@@ -10,6 +10,7 @@ import boto3
 from jsonschema import ValidationError, validate
 
 DYNAMODB = boto3.client("dynamodb")
+boto3.resource("dynamodb")
 
 DS_PRIMARY_KEYS = ("id", "type")
 DS_ATTRIBUTES = ("title", "owning_group")
@@ -189,13 +190,17 @@ def get_dataset_single(payload):
         ConsistentRead=True,
     )
 
+    deserializer = boto3.dynamodb.types.TypeDeserializer()
+
     if db_resp["Items"]:  # pylint:disable=no-else-return
+        itemdict = {k: deserializer.deserialize(v) for k, v in db_resp["Items"][0].items()}
+
         resp_body = {}
-        resp_body["id"] = pk["id"]
-        resp_body["type"] = pk["type"]
+        resp_body["id"] = itemdict["pk"].split("#")[1]
+        resp_body["type"] = itemdict["sk"].split("#")[1]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_body[a] = db_resp["Items"][0][a]["S"]
+            resp_body[a] = itemdict[a]
 
         return success_response(200, resp_body)
     else:
@@ -261,14 +266,18 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
         ConsistentRead=False,
     )
 
+    deserializer = boto3.dynamodb.types.TypeDeserializer()
+
     resp_body = []
     for item in db_resp["Items"]:
+        itemdict = {k: deserializer.deserialize(v) for k, v in item.items()}
+
         resp_item = {}
-        resp_item["id"] = item["pk"]["S"].split("#")[1]
-        resp_item["type"] = item["sk"]["S"].split("#")[1]
+        resp_item["id"] = itemdict["pk"].split("#")[1]
+        resp_item["type"] = itemdict["sk"].split("#")[1]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_item[a] = item[a]["S"]
+            resp_item[a] = itemdict[a]
 
         resp_body.append(resp_item)
 
@@ -293,11 +302,15 @@ def get_dataset_all():
         Select="ALL_ATTRIBUTES",
     )
 
+    deserializer = boto3.dynamodb.types.TypeDeserializer()
+
     resp_body = []
     for item in db_resp["Items"]:
+        itemdict = {k: deserializer.deserialize(v) for k, v in item.items()}
+
         resp_item = {}
-        resp_item["id"] = item["pk"]["S"].split("#")[1]
-        resp_item["type"] = item["sk"]["S"].split("#")[1]
+        resp_item["id"] = itemdict["pk"].split("#")[1]
+        resp_item["type"] = itemdict["sk"].split("#")[1]
 
         for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
             resp_item[a] = item[a]["S"]
