@@ -10,6 +10,8 @@ import pytest
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+DYNAMODB = boto3.resource("dynamodb")
+
 
 @pytest.fixture()
 def db_prepare(table_name="datasets"):
@@ -20,49 +22,28 @@ def db_prepare(table_name="datasets"):
 
     logger.debug("Running DB Setup")
 
-    DYNAMODB = boto3.client("dynamodb")
     DYNAMODB.batch_write_item(
         RequestItems={
             table_name: [
                 {
                     "PutRequest": {
                         "Item": {
-                            "pk": {
-                                "S": "DATASET#111abc",
-                            },
-                            "sk": {
-                                "S": "TYPE#RASTER",
-                            },
-                            "title": {
-                                "S": "Dataset ABC",
-                            },
-                            "owning_group": {
-                                "S": "A_ABC_XYZ",
-                            },
-                            "created_at": {
-                                "S": "2020-01-01 01:01:01.000000+00:00",
-                            },
+                            "pk": "DATASET#111abc",
+                            "sk": "TYPE#RASTER",
+                            "title": "Dataset ABC",
+                            "owning_group": "A_ABC_XYZ",
+                            "created_at": "2020-01-01 01:01:01.000000+00:00",
                         },
                     },
                 },
                 {
                     "PutRequest": {
                         "Item": {
-                            "pk": {
-                                "S": "DATASET#222xyz",
-                            },
-                            "sk": {
-                                "S": "TYPE#RASTER",
-                            },
-                            "title": {
-                                "S": "Dataset XYZ",
-                            },
-                            "owning_group": {
-                                "S": "A_ABC_XYZ",
-                            },
-                            "created_at": {
-                                "S": "2020-02-01 01:01:01.000000+00:00",
-                            },
+                            "pk": "DATASET#222xyz",
+                            "sk": "TYPE#RASTER",
+                            "title": "Dataset XYZ",
+                            "owning_group": "A_ABC_XYZ",
+                            "created_at": "2020-02-01 01:01:01.000000+00:00",
                         },
                     },
                 },
@@ -74,7 +55,6 @@ def db_prepare(table_name="datasets"):
 
     logger.debug("Running DB Teardown")
 
-    DYNAMODB = boto3.resource("dynamodb")
     table = DYNAMODB.Table(table_name)
 
     # get the table keys
