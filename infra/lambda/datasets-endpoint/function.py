@@ -102,10 +102,7 @@ def create_dataset(payload):
     pk["type"] = payload["body"]["type"]
 
     # get attributes
-    attr = {}
-    for a in DS_ATTRIBUTES:
-        attr[a] = payload["body"][a]
-
+    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES}
     attr["created_at"] = str(datetime.now(timezone.utc))
 
     # make sure that requested type/title doesn't already exist in DB
@@ -127,9 +124,7 @@ def create_dataset(payload):
         return error_response(409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists")
 
     # create Dataset record in DB
-    item_attr = {}
-    for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-        item_attr[a] = {"S": attr[a]}
+    item_attr = {a: {"S": attr[a]} for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT}
 
     db_resp = DYNAMODB.put_item(
         TableName="datasets",
@@ -174,10 +169,7 @@ def get_dataset_single(payload):
         return error_response(400, err.message)
 
     # get PKs
-    pk = {}
-    for k in DS_PRIMARY_KEYS:
-        if k in payload["body"]:
-            pk[k] = payload["body"][k]
+    pk = {key: payload["body"][key] for key in DS_PRIMARY_KEYS if key in payload["body"]}
 
     # single dataset query (if id and type specified)
     db_resp = DYNAMODB.query(
@@ -234,16 +226,10 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
         return error_response(400, err.message)
 
     # get PKs
-    pk = {}
-    for k in DS_PRIMARY_KEYS:
-        if k in payload["body"]:
-            pk[k] = payload["body"][k]
+    pk = {key: payload["body"][key] for key in DS_PRIMARY_KEYS if key in payload["body"]}
 
     # get attributes
-    attr = {}
-    for a in DS_ATTRIBUTES:
-        if a in payload["body"]:
-            attr[a] = payload["body"][a]
+    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES if a in payload["body"]}
 
     # dataset query by filter
     if "title" in attr:
@@ -353,10 +339,7 @@ def update_dataset(payload):
     pk["type"] = payload["body"]["type"]
 
     # get attributes
-    attr = {}
-    for a in DS_ATTRIBUTES:
-        if a in payload["body"].keys():
-            attr[a] = payload["body"][a]
+    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES if a in payload["body"]}
 
     # make sure that requested type/title doesn't already exist in DB
     db_resp = DYNAMODB.query(
