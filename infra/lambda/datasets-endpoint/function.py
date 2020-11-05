@@ -85,6 +85,7 @@ def create_dataset(payload):
 
     # get PKs
     pk = {}
+    pk["id"] = uuid.uuid1().hex
     pk["type"] = payload["body"]["type"]
 
     # get attributes
@@ -118,27 +119,19 @@ def create_dataset(payload):
         }
 
     # create Dataset record in DB
-    while True:
-        try:
-            pk["id"] = uuid.uuid4().hex[:6]  # must be defined in try block
+    item_attr = {}
+    for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
+        item_attr[a] = {"S": attr[a]}
 
-            item_attr = {}
-            for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-                item_attr[a] = {"S": attr[a]}
-
-            db_resp = DYNAMODB.put_item(
-                TableName="datasets",
-                Item={
-                    "pk": {"S": f"DATASET#{pk['id']}"},
-                    "sk": {"S": f"TYPE#{pk['type']}"},
-                    **item_attr,
-                },
-                ConditionExpression="attribute_not_exists(pk)",
-            )
-            # TODO: check if DB request was successful
-            break
-        except DYNAMODB.exceptions.ConditionalCheckFailedException:
-            pass  # try once again with different generated id
+    db_resp = DYNAMODB.put_item(
+        TableName="datasets",
+        Item={
+            "pk": {"S": f"DATASET#{pk['id']}"},
+            "sk": {"S": f"TYPE#{pk['type']}"},
+            **item_attr,
+        },
+    )
+    # TODO: check if DB request was successful
 
     resp_body = {}
     resp_body["id"] = pk["id"]
