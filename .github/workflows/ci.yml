@@ -42,7 +42,7 @@ jobs:
 
             - name: Check Python code quality
               run: |
-                  pylint infra/
+                  PYTHONPATH=infra/lambda/endpoints/datasets pylint infra/
 
             - name: Check Python code import statements
               run: |
