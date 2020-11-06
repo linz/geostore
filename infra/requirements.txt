@@ -4,4 +4,3 @@ aws-cdk.aws-dynamodb
 aws-cdk.aws-lambda
 awscli
 jsonschema
-pynamodb
