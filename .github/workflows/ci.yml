@@ -24,7 +24,7 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install -r requirements-dev.txt
                   pip install -r infra/requirements.txt
-                  pip install -r infra/lambda/endpoints/datasets/requirements.txt
+                  pip install -r infra/endpoints/datasets/requirements.txt
 
             - name: Check last commit message
               if: github.event_name == 'push'
@@ -43,7 +43,7 @@ jobs:
 
             - name: Check Python code quality
               run: |
-                  PYTHONPATH=infra/lambda/endpoints/datasets pylint infra/
+                  pylint infra/
 
             - name: Check Python code import statements
               run: |
@@ -135,7 +135,6 @@ jobs:
             - name: Run AWS infra tests
               run: |
                   pytest infra/tests/
-                  pytest infra/lambda/
 
             - name: Destroy AWS stack used for testing
               run: |
