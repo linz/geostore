@@ -1,20 +1,12 @@
 """
-Dataset Lambda handler function.
+Dataset endpoint Lambda function.
 """
 
-import uuid
-from datetime import datetime, timezone
 from http.client import responses as http_responses
 
-import boto3
+from datasets_model import DatasetModel
 from jsonschema import ValidationError, validate
-
-TABLE_NAME = "datasets"
-DS_PRIMARY_KEYS = ("id", "type")
-DS_ATTRIBUTES = ("title", "owning_group")
-DS_ATTRIBUTES_EXT = ("created_at",)
-
-DYNAMODB = boto3.resource("dynamodb")
+from pynamodb.exceptions import DoesNotExist
 
 REQUEST_SCHEMA = {
     "type": "object",
@@ -96,55 +88,30 @@ def create_dataset(payload):
     except ValidationError as err:
         return error_response(400, err.message)
 
-    # get PKs
-    pk = {}
-    pk["id"] = uuid.uuid1().hex
-    pk["type"] = payload["body"]["type"]
-
-    # get attributes
-    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES}
-    attr["created_at"] = str(datetime.now(timezone.utc))
-
-    table = DYNAMODB.Table(TABLE_NAME)
-
-    # make sure that requested type/title doesn't already exist in DB
-    db_resp = table.query(
-        IndexName="datasets_title",
-        ExpressionAttributeNames={
-            "#type": "sk",
-            "#title": "title",
-        },
-        ExpressionAttributeValues={
-            ":type": f"TYPE#{pk['type']}",
-            ":title": f"{attr['title']}",
-        },
-        KeyConditionExpression="#type = :type AND #title = :title",
-        Select="COUNT",
-        Limit=1,
-    )
-    if int(db_resp["Count"]) > 0:
+    # check for duplicate type/title
+    if DatasetModel.datasets_tile_idx.count(
+        hash_key=f"TYPE#{req_body['type']}",
+        range_key_condition=(DatasetModel.title == f"{req_body['title']}"),
+    ):
         return error_response(
-            409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists"
+            409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"
         )
 
-    # create Dataset record in DB
-    item_attr = {a: attr[a] for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT}
-
-    db_resp = table.put_item(
-        Item={
-            "pk": f"DATASET#{pk['id']}",
-            "sk": f"TYPE#{pk['type']}",
-            **item_attr,
-        },
+    # create dataset
+    dataset = DatasetModel(
+        type=f"TYPE#{req_body['type']}",
+        title=req_body["title"],
+        owning_group=req_body["owning_group"],
     )
-    # TODO: check if DB request was successful
+    dataset.save()
+    dataset.refresh(consistent_read=True)
 
+    # return response
     resp_body = {}
-    resp_body["id"] = pk["id"]
-    resp_body["type"] = pk["type"]
+    resp_body = dict(dataset)
 
-    for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-        resp_body[a] = attr[a]
+    resp_body["id"] = dataset.dataset_id
+    resp_body["type"] = dataset.dataset_type
 
     return success_response(201, resp_body)
 
@@ -171,42 +138,29 @@ def get_dataset_single(payload):
     except ValidationError as err:
         return error_response(400, err.message)
 
-    # get PKs
-    pk = {key: payload["body"][key] for key in DS_PRIMARY_KEYS if key in payload["body"]}
+    # get dataset
+    try:
+        dataset = DatasetModel.get(
+            hash_key=f"DATASET#{req_body['id']}",
+            range_key=f"TYPE#{req_body['type']}",
+            consistent_read=True,
+        )
+    except DoesNotExist:
+        return error_response(
+            404, f"dataset '{req_body['id']}' of type '{req_body['type']}' does not exist"
+        )
 
-    table = DYNAMODB.Table(TABLE_NAME)
+    # return response
+    resp_body = {}
+    resp_body = dict(dataset)
 
-    # single dataset query (if id and type specified)
-    db_resp = table.query(
-        ExpressionAttributeNames={
-            "#id": "pk",
-            "#type": "sk",
-        },
-        ExpressionAttributeValues={
-            ":id": f"DATASET#{pk['id']}",
-            ":type": f"TYPE#{pk['type']}",
-        },
-        KeyConditionExpression="#id = :id AND #type = :type",
-        Select="ALL_ATTRIBUTES",
-        ConsistentRead=True,
-    )
+    resp_body["id"] = dataset.dataset_id
+    resp_body["type"] = dataset.dataset_type
 
-    if db_resp["Items"]:  # pylint:disable=no-else-return
-        itemdict = db_resp["Items"][0]
-
-        resp_body = {}
-        resp_body["id"] = itemdict["pk"].split("#")[1]
-        resp_body["type"] = itemdict["sk"].split("#")[1]
-
-        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_body[a] = itemdict[a]
-
-        return success_response(200, resp_body)
-    else:
-        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
+    return success_response(200, resp_body)
 
 
-def get_dataset_filter(payload):  # pylint:disable=too-many-locals
+def get_dataset_filter(payload):
     """GET: Get Datasets by filter."""
 
     BODY_SCHEMA = {
@@ -231,51 +185,25 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
     except ValidationError as err:
         return error_response(400, err.message)
 
-    # get PKs
-    pk = {key: payload["body"][key] for key in DS_PRIMARY_KEYS if key in payload["body"]}
-
-    # get attributes
-    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES if a in payload["body"]}
-
     # dataset query by filter
-    if "title" in attr:
-        index_name = "datasets_title"
+    if "title" in req_body:
+        datasets = DatasetModel.datasets_tile_idx.query(
+            hash_key=f"TYPE#{req_body['type']}",
+            range_key_condition=DatasetModel.title == f"{req_body['title']}",
+        )
 
-        expression_attribute_names = {"#title": "title"}
-        expression_attribute_values = {":title": attr["title"]}
-        key_condition_expression = "#type = :type AND #title = :title"
+    if "owning_group" in req_body:
+        datasets = DatasetModel.datasets_owning_group_idx.query(
+            hash_key=f"TYPE#{req_body['type']}",
+            range_key_condition=DatasetModel.owning_group == f"{req_body['owning_group']}",
+        )
 
-    if "owning_group" in attr:
-        index_name = "datasets_owning_group"
-
-        expression_attribute_names = {"#owning_group": "owning_group"}
-        expression_attribute_values = {":owning_group": attr["owning_group"]}
-        key_condition_expression = "#type = :type AND #owning_group = :owning_group"
-
-    table = DYNAMODB.Table(TABLE_NAME)
-
-    db_resp = table.query(
-        IndexName=index_name,
-        ExpressionAttributeNames={"#type": "sk", **expression_attribute_names},
-        ExpressionAttributeValues={
-            ":type": f"TYPE#{pk['type']}",
-            **expression_attribute_values,
-        },
-        KeyConditionExpression=key_condition_expression,
-        Select="ALL_ATTRIBUTES",
-        ConsistentRead=False,
-    )
-
+    # return response
     resp_body = []
-    for item in db_resp["Items"]:
-
-        resp_item = {}
-        resp_item["id"] = item["pk"].split("#")[1]
-        resp_item["type"] = item["sk"].split("#")[1]
-
-        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_item[a] = item[a]
-
+    for dataset in datasets:
+        resp_item = dict(dataset)
+        resp_item["id"] = dataset.dataset_id
+        resp_item["type"] = dataset.dataset_type
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)
@@ -284,32 +212,18 @@ def get_dataset_filter(payload):  # pylint:disable=too-many-locals
 def get_dataset_all():
     """GET: Get all Datasets."""
 
-    table = DYNAMODB.Table(TABLE_NAME)
-
-    # multiple datasets query
-    db_resp = table.scan(
-        ExpressionAttributeNames={
-            "#id": "pk",
-            "#type": "sk",
-        },
-        ExpressionAttributeValues={
-            ":id": "DATASET#",
-            ":type": "TYPE#",
-        },
-        FilterExpression="begins_with(#id, :id) and begins_with(#type, :type)",
-        Select="ALL_ATTRIBUTES",
+    # get all datasets
+    datasets = DatasetModel.scan(
+        filter_condition=DatasetModel.id.startswith("DATASET#")
+        & DatasetModel.type.startswith("TYPE#")
     )
 
+    # return response
     resp_body = []
-    for item in db_resp["Items"]:
-
-        resp_item = {}
-        resp_item["id"] = item["pk"].split("#")[1]
-        resp_item["type"] = item["sk"].split("#")[1]
-
-        for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-            resp_item[a] = item[a]
-
+    for dataset in datasets:
+        resp_item = dict(dataset)
+        resp_item["id"] = dataset.dataset_id
+        resp_item["type"] = dataset.dataset_type
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)
@@ -343,70 +257,42 @@ def update_dataset(payload):
     except ValidationError as err:
         return error_response(400, err.message)
 
-    # get PKs
-    pk = {}
-    pk["id"] = payload["body"]["id"]
-    pk["type"] = payload["body"]["type"]
-
-    # get attributes
-    attr = {a: payload["body"][a] for a in DS_ATTRIBUTES if a in payload["body"]}
-
-    table = DYNAMODB.Table(TABLE_NAME)
-
-    # make sure that requested type/title doesn't already exist in DB
-    db_resp = table.query(
-        IndexName="datasets_title",
-        ExpressionAttributeNames={
-            "#type": "sk",
-            "#title": "title",
-        },
-        ExpressionAttributeValues={
-            ":type": f"TYPE#{pk['type']}",
-            ":title": f"{attr['title']}",
-        },
-        KeyConditionExpression="#title = :title AND #type = :type",
-        Select="COUNT",
-        ConsistentRead=False,
-    )
-    if int(db_resp["Count"]) > 0:
+    # check for duplicate type/title
+    if DatasetModel.datasets_tile_idx.count(
+        hash_key=f"TYPE#{req_body['type']}",
+        range_key_condition=(DatasetModel.title == f"{req_body['title']}"),
+    ):
         return error_response(
-            409, f"dataset '{attr['title']}' of type '{pk['type']}' already exists"
+            409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"
         )
 
-    # update Dataset record in DB
-    expression_attribute_names = {}
-    for a in attr:
-        expression_attribute_names[f"#{a}"] = a
-
-    expression_attribute_values = {}
-    for a in attr:
-        expression_attribute_values[f":{a}"] = attr[a]
-
-    update_expression = "SET "
-    update_expression += ", ".join([f"#{a} = :{a}" for a in attr])
-
+    # get dataset to update
     try:
-        db_resp = table.update_item(
-            Key={
-                "pk": f"DATASET#{pk['id']}",
-                "sk": f"TYPE#{pk['type']}",
-            },
-            ExpressionAttributeNames=expression_attribute_names,
-            ExpressionAttributeValues=expression_attribute_values,
-            UpdateExpression=update_expression,
-            ConditionExpression="attribute_exists(pk)",
-            ReturnValues="ALL_NEW",
+        dataset = DatasetModel.get(
+            hash_key=f"DATASET#{req_body['id']}",
+            range_key=f"TYPE#{req_body['type']}",
+            consistent_read=True,
         )
-        # TODO: check if DB request was successful
-    except DYNAMODB.meta.client.exceptions.ConditionalCheckFailedException:
-        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
+    except DoesNotExist:
+        return error_response(
+            404, f"dataset '{req_body['id']}' of type '{req_body['type']}' does not exist"
+        )
 
+    # update dataset
+    for attr in DatasetModel.get_attributes():
+        if attr not in ("id", "type"):
+            if attr in req_body:
+                setattr(dataset, attr, req_body[attr])
+
+    dataset.save()
+    dataset.refresh(consistent_read=True)
+
+    # return response
     resp_body = {}
-    resp_body["id"] = pk["id"]
-    resp_body["type"] = pk["type"]
+    resp_body = dict(dataset)
 
-    for a in DS_ATTRIBUTES + DS_ATTRIBUTES_EXT:
-        resp_body[a] = db_resp["Attributes"][a]
+    resp_body["id"] = dataset.dataset_id
+    resp_body["type"] = dataset.dataset_type
 
     return success_response(200, resp_body)
 
@@ -433,26 +319,20 @@ def delete_dataset(payload):
     except ValidationError as err:
         return error_response(400, err.message)
 
-    # get PKs
-    pk = {}
-    pk["id"] = payload["body"]["id"]
-    pk["type"] = payload["body"]["type"]
-
-    table = DYNAMODB.Table(TABLE_NAME)
-
-    # delete Dataset record in DB
+    # get dataset to delete
     try:
-        db_resp = table.delete_item(  # pylint:disable=unused-variable
-            Key={
-                "pk": f"DATASET#{pk['id']}",
-                "sk": f"TYPE#{pk['type']}",
-            },
-            ConditionExpression="attribute_exists(pk)",
-            ReturnValues="NONE",
+        dataset = DatasetModel.get(
+            hash_key=f"DATASET#{req_body['id']}",
+            range_key=f"TYPE#{req_body['type']}",
+            consistent_read=True,
         )
-        # TODO: check if DB request was successful
-    except DYNAMODB.meta.client.exceptions.ConditionalCheckFailedException:
-        return error_response(404, f"dataset '{pk['id']}' of type '{pk['type']}' does not exist")
+    except DoesNotExist:
+        return error_response(
+            404, f"dataset '{req_body['id']}' of type '{req_body['type']}' does not exist"
+        )
+
+    # delete dataset
+    dataset.delete()
 
     resp_body = {}
     return success_response(204, resp_body)
