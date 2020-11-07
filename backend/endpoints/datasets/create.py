@@ -1,7 +1,7 @@
 """Create dataset function."""
 
 from endpoints.datasets.model import DatasetModel
-from endpoints.datasets.utils import error_response, success_response
+from endpoints.utils import error_response, success_response
 from jsonschema import ValidationError, validate
 
 

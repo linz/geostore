@@ -7,7 +7,7 @@ from endpoints.datasets.delete import delete_dataset
 from endpoints.datasets.get import get_dataset_filter, get_dataset_single
 from endpoints.datasets.list import list_datasets
 from endpoints.datasets.update import update_dataset
-from endpoints.datasets.utils import error_response
+from endpoints.utils import error_response
 from jsonschema import ValidationError, validate
 
 REQUEST_SCHEMA = {
