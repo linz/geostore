@@ -1,6 +1,6 @@
 """List all datasets function."""
 
-from endpoints.datasets.datasets_model import DatasetModel
+from endpoints.datasets.model import DatasetModel
 from endpoints.datasets.utils import success_response
 
 

@@ -1,6 +1,6 @@
 """Delete dataset function."""
 
-from endpoints.datasets.datasets_model import DatasetModel
+from endpoints.datasets.model import DatasetModel
 from endpoints.datasets.utils import error_response, success_response
 from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
