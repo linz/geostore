@@ -3,91 +3,52 @@ Pytest configuration file.
 """
 
 import logging
+from datetime import datetime, timedelta, timezone
 
-import boto3
 import pytest
+from endpoints.datasets.datasets_model import DatasetModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DYNAMODB = boto3.resource("dynamodb")
-
 
 @pytest.fixture()
-def db_prepare(table_name="datasets"):
+def db_prepare():
     """
     Prepare DB with some dataset records and clean it up after test is
     finished.
     """
 
+    items = [
+        DatasetModel(
+            id="DATASET#111abc",
+            type="TYPE#RASTER",
+            title="Dataset ABC",
+            owning_group="A_ABC_XYZ",
+            created_at=datetime.now(timezone.utc) - timedelta(days=10),
+            updated_at=datetime.now(timezone.utc) - timedelta(days=1),
+        ),
+        DatasetModel(
+            id="DATASET#222xyz",
+            type="TYPE#RASTER",
+            title="Dataset XYZ",
+            owning_group="A_ABC_XYZ",
+            created_at=datetime.now(timezone.utc) - timedelta(days=100),
+            updated_at=datetime.now(timezone.utc) - timedelta(days=10),
+        ),
+    ]
+
     logger.debug("Running DB Setup")
 
-    DYNAMODB.batch_write_item(
-        RequestItems={
-            table_name: [
-                {
-                    "PutRequest": {
-                        "Item": {
-                            "pk": "DATASET#111abc",
-                            "sk": "TYPE#RASTER",
-                            "title": "Dataset ABC",
-                            "owning_group": "A_ABC_XYZ",
-                            "created_at": "2020-01-01 01:01:01.000000+00:00",
-                            "updated_at": "2020-01-01 02:01:01.000000+00:00",
-                        },
-                    },
-                },
-                {
-                    "PutRequest": {
-                        "Item": {
-                            "pk": "DATASET#222xyz",
-                            "sk": "TYPE#RASTER",
-                            "title": "Dataset XYZ",
-                            "owning_group": "A_ABC_XYZ",
-                            "created_at": "2020-02-01 01:01:01.000000+00:00",
-                            "updated_at": "2020-02-01 02:01:01.000000+00:00",
-                        },
-                    },
-                },
-            ],
-        },
-    )
+    with DatasetModel.batch_write() as batch:
+        for item in items:
+            batch.save(item)
 
     yield  # teardown
 
     logger.debug("Running DB Teardown")
 
-    table = DYNAMODB.Table(table_name)
-
-    # get the table keys
-    key_names = [key["AttributeName"] for key in table.key_schema]
-
-    # only retrieve the keys for each item in the table (minimize data transfer)
-    projection_expression = ", ".join(f"#{key}" for key in key_names)
-    expression_attribute_names = {f"#{key}": key for key in key_names}
-
-    counter = 0
-    page = table.scan(
-        ProjectionExpression=projection_expression,
-        ExpressionAttributeNames=expression_attribute_names,
-    )
-
-    with table.batch_writer() as batch:
-        while page["Count"] > 0:
-            counter += page["Count"]
-
-            # delete items in batches
-            for itemKeys in page["Items"]:
-                batch.delete_item(Key=itemKeys)
-
-            # fetch the next page
-            if "LastEvaluatedKey" in page:
-                page = table.scan(
-                    ProjectionExpression=projection_expression,
-                    ExpressionAttributeNames=expression_attribute_names,
-                    ExclusiveStartKey=page["LastEvaluatedKey"],
-                )
-            else:
-                break
+    for item in DatasetModel.scan():
+        item.delete()
 
     return True
