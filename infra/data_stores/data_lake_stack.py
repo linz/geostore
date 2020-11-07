@@ -55,7 +55,7 @@ class DataLakeStack(core.Stack):
             handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset(
-                path="endpoints/datasets",
+                path="../backend/endpoints/datasets",
                 bundling=core.BundlingOptions(
                     image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
                     command=[

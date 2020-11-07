@@ -136,6 +136,10 @@ jobs:
               run: |
                   pytest infra/tests/
 
+            - name: Run AWS backend tests
+              run: |
+                  pytest backend/tests/
+
             - name: Destroy AWS stack used for testing
               run: |
                   cdk destroy --force geospatial-data-lake
