@@ -6,7 +6,7 @@ required (run '$ cdk deploy' before running tests).
 import logging
 import re
 
-from endpoints.datasets import function
+from endpoints.datasets import entrypoint
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def test_should_fail_if_request_not_containing_method():
 
     body = {}
 
-    resp = function.lambda_handler({"body": body}, "context")
+    resp = entrypoint.lambda_handler({"body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
@@ -29,7 +29,7 @@ def test_should_fail_if_request_not_containing_body():
 
     method = "POST"
 
-    resp = function.lambda_handler({"httpMethod": method}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
@@ -45,7 +45,7 @@ def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 201
@@ -64,7 +64,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
@@ -80,7 +80,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
@@ -101,7 +101,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 409
@@ -119,7 +119,7 @@ def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argu
     body["id"] = "111abc"
     body["type"] = "RASTER"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 200
@@ -134,7 +134,7 @@ def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argume
     method = "GET"
     body = {}
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 200
@@ -157,7 +157,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 200
@@ -179,7 +179,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     body["type"] = "RASTER"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 200
@@ -203,7 +203,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
@@ -219,7 +219,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 404
@@ -239,7 +239,7 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     body["title"] = "New Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 200
@@ -261,7 +261,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     body["title"] = "Dataset XYZ"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 409
@@ -283,7 +283,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     body["title"] = "New Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 404
@@ -301,7 +301,7 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     body["id"] = "111abc"
     body["type"] = "RASTER"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 204
@@ -321,7 +321,7 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = function.lambda_handler({"httpMethod": method, "body": body}, "context")
+    resp = entrypoint.lambda_handler({"httpMethod": method, "body": body}, "context")
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 404

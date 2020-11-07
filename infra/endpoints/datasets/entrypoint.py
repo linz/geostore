@@ -4,7 +4,8 @@ Dataset endpoint Lambda function.
 
 from endpoints.datasets.create import create_dataset
 from endpoints.datasets.delete import delete_dataset
-from endpoints.datasets.get import get_dataset_all, get_dataset_filter, get_dataset_single
+from endpoints.datasets.get import get_dataset_filter, get_dataset_single
+from endpoints.datasets.list import list_datasets
 from endpoints.datasets.update import update_dataset
 from endpoints.datasets.utils import error_response
 from jsonschema import ValidationError, validate
@@ -45,7 +46,7 @@ def lambda_handler(  # pylint:disable=inconsistent-return-statements,too-many-re
             return get_dataset_filter(event)
 
         if event["body"] == {}:
-            return get_dataset_all()
+            return list_datasets()
 
     if method == "PATCH":
         return update_dataset(event)

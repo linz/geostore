@@ -52,7 +52,7 @@ class DataLakeStack(core.Stack):
             self,
             "datasets-endpoint-function",
             function_name="datasets-endpoint",
-            handler="endpoints.datasets.function.lambda_handler",
+            handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset(
                 path="endpoints/datasets",
