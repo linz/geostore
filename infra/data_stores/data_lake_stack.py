@@ -55,21 +55,21 @@ class DataLakeStack(core.Stack):
             handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset(
-                path="../backend/endpoints/datasets",
+                path="../backend/endpoints",
                 bundling=core.BundlingOptions(
                     image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
                     command=[
                         "bash",
                         "-c",
-                        "pip install --requirement=requirements.txt --target=/asset-output \
+                        "pip install --requirement=datasets/requirements.txt --target=/asset-output \
                                 && \
                                 mkdir -p /asset-output/endpoints/datasets \
                                 && \
-                                touch /asset-output/endpoints/__init__.py \
+                                touch {/asset-output/endpoints/__init__.py,/asset-output/endpoints/datasets/__init__.py} \
                                 && \
-                                touch /asset-output/endpoints/datasets/__init__.py \
+                                cp --archive --update --verbose datasets/*.py /asset-output/endpoints/datasets/ \
                                 && \
-                                cp --archive --update --verbose *.py  /asset-output/endpoints/datasets/",  # pylint:disable=line-too-long
+                                cp --archive --update --verbose utils.py /asset-output/endpoints/datasets/",  # pylint:disable=line-too-long
                     ],
                 ),
             ),
