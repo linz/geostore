@@ -63,7 +63,7 @@ class DatasetModel(Model):
         self, conditional_operator=None, **expected_values
     ):  # pylint:disable=unused-argument,arguments-differ
         self.updated_at = datetime.now(timezone.utc)
-        super(DatasetModel, self).save()  # pylint:disable=super-with-arguments
+        super().save()
 
     @property
     def dataset_id(self):
