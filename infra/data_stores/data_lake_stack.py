@@ -82,4 +82,8 @@ class DataLakeStack(core.Stack):
             ),
         )
         db_datasets_table.grant_read_write_data(dataset_handler_function)
+        db_datasets_table.grant(
+            dataset_handler_function, "dynamodb:DescribeTable"
+        )  # required by pynamodb
+
         Tags.of(dataset_handler_function).add("ApplicationLayer", "api")
