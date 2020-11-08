@@ -69,7 +69,7 @@ class DataLakeStack(core.Stack):
                                 && \
                                 cp --archive --update --verbose datasets/*.py /asset-output/endpoints/datasets/ \
                                 && \
-                                cp --archive --update --verbose utils.py /asset-output/endpoints/datasets/",  # pylint:disable=line-too-long
+                                cp --archive --update --verbose utils.py /asset-output/endpoints/",  # pylint:disable=line-too-long
                     ],
                 ),
             ),
