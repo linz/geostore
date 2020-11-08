@@ -144,6 +144,7 @@ jobs:
               run: |
                   cdk destroy --force geospatial-data-lake
               working-directory: infra
+              if: always()  # clean-up AWS stack after failure
 
 
     deploy:
