@@ -2,6 +2,8 @@
 Data Lake AWS resources definitions.
 """
 
+import os
+
 from aws_cdk import aws_dynamodb, aws_lambda, aws_s3, core
 from aws_cdk.core import Tags
 
@@ -48,6 +50,7 @@ class DataLakeStack(core.Stack):
         Tags.of(db_datasets_table).add("ApplicationLayer", "application-db")
 
         # Lambda Handler Functions
+        lambda_path = "../backend/endpoints/datasets"
         dataset_handler_function = aws_lambda.Function(
             self,
             "datasets-endpoint-function",
@@ -55,21 +58,13 @@ class DataLakeStack(core.Stack):
             handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset(
-                path="../backend/endpoints",
+                path=os.path.dirname(lambda_path),
                 bundling=core.BundlingOptions(
                     image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
                     command=[
                         "bash",
                         "-c",
-                        "pip install --requirement=datasets/requirements.txt --target=/asset-output \
-                                && \
-                                mkdir -p /asset-output/endpoints/datasets \
-                                && \
-                                touch {/asset-output/endpoints/__init__.py,/asset-output/endpoints/datasets/__init__.py} \
-                                && \
-                                cp --archive --update --verbose datasets/*.py /asset-output/endpoints/datasets/ \
-                                && \
-                                cp --archive --update --verbose utils.py /asset-output/endpoints/",  # pylint:disable=line-too-long
+                        open(f"{lambda_path}/bundle.sh", "r").read(),
                     ],
                 ),
             ),
