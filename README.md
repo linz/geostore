@@ -14,12 +14,19 @@ $ python3 -m venv .venv
 $ source .venv/bin/activate
 ```
 
-* Upgrade pip and install the required dependencies
+* Upgrade pip
 
 ```bash
 $ pip install --upgrade pip
 ```
 
+* [Install Poetry](https://python-poetry.org/docs/#installation)
+
+* Install the dependencies:
+
+```bash
+$ poetry install
+```
 
 ## AWS CDK Environment (AWS Infrastructure)
 * Install NVM (use latest version)
@@ -50,12 +57,6 @@ $ npm install -g aws-cdk
 
 
 ## AWS Infrastructure Deployment (CDK Stack)
-* Install Python CDK dependencies
-
-```bash
-$ pip install -r infra/requirements.txt
-```
-
 * Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
 ```bash
@@ -72,12 +73,6 @@ $ cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> 
 
 
 ## Development
-* Install Python development dependencies
-
-```bash
-$ pip install -r requirements-dev.txt
-```
-
 * Install commit-msg git hook
 
 ```bash

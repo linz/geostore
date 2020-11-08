@@ -1,7 +1,7 @@
 """List all datasets function."""
 
-from ..datasets.model import DatasetModel
 from ..utils import success_response
+from .model import DatasetModel
 
 
 def list_datasets():

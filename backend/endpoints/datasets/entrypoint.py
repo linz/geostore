@@ -4,12 +4,12 @@ Dataset endpoint Lambda function.
 
 from jsonschema import ValidationError, validate
 
-from ..datasets.create import create_dataset
-from ..datasets.delete import delete_dataset
-from ..datasets.get import get_dataset_filter, get_dataset_single
-from ..datasets.list import list_datasets
-from ..datasets.update import update_dataset
 from ..utils import error_response
+from .create import create_dataset
+from .delete import delete_dataset
+from .get import get_dataset_filter, get_dataset_single
+from .list import list_datasets
+from .update import update_dataset
 
 REQUEST_SCHEMA = {
     "type": "object",

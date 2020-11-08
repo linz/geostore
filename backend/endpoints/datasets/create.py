@@ -2,8 +2,8 @@
 
 from jsonschema import ValidationError, validate
 
-from ..datasets.model import DatasetModel
 from ..utils import error_response, success_response
+from .model import DatasetModel
 
 
 def create_dataset(payload):

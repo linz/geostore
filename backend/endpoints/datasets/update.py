@@ -3,8 +3,8 @@
 from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 
-from ..datasets.model import DatasetModel
 from ..utils import error_response, success_response
+from .model import DatasetModel
 
 
 def update_dataset(payload):
