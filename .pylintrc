@@ -1,7 +1,8 @@
 [MASTER]
 disable =
     bad-continuation,
-    invalid-name
+    invalid-name,
+    duplicate-code
 [FORMAT]
 max-line-length=100
 [MISCELLANEOUS]

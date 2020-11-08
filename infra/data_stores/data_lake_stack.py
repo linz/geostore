@@ -2,6 +2,8 @@
 Data Lake AWS resources definitions.
 """
 
+import os
+
 from aws_cdk import aws_dynamodb, aws_lambda, aws_s3, core
 from aws_cdk.core import Tags
 
@@ -40,22 +42,48 @@ class DataLakeStack(core.Stack):
             self,
             "data-lake-application-db",
             table_name="datasets",
-            partition_key=aws_dynamodb.Attribute(
-                name="pk", type=aws_dynamodb.AttributeType("STRING")
-            ),
-            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType("STRING")),
+            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,
             removal_policy=REMOVAL_POLICY,
         )
         Tags.of(db_datasets_table).add("ApplicationLayer", "application-db")
 
         # Lambda Handler Functions
+        lambda_path = "../backend/endpoints/datasets"
         dataset_handler_function = aws_lambda.Function(
             self,
-            "dataset-handler-function",
-            handler="function.lambda_handler",
+            "datasets-endpoint-function",
+            function_name="datasets-endpoint",
+            handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
-            code=aws_lambda.Code.from_asset(path="lambda/dataset-handler"),
+            code=aws_lambda.Code.from_asset(
+                path=os.path.dirname(lambda_path),
+                bundling=core.BundlingOptions(
+                    image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
+                    command=[
+                        "bash",
+                        "-c",
+                        open(f"{lambda_path}/bundle.sh", "r").read(),
+                    ],
+                ),
+            ),
+        )
+        db_datasets_table.add_global_secondary_index(
+            index_name="datasets_title",
+            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
+        )
+        db_datasets_table.add_global_secondary_index(
+            index_name="datasets_owning_group",
+            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name="owning_group", type=aws_dynamodb.AttributeType.STRING
+            ),
         )
         db_datasets_table.grant_read_write_data(dataset_handler_function)
+        db_datasets_table.grant(
+            dataset_handler_function, "dynamodb:DescribeTable"
+        )  # required by pynamodb
+
         Tags.of(dataset_handler_function).add("ApplicationLayer", "api")
