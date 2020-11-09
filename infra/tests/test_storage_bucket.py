@@ -9,8 +9,8 @@ import boto3
 S3 = boto3.client("s3")
 
 
-if "ENVIRONMENT_TYPE" in os.environ:
-    ENV = os.environ["ENVIRONMENT_TYPE"]
+if "DEPLOY_ENV" in os.environ:
+    ENV = os.environ["DEPLOY_ENV"]
 else:
     ENV = "dev"
 

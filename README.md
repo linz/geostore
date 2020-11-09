@@ -1,4 +1,4 @@
-[![GitHub Actions Status](https://github.com/linz/geospatial-data-lake/workflows/Build/badge.svg)](https://github.com/linz/geospatial-data-lake/actions)
+[![GitHub Actions Status](https://github.com/linz/geospatial-data-lake/workflows/Build/badge.svg)](https://github.com/linz/geospatial-data-lake/actions) ![](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
 # Geospatial Data Lake
 Central storage, management and access for important geospatial datasets
@@ -80,6 +80,7 @@ $ aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
 
 ```bash
 $ export ENVIRONMENT_TYPE=dev|nonprod|prod
+$ cdk --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> bootstrap aws://unknown-account/ap-southeast-2
 $ cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
 ```
 
@@ -94,7 +95,8 @@ $ pip install -r requirements-dev.txt
 * Install commit-msg git hook
 
 ```bash
-$ pre-commit install --hook-type commit-msg
+$ pre-commit install --hook-type=commit-msg --overwrite
+$ pre-commit install --hook-type=pre-commit --overwrite
 ```
 
 * Install automatic Pylint code checks for your editor or run it by hand

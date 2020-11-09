@@ -1,8 +1,9 @@
 [MASTER]
 disable =
     bad-continuation,
-    invalid-name
+    invalid-name,
+    duplicate-code
 [FORMAT]
-max-line-length=127
+max-line-length=100
 [MISCELLANEOUS]
 notes=FIXME,XXX
