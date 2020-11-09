@@ -43,7 +43,7 @@ jobs:
 
             - name: Check Python code quality
               run: |
-                  pylint infra/
+                  pylint backend infra tests
 
             - name: Check Python code import statements
               run: |
