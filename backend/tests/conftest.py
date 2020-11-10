@@ -6,7 +6,8 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from endpoints.datasets.model import DatasetModel
+
+from ..endpoints.datasets.model import DatasetModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

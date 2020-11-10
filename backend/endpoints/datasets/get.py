@@ -1,9 +1,10 @@
 """Get datasets functions."""
 
-from endpoints.datasets.model import DatasetModel
-from endpoints.utils import error_response, success_response
 from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
+
+from ..datasets.model import DatasetModel
+from ..utils import error_response, success_response
 
 
 def get_dataset_single(payload):
