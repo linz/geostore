@@ -196,14 +196,16 @@ jobs:
                   mask-aws-account-id: true
                   role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-            - name: (NonProd) Deploy AWS stack
-              if: >
-                  github.ref == 'refs/heads/master'
-                  && github.repository == 'linz/geospatial-data-lake'
-              run: |
-                  cdk bootstrap aws://unknown-account/ap-southeast-2
-                  DEPLOY_ENV=nonprod cdk deploy --require-approval never geospatial-data-lake
-              working-directory: infra
+            # Temporary disabled to avoid AWS resource names with CI stacks
+            # TODO: enable once CI deployment will use separate AWS account
+            # - name: (NonProd) Deploy AWS stack
+            #   if: >
+            #       github.ref == 'refs/heads/master'
+            #       && github.repository == 'linz/geospatial-data-lake'
+            #   run: |
+            #       cdk bootstrap aws://unknown-account/ap-southeast-2
+            #       DEPLOY_ENV=nonprod cdk deploy --require-approval never geospatial-data-lake
+            #   working-directory: infra
 
             # PROD DEPLOYMENT
             - name: (Prod) Configure AWS credentials
