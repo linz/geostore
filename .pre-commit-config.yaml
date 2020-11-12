@@ -33,6 +33,13 @@ repos:
             stages: [commit]
             types: [python]
 
+          - id: shellcheck
+            name: shellcheck
+            entry: shellcheck
+            language: system
+            stages: [commit]
+            types: [bash]
+
           - id: yamlfmt
             name: yamlfmt
             entry: yamlfmt
