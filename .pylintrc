@@ -1,8 +1,11 @@
 [MASTER]
 disable =
     bad-continuation,
+    duplicate-code,
     invalid-name,
-    duplicate-code
+    missing-class-docstring,
+    missing-function-docstring,
+    missing-module-docstring,
 [FORMAT]
 max-line-length=100
 [MISCELLANEOUS]
