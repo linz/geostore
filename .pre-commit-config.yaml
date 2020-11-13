@@ -45,7 +45,7 @@ repos:
           - id: yamllint
             name: yamllint
             entry: yamllint
-            args: [--format=parsable, --strict]
+            args: [--strict]
             language: system
             stages: [commit]
             types: [yaml]
