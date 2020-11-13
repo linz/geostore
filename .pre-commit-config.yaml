@@ -8,7 +8,6 @@ repos:
           - id: black
             name: black
             entry: black
-            args: [--check, --diff]
             language: system
             stages: [commit]
             types: [python]
@@ -23,7 +22,6 @@ repos:
           - id: isort
             name: isort
             entry: isort
-            args: [--check, --diff]
             language: system
             stages: [commit]
             types: [python]
