@@ -16,7 +16,7 @@ repos:
           - id: gitlint
             name: gitlint
             entry: gitlint
-            args: ["--msg-filename"]
+            args: [--msg-filename]
             language: system
             stages: [commit-msg]
 
