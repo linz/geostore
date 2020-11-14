@@ -9,10 +9,10 @@ class DataLakeStack(core.Stack):
     """Data Lake stack definition."""
 
     # pylint: disable=redefined-builtin,too-many-locals
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, deploy_env, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        ENV = self.stack_name.split("-")[-1]
+        ENV = deploy_env
 
         # set resources removal policy for different environments
         if ENV == "prod":
@@ -25,7 +25,7 @@ class DataLakeStack(core.Stack):
         ############################################################################################
         storage_bucket = aws_s3.Bucket(
             self,
-            "data-lake-storage-bucket",
+            "storage-bucket",
             bucket_name="{}-{}".format(
                 self.node.try_get_context("data-lake-storage-bucket-name"), ENV
             ),
@@ -41,7 +41,7 @@ class DataLakeStack(core.Stack):
         ############################################################################################
         app_db_datasets = aws_dynamodb.Table(
             self,
-            "data-lake-application-db",
+            "application-db",
             table_name="datasets",
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),

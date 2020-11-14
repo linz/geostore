@@ -25,10 +25,16 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6,<3.9"
-"aws-cdk.aws-s3" = {version="*", optional=true}
-"aws-cdk.aws-iam" = {version="*", optional=true}
 "aws-cdk.aws-dynamodb" = {version="*", optional=true}
+"aws-cdk.aws-ec2" = {version="*", optional=true}
+"aws-cdk.aws-ecr" = {version="*", optional=true}
+"aws-cdk.aws-ecr_assets" = {version="*", optional=true}
+"aws-cdk.aws-ecs" = {version="*", optional=true}
+"aws-cdk.aws-iam" = {version="*", optional=true}
 "aws-cdk.aws-lambda" = {version="*", optional=true}
+"aws-cdk.aws-s3" = {version="*", optional=true}
+"aws-cdk.aws-stepfunctions" = {version="*", optional=true}
+"aws-cdk.aws-stepfunctions_tasks" = {version="*", optional=true}
 awscli = {version="*", optional=true}
 cattrs = {version="<1.1.0", optional=true} # https://github.com/aws/aws-cdk/issues/11255
 jsonschema = {version="*", optional=true}
@@ -49,10 +55,16 @@ yamllint = "*"
 
 [tool.poetry.extras]
 cdk = [
-    "aws-cdk.aws-s3",
-    "aws-cdk.aws-iam",
     "aws-cdk.aws-dynamodb",
+    "aws-cdk.aws-ec2",
+    "aws-cdk.aws-ecr",
+    "aws-cdk.aws-ecr_assets",
+    "aws-cdk.aws-ecs",
+    "aws-cdk.aws-iam",
     "aws-cdk.aws-lambda",
+    "aws-cdk.aws-s3",
+    "aws-cdk.aws-stepfunctions",
+    "aws-cdk.aws-stepfunctions_tasks",
     "awscli",
     "cattrs",
 ]
