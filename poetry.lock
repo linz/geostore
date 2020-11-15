@@ -1418,6 +1418,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "shellcheck-py"
+version = "0.7.1.1"
+description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1504,6 +1512,7 @@ python-versions = "*"
 [package.source]
 type = "url"
 url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"
+
 [[package]]
 name = "yamllint"
 version = "1.25.0"
@@ -1531,7 +1540,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "d2efb693ef8e4933b6f904d49600fce3196b0aa4cd3b5ecfd555c34dfa6e74be"
+content-hash = "1bab5f550a04aa388bc0f790ec0cae2cf86dde267acf31d13f59418dbc5d2e8a"
 
 [metadata.files]
 appdirs = [
@@ -1986,6 +1995,12 @@ s3transfer = [
 sh = [
     {file = "sh-1.12.14-py2.py3-none-any.whl", hash = "sha256:ae3258c5249493cebe73cb4e18253a41ed69262484bad36fdb3efcb8ad8870bb"},
     {file = "sh-1.12.14.tar.gz", hash = "sha256:b52bf5833ed01c7b5c5fb73a7f71b3d98d48e9b9b8764236237bdc7ecae850fc"},
+]
+shellcheck-py = [
+    {file = "shellcheck_py-0.7.1.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:9f537613212aad5221a020dde3b86884cf4778688788ac26ddeb21fecf3ec2e0"},
+    {file = "shellcheck_py-0.7.1.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:0fca77ece2ba232ca2fdbe4f15dc4b0a30f3e38e896345b2dbf4dbe20e4bb8a9"},
+    {file = "shellcheck_py-0.7.1.1-py2.py3-none-win_amd64.whl", hash = "sha256:59c623567a1a7bd0a919b5009790b199b5457a78053b775de1886f01693533af"},
+    {file = "shellcheck_py-0.7.1.1.tar.gz", hash = "sha256:044fb62e44d549c49a712c6ac0a60d6f4ae2d1afebbc167d65ec62dc689b8f2b"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
