@@ -82,7 +82,7 @@ class DataLakeStack(core.Stack):
                     bundling=core.BundlingOptions(
                         # pylint:disable=no-member
                         image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
-                        command=["backend/endpoints/bundle.bash", f"{endpoint}"],
+                        command=["backend/endpoints/bundle.bash", endpoint],
                     ),
                 ),
             )
