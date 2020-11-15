@@ -8,7 +8,6 @@ repos:
           - id: black
             name: black
             entry: black
-            args: [--check, --diff]
             language: system
             stages: [commit]
             types: [python]
@@ -16,14 +15,13 @@ repos:
           - id: gitlint
             name: gitlint
             entry: gitlint
-            args: ["--msg-filename"]
+            args: [--msg-filename]
             language: system
             stages: [commit-msg]
 
           - id: isort
             name: isort
             entry: isort
-            args: [--check, --diff]
             language: system
             stages: [commit]
             types: [python]
@@ -45,7 +43,7 @@ repos:
           - id: yamllint
             name: yamllint
             entry: yamllint
-            args: [--format=parsable, --strict]
+            args: [--strict]
             language: system
             stages: [commit]
             types: [yaml]

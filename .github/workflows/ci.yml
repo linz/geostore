@@ -36,17 +36,9 @@ jobs:
                   poetry run gitlint --commits
                   origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}
 
-            - name: Check Python code formatting
+            - name: Run pre-commit hooks
               run: |
-                  poetry run black . --check --diff
-
-            - name: Check Python code quality
-              run: |
-                  poetry run pylint backend infra tests
-
-            - name: Check Python code import statements
-              run: |
-                  poetry run isort . --check --diff
+                  poetry run pre-commit run --all-files
 
 
     test:
