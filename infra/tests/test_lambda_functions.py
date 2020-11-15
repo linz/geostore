@@ -19,7 +19,7 @@ def test_should_launch_datasets_endpoint_lambda_function():
     method = "POST"
     body = {}
     body["type"] = "RASTER"
-    body["title"] = f"Dataset {uuid.uuid1}.hex"
+    body["title"] = f"Dataset {uuid.uuid1()}.hex"
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = LAMBDA.invoke(
@@ -29,4 +29,4 @@ def test_should_launch_datasets_endpoint_lambda_function():
     )
     json_resp = json.loads(resp["Payload"].read().decode("utf-8"))
 
-    assert json_resp["statusCode"] == 201
+    assert json_resp.get("statusCode") == 201, json_resp

@@ -1,9 +1,6 @@
 """
 Data Lake AWS resources definitions.
 """
-
-import os
-
 from aws_cdk import aws_dynamodb, aws_lambda, aws_s3, core
 from aws_cdk.core import Tags
 
@@ -50,7 +47,6 @@ class DataLakeStack(core.Stack):
         Tags.of(db_datasets_table).add("ApplicationLayer", "application-db")
 
         # Lambda Handler Functions
-        lambda_path = "../backend/endpoints/datasets"
         dataset_handler_function = aws_lambda.Function(
             self,
             "datasets-endpoint-function",
@@ -58,14 +54,11 @@ class DataLakeStack(core.Stack):
             handler="endpoints.datasets.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset(
-                path=os.path.dirname(lambda_path),
+                path="..",
                 bundling=core.BundlingOptions(
-                    image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,  # pylint:disable=no-member
-                    command=[
-                        "bash",
-                        "-c",
-                        open(f"{lambda_path}/bundle.sh", "r").read(),
-                    ],
+                    # pylint:disable=no-member
+                    image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
+                    command=["backend/endpoints/bundle.bash", "datasets"],
                 ),
             ),
         )

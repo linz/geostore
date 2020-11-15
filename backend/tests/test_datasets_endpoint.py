@@ -6,7 +6,7 @@ required (run '$ cdk deploy' before running tests).
 import logging
 import re
 
-from endpoints.datasets import entrypoint
+from ..endpoints.datasets import entrypoint
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

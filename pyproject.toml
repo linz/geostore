@@ -8,3 +8,43 @@ use_parentheses = true
 include_trailing_comma = true
 multi_line_output = 3
 force_grid_wrap = 0
+
+[tool.poetry]
+name = "geospatial-data-lake"
+version = "0.1.0"
+description = "Central storage, management and access for important geospatial datasets developed by LINZ"
+authors = [
+    "Bill M. Nelson <bmnelson@linz.govt.nz>",
+    "Daniel Silk <dsilk@linz.govt.nz>",
+    "Ivan Mincik <ivan.mincik@gmail.com>",
+    "Sandro Santilli <strk@kbt.io>",
+    "Simon Planzer <splanzer@linz.govt.nz>",
+    "Victor Engmark <vengmark@linz.govt.nz>",
+]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+"aws-cdk.aws-s3" = "*"
+"aws-cdk.aws-iam" = "*"
+"aws-cdk.aws-dynamodb" = "*"
+"aws-cdk.aws-lambda" = "*"
+awscli = "*"
+cattrs = "<1.1.0" # https://github.com/aws/aws-cdk/issues/11255
+jsonschema = "*"
+pynamodb = "*"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+boto3 = "*"
+gitlint = "*"
+isort = "*"
+pre-commit = "*"
+pylint = "*"
+pytest = "*"
+yamlfmt = "*"
+yamllint = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

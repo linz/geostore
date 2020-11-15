@@ -7,7 +7,7 @@ CDK application entry point file.
 import os
 
 from aws_cdk import core
-from data_stores.data_lake_stack import DataLakeStack
+from data_stores.data_lake_stack import DataLakeStack  # # pylint: disable=import-error
 
 if "DEPLOY_ENV" in os.environ:
     ENV = os.environ["DEPLOY_ENV"]
