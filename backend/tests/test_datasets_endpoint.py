@@ -21,7 +21,7 @@ def test_should_fail_if_request_not_containing_method():
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'httpMethod' is a required property."
+    assert resp["body"]["message"] == "Bad Request: 'httpMethod' is a required property"
 
 
 def test_should_fail_if_request_not_containing_body():
@@ -33,7 +33,7 @@ def test_should_fail_if_request_not_containing_body():
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'body' is a required property."
+    assert resp["body"]["message"] == "Bad Request: 'body' is a required property"
 
 
 def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
@@ -68,7 +68,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     logger.info("Response: %s", resp)
 
     assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'type' is a required property."
+    assert resp["body"]["message"] == "Bad Request: 'type' is a required property"
 
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type():
@@ -106,8 +106,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
 
     assert resp["statusCode"] == 409
     assert (
-        resp["body"]["message"]
-        == "Conflict: dataset 'Dataset ABC' of type 'RASTER' already exists."
+        resp["body"]["message"] == "Conflict: dataset 'Dataset ABC' of type 'RASTER' already exists"
     )
 
 
@@ -225,7 +224,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     assert resp["statusCode"] == 404
     assert (
         resp["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist."
+        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
 
 
@@ -266,8 +265,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
     assert resp["statusCode"] == 409
     assert (
-        resp["body"]["message"]
-        == "Conflict: dataset 'Dataset XYZ' of type 'RASTER' already exists."
+        resp["body"]["message"] == "Conflict: dataset 'Dataset XYZ' of type 'RASTER' already exists"
     )
 
 
@@ -289,7 +287,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     assert resp["statusCode"] == 404
     assert (
         resp["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist."
+        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
 
 
@@ -327,5 +325,5 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     assert resp["statusCode"] == 404
     assert (
         resp["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist."
+        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
