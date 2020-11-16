@@ -9,10 +9,7 @@ import os
 from aws_cdk import core
 from datalake.datalake_stack import DataLakeStack  # pylint: disable=import-error
 
-if "DEPLOY_ENV" in os.environ:
-    ENV = os.environ["DEPLOY_ENV"]
-else:
-    ENV = "dev"
+ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 app = core.App()
 DataLakeStack(

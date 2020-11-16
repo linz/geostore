@@ -9,10 +9,7 @@ import boto3
 S3 = boto3.client("s3")
 
 
-if "DEPLOY_ENV" in os.environ:
-    ENV = os.environ["DEPLOY_ENV"]
-else:
-    ENV = "dev"
+ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 
 def test_storage_bucket_location():
