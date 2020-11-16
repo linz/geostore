@@ -5,6 +5,7 @@ Data Lake Storage Bucket tests.
 import os
 
 import boto3
+from pytest import mark
 
 S3 = boto3.client("s3")
 
@@ -12,18 +13,21 @@ S3 = boto3.client("s3")
 ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 
+@mark.acceptance
 def test_storage_bucket_location():
     """Test if Data Lake Storage S3 Bucket is created in correct region."""
     response = S3.get_bucket_location(Bucket=f"linz-geospatial-data-lake-{ENV}")
     assert response["LocationConstraint"] == "ap-southeast-2"
 
 
+@mark.acceptance
 def test_storage_bucket_versioning():
     """Test if Data Lake Storage S3 Bucket versioning is enabled."""
     response = S3.get_bucket_versioning(Bucket=f"linz-geospatial-data-lake-{ENV}")
     assert response["Status"] == "Enabled"
 
 
+@mark.acceptance
 def test_storage_bucket_public_access_block():
     """Test if Data Lake Storage S3 Bucket access is blocked for public."""
     response = S3.get_public_access_block(Bucket=f"linz-geospatial-data-lake-{ENV}")
