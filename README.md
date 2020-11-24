@@ -5,88 +5,81 @@ Central storage, management and access for important geospatial datasets
 Developed by [Land Information New Zealand](https://github.com/linz)
 
 
-# Dependencies Installation
-## Python Virtual Environment (for Python CLI and AWS CDK)
+## Dependencies Installation
+### Python Virtual Environment (for Python CLI and AWS CDK)
 * Create and activate a Python virtual environment
 
-```bash
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-```
-
+    ```bash
+    $ python3 -m venv .venv
+    $ source .venv/bin/activate
+    ```
 * Upgrade pip
 
-```bash
-$ pip install --upgrade pip
-```
-
+    ```bash
+    $ pip install --upgrade pip
+    ```
 * [Install Poetry](https://python-poetry.org/docs/#installation)
-
 * Install the dependencies:
 
-```bash
-$ poetry install
-```
+    ```bash
+    $ poetry install
+    ```
 
-## AWS CDK Environment (AWS Infrastructure)
+### AWS CDK Environment (AWS Infrastructure)
 * Install NVM (use latest version)
 
-```bash
-$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v<LATEST-VERSION>/install.sh | bash
-```
-
+    ```bash
+    $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v<LATEST-VERSION>/install.sh | bash
+    ```
 * Enable NVM
 
-```bash
-$ export NVM_DIR="$HOME/.nvm"
-$ [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-$ [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-```
-
+    ```bash
+    $ export NVM_DIR="$HOME/.nvm"
+    $ [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    $ [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    ```
 * Install latest LTS Node version
 
-```bash
-$ nvm install --lts
-```
-
+    ```bash
+    $ nvm install --lts
+    ```
 * Install latest AWS CDK version
 
-```bash
-$ npm install
-```
+    ```bash
+    $ npm install
+    ```
 
 
 ## AWS Infrastructure Deployment (CDK Stack)
 * Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
-```bash
-$ ./node_modules/.bin/aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
-```
-
+    ```bash
+    $ ./node_modules/.bin/aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
+    ```
 * Deploy CDK stack
 
-```bash
-$ cd infra
-$ export ENVIRONMENT_TYPE=dev|nonprod|prod
-$ ../node_modules/.bin/cdk --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> bootstrap aws://unknown-account/ap-southeast-2
-$ ../node_modules/.bin/cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
-```
+    ```bash
+    $ cd infra
+    $ export ENVIRONMENT_TYPE=dev|nonprod|prod
+    $ ../node_modules/.bin/cdk --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> bootstrap aws://unknown-account/ap-southeast-2
+    $ ../node_modules/.bin/cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
+    ```
 
 
 ## Development
-* Install commit-msg git hook
+* Install Git hooks
 
-```bash
-$ pre-commit install --hook-type=commit-msg --overwrite
-$ pre-commit install --hook-type=pre-commit --overwrite
-```
-
+    ```bash
+    $ pre-commit install --hook-type=commit-msg --overwrite
+    $ pre-commit install --hook-type=pre-commit --overwrite
+    ```
 * Install automatic Pylint code checks for your editor or run it by hand
-```
-$ pylint <DIRECTORY-PATH>
-```
 
+    ```
+    $ pylint <DIRECTORY-PATH>
+    ```
 * Install automatic Black code formatting for your editor or run it by hand
-```
-$ black . --check --diff
-```
+
+     ```
+     $ black . --check --diff
+     ```
