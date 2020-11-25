@@ -21,14 +21,9 @@ python -m venv "${work_dir}/.venv"
 python -m pip install --upgrade pip
 python -m pip install poetry
 
-all_requirements_file="${work_dir}/all-requirements.txt"
-endpoint_requirements_file="${work_dir}/endpoint-requirements.txt"
-
-# Get endpoint-specific requirements file
-poetry export --output="$all_requirements_file" --without-hashes
-grep --file="${script_dir}/${1}/requirements.txt" "$all_requirements_file" > "$endpoint_requirements_file"
-
-pip install --requirement="$endpoint_requirements_file" --target=/asset-output
-mkdir --parents /asset-output/endpoints/datasets
-cp --archive --update --verbose "${script_dir}/"*.py /asset-output/endpoints
-cp --archive --update --verbose "${script_dir}/${1}/"*.py /asset-output/endpoints/datasets
+asset_root='/asset-output'
+# `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
+pip install --requirement=<(poetry export --extras="${1}-endpoint" --without-hashes) "--target=${asset_root}"
+mkdir --parents "${asset_root}/endpoints/datasets"
+cp --archive --update --verbose "${script_dir}/"*.py "${asset_root}/endpoints"
+cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/endpoints/datasets"

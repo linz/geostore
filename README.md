@@ -22,7 +22,7 @@ Developed by [Land Information New Zealand](https://github.com/linz)
 * Install the dependencies:
 
     ```bash
-    $ poetry install
+    $ poetry install --extras='cdk datasets-endpoint'
     ```
 
 ### AWS CDK Environment (AWS Infrastructure)
@@ -83,3 +83,11 @@ Developed by [Land Information New Zealand](https://github.com/linz)
      ```
      $ black . --check --diff
      ```
+
+To add a development-only package: `poetry add --dev PACKAGE='*'`
+
+To add a production package:
+
+1. Install the package using `poetry add --optional PACKAGE='*'`.
+1. Put the package in alphabetical order within the list.
+1. Mention the package in the relevant lists in `[tool.poetry.extras]`.

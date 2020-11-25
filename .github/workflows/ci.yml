@@ -23,7 +23,7 @@ jobs:
               run: |
                   python -m pip install --upgrade pip
                   python -m pip install poetry
-                  python -m poetry install
+                  python -m poetry install --extras='cdk datasets-endpoint'
 
             - name: Check last commit message
               if: github.event_name == 'push'
@@ -92,7 +92,7 @@ jobs:
               run: |
                   python -m pip install --upgrade pip
                   python -m pip install poetry
-                  python -m poetry install
+                  python -m poetry install --extras='cdk datasets-endpoint'
 
             - name: Use Node.js 12.x for CDK deployment
               uses: actions/setup-node@v2.1.2
@@ -163,7 +163,7 @@ jobs:
               run: |
                   python -m pip install --upgrade pip
                   python -m pip install poetry
-                  python -m poetry install --no-dev
+                  python -m poetry install --extras=cdk --no-dev
 
             - name: Use Node.js 12.x for CDK deployment
               uses: actions/setup-node@v2.1.2
