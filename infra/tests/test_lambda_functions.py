@@ -11,7 +11,7 @@ from pytest import mark
 LAMBDA = boto3.client("lambda")
 
 
-@mark.acceptance
+@mark.infrastructure
 def test_should_launch_datasets_endpoint_lambda_function():
     """
     Test if datasets endpoint lambda can be successfully launched and has required permission to

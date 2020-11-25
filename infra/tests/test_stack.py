@@ -13,7 +13,7 @@ CF = boto3.client("cloudformation")
 ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 
-@mark.acceptance
+@mark.infrastructure
 def test_stack_create_complete():
     """Test if CloudFormation stack is successfully created."""
     response = CF.describe_stacks(StackName=f"geospatial-data-lake-{ENV}")
