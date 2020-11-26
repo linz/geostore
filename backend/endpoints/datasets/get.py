@@ -6,6 +6,7 @@ from pynamodb.exceptions import DoesNotExist
 from ..utils import error_response, success_response
 from .common import DATASET_TYPES
 from .model import DatasetModel
+from .serializer import serialize_dataset
 
 
 def get_dataset_single(payload):
@@ -43,10 +44,7 @@ def get_dataset_single(payload):
         )
 
     # return response
-    resp_body = dict(dataset)
-
-    resp_body["id"] = dataset.dataset_id
-    resp_body["type"] = dataset.dataset_type
+    resp_body = serialize_dataset(dataset)
 
     return success_response(200, resp_body)
 
@@ -92,9 +90,7 @@ def get_dataset_filter(payload):
     # return response
     resp_body = []
     for dataset in datasets:
-        resp_item = dict(dataset)
-        resp_item["id"] = dataset.dataset_id
-        resp_item["type"] = dataset.dataset_type
+        resp_item = serialize_dataset(dataset)
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)

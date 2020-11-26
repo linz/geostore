@@ -6,6 +6,7 @@ from pynamodb.exceptions import DoesNotExist
 from ..utils import error_response, success_response
 from .common import DATASET_TYPES
 from .model import DatasetModel
+from .serializer import serialize_dataset
 
 
 def update_dataset(payload):
@@ -67,9 +68,6 @@ def update_dataset(payload):
     dataset.refresh(consistent_read=True)
 
     # return response
-    resp_body = dict(dataset)
-
-    resp_body["id"] = dataset.dataset_id
-    resp_body["type"] = dataset.dataset_type
+    resp_body = serialize_dataset(dataset)
 
     return success_response(200, resp_body)
