@@ -1354,6 +1354,18 @@ checkqa_mypy = ["mypy (==0.780)"]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-randomly"
+version = "3.5.0"
+description = "Pytest plugin to randomly order tests and control random.seed."
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
+pytest = "*"
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.1"
 description = "Extensions to the standard Python datetime module"
@@ -1560,7 +1572,7 @@ datasets-endpoint = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "78e66a14e93684bafdbc8e4d7e92f390b1d3e8b5feeb38226000844160de7514"
+content-hash = "4cdcb5d10cbb6d1831009dfe60b30657184e2472f5f6181b0ef9c8039c0c3a63"
 
 [metadata.files]
 appdirs = [
@@ -1913,6 +1925,10 @@ pyrsistent = [
 pytest = [
     {file = "pytest-6.1.2-py3-none-any.whl", hash = "sha256:4288fed0d9153d9646bfcdf0c0428197dba1ecb27a33bb6e031d002fa88653fe"},
     {file = "pytest-6.1.2.tar.gz", hash = "sha256:c0a7e94a8cdbc5422a51ccdad8e6f1024795939cc89159a0ae7f0b316ad3823e"},
+]
+pytest-randomly = [
+    {file = "pytest-randomly-3.5.0.tar.gz", hash = "sha256:440cec143fd9b0adeb072006c71e0294402a2bc2ccd08079c2341087ba4cf2d1"},
+    {file = "pytest_randomly-3.5.0-py3-none-any.whl", hash = "sha256:9db10d160237f3f8ee60cef72e4cb9ea88d2893c9dd5c8aa334b060cdeb67c3a"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
