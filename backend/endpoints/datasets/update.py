@@ -4,6 +4,7 @@ from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 
 from ..utils import error_response, success_response
+from .common import DATASET_TYPES
 from .model import DatasetModel
 
 
@@ -16,7 +17,7 @@ def update_dataset(payload):
             "id": {"type": "string"},
             "type": {
                 "type": "string",
-                "enum": ["IMAGE", "RASTER"],
+                "enum": DATASET_TYPES,
             },
             "title": {"type": "string"},
             "owning_group": {"type": "string"},
