@@ -10,7 +10,13 @@ from pytest import mark
 
 from ..endpoints.datasets import entrypoint
 from ..endpoints.datasets.common import DATASET_TYPES
-from .utils import Dataset, any_dataset_owning_group, any_dataset_title, any_valid_dataset_type
+from .utils import (
+    Dataset,
+    any_dataset_id,
+    any_dataset_owning_group,
+    any_dataset_title,
+    any_valid_dataset_type,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -224,7 +230,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter():
 def test_should_fail_if_get_request_requests_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_id = "NOT_EXISTING_ID"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {}
@@ -289,7 +295,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 def test_should_fail_if_updating_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_id = "NOT_EXISTING_ID"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {}
@@ -329,7 +335,7 @@ def test_should_delete_dataset(db_teardown):  # pylint:disable=unused-argument
 def test_should_fail_if_deleting_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_id = "NOT_EXISTING_ID"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {}
