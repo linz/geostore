@@ -43,7 +43,6 @@ def get_dataset_single(payload):
         )
 
     # return response
-    resp_body = {}
     resp_body = dict(dataset)
 
     resp_body["id"] = dataset.dataset_id
