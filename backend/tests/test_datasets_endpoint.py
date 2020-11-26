@@ -10,7 +10,7 @@ from pytest import mark
 
 from ..endpoints.datasets import entrypoint
 from ..endpoints.datasets.common import DATASET_TYPES
-from .utils import Dataset, any_valid_dataset_type
+from .utils import Dataset, any_dataset_title, any_valid_dataset_type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def test_should_fail_if_request_not_containing_body():
 @mark.infrastructure
 def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
     dataset_type = any_valid_dataset_type()
-    dataset_title = "Dataset 123"
+    dataset_title = any_dataset_title()
     dataset_owning_group = "A_ABC_XYZ"
 
     body = {}
@@ -56,7 +56,7 @@ def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
-    body["title"] = "Dataset 123"
+    body["title"] = any_dataset_title()
     body["owning_group"] = "A_ABC_XYZ"
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
@@ -70,7 +70,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     dataset_type = f"{''.join(DATASET_TYPES)}x"  # Guaranteed not in `DATASET_TYPES`
     body = {}
     body["type"] = dataset_type
-    body["title"] = "Dataset 123"
+    body["title"] = any_dataset_title()
     body["owning_group"] = "A_ABC_XYZ"
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
@@ -210,7 +210,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
 def test_should_fail_if_get_request_containing_tile_and_owning_group_filter():
     body = {}
     body["type"] = any_valid_dataset_type()
-    body["title"] = "Dataset ABC"
+    body["title"] = any_dataset_title()
     body["owning_group"] = "A_ABC_XYZ"
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
