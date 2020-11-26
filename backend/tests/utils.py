@@ -15,3 +15,8 @@ def random_string(length: int) -> str:
 def any_dataset_title() -> str:
     """Arbitrary-length string"""
     return random_string(20)
+
+
+def any_dataset_owning_group() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)

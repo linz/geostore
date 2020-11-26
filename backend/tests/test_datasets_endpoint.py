@@ -10,7 +10,7 @@ from pytest import mark
 
 from ..endpoints.datasets import entrypoint
 from ..endpoints.datasets.common import DATASET_TYPES
-from .utils import any_dataset_title, any_valid_dataset_type
+from .utils import any_dataset_owning_group, any_dataset_title, any_valid_dataset_type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def test_should_fail_if_request_not_containing_body():
 def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     dataset_type = any_valid_dataset_type()
     dataset_title = any_dataset_title()
-    dataset_owning_group = "A_ABC_XYZ"
+    dataset_owning_group = any_dataset_owning_group()
 
     body = {}
     body["type"] = dataset_type
@@ -57,7 +57,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
     body["title"] = any_dataset_title()
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -71,7 +71,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     body = {}
     body["type"] = dataset_type
     body["title"] = any_dataset_title()
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -89,7 +89,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     body = {}
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -180,7 +180,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     body = {}
     body["type"] = any_valid_dataset_type()
     body["title"] = any_dataset_title()
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -213,7 +213,7 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     body["id"] = "111abc"
     body["type"] = "RASTER"
     body["title"] = new_dataset_title
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -230,7 +230,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     body["id"] = "111abc"
     body["type"] = "RASTER"
     body["title"] = "Dataset XYZ"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -248,7 +248,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
     body["title"] = "New Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -279,7 +279,7 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
     logger.info("Response: %s", response)
