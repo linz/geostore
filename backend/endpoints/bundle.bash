@@ -24,6 +24,6 @@ python -m pip install poetry
 asset_root='/asset-output'
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
 pip install --requirement=<(poetry export --extras="${1}-endpoint" --without-hashes) "--target=${asset_root}"
-mkdir --parents "${asset_root}/endpoints/datasets"
+mkdir --parents "${asset_root}/endpoints/${1}"
 cp --archive --update --verbose "${script_dir}/"*.py "${asset_root}/endpoints"
-cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/endpoints/datasets"
+cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/endpoints/${1}"
