@@ -32,19 +32,23 @@ def test_should_fail_if_request_not_containing_body():
 
 @mark.infrastructure
 def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
+    dataset_type = "RASTER"
+    dataset_title = "Dataset 123"
+    dataset_owning_group = "A_ABC_XYZ"
+
     body = {}
-    body["type"] = "RASTER"
-    body["title"] = "Dataset 123"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["type"] = dataset_type
+    body["title"] = dataset_title
+    body["owning_group"] = dataset_owning_group
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 201
     assert len(response["body"]["id"]) == 32  # 32 characters long UUID
-    assert response["body"]["type"] == body["type"]
-    assert response["body"]["title"] == body["title"]
-    assert response["body"]["owning_group"] == body["owning_group"]
+    assert response["body"]["type"] == dataset_type
+    assert response["body"]["title"] == dataset_title
+    assert response["body"]["owning_group"] == dataset_owning_group
 
 
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
@@ -94,16 +98,19 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title(
 
 @mark.infrastructure
 def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argument
+    dataset_id = "111abc"
+    dataset_type = "RASTER"
+
     body = {}
-    body["id"] = "111abc"
-    body["type"] = "RASTER"
+    body["id"] = dataset_id
+    body["type"] = dataset_type
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 200
-    assert response["body"]["id"] == "111abc"
-    assert response["body"]["type"] == "RASTER"
+    assert response["body"]["id"] == dataset_id
+    assert response["body"]["type"] == dataset_type
     assert response["body"]["title"] == "Dataset ABC"
 
 
@@ -123,9 +130,12 @@ def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argume
 def test_should_return_single_dataset_filtered_by_type_and_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
+    dataset_type = "RASTER"
+    dataset_title = "Dataset ABC"
+
     body = {}
-    body["type"] = "RASTER"
-    body["title"] = "Dataset ABC"
+    body["type"] = dataset_type
+    body["title"] = dataset_title
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -133,17 +143,20 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     assert response["statusCode"] == 200
     assert len(response["body"]) == 1
     assert response["body"][0]["id"] == "111abc"
-    assert response["body"][0]["type"] == "RASTER"
-    assert response["body"][0]["title"] == "Dataset ABC"
+    assert response["body"][0]["type"] == dataset_type
+    assert response["body"][0]["title"] == dataset_title
 
 
 @mark.infrastructure
 def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     db_prepare,
 ):  # pylint:disable=unused-argument
+    dataset_type = "RASTER"
+    dataset_owning_group = "A_ABC_XYZ"
+
     body = {}
-    body["type"] = "RASTER"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["type"] = dataset_type
+    body["owning_group"] = dataset_owning_group
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -151,8 +164,8 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     assert response["statusCode"] == 200
     assert len(response["body"]) == 2
     assert response["body"][0]["id"] == "111abc"
-    assert response["body"][0]["type"] == "RASTER"
-    assert response["body"][0]["owning_group"] == "A_ABC_XYZ"
+    assert response["body"][0]["type"] == dataset_type
+    assert response["body"][0]["owning_group"] == dataset_owning_group
 
 
 @mark.infrastructure
@@ -189,17 +202,19 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
 
 @mark.infrastructure
 def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
+    new_dataset_title = "New Dataset ABC"
+
     body = {}
     body["id"] = "111abc"
     body["type"] = "RASTER"
-    body["title"] = "New Dataset ABC"
+    body["title"] = new_dataset_title
     body["owning_group"] = "A_ABC_XYZ"
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 200
-    assert response["body"]["title"] == "New Dataset ABC"
+    assert response["body"]["title"] == new_dataset_title
 
 
 @mark.infrastructure
