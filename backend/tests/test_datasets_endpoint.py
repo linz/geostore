@@ -10,7 +10,12 @@ from pytest import mark
 
 from ..endpoints.datasets import entrypoint
 from ..endpoints.datasets.common import DATASET_TYPES
-from .utils import any_dataset_owning_group, any_dataset_title, any_valid_dataset_type
+from .utils import (
+    any_dataset_id,
+    any_dataset_owning_group,
+    any_dataset_title,
+    any_valid_dataset_type,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -191,8 +196,10 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
 
 @mark.infrastructure
 def test_should_fail_if_get_request_requests_not_existing_dataset():
+    dataset_id = any_dataset_id()
+
     body = {}
-    body["id"] = "NOT_EXISTING_ID"
+    body["id"] = dataset_id
     body["type"] = "RASTER"
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
@@ -201,7 +208,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     assert response["statusCode"] == 404
     assert (
         response["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
+        == f"Not Found: dataset '{dataset_id}' of type 'RASTER' does not exist"
     )
 
 
@@ -244,8 +251,10 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
 @mark.infrastructure
 def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
+    dataset_id = any_dataset_id()
+
     body = {}
-    body["id"] = "NOT_EXISTING_ID"
+    body["id"] = dataset_id
     body["type"] = "RASTER"
     body["title"] = "New Dataset ABC"
     body["owning_group"] = any_dataset_owning_group()
@@ -256,7 +265,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     assert response["statusCode"] == 404
     assert (
         response["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
+        == f"Not Found: dataset '{dataset_id}' of type 'RASTER' does not exist"
     )
 
 
@@ -275,8 +284,10 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
 
 @mark.infrastructure
 def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
+    dataset_id = any_dataset_id()
+
     body = {}
-    body["id"] = "NOT_EXISTING_ID"
+    body["id"] = dataset_id
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
     body["owning_group"] = any_dataset_owning_group()
@@ -287,5 +298,5 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     assert response["statusCode"] == 404
     assert (
         response["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
+        == f"Not Found: dataset '{dataset_id}' of type 'RASTER' does not exist"
     )

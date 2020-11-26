@@ -1,11 +1,16 @@
 import string
 from random import choice
+from uuid import uuid4
 
 from ..endpoints.datasets.common import DATASET_TYPES
 
 
 def random_string(length: int) -> str:
     return "".join(choice(string.printable) for _ in range(length))
+
+
+def any_dataset_id() -> str:
+    return str(uuid4())
 
 
 def any_valid_dataset_type() -> str:
