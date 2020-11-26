@@ -15,19 +15,19 @@ logger = logging.getLogger(__name__)
 
 
 def test_should_fail_if_request_not_containing_method():
-    resp = entrypoint.lambda_handler({"body": {}}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"body": {}}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'httpMethod' is a required property"
+    assert response["statusCode"] == 400
+    assert response["body"]["message"] == "Bad Request: 'httpMethod' is a required property"
 
 
 def test_should_fail_if_request_not_containing_body():
-    resp = entrypoint.lambda_handler({"httpMethod": "POST"}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "POST"}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'body' is a required property"
+    assert response["statusCode"] == 400
+    assert response["body"]["message"] == "Bad Request: 'body' is a required property"
 
 
 @mark.infrastructure
@@ -37,14 +37,14 @@ def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 201
-    assert len(resp["body"]["id"]) == 32  # 32 characters long UUID
-    assert resp["body"]["type"] == body["type"]
-    assert resp["body"]["title"] == body["title"]
-    assert resp["body"]["owning_group"] == body["owning_group"]
+    assert response["statusCode"] == 201
+    assert len(response["body"]["id"]) == 32  # 32 characters long UUID
+    assert response["body"]["type"] == body["type"]
+    assert response["body"]["title"] == body["title"]
+    assert response["body"]["owning_group"] == body["owning_group"]
 
 
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
@@ -53,11 +53,11 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 400
-    assert resp["body"]["message"] == "Bad Request: 'type' is a required property"
+    assert response["statusCode"] == 400
+    assert response["body"]["message"] == "Bad Request: 'type' is a required property"
 
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type():
@@ -66,11 +66,11 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     body["title"] = "Dataset 123"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 400
-    assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", resp["body"]["message"])
+    assert response["statusCode"] == 400
+    assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", response["body"]["message"])
 
 
 @mark.infrastructure
@@ -82,12 +82,13 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title(
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 409
+    assert response["statusCode"] == 409
     assert (
-        resp["body"]["message"] == "Conflict: dataset 'Dataset ABC' of type 'RASTER' already exists"
+        response["body"]["message"]
+        == "Conflict: dataset 'Dataset ABC' of type 'RASTER' already exists"
     )
 
 
@@ -97,25 +98,25 @@ def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argu
     body["id"] = "111abc"
     body["type"] = "RASTER"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 200
-    assert resp["body"]["id"] == "111abc"
-    assert resp["body"]["type"] == "RASTER"
-    assert resp["body"]["title"] == "Dataset ABC"
+    assert response["statusCode"] == 200
+    assert response["body"]["id"] == "111abc"
+    assert response["body"]["type"] == "RASTER"
+    assert response["body"]["title"] == "Dataset ABC"
 
 
 @mark.infrastructure
 def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argument
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": {}}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": {}}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 200
-    assert len(resp["body"]) == 2
-    assert resp["body"][0]["id"] in ("111abc", "222xyz")
-    assert resp["body"][0]["type"] == "RASTER"
-    assert resp["body"][0]["title"] in ("Dataset ABC", "Dataset XYZ")
+    assert response["statusCode"] == 200
+    assert len(response["body"]) == 2
+    assert response["body"][0]["id"] in ("111abc", "222xyz")
+    assert response["body"][0]["type"] == "RASTER"
+    assert response["body"][0]["title"] in ("Dataset ABC", "Dataset XYZ")
 
 
 @mark.infrastructure
@@ -126,14 +127,14 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     body["type"] = "RASTER"
     body["title"] = "Dataset ABC"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 200
-    assert len(resp["body"]) == 1
-    assert resp["body"][0]["id"] == "111abc"
-    assert resp["body"][0]["type"] == "RASTER"
-    assert resp["body"][0]["title"] == "Dataset ABC"
+    assert response["statusCode"] == 200
+    assert len(response["body"]) == 1
+    assert response["body"][0]["id"] == "111abc"
+    assert response["body"][0]["type"] == "RASTER"
+    assert response["body"][0]["title"] == "Dataset ABC"
 
 
 @mark.infrastructure
@@ -144,14 +145,14 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     body["type"] = "RASTER"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 200
-    assert len(resp["body"]) == 2
-    assert resp["body"][0]["id"] == "111abc"
-    assert resp["body"][0]["type"] == "RASTER"
-    assert resp["body"][0]["owning_group"] == "A_ABC_XYZ"
+    assert response["statusCode"] == 200
+    assert len(response["body"]) == 2
+    assert response["body"][0]["id"] == "111abc"
+    assert response["body"][0]["type"] == "RASTER"
+    assert response["body"][0]["owning_group"] == "A_ABC_XYZ"
 
 
 @mark.infrastructure
@@ -163,11 +164,11 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 400
-    assert re.search("^Bad Request: .* has too many properties", resp["body"]["message"])
+    assert response["statusCode"] == 400
+    assert re.search("^Bad Request: .* has too many properties", response["body"]["message"])
 
 
 @mark.infrastructure
@@ -176,12 +177,12 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     body["id"] = "NOT_EXISTING_ID"
     body["type"] = "RASTER"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 404
+    assert response["statusCode"] == 404
     assert (
-        resp["body"]["message"]
+        response["body"]["message"]
         == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
 
@@ -194,11 +195,11 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     body["title"] = "New Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 200
-    assert resp["body"]["title"] == "New Dataset ABC"
+    assert response["statusCode"] == 200
+    assert response["body"]["title"] == "New Dataset ABC"
 
 
 @mark.infrastructure
@@ -211,12 +212,13 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     body["title"] = "Dataset XYZ"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 409
+    assert response["statusCode"] == 409
     assert (
-        resp["body"]["message"] == "Conflict: dataset 'Dataset XYZ' of type 'RASTER' already exists"
+        response["body"]["message"]
+        == "Conflict: dataset 'Dataset XYZ' of type 'RASTER' already exists"
     )
 
 
@@ -228,12 +230,12 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     body["title"] = "New Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 404
+    assert response["statusCode"] == 404
     assert (
-        resp["body"]["message"]
+        response["body"]["message"]
         == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
 
@@ -244,11 +246,11 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     body["id"] = "111abc"
     body["type"] = "RASTER"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 204
-    assert resp["body"] == {}
+    assert response["statusCode"] == 204
+    assert response["body"] == {}
 
 
 @mark.infrastructure
@@ -259,11 +261,11 @@ def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:dis
     body["title"] = "Dataset ABC"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
-    logger.info("Response: %s", resp)
+    response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
+    logger.info("Response: %s", response)
 
-    assert resp["statusCode"] == 404
+    assert response["statusCode"] == 404
     assert (
-        resp["body"]["message"]
+        response["body"]["message"]
         == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
     )
