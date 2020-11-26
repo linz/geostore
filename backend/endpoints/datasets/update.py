@@ -67,7 +67,6 @@ def update_dataset(payload):
     dataset.refresh(consistent_read=True)
 
     # return response
-    resp_body = {}
     resp_body = dict(dataset)
 
     resp_body["id"] = dataset.dataset_id
