@@ -4,6 +4,8 @@ set -o errexit
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+git submodule update --init
+
 npm ci
 
 poetry install --extras='cdk datasets-endpoint'

@@ -33,8 +33,17 @@ def any_dataset_title() -> str:
     return random_string(20)
 
 
+def any_dataset_description() -> str:
+    """Arbitrary-length string"""
+    return random_string(100)
+
+
 def any_past_datetime() -> datetime:
     return REFERENCE_DATETIME - timedelta(seconds=randrange(60_000_000_000))  # Back to year 98
+
+
+def any_past_datetime_string() -> str:
+    return any_past_datetime().isoformat()
 
 
 def any_dataset_owning_group() -> str:
