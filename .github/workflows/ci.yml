@@ -116,16 +116,13 @@ jobs:
                   mask-aws-account-id: true
                   role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-            - name: Set unique deployment environment type variable
-              run: |
-                  DEPLOY_ENV=ci$(date +%s)
-                  echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
-
             - name: Deploy AWS stacks for testing
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
               working-directory: infra
+              env:
+                  DEPLOY_ENV: ci
 
             - name: Run AWS infra tests
               run: >
@@ -142,7 +139,8 @@ jobs:
                   poetry run cdk destroy --force processing datalake  # don't drop networking
               working-directory: infra
               if: always()  # clean-up AWS stack after failure
-
+              env:
+                  DEPLOY_ENV: ci
 
     deploy:
         needs: [linter, test, test-infra]
