@@ -172,7 +172,7 @@ class ProcessingStack(core.Stack):
                         bundling=core.BundlingOptions(
                             # pylint:disable=no-member
                             image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
-                            command=["backend/processing/bundle.bash", f"{task}"],
+                            command=["backend/bundle.bash", f"processing/{task}"],
                         ),
                     ),
                 )
