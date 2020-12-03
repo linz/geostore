@@ -73,6 +73,9 @@ Developed by [Land Information New Zealand](https://github.com/linz)
     $ pre-commit install --hook-type=commit-msg --overwrite
     $ pre-commit install --hook-type=pre-commit --overwrite
     ```
+   You will need to run this whenever upgrading the Python minor version, such as 3.8 to 3.9, to avoid messages like
+   
+   > /usr/bin/env: ‘python3.8’: No such file or directory
 * Install automatic Pylint code checks for your editor or run it by hand
 
     ```
