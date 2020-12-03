@@ -179,7 +179,7 @@ class ProcessingStack(core.Stack):
 
                 step_tasks[task] = aws_stepfunctions_tasks.LambdaInvoke(
                     self,
-                    f"{task}",
+                    task,
                     lambda_function=lambda_function,
                     input_path=creation_tasks[task].get("input_path", "$"),
                     output_path=creation_tasks[task].get("output_path", "$"),
@@ -233,7 +233,7 @@ class ProcessingStack(core.Stack):
                 if creation_tasks[task]["parallel"]:
                     step_tasks[task] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
-                        f"{task}",
+                        task,
                         job_name=f"{task}-job",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
@@ -251,7 +251,7 @@ class ProcessingStack(core.Stack):
                 else:
                     step_tasks[task] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
-                        f"{task}",
+                        task,
                         job_name=f"{task}-job",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
