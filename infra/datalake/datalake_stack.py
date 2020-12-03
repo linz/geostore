@@ -12,10 +12,8 @@ class DataLakeStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, deploy_env, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        ENV = deploy_env
-
         # set resources removal policy for different environments
-        if ENV == "prod":
+        if deploy_env == "prod":
             REMOVAL_POLICY = core.RemovalPolicy.RETAIN
         else:
             REMOVAL_POLICY = core.RemovalPolicy.DESTROY
@@ -27,7 +25,7 @@ class DataLakeStack(core.Stack):
             self,
             "storage-bucket",
             bucket_name="{}-{}".format(
-                self.node.try_get_context("data-lake-storage-bucket-name"), ENV
+                self.node.try_get_context("data-lake-storage-bucket-name"), deploy_env
             ),
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,

@@ -23,8 +23,6 @@ class ProcessingStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, deploy_env, vpc, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        ENV = deploy_env
-
         ############################################################################################
         # ### DATASET VERSION CREATE ###############################################################
         ############################################################################################
@@ -114,7 +112,7 @@ class ProcessingStack(core.Stack):
             },
         )
 
-        if ENV == "prod":
+        if deploy_env == "prod":
             instance_types = [
                 aws_ec2.InstanceType("c5.xlarge"),
                 aws_ec2.InstanceType("c5.2xlarge"),
@@ -201,7 +199,7 @@ class ProcessingStack(core.Stack):
                         image=aws_ecs.ContainerImage.from_asset(
                             directory=f"../backend/processing/{task}",
                         ),
-                        memory_limit_mib=3900 if ENV == "prod" else 500,
+                        memory_limit_mib=3900 if deploy_env == "prod" else 500,
                         vcpus=1,
                     ),
                     retry_attempts=4,
