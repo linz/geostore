@@ -157,7 +157,7 @@ class ProcessingStack(core.Stack):
             priority=10,
         )
 
-        # BUNDLING AND TASKS BUILDING
+        # LAMBDA F. AND BATCH IMAGES BUNDLING AND STATE MACHINE TASKS CREATION
         step_tasks = {}
         for task in creation_tasks:
 
