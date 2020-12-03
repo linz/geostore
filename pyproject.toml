@@ -24,7 +24,7 @@ authors = [
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6,<3.9"
 "aws-cdk.aws-s3" = {version="*", optional=true}
 "aws-cdk.aws-iam" = {version="*", optional=true}
 "aws-cdk.aws-dynamodb" = {version="*", optional=true}
