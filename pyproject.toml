@@ -42,6 +42,7 @@ isort = "*"
 pre-commit = "*"
 pylint = "*"
 pytest = "*"
+pytest-randomly = "*"
 shellcheck-py = "*"
 yamlfmt = {url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"}
 yamllint = "*"

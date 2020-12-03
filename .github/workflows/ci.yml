@@ -68,8 +68,9 @@ jobs:
                   python -m poetry install
 
             - name: Run unit tests
-              run: |
-                  poetry run pytest tests/
+              run: >
+                  poetry run pytest
+                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" tests/
 
 
     test-infra:
@@ -127,12 +128,14 @@ jobs:
               working-directory: infra
 
             - name: Run AWS infra tests
-              run: |
-                  poetry run pytest infra/tests/
+              run: >
+                  poetry run pytest
+                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" infra/tests/
 
             - name: Run AWS backend tests
-              run: |
-                  poetry run pytest backend/tests/
+              run: >
+                  poetry run pytest
+                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" backend/tests/
 
             - name: Destroy AWS stack used for testing
               run: |
