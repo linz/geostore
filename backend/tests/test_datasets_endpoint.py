@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 def test_should_fail_if_request_not_containing_method():
-    """Test if request fails correctly if not containing method attribute."""
-
     body = {}
 
     resp = entrypoint.lambda_handler({"body": body}, "context")
@@ -27,8 +25,6 @@ def test_should_fail_if_request_not_containing_method():
 
 
 def test_should_fail_if_request_not_containing_body():
-    """Test if request fails correctly if not containing body."""
-
     method = "POST"
 
     resp = entrypoint.lambda_handler({"httpMethod": method}, "context")
@@ -40,8 +36,6 @@ def test_should_fail_if_request_not_containing_body():
 
 @mark.infrastructure
 def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
-    """Test Dataset creation using POST method."""
-
     method = "POST"
     body = {}
     body["type"] = "RASTER"
@@ -59,8 +53,6 @@ def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
 
 
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
-    """Test if POST request fails correctly if not containing mandatory attribute."""
-
     method = "POST"
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
@@ -75,8 +67,6 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
 
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type():
-    """Test if POST request fails correctly if containing incorrect dataset type."""
-
     method = "POST"
     body = {}
     body["type"] = "INCORRECT_TYPE"
@@ -94,11 +84,6 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
 def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
-    """
-    Test if POST request fails correctly if containing duplicate dataset
-    title.
-    """
-
     method = "POST"
     body = {}
     body["type"] = "RASTER"
@@ -116,8 +101,6 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
 
 @mark.infrastructure
 def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argument
-    """Test retrieving single Dataset using GET method."""
-
     method = "GET"
     body = {}
     body["id"] = "111abc"
@@ -134,8 +117,6 @@ def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argu
 
 @mark.infrastructure
 def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argument
-    """Test retrieving all Datasets using GET method."""
-
     method = "GET"
     body = {}
 
@@ -153,11 +134,6 @@ def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argume
 def test_should_return_single_dataset_filtered_by_type_and_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
-    """
-    Test filtering Datasets by type and title. Must return single dataset,
-    because type/title combination must be unique.
-    """
-
     method = "GET"
     body = {}
     body["type"] = "RASTER"
@@ -177,10 +153,6 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
 def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     db_prepare,
 ):  # pylint:disable=unused-argument
-    """
-    Test filtering Datasets by type and title.
-    """
-
     method = "GET"
     body = {}
     body["type"] = "RASTER"
@@ -200,11 +172,6 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
 def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     db_prepare,
 ):  # pylint:disable=unused-argument
-    """
-    Test if GET request fails correctly if filter contains both tile and
-    owning_group attributes.
-    """
-
     method = "GET"
     body = {}
     body["type"] = "RASTER"
@@ -220,9 +187,6 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
 
 @mark.infrastructure
 def test_should_fail_if_get_request_requests_not_existing_dataset():
-    """
-    Test if GET request fails correctly if not existing dataset ID is specified.
-    """
     method = "GET"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
@@ -240,8 +204,6 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
 
 @mark.infrastructure
 def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
-    """Test Dataset update using PATCH method."""
-
     method = "PATCH"
     body = {}
     body["id"] = "111abc"
@@ -260,11 +222,6 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
 def test_should_fail_if_updating_with_already_existing_dataset_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
-    """
-    Test if PATCH request fails correctly if trying to update dataset with
-    already existing dataset title.
-    """
-
     method = "PATCH"
     body = {}
     body["id"] = "111abc"
@@ -283,10 +240,6 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
 @mark.infrastructure
 def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
-    """
-    Test if PATCH request fails correctly if trying to update not existing
-    dataset.
-    """
     method = "PATCH"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
@@ -306,8 +259,6 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
 
 @mark.infrastructure
 def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
-    """Test Dataset deletion using DELETE method."""
-
     method = "DELETE"
     body = {}
     body["id"] = "111abc"
@@ -322,11 +273,6 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
 
 @mark.infrastructure
 def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
-    """
-    Test if DELETE request fails correctly if trying to update not existing
-    dataset.
-    """
-
     method = "DELETE"
     body = {}
     body["id"] = "NOT_EXISTING_ID"
