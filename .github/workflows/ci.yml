@@ -139,7 +139,9 @@ jobs:
 
             - name: Destroy AWS stacks used for testing
               run: |
-                  poetry run cdk destroy --force processing datalake  # don't drop networking
+                  # Don't drop networking stack. It is updated very rarely and deployment/destroy
+                  # takes a very long time.
+                  poetry run cdk destroy --force processing datalake
               working-directory: infra
               if: always()  # clean-up AWS stack after failure
 
