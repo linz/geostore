@@ -6,6 +6,8 @@ required (run '$ cdk deploy' before running tests).
 import logging
 import re
 
+from pytest import mark
+
 from ..endpoints.datasets import entrypoint
 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +38,7 @@ def test_should_fail_if_request_not_containing_body():
     assert resp["body"]["message"] == "Bad Request: 'body' is a required property"
 
 
+@mark.infrastructure
 def test_should_create_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset creation using POST method."""
 
@@ -87,6 +90,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", resp["body"]["message"])
 
 
+@mark.infrastructure
 def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
@@ -110,6 +114,7 @@ def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
     )
 
 
+@mark.infrastructure
 def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving single Dataset using GET method."""
 
@@ -127,6 +132,7 @@ def test_should_return_single_dataset(db_prepare):  # pylint:disable=unused-argu
     assert resp["body"]["title"] == "Dataset ABC"
 
 
+@mark.infrastructure
 def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argument
     """Test retrieving all Datasets using GET method."""
 
@@ -143,6 +149,7 @@ def test_should_return_all_datasets(db_prepare):  # pylint:disable=unused-argume
     assert resp["body"][0]["title"] in ("Dataset ABC", "Dataset XYZ")
 
 
+@mark.infrastructure
 def test_should_return_single_dataset_filtered_by_type_and_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
@@ -166,6 +173,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     assert resp["body"][0]["title"] == "Dataset ABC"
 
 
+@mark.infrastructure
 def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     db_prepare,
 ):  # pylint:disable=unused-argument
@@ -188,6 +196,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     assert resp["body"][0]["owning_group"] == "A_ABC_XYZ"
 
 
+@mark.infrastructure
 def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     db_prepare,
 ):  # pylint:disable=unused-argument
@@ -209,6 +218,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter(
     assert re.search("^Bad Request: .* has too many properties", resp["body"]["message"])
 
 
+@mark.infrastructure
 def test_should_fail_if_get_request_requests_not_existing_dataset():
     """
     Test if GET request fails correctly if not existing dataset ID is specified.
@@ -228,6 +238,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset():
     )
 
 
+@mark.infrastructure
 def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset update using PATCH method."""
 
@@ -245,6 +256,7 @@ def test_should_update_dataset(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"]["title"] == "New Dataset ABC"
 
 
+@mark.infrastructure
 def test_should_fail_if_updating_with_already_existing_dataset_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
@@ -269,6 +281,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     )
 
 
+@mark.infrastructure
 def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
     """
     Test if PATCH request fails correctly if trying to update not existing
@@ -291,6 +304,7 @@ def test_should_fail_if_updating_not_existing_dataset(db_prepare):  # pylint:dis
     )
 
 
+@mark.infrastructure
 def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     """Test Dataset deletion using DELETE method."""
 
@@ -306,6 +320,7 @@ def test_should_delete_dataset(db_prepare):  # pylint:disable=unused-argument
     assert resp["body"] == {}
 
 
+@mark.infrastructure
 def test_should_fail_if_deleting_not_existing_dataset(db_prepare):  # pylint:disable=unused-argument
     """
     Test if DELETE request fails correctly if trying to update not existing

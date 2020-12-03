@@ -67,5 +67,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 markers = [
-    "acceptance: run against a deployed infrastructure",
+    "infrastructure: requires a deployed infrastructure",
 ]
