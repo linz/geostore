@@ -1,4 +1,4 @@
-def lambda_handler(event, _context):  # pylint:disable=unused-argument
+def lambda_handler(event, _context):
     """Main Lambda entry point."""
 
     total_size = 100
