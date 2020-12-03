@@ -155,49 +155,51 @@ class ProcessingStack(core.Stack):
             priority=10,
         )
 
-        # LAMBDA F. AND BATCH IMAGES BUNDLING AND STATE MACHINE TASKS CREATION
+        # LAMBDA AND AWS BATCH BUNDLING AND STATE MACHINE TASKS CREATION
         step_tasks = {}
-        for task in creation_tasks:
+        for task_name in creation_tasks:
+
+            task = creation_tasks[task_name]
 
             # lambda functions
-            if creation_tasks[task]["type"] == "lambda":
+            if task["type"] == "lambda":
 
                 lambda_function = aws_lambda.Function(
                     self,
-                    f"{task}-function",
-                    handler=f"processing.{task}.task.lambda_handler",
+                    f"{task_name}-function",
+                    handler=f"processing.{task_name}.task.lambda_handler",
                     runtime=aws_lambda.Runtime.PYTHON_3_6,
                     code=aws_lambda.Code.from_asset(
                         path="..",
                         bundling=core.BundlingOptions(
                             # pylint:disable=no-member
                             image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
-                            command=["backend/bundle.bash", f"processing/{task}"],
+                            command=["backend/bundle.bash", f"processing/{task_name}"],
                         ),
                     ),
                 )
 
-                step_tasks[task] = aws_stepfunctions_tasks.LambdaInvoke(
+                step_tasks[task_name] = aws_stepfunctions_tasks.LambdaInvoke(
                     self,
-                    task,
+                    task_name,
                     lambda_function=lambda_function,
-                    input_path=creation_tasks[task].get("input_path", "$"),
-                    output_path=creation_tasks[task].get("output_path", "$"),
-                    result_path=creation_tasks[task].get("result_path", "$"),
+                    input_path=task.get("input_path", "$"),
+                    output_path=task.get("output_path", "$"),
+                    result_path=task.get("result_path", "$"),
                     payload_response_only=True,
                 )
 
                 Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
 
             # aws batch jobs
-            if creation_tasks[task]["type"] == "batch":
+            if task["type"] == "batch":
 
                 job_definition = aws_batch.JobDefinition(
                     self,
-                    f"{task}-job",
+                    f"{task_name}-job",
                     container=aws_batch.JobDefinitionContainer(
                         image=aws_ecs.ContainerImage.from_asset(
-                            directory=f"../backend/processing/{task}",
+                            directory=f"../backend/processing/{task_name}",
                         ),
                         memory_limit_mib=3900 if deploy_env == "prod" else 500,
                         vcpus=1,
@@ -230,17 +232,17 @@ class ProcessingStack(core.Stack):
                     {**job_payload_data, **job_payload_data_parallel}
                 )
 
-                if creation_tasks[task]["parallel"]:
-                    step_tasks[task] = aws_stepfunctions_tasks.BatchSubmitJob(
+                if task["parallel"]:
+                    step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
-                        task,
-                        job_name=f"{task}-job",
+                        task_name,
+                        job_name=f"{task_name}-job",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
                         array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
-                        input_path=creation_tasks[task].get("input_path", "$"),
-                        output_path=creation_tasks[task].get("output_path", "$"),
-                        result_path=creation_tasks[task].get("result_path", "$"),
+                        input_path=task.get("input_path", "$"),
+                        output_path=task.get("output_path", "$"),
+                        result_path=task.get("result_path", "$"),
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
                             environment=job_environment,
@@ -249,15 +251,15 @@ class ProcessingStack(core.Stack):
                     )
 
                 else:
-                    step_tasks[task] = aws_stepfunctions_tasks.BatchSubmitJob(
+                    step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
-                        task,
-                        job_name=f"{task}-job",
+                        task_name,
+                        job_name=f"{task_name}-job",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
-                        input_path=creation_tasks[task].get("input_path", "$"),
-                        output_path=creation_tasks[task].get("output_path", "$"),
-                        result_path=creation_tasks[task].get("result_path", "$"),
+                        input_path=task.get("input_path", "$"),
+                        output_path=task.get("output_path", "$"),
+                        result_path=task.get("result_path", "$"),
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
                         ),
