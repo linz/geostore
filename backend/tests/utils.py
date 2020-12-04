@@ -80,7 +80,5 @@ class Dataset:
         exc_type: Optional[Type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
-    ) -> bool:
+    ) -> None:
         self.model.delete()
-
-        return False  # Propagate exception
