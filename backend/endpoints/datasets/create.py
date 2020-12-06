@@ -3,6 +3,7 @@
 from jsonschema import ValidationError, validate
 
 from ..utils import error_response, success_response
+from .common import DATASET_TYPES
 from .model import DatasetModel
 
 
@@ -14,7 +15,7 @@ def create_dataset(payload):
         "properties": {
             "type": {
                 "type": "string",
-                "enum": ["IMAGE", "RASTER"],
+                "enum": DATASET_TYPES,
             },
             "title": {"type": "string"},
             "owning_group": {"type": "string"},
