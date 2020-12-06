@@ -98,3 +98,15 @@ To add a production package:
 ### Upgrading CI runner
 
 [`jobs.<job_id>.runs-on`](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on) in .github sets the runner type per job. We should make sure all of these use the latest specific ("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes only when we're ready for it.
+
+### Development patterns
+
+- Commit package upgrades separately from package installs/removals. That is, if you want to run `poetry update`, make sure any existing changes to poetry.lock and pyproject.toml are already committed. Beware that `poetry lock` will also upgrade packages by default; see next point.
+
+   Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting history.
+- When there's a merge conflict in poetry.lock, first check whether either or both commits contain a package upgrade:
+   - If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
+   - If one of them does, check out that file (`git checkout --ours -- poetry.lock` or `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate `poetry.lock` with the current package versions.
+   - If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
+
+   Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
