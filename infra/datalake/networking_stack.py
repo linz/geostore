@@ -8,9 +8,8 @@ from aws_cdk.core import Tags
 class NetworkingStack(core.Stack):
     """Data Lake networking stack definition."""
 
-    # pylint: disable=redefined-builtin,too-many-locals
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    def __init__(self, scope: core.Construct, stack_id: str, **kwargs) -> None:
+        super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
         # ### NETWORKING ###########################################################################

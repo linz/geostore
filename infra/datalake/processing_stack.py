@@ -19,9 +19,9 @@ from aws_cdk.core import Tags
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
 
-    # pylint: disable=redefined-builtin,too-many-locals
-    def __init__(self, scope: core.Construct, id: str, deploy_env, vpc, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    # pylint: disable=too-many-locals
+    def __init__(self, scope: core.Construct, stack_id: str, deploy_env, vpc, **kwargs) -> None:
+        super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
         # ### DATASET VERSION CREATE ###############################################################

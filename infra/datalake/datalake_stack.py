@@ -8,9 +8,8 @@ from aws_cdk.core import Tags
 class DataLakeStack(core.Stack):
     """Data Lake stack definition."""
 
-    # pylint: disable=redefined-builtin,too-many-locals
-    def __init__(self, scope: core.Construct, id: str, deploy_env, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
+        super().__init__(scope, stack_id, **kwargs)
 
         # set resources removal policy for different environments
         if deploy_env == "prod":
