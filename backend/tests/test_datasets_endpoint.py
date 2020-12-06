@@ -81,7 +81,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
 
 
 @mark.infrastructure
-def test_shoud_fail_if_post_request_containing_duplicate_dataset_title(
+def test_should_fail_if_post_request_containing_duplicate_dataset_title(
     db_prepare,
 ):  # pylint:disable=unused-argument
     method = "POST"
