@@ -89,6 +89,9 @@ jobs:
               with:
                   python-version: ${{ matrix.python }}
 
+            - name: Install AWS CLI
+              run: sudo apt install awscli
+
             - name: Install Python dependencies
               run: |
                   python -m pip install --upgrade pip
@@ -120,6 +123,14 @@ jobs:
               run: |
                   DEPLOY_ENV=ci
                   echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+
+            - name: Wait if another CI AWS already stack exists
+              # yamllint disable rule:line-length
+              run: |
+                  export s="geospatial-data-lake-ci"
+                  export e=$(aws cloudformation describe-stacks --query "Stacks[?contains(@.StackName,\"${s}\")].[StackName]" --output text)
+                  timeout 7200 bash -c "while [[ -n \"\${e}\" ]]; do echo \"Waiting for \${s} teardown ...\"; sleep 3; done"
+              # yamllint enable rule:line-length
 
             - name: Deploy AWS stacks for testing
               run: |
