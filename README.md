@@ -54,15 +54,15 @@ Developed by [Land Information New Zealand](https://github.com/linz)
 * Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
     ```bash
-    $ ./node_modules/.bin/aws-azure-login -p <geospatial-data-lake-nonprod|geospatial-data-lake-prod>
+    $ ./node_modules/.bin/aws-azure-login -p <AWS-PROFILE-NAME>
     ```
 * Deploy CDK stack
 
     ```bash
     $ cd infra
     $ export ENVIRONMENT_TYPE=dev|nonprod|prod
-    $ ../node_modules/.bin/cdk --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> bootstrap aws://unknown-account/ap-southeast-2
-    $ ../node_modules/.bin/cdk deploy --profile <geospatial-data-lake-nonprod|geospatial-data-lake-prod> geospatial-data-lake
+    $ ../node_modules/.bin/cdk --profile <AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+    $ ../node_modules/.bin/cdk --profile <AWS-PROFILE-NAME> deploy --all
     ```
 
 

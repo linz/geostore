@@ -8,14 +8,11 @@ from aws_cdk.core import Tags
 class DataLakeStack(core.Stack):
     """Data Lake stack definition."""
 
-    # pylint: disable=redefined-builtin,too-many-locals
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
-
-        ENV = self.stack_name.split("-")[-1]
+    def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
+        super().__init__(scope, stack_id, **kwargs)
 
         # set resources removal policy for different environments
-        if ENV == "prod":
+        if deploy_env == "prod":
             REMOVAL_POLICY = core.RemovalPolicy.RETAIN
         else:
             REMOVAL_POLICY = core.RemovalPolicy.DESTROY
@@ -25,9 +22,9 @@ class DataLakeStack(core.Stack):
         ############################################################################################
         storage_bucket = aws_s3.Bucket(
             self,
-            "data-lake-storage-bucket",
+            "storage-bucket",
             bucket_name="{}-{}".format(
-                self.node.try_get_context("data-lake-storage-bucket-name"), ENV
+                self.node.try_get_context("data-lake-storage-bucket-name"), deploy_env
             ),
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
@@ -41,7 +38,7 @@ class DataLakeStack(core.Stack):
         ############################################################################################
         app_db_datasets = aws_dynamodb.Table(
             self,
-            "data-lake-application-db",
+            "application-db",
             table_name="datasets",
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
@@ -82,7 +79,7 @@ class DataLakeStack(core.Stack):
                     bundling=core.BundlingOptions(
                         # pylint:disable=no-member
                         image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
-                        command=["backend/endpoints/bundle.bash", endpoint],
+                        command=["backend/bundle.bash", f"endpoints/{endpoint}"],
                     ),
                 ),
             )

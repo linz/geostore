@@ -118,13 +118,13 @@ jobs:
 
             - name: Set unique deployment environment type variable
               run: |
-                  DEPLOY_ENV=ci$(date +%s)
+                  DEPLOY_ENV=ci
                   echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
 
-            - name: Deploy AWS stack for testing
+            - name: Deploy AWS stacks for testing
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-                  poetry run cdk deploy --require-approval never geospatial-data-lake
+                  poetry run cdk deploy --all --require-approval never
               working-directory: infra
 
             - name: Run AWS infra tests
@@ -137,9 +137,11 @@ jobs:
                   poetry run pytest
                   --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" backend/tests/
 
-            - name: Destroy AWS stack used for testing
+            - name: Destroy AWS stacks used for testing
               run: |
-                  poetry run cdk destroy --force geospatial-data-lake
+                  # Don't drop networking stack. It is updated very rarely and deployment/destroy
+                  # takes a very long time.
+                  poetry run cdk destroy --force processing datalake
               working-directory: infra
               if: always()  # clean-up AWS stack after failure
 
@@ -195,7 +197,7 @@ jobs:
 
             # Temporary disabled to avoid AWS resource names with CI stacks
             # TODO: enable once CI deployment will use separate AWS account
-            # - name: (NonProd) Deploy AWS stack
+            # - name: (NonProd) Deploy AWS stacks
             #   if: >
             #       github.ref == 'refs/heads/master'
             #       && github.repository == 'linz/geospatial-data-lake'
@@ -203,7 +205,7 @@ jobs:
             #       DEPLOY_ENV: nonprod
             #   run: |
             #       poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-            #       poetry run cdk deploy --require-approval never geospatial-data-lake
+            #       poetry run cdk deploy --all --require-approval never
             #   working-directory: infra
 
             # PROD DEPLOYMENT
@@ -219,7 +221,7 @@ jobs:
                   mask-aws-account-id: true
                   role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
 
-            - name: (Prod) Deploy AWS stack
+            - name: (Prod) Deploy AWS stacks
               if: >
                   startsWith(github.ref, 'release')
                   && github.repository == 'linz/geospatial-data-lake'
@@ -227,5 +229,5 @@ jobs:
                   DEPLOY_ENV: prod
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-                  poetry run cdk deploy --require-approval never geospatial-data-lake
+                  poetry run cdk deploy --all --require-approval never
               working-directory: infra

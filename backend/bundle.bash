@@ -6,7 +6,7 @@ if [[ "$#" -lt 1 ]]
 then
     cat >&2 <<'EOF'
 Synopsis: ./bundle.bash DIRECTORY
-Example: ./bundle.bash datasets
+Example: ./bundle.bash endpoints/datasets
 EOF
     exit 1
 fi
@@ -23,7 +23,10 @@ python -m pip install poetry
 
 asset_root='/asset-output'
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
-pip install --requirement=<(poetry export --extras="${1}-endpoint" --without-hashes) "--target=${asset_root}"
-mkdir --parents "${asset_root}/endpoints/${1}"
-cp --archive --update --verbose "${script_dir}/"*.py "${asset_root}/endpoints"
-cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/endpoints/${1}"
+pip install \
+    --requirement=<(poetry export --extras="$(basename "${1}")-endpoint" \
+    --without-hashes) "--target=${asset_root}"
+
+mkdir --parents "${asset_root}/${1}"
+cp --archive --update --verbose "${script_dir}/$(dirname "${1}")/"*.py "${asset_root}/$(dirname "${1}")"
+cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/${1}"
