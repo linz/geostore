@@ -94,3 +94,7 @@ To add a production package:
 1. Install the package using `poetry add --optional PACKAGE='*'`.
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
+
+### Upgrading CI runner
+
+[`jobs.<job_id>.runs-on`](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on) in .github sets the runner type per job. We should make sure all of these use the latest specific ("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes only when we're ready for it.

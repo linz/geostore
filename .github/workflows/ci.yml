@@ -4,7 +4,7 @@ on: [push]  # yamllint disable-line rule:truthy
 
 jobs:
     linter:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         strategy:
             matrix:
                 python: ['3.6', '3.8']
@@ -47,7 +47,7 @@ jobs:
 
     test:
         needs: linter
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         if: github.event_name == 'push'
         strategy:
             matrix:
@@ -75,7 +75,7 @@ jobs:
 
     test-infra:
         needs: [linter, test]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         if: github.event_name == 'push'
         strategy:
             matrix:
@@ -157,7 +157,7 @@ jobs:
 
     deploy:
         needs: [linter, test, test-infra]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         if: >
             github.event_name == 'push'
             && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'release'))
