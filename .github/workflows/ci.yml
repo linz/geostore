@@ -95,6 +95,9 @@ jobs:
                   python -m pip install poetry
                   python -m poetry install --extras='cdk datasets-endpoint'
 
+            - name: Install AWS CLI
+              run: sudo apt install awscli
+
             - name: Use Node.js 12.x for CDK deployment
               uses: actions/setup-node@v2.1.2
               with:
@@ -120,6 +123,12 @@ jobs:
               run: |
                   DEPLOY_ENV=ci
                   echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+
+            - name: Wait for teardown of existing stacks
+              run: |
+                  timeout 2h \
+                      ./.github/workflows/wait-for-stack-teardown.bash \
+                      geospatial-data-lake-ci geospatial-data-lake-processing-ci
 
             - name: Deploy AWS stacks for testing
               run: |
