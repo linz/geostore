@@ -128,8 +128,8 @@ jobs:
               # yamllint disable rule:line-length
               run: |
                   s="geospatial-data-lake-ci"
-                  e=$(aws cloudformation describe-stacks --query "Stacks[?contains(@.StackName,'${s}')].[StackName]" --output text)
-                  timeout 7200 bash -c "while [[ -n "${e}" ]]; do echo "Waiting for ${s} teardown ..."; sleep 3; done"
+                  e=$(aws cloudformation describe-stacks --query "Stacks[?contains(@.StackName,\"${s}\")].[StackName]" --output text)
+                  timeout 7200 bash -c "while [[ -n \"\${e}\" ]]; do echo \"Waiting for \${s} teardown ...\"; sleep 3; done"
               # yamllint enable rule:line-length
 
             - name: Deploy AWS stacks for testing
