@@ -159,7 +159,9 @@ jobs:
               run: |
                   timeout 2h \
                       ./.github/workflows/wait-for-stack-teardown.bash \
-                      geospatial-data-lake-ci geospatial-data-lake-processing-ci
+                      geospatial-data-lake-api-ci \
+                      geospatial-data-lake-processing-ci \
+                      geospatial-data-lake-storage-ci
 
             - name: Deploy AWS stacks for testing
               run: |
@@ -181,7 +183,7 @@ jobs:
               run: |
                   # Don't drop networking stack. It is updated very rarely and deployment/destroy
                   # takes a very long time.
-                  poetry run cdk destroy --force processing datalake
+                  poetry run cdk destroy --force storage processing api
               working-directory: infra
               if: always()  # clean-up AWS stack after failure
 
