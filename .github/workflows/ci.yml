@@ -104,6 +104,13 @@ jobs:
                   node-version: 12.x
                   registry-url: https://registry.npmjs.org
 
+            - uses: actions/cache@v2
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
             - name: Install AWS CDK
               run: npm install -g aws-cdk
 
@@ -184,6 +191,13 @@ jobs:
               with:
                   node-version: 12.x
                   registry-url: https://registry.npmjs.org
+
+            - uses: actions/cache@v2
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
 
             - name: Install AWS CDK
               run: npm install -g aws-cdk
