@@ -60,14 +60,16 @@ def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
 
 
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
+    # Given a missing "type" attribute in the body
     body = {}
-    # body["type"] = "RASTER"  # type attribute is missing
     body["title"] = any_dataset_title()
     body["owning_group"] = any_dataset_owning_group()
 
+    # When attempting to create the instance
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
 
+    # Then the API should return an error message
     assert response["statusCode"] == 400
     assert response["body"]["message"] == "Bad Request: 'type' is a required property"
 
