@@ -9,7 +9,14 @@ import re
 from pytest import mark
 
 from ..endpoints.datasets import entrypoint
-from .utils import Dataset
+from ..endpoints.datasets.common import DATASET_TYPES
+from .utils import (
+    Dataset,
+    any_dataset_id,
+    any_dataset_owning_group,
+    any_dataset_title,
+    any_valid_dataset_type,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,9 +40,9 @@ def test_should_fail_if_request_not_containing_body():
 
 @mark.infrastructure
 def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
-    dataset_type = "RASTER"
-    dataset_title = "Dataset 123"
-    dataset_owning_group = "A_ABC_XYZ"
+    dataset_type = any_valid_dataset_type()
+    dataset_title = any_dataset_title()
+    dataset_owning_group = any_dataset_owning_group()
 
     body = {}
     body["type"] = dataset_type
@@ -55,8 +62,8 @@ def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
 def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body = {}
     # body["type"] = "RASTER"  # type attribute is missing
-    body["title"] = "Dataset 123"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["title"] = any_dataset_title()
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -66,27 +73,30 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
 
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type():
+    dataset_type = f"{''.join(DATASET_TYPES)}x"  # Guaranteed not in `DATASET_TYPES`
     body = {}
-    body["type"] = "INCORRECT_TYPE"
-    body["title"] = "Dataset 123"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["type"] = dataset_type
+    body["title"] = any_dataset_title()
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 400
-    assert re.search("^Bad Request: 'INCORRECT_TYPE' is not one of .*", response["body"]["message"])
+    assert re.search(
+        f"^Bad Request: '{dataset_type}' is not one of .*", response["body"]["message"]
+    )
 
 
 @mark.infrastructure
 def test_should_fail_if_post_request_containing_duplicate_dataset_title():
-    dataset_type = "RASTER"
+    dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset ABC"
 
     body = {}
     body["type"] = dataset_type
     body["title"] = dataset_title
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
@@ -103,7 +113,7 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title():
 def test_should_return_single_dataset(db_teardown):  # pylint:disable=unused-argument
     # Given a dataset instance
     dataset_id = "111abc"
-    dataset_type = "RASTER"
+    dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset ABC"
 
     body = {}
@@ -205,9 +215,9 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
 @mark.infrastructure
 def test_should_fail_if_get_request_containing_tile_and_owning_group_filter():
     body = {}
-    body["type"] = "RASTER"
-    body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["type"] = any_valid_dataset_type()
+    body["title"] = any_dataset_title()
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -220,9 +230,12 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter():
 def test_should_fail_if_get_request_requests_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
+    dataset_id = any_dataset_id()
+    dataset_type = any_valid_dataset_type()
+
     body = {}
-    body["id"] = "NOT_EXISTING_ID"
-    body["type"] = "RASTER"
+    body["id"] = dataset_id
+    body["type"] = dataset_type
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -230,21 +243,21 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
     assert response["statusCode"] == 404
     assert (
         response["body"]["message"]
-        == "Not Found: dataset 'NOT_EXISTING_ID' of type 'RASTER' does not exist"
+        == f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
     )
 
 
 @mark.infrastructure
 def test_should_update_dataset(db_teardown):  # pylint:disable=unused-argument
     dataset_id = "111abc"
-    dataset_type = "RASTER"
+    dataset_type = any_valid_dataset_type()
     new_dataset_title = "New Dataset ABC"
 
     body = {}
     body["id"] = dataset_id
     body["type"] = dataset_type
     body["title"] = new_dataset_title
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
@@ -258,14 +271,14 @@ def test_should_update_dataset(db_teardown):  # pylint:disable=unused-argument
 def test_should_fail_if_updating_with_already_existing_dataset_title(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_type = "RASTER"
+    dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset XYZ"
 
     body = {}
     body["id"] = "111abc"
     body["type"] = dataset_type
     body["title"] = dataset_title
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
@@ -282,14 +295,14 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 def test_should_fail_if_updating_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_id = "NOT_EXISTING_ID"
-    dataset_type = "RASTER"
+    dataset_id = any_dataset_id()
+    dataset_type = any_valid_dataset_type()
 
     body = {}
     body["id"] = dataset_id
     body["type"] = dataset_type
     body["title"] = "New Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -304,7 +317,7 @@ def test_should_fail_if_updating_not_existing_dataset(
 @mark.infrastructure
 def test_should_delete_dataset(db_teardown):  # pylint:disable=unused-argument
     dataset_id = "111abc"
-    dataset_type = "RASTER"
+    dataset_type = any_valid_dataset_type()
 
     body = {}
     body["id"] = dataset_id
@@ -322,14 +335,14 @@ def test_should_delete_dataset(db_teardown):  # pylint:disable=unused-argument
 def test_should_fail_if_deleting_not_existing_dataset(
     db_teardown,
 ):  # pylint:disable=unused-argument
-    dataset_id = "NOT_EXISTING_ID"
-    dataset_type = "RASTER"
+    dataset_id = any_dataset_id()
+    dataset_type = any_valid_dataset_type()
 
     body = {}
     body["id"] = dataset_id
     body["type"] = dataset_type
     body["title"] = "Dataset ABC"
-    body["owning_group"] = "A_ABC_XYZ"
+    body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
     logger.info("Response: %s", response)
