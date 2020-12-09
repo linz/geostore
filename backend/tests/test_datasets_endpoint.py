@@ -116,12 +116,11 @@ def test_should_return_single_dataset(db_teardown):  # pylint:disable=unused-arg
     # Given a dataset instance
     dataset_id = "111abc"
     dataset_type = any_valid_dataset_type()
-    dataset_title = "Dataset ABC"
 
     body = {}
     body["id"] = dataset_id
     body["type"] = dataset_type
-    with Dataset(dataset_id=dataset_id, dataset_type=dataset_type, title=dataset_title):
+    with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
     logger.info("Response: %s", response)
@@ -129,8 +128,6 @@ def test_should_return_single_dataset(db_teardown):  # pylint:disable=unused-arg
     # Then we should get the dataset in return
     assert response["statusCode"] == 200
     assert response["body"]["id"] == dataset_id
-    assert response["body"]["type"] == dataset_type
-    assert response["body"]["title"] == dataset_title
 
 
 @mark.infrastructure
@@ -145,11 +142,6 @@ def test_should_return_all_datasets(db_teardown):  # pylint:disable=unused-argum
         assert response["statusCode"] == 200
         assert len(response["body"]) == 2
         assert response["body"][0]["id"] in (first_dataset.dataset_id, second_dataset.dataset_id)
-        assert response["body"][0]["type"] in (
-            first_dataset.dataset_type,
-            second_dataset.dataset_type,
-        )
-        assert response["body"][0]["title"] in (first_dataset.title, second_dataset.title)
 
 
 @mark.infrastructure
@@ -176,8 +168,6 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
 
     assert response["statusCode"] == 200
     assert len(response["body"]) == 1
-    assert response["body"][0]["type"] == dataset_type
-    assert response["body"][0]["title"] == dataset_title
 
 
 @mark.infrastructure
