@@ -1,13 +1,11 @@
 """
 Data Lake AWS resources definitions.
 """
-from aws_cdk import aws_dynamodb, aws_lambda, aws_s3, core
+from aws_cdk import aws_dynamodb, aws_s3, core
 from aws_cdk.core import Tags
 
 
-class DataLakeStack(core.Stack):
-    """Data Lake stack definition."""
-
+class StorageStack(core.Stack):
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
@@ -20,7 +18,7 @@ class DataLakeStack(core.Stack):
         ############################################################################################
         # ### STORAGE S3 BUCKET ####################################################################
         ############################################################################################
-        storage_bucket = aws_s3.Bucket(
+        self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
             bucket_name="{}-{}".format(
@@ -31,12 +29,12 @@ class DataLakeStack(core.Stack):
             versioned=True,
             removal_policy=REMOVAL_POLICY,
         )
-        Tags.of(storage_bucket).add("ApplicationLayer", "storage")
+        Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")
 
         ############################################################################################
         # ### APPLICATION DB #######################################################################
         ############################################################################################
-        app_db_datasets = aws_dynamodb.Table(
+        self.datasets_table = aws_dynamodb.Table(
             self,
             "application-db",
             table_name="datasets",
@@ -46,12 +44,12 @@ class DataLakeStack(core.Stack):
             removal_policy=REMOVAL_POLICY,
         )
 
-        app_db_datasets.add_global_secondary_index(
+        self.datasets_table.add_global_secondary_index(
             index_name="datasets_title",
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
         )
-        app_db_datasets.add_global_secondary_index(
+        self.datasets_table.add_global_secondary_index(
             index_name="datasets_owning_group",
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(
@@ -59,34 +57,4 @@ class DataLakeStack(core.Stack):
             ),
         )
 
-        Tags.of(app_db_datasets).add("ApplicationLayer", "application-db")
-
-        ############################################################################################
-        # ### API ENDPOINTS ########################################################################
-        ############################################################################################
-
-        endpoints = ("datasets",)
-
-        for endpoint in endpoints:
-            endpoint_function = aws_lambda.Function(
-                self,
-                f"{endpoint}-endpoint-function",
-                function_name=f"{endpoint}-endpoint",
-                handler=f"endpoints.{endpoint}.entrypoint.lambda_handler",
-                runtime=aws_lambda.Runtime.PYTHON_3_6,
-                code=aws_lambda.Code.from_asset(
-                    path="..",
-                    bundling=core.BundlingOptions(
-                        # pylint:disable=no-member
-                        image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
-                        command=["backend/bundle.bash", f"endpoints/{endpoint}"],
-                    ),
-                ),
-            )
-
-            app_db_datasets.grant_read_write_data(endpoint_function)
-            app_db_datasets.grant(
-                endpoint_function, "dynamodb:DescribeTable"
-            )  # required by pynamodb
-
-            Tags.of(endpoint_function).add("ApplicationLayer", "api")
+        Tags.of(self.datasets_table).add("ApplicationLayer", "application-db")
