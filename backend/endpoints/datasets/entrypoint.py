@@ -40,17 +40,23 @@ def lambda_handler(  # pylint:disable=inconsistent-return-statements,too-many-re
         return create_dataset(event)
 
     if method == "GET":
-        if "id" in event["body"] and "type" in event["body"]:
-            return get_dataset_single(event)
-
-        if "title" in event["body"] or "owning_group" in event["body"]:
-            return get_dataset_filter(event)
-
-        if event["body"] == {}:
-            return list_datasets()
+        return handle_get(event)
 
     if method == "PATCH":
         return update_dataset(event)
 
     if method == "DELETE":
         return delete_dataset(event)
+
+
+def handle_get(event):
+    if "id" in event["body"] and "type" in event["body"]:
+        return get_dataset_single(event)
+
+    if "title" in event["body"] or "owning_group" in event["body"]:
+        return get_dataset_filter(event)
+
+    if event["body"] == {}:
+        return list_datasets()
+
+    return error_response(400, "Unhandled request")
