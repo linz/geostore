@@ -7,7 +7,7 @@ disable =
     missing-function-docstring,
     missing-module-docstring,
 load-plugins = pylint.extensions.mccabe
-max-complexity = 7
+max-complexity = 6
 [FORMAT]
 max-line-length=100
 [MISCELLANEOUS]
