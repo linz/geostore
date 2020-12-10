@@ -88,20 +88,21 @@ Re-run `. .venv/bin/activate` in each shell.
 
 
 ## AWS Infrastructure Deployment (CDK Stack)
-* Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
+1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
     ```bash
-    $ aws-azure-login -p <AWS-PROFILE-NAME>
+    aws-azure-login --profile=<AWS-PROFILE-NAME>
     ```
-* Deploy CDK stack
+1. Deploy CDK stack
 
     ```bash
-    $ cd infra
-    $ export ENVIRONMENT_TYPE=dev|nonprod|prod
-    $ cdk --profile <AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
-    $ cdk --profile <AWS-PROFILE-NAME> deploy --all
+    cd infra
+    export ENVIRONMENT_TYPE=dev|nonprod|prod
+    cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+    cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```
 
+If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
 
 ## Development
 
