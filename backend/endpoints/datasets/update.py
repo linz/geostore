@@ -59,11 +59,7 @@ def update_dataset(payload):
         )
 
     # update dataset
-    for attr in DatasetModel.get_attributes():
-        if attr not in ("id", "type"):
-            if attr in req_body:
-                setattr(dataset, attr, req_body[attr])
-
+    update_dataset_attributes(dataset, req_body)
     dataset.save()
     dataset.refresh(consistent_read=True)
 
@@ -71,3 +67,9 @@ def update_dataset(payload):
     resp_body = serialize_dataset(dataset)
 
     return success_response(200, resp_body)
+
+
+def update_dataset_attributes(dataset, req_body):
+    for attr in DatasetModel.get_attributes():
+        if attr in req_body and attr not in ("id", "type"):
+            setattr(dataset, attr, req_body[attr])

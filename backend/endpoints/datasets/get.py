@@ -5,8 +5,22 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..utils import error_response, success_response
 from .common import DATASET_TYPES
+from .list import list_datasets
 from .model import DatasetModel
 from .serializer import serialize_dataset
+
+
+def handle_get(event):
+    if "id" in event["body"] and "type" in event["body"]:
+        return get_dataset_single(event)
+
+    if "title" in event["body"] or "owning_group" in event["body"]:
+        return get_dataset_filter(event)
+
+    if event["body"] == {}:
+        return list_datasets()
+
+    return error_response(400, "Unhandled request")
 
 
 def get_dataset_single(payload):

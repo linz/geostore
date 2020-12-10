@@ -7,8 +7,7 @@ from jsonschema import ValidationError, validate
 from ..utils import error_response
 from .create import create_dataset
 from .delete import delete_dataset
-from .get import get_dataset_filter, get_dataset_single
-from .list import list_datasets
+from .get import handle_get
 from .update import update_dataset
 
 REQUEST_SCHEMA = {
@@ -24,9 +23,15 @@ REQUEST_SCHEMA = {
 # TODO: allow Dataset delete only if no Dataset Version exists
 
 
-def lambda_handler(  # pylint:disable=inconsistent-return-statements,too-many-return-statements
-    event, _context
-):
+REQUEST_HANDLERS = {
+    "DELETE": delete_dataset,
+    "GET": handle_get,
+    "PATCH": update_dataset,
+    "POST": create_dataset,
+}
+
+
+def lambda_handler(event, _context):
     """Main Lambda entry point."""
 
     # request validation
@@ -36,21 +41,4 @@ def lambda_handler(  # pylint:disable=inconsistent-return-statements,too-many-re
     except ValidationError as err:
         return error_response(400, err.message)
 
-    if method == "POST":
-        return create_dataset(event)
-
-    if method == "GET":
-        if "id" in event["body"] and "type" in event["body"]:
-            return get_dataset_single(event)
-
-        if "title" in event["body"] or "owning_group" in event["body"]:
-            return get_dataset_filter(event)
-
-        if event["body"] == {}:
-            return list_datasets()
-
-    if method == "PATCH":
-        return update_dataset(event)
-
-    if method == "DELETE":
-        return delete_dataset(event)
+    return REQUEST_HANDLERS[method](event)
