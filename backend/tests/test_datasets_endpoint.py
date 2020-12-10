@@ -24,18 +24,20 @@ logger = logging.getLogger(__name__)
 
 def test_should_fail_if_request_not_containing_method():
     response = entrypoint.lambda_handler({"body": {}}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 400
-    assert response["body"]["message"] == "Bad Request: 'httpMethod' is a required property"
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'httpMethod' is a required property"},
+    }
 
 
 def test_should_fail_if_request_not_containing_body():
     response = entrypoint.lambda_handler({"httpMethod": "POST"}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 400
-    assert response["body"]["message"] == "Bad Request: 'body' is a required property"
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'body' is a required property"},
+    }
 
 
 @mark.infrastructure
@@ -67,11 +69,12 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", response)
 
     # Then the API should return an error message
-    assert response["statusCode"] == 400
-    assert response["body"]["message"] == "Bad Request: 'type' is a required property"
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'type' is a required property"},
+    }
 
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type():
@@ -102,13 +105,15 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title():
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 409
-    assert (
-        response["body"]["message"]
-        == f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
-    )
+    assert response == {
+        "statusCode": 409,
+        "body": {
+            "message": (
+                f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
+            )
+        },
+    }
 
 
 @mark.infrastructure
@@ -230,13 +235,13 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
     body["type"] = dataset_type
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 404
-    assert (
-        response["body"]["message"]
-        == f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-    )
+    assert response == {
+        "statusCode": 404,
+        "body": {
+            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
+        },
+    }
 
 
 @mark.infrastructure
@@ -274,13 +279,15 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 409
-    assert (
-        response["body"]["message"]
-        == f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
-    )
+    assert response == {
+        "statusCode": 409,
+        "body": {
+            "message": (
+                f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
+            )
+        },
+    }
 
 
 @mark.infrastructure
@@ -297,13 +304,13 @@ def test_should_fail_if_updating_not_existing_dataset(
     body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 404
-    assert (
-        response["body"]["message"]
-        == f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-    )
+    assert response == {
+        "statusCode": 404,
+        "body": {
+            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
+        },
+    }
 
 
 @mark.infrastructure
@@ -317,10 +324,8 @@ def test_should_delete_dataset(db_teardown):  # pylint:disable=unused-argument
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 204
-    assert response["body"] == {}
+    assert response == {"statusCode": 204, "body": {}}
 
 
 @mark.infrastructure
@@ -337,10 +342,10 @@ def test_should_fail_if_deleting_not_existing_dataset(
     body["owning_group"] = any_dataset_owning_group()
 
     response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
-    logger.info("Response: %s", response)
 
-    assert response["statusCode"] == 404
-    assert (
-        response["body"]["message"]
-        == f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-    )
+    assert response == {
+        "statusCode": 404,
+        "body": {
+            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
+        },
+    }
