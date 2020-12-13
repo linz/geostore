@@ -168,12 +168,12 @@ class ProcessingStack(core.Stack):
                     self,
                     f"{task_name}-function",
                     handler=f"processing.{task_name}.task.lambda_handler",
-                    runtime=aws_lambda.Runtime.PYTHON_3_6,
+                    runtime=aws_lambda.Runtime.PYTHON_3_8,
                     code=aws_lambda.Code.from_asset(
                         path="..",
                         bundling=core.BundlingOptions(
                             # pylint:disable=no-member
-                            image=aws_lambda.Runtime.PYTHON_3_6.bundling_docker_image,
+                            image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
                             command=["backend/bundle.bash", f"processing/{task_name}"],
                         ),
                     ),
