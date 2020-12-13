@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from json import load
 from os.path import dirname, join
 from typing import Callable, TextIO

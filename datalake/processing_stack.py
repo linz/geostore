@@ -15,6 +15,8 @@ from aws_cdk import (
 )
 from aws_cdk.core import Tags
 
+JOB_DEFINITION_SUFFIX = "_job"
+
 
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
@@ -54,6 +56,11 @@ class ProcessingStack(core.Stack):
         creation_tasks["check_files_checksums"] = {
             "type": "batch",
             "parallel": True,
+            "result_path": aws_stepfunctions.JsonPath.DISCARD,
+        }
+        creation_tasks["check_stac_metadata"] = {
+            "type": "batch",
+            "parallel": False,
             "result_path": aws_stepfunctions.JsonPath.DISCARD,
         }
 
@@ -196,7 +203,7 @@ class ProcessingStack(core.Stack):
 
                 job_definition = aws_batch.JobDefinition(
                     self,
-                    f"{task_name}-job",
+                    f"{task_name}{JOB_DEFINITION_SUFFIX}",
                     container=aws_batch.JobDefinitionContainer(
                         image=aws_ecs.ContainerImage.from_asset(
                             directory=".",
@@ -237,7 +244,7 @@ class ProcessingStack(core.Stack):
                     step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
                         task_name,
-                        job_name=f"{task_name}-job",
+                        job_name=f"{task_name}{JOB_DEFINITION_SUFFIX}",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
                         array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
@@ -278,6 +285,7 @@ class ProcessingStack(core.Stack):
         dataset_version_creation_definition = (
             step_tasks["check_flat_directory_structure"]
             .next(step_tasks["content_iterator"])
+            .next(step_tasks["check_stac_metadata"])
             .next(step_tasks["check_files_checksums"])
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
