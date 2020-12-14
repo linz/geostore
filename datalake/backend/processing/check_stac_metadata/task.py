@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-
+import sys
+from argparse import ArgumentParser
 from json import load
 from os.path import dirname, join
 from typing import Callable, TextIO
+from urllib.parse import urlparse
 
+import boto3
+from botocore.response import StreamingBody
 from jsonschema import FormatChecker, validate
 
 SCHEMA_PATH = join(dirname(__file__), "stac-spec/collection-spec/json-schema/collection.json")
@@ -17,3 +21,36 @@ def validate_url(url: str, url_reader: Callable[[str], TextIO]) -> None:
         schema_json = load(schema_file)
 
     validate(url_json, schema_json, format_checker=FormatChecker())
+
+
+def parse_arguments():
+    argument_parser = ArgumentParser()
+    argument_parser.add_argument("--metadata-url", required=True)
+    arguments = argument_parser.parse_args()
+    return arguments
+
+
+def s3_url_reader() -> Callable[[str], StreamingBody]:
+    client = boto3.client("s3")
+
+    def read(href: str) -> StreamingBody:
+        parse_result = urlparse(href, allow_fragments=False)
+        bucket_name = parse_result.netloc
+        key = parse_result.path[1:]
+        response = client.get_object(Bucket=bucket_name, Key=key)
+        return response["Body"]
+
+    return read
+
+
+def main() -> int:
+    arguments = parse_arguments()
+    url_reader = s3_url_reader()
+
+    validate_url(arguments.metadata_url, url_reader)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

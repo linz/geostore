@@ -1,12 +1,14 @@
+import sys
 from copy import deepcopy
 from io import StringIO
 from json import dump
 from typing import Callable, Dict, TextIO
+from unittest.mock import ANY, patch
 
 from jsonschema import ValidationError
 from pytest import raises
 
-from ..processing.check_stac_metadata.task import validate_url
+from ..processing.check_stac_metadata.task import main, validate_url
 from .utils import any_dataset_description, any_dataset_id, any_past_datetime_string
 
 STAC_VERSION = "1.0.0-beta.2"
@@ -23,6 +25,8 @@ MINIMAL_VALID_STAC_OBJECT = {
         "temporal": {"interval": [[any_past_datetime_string(), None]]},
     },
 }
+
+ANY_PROGRAM_NAME = "any program name"
 
 
 def fake_json_url_reader(url_to_json: Dict[str, Dict]) -> Callable[[str], TextIO]:
@@ -56,3 +60,12 @@ def test_should_detect_invalid_datetime() -> None:
     url_reader = fake_json_url_reader({ANY_URL: stac_object})
     with raises(ValidationError):
         validate_url(ANY_URL, url_reader)
+
+
+@patch("datalake.backend.processing.check_stac_metadata.task.validate_url")
+def test_should_validate_given_url(validate_url_mock) -> None:
+    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+
+    assert main() == 0
+
+    validate_url_mock.assert_called_once_with(ANY_URL, ANY)
