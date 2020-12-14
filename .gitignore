@@ -1,8 +1,10 @@
+cdk.context.json
+cdk.out/
 .idea/
 node_modules/
+*.pyc
 __pycache__
 .pytest_cache
-*.pyc
+Thumbs.db
 .venv
 .vscode
-Thumbs.db

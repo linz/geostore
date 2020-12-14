@@ -25,7 +25,7 @@ class APIStack(core.Stack):
                 handler=f"endpoints.{endpoint}.entrypoint.lambda_handler",
                 runtime=aws_lambda.Runtime.PYTHON_3_8,
                 code=aws_lambda.Code.from_asset(
-                    path="..",
+                    path=".",
                     bundling=core.BundlingOptions(
                         # pylint:disable=no-member
                         image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
