@@ -5,14 +5,11 @@ Lambda functions integration tests.
 import json
 import uuid
 
-import boto3
 from pytest import mark
-
-LAMBDA = boto3.client("lambda")
 
 
 @mark.infrastructure
-def test_should_launch_datasets_endpoint_lambda_function():
+def test_should_launch_datasets_endpoint_lambda_function(lambda_client):
     """
     Test if datasets endpoint lambda can be successfully launched and has required permission to
     create dataset in DB.
@@ -24,7 +21,7 @@ def test_should_launch_datasets_endpoint_lambda_function():
     body["title"] = f"Dataset {uuid.uuid1()}.hex"
     body["owning_group"] = "A_ABC_XYZ"
 
-    resp = LAMBDA.invoke(
+    resp = lambda_client.invoke(
         FunctionName="datasets-endpoint",
         Payload=json.dumps({"httpMethod": method, "body": body}),
         InvocationType="RequestResponse",
