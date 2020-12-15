@@ -4,88 +4,107 @@
 Central storage, management and access for important geospatial datasets
 Developed by [Land Information New Zealand](https://github.com/linz)
 
+## Development setup
 
-## Dependencies Installation
-### Python Virtual Environment (for Python CLI and AWS CDK)
-* Create and activate a Python virtual environment
+One-time setup, assuming you are in the project directory:
 
-    ```bash
-    $ python3 -m venv .venv
-    $ source .venv/bin/activate
-    ```
-* Upgrade pip
+1. [Install and enable `pyenv`](https://github.com/pyenv/pyenv#installation):
+    1. Install Python build environment:
 
-    ```bash
-    $ pip install --upgrade pip
-    ```
-* [Install Poetry](https://python-poetry.org/docs/#installation)
-* Install the dependencies:
+        ```bash
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
+        ```
+   1. `curl https://pyenv.run | bash`
+   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `pyenv` is not installed):
 
-    ```bash
-    $ poetry install --extras='cdk datasets-endpoint'
-    ```
+       ```bash
+       # Pyenv <https://github.com/pyenv/pyenv>
+       if [[ -e "${HOME}/.pyenv" ]]
+       then
+           PATH="${HOME}/.pyenv/bin:${PATH}"
+           eval "$(pyenv init -)"
+           eval "$(pyenv virtualenv-init -)"
+       fi
+       ```
+   1. Restart your shell: `exec "$SHELL"`.
+   1. Install the Python version used in this project: `pyenv install`.
+   1. Restart your shell again: `exec "$SHELL"`.
+   1. Verify setup: `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` - should produce no output.
+1. [Install and enable Poetry](https://python-poetry.org/docs/#installation):
+   1. Install:
 
-### AWS CDK Environment (AWS Infrastructure)
-* Install NVM (use latest version)
+       ```bash
+       curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+       ```
+   1. Add the following to ~/.bashrc:
 
-    ```bash
-    $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v<LATEST-VERSION>/install.sh | bash
-    ```
-* Enable NVM
+       ```bash
+       # Poetry <https://python-poetry.org/>
+       if [[ -e "${HOME}/.poetry" ]]
+       then
+           PATH="${HOME}/.poetry/bin:${PATH}"
+       fi
+       ```
+   1. Restart your shell: `exec "$SHELL"`.
+   1. Verify setup: `poetry --version`.
+1. [Install and enable `nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
+   1. Install (change the version number if you want to install a different one):
 
-    ```bash
-    $ export NVM_DIR="$HOME/.nvm"
-    $ [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    $ [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-    ```
-* Install latest LTS Node version
+       ```bash
+       curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+       ```
+   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `nvm` is not installed):
 
-    ```bash
-    $ nvm install --lts
-    ```
-* Install latest AWS CDK version
+       ```bash
+       if [[ -d "${HOME}/.nvm" ]]
+       then
+           export NVM_DIR="${HOME}/.nvm"
+           # shellcheck source=/dev/null
+           [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+           # shellcheck source=/dev/null
+           [[ -s "${NVM_DIR}/bash_completion" ]] && . "${NVM_DIR}/bash_completion"
+       fi
+       ```
+   1. Restart your shell: `exec "$SHELL"`.
+   1. Verify setup: `nvm --version`.
+1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
+1. Run `./reset-dev-env.bash` to install packages.
+1. Enable the virtualenv: `. .venv/bin/activate`.
+1. Enable Node.js executables:
+   1. Add the executables directory to your path in ~/.bashrc (replace the project path with the path to this directory):
 
-    ```bash
-    $ npm install
-    ```
+       ```bash
+       if [[ -d "${HOME}/dev/geospatial-data-lake" ]]
+       then
+           PATH="${HOME}/dev/geospatial-data-lake/node_modules/.bin:${PATH}"
+       fi
+       ```
+   1. Verify setup: `cdk --version`
+
+Re-run `./reset-dev-env.bash` when packages change.
+
+Re-run `. .venv/bin/activate` in each shell.
 
 
 ## AWS Infrastructure Deployment (CDK Stack)
-* Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
+1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
 
     ```bash
-    $ ./node_modules/.bin/aws-azure-login -p <AWS-PROFILE-NAME>
+    aws-azure-login --profile=<AWS-PROFILE-NAME>
     ```
-* Deploy CDK stack
+1. Deploy CDK stack
 
     ```bash
-    $ cd infra
-    $ export ENVIRONMENT_TYPE=dev|nonprod|prod
-    $ ../node_modules/.bin/cdk --profile <AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
-    $ ../node_modules/.bin/cdk --profile <AWS-PROFILE-NAME> deploy --all
+    cd infra
+    export DEPLOY_ENV=dev # Or 'ci', 'prod'
+    cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+    cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```
 
+If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
 
 ## Development
-* Install Git hooks
-
-    ```bash
-    $ pre-commit install --hook-type=commit-msg --overwrite
-    $ pre-commit install --hook-type=pre-commit --overwrite
-    ```
-   You will need to run this whenever upgrading the Python minor version, such as 3.8 to 3.9, to avoid messages like
-   
-   > /usr/bin/env: ‘python3.8’: No such file or directory
-* Install automatic Pylint code checks for your editor or run it by hand
-
-    ```
-    $ pylint <DIRECTORY-PATH>
-    ```
-* Install automatic Black code formatting for your editor or run it by hand
-
-     ```
-     $ black . --check --diff
-     ```
 
 To add a development-only package: `poetry add --dev PACKAGE='*'`
 
@@ -94,6 +113,7 @@ To add a production package:
 1. Install the package using `poetry add --optional PACKAGE='*'`.
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
+   - When adding a new "extra", make sure to install it in `reset-dev-env.bash`.
 
 ### Upgrading CI runner
 
