@@ -148,7 +148,7 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ap-southeast-2
                   mask-aws-account-id: true
-                  role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
+                  role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_CI }}
 
             - name: Set unique deployment environment type variable
               run: |
