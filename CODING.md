@@ -2,7 +2,6 @@
 
 ```
 ├── cli             - command line interface code
-├── infra           - AWS infrastructure code
 ├── .github         - CI/CD code
 │   └── workflows
 │       └── ci.yml

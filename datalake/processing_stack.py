@@ -170,7 +170,7 @@ class ProcessingStack(core.Stack):
                     handler=f"processing.{task_name}.task.lambda_handler",
                     runtime=aws_lambda.Runtime.PYTHON_3_8,
                     code=aws_lambda.Code.from_asset(
-                        path="..",
+                        path=".",
                         bundling=core.BundlingOptions(
                             # pylint:disable=no-member
                             image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
@@ -199,7 +199,8 @@ class ProcessingStack(core.Stack):
                     f"{task_name}-job",
                     container=aws_batch.JobDefinitionContainer(
                         image=aws_ecs.ContainerImage.from_asset(
-                            directory=f"../backend/processing/{task_name}",
+                            directory=".",
+                            file=f"backend/processing/{task_name}/Dockerfile",
                         ),
                         memory_limit_mib=3900 if deploy_env == "prod" else 500,
                         vcpus=1,

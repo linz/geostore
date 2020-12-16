@@ -96,7 +96,6 @@ Re-run `. .venv/bin/activate` in each shell.
 1. Deploy CDK stack
 
     ```bash
-    cd infra
     export DEPLOY_ENV=dev # Or 'ci', 'prod'
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
     cdk --profile=<AWS-PROFILE-NAME> deploy --all

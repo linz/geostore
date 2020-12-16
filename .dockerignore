@@ -1,0 +1,5 @@
+.venv
+cdk.out
+node_modules
+tests
+__pycache__

@@ -54,43 +54,7 @@ jobs:
 
 
     test:
-        needs: linter
-        runs-on: ubuntu-20.04
-        if: github.event_name == 'push'
-        strategy:
-            matrix:
-                python: ['3.8']
-
-        steps:
-            - uses: actions/checkout@v2
-
-            - name: Use Python ${{ matrix.python }}
-              uses: actions/setup-python@v2.1.4
-              with:
-                  python-version: ${{ matrix.python }}
-
-            - name: Cache pip
-              uses: actions/cache@v2
-              with:
-                  path: ~/.cache/pip
-                  key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pip-${{ matrix.python }}-
-
-            - name: Install Python dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  python -m pip install poetry
-                  python -m poetry install
-
-            - name: Run unit tests
-              run: >
-                  poetry run pytest
-                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" tests/
-
-
-    test-infra:
-        needs: [linter, test]
+        needs: [linter]
         runs-on: ubuntu-20.04
         if: github.event_name == 'push'
         strategy:
@@ -167,29 +131,22 @@ jobs:
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
-              working-directory: infra
 
-            - name: Run AWS infra tests
+            - name: Run tests
               run: >
-                  poetry run pytest
-                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" infra/tests/
-
-            - name: Run AWS backend tests
-              run: >
-                  poetry run pytest
-                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" backend/tests/
+                  poetry run pytest --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}"
+                  backend/tests tests
 
             - name: Destroy AWS stacks used for testing
               run: |
                   # Don't drop networking stack. It is updated very rarely and deployment/destroy
                   # takes a very long time.
                   poetry run cdk destroy --force storage processing api
-              working-directory: infra
               if: always()  # clean-up AWS stack after failure
 
 
     deploy:
-        needs: [linter, test, test-infra]
+        needs: [linter, test]
         runs-on: ubuntu-20.04
         if: >
             github.event_name == 'push'
@@ -261,7 +218,6 @@ jobs:
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
-              working-directory: infra
 
             # PROD DEPLOYMENT
             - name: (Prod) Configure AWS credentials
@@ -285,4 +241,3 @@ jobs:
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
-              working-directory: infra

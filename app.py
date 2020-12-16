@@ -7,10 +7,11 @@ CDK application entry point file.
 import os
 
 from aws_cdk import core
-from datalake.api_stack import APIStack  # pylint: disable=import-error
-from datalake.networking_stack import NetworkingStack  # pylint: disable=import-error
-from datalake.processing_stack import ProcessingStack  # pylint: disable=import-error
-from datalake.storage_stack import StorageStack  # pylint: disable=import-error
+
+from datalake.api_stack import APIStack
+from datalake.networking_stack import NetworkingStack
+from datalake.processing_stack import ProcessingStack
+from datalake.storage_stack import StorageStack
 
 ENV = os.environ.get("DEPLOY_ENV", "dev")
 
