@@ -29,7 +29,7 @@ class APIStack(core.Stack):
                     bundling=core.BundlingOptions(
                         # pylint:disable=no-member
                         image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                        command=["backend/bundle.bash", f"endpoints/{endpoint}"],
+                        command=["datalake/backend/bundle.bash", f"endpoints/{endpoint}"],
                     ),
                 ),
             )

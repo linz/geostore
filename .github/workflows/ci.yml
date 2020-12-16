@@ -135,7 +135,7 @@ jobs:
             - name: Run tests
               run: >
                   poetry run pytest --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}"
-                  backend/tests tests
+                  datalake/backend/tests tests
 
             - name: Destroy AWS stacks used for testing
               run: |

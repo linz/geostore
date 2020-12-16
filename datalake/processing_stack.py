@@ -174,7 +174,7 @@ class ProcessingStack(core.Stack):
                         bundling=core.BundlingOptions(
                             # pylint:disable=no-member
                             image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                            command=["backend/bundle.bash", f"processing/{task_name}"],
+                            command=["datalake/backend/bundle.bash", f"processing/{task_name}"],
                         ),
                     ),
                 )
@@ -200,7 +200,7 @@ class ProcessingStack(core.Stack):
                     container=aws_batch.JobDefinitionContainer(
                         image=aws_ecs.ContainerImage.from_asset(
                             directory=".",
-                            file=f"backend/processing/{task_name}/Dockerfile",
+                            file=f"datalake/backend/processing/{task_name}/Dockerfile",
                         ),
                         memory_limit_mib=3900 if deploy_env == "prod" else 500,
                         vcpus=1,
