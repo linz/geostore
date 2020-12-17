@@ -85,6 +85,20 @@ def test_should_log_arguments(validate_url_mock) -> None:
         logger_mock.assert_called_once_with(Namespace(metadata_url=ANY_URL))
 
 
+def test_should_print_json_output_on_validation_success() -> None:
+    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+
+    with patch("sys.stdout") as stdout_mock, patch(
+        "datalake.backend.processing.check_stac_metadata.task.validate_url"
+    ):
+        main()
+
+        assert stdout_mock.mock_calls == [
+            call.write('{"success": true, "message": ""}'),
+            call.write("\n"),
+        ]
+
+
 @patch("datalake.backend.processing.check_stac_metadata.task.validate_url")
 def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
     error_message = "Some error message"

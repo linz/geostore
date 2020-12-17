@@ -67,6 +67,7 @@ def main() -> int:
 
     try:
         validate_url(arguments.metadata_url, url_reader)
+        print(dumps({"success": True, "message": ""}))
     except ValidationError as error:
         print(dumps({"success": False, "message": error.message}))
 
