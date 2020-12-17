@@ -96,6 +96,10 @@ version = "*"
 extras = ["format"]
 optional = true
 
+[tool.poetry.dependencies.multihash]
+version = "*"
+optional = true
+
 [tool.poetry.dependencies.pynamodb]
 version = "<5"
 optional = true
@@ -110,7 +114,6 @@ gitlint = "*"
 ipdb = "*"
 isort = "*"
 language-formatters-pre-commit-hooks = "*"
-multihash = "*"
 mypy = "*"
 pre-commit = "*"
 pylint = "*"
@@ -142,6 +145,10 @@ cdk = [
     "aws-cdk.aws-stepfunctions_tasks",
     "awscli",
     "cattrs",
+]
+check_files_checksums = [
+    "boto3",
+    "multihash",
 ]
 check_stac_metadata = [
     "boto3",
