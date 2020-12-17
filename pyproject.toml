@@ -36,7 +36,7 @@ python = "^3.8,<3.9"
 "aws-cdk.aws-stepfunctions" = {version="*", optional=true}
 "aws-cdk.aws-stepfunctions_tasks" = {version="*", optional=true}
 awscli = {version="*", optional=true}
-cattrs = {version="*", optional=true} # https://github.com/aws/aws-cdk/issues/11255
+cattrs = {version="*", optional=true}
 jsonschema = {version="*", optional=true}
 pynamodb = {version="*", optional=true}
 
