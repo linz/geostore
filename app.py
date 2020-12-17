@@ -23,6 +23,7 @@ networking = NetworkingStack(
     "networking",
     stack_name=f"geospatial-data-lake-networking-{ENV}",
     env={"region": os.environ["CDK_DEFAULT_REGION"], "account": os.environ["CDK_DEFAULT_ACCOUNT"]},
+    deploy_env=ENV,
 )
 
 storage = StorageStack(

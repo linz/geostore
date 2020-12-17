@@ -8,7 +8,7 @@ from aws_cdk.core import Tags
 class NetworkingStack(core.Stack):
     """Data Lake networking stack definition."""
 
-    def __init__(self, scope: core.Construct, stack_id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
@@ -32,5 +32,6 @@ class NetworkingStack(core.Stack):
                     reserved=True,
                 ),
             ],
+            max_azs=99 if deploy_env == "prod" else 1,
         )
         Tags.of(self.datalake_vpc).add("ApplicationLayer", "networking")
