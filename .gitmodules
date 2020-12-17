@@ -1,0 +1,3 @@
+[submodule "datalake/backend/processing/check_stac_metadata/stac-spec"]
+	path = datalake/backend/processing/check_stac_metadata/stac-spec
+	url = https://github.com/radiantearth/stac-spec.git
