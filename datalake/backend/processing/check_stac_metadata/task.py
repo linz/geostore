@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import logging
 import sys
 from argparse import ArgumentParser
 from json import load
+from os import environ
 from os.path import dirname, join
 from typing import Callable, TextIO
 from urllib.parse import urlparse
@@ -43,8 +45,24 @@ def s3_url_reader() -> Callable[[str], StreamingBody]:
     return read
 
 
+def set_up_logging():
+    logger = logging.getLogger(__name__)
+
+    log_handler = logging.StreamHandler()
+    log_level = environ.get("LOGLEVEL", logging.NOTSET)
+
+    logger.addHandler(log_handler)
+    logger.setLevel(log_level)
+
+    return logger
+
+
 def main() -> int:
+    logger = set_up_logging()
+
     arguments = parse_arguments()
+    logger.debug(arguments)
+
     url_reader = s3_url_reader()
 
     validate_url(arguments.metadata_url, url_reader)
