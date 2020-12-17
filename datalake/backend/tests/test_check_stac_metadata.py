@@ -5,7 +5,7 @@ from copy import deepcopy
 from io import StringIO
 from json import dump
 from typing import Callable, Dict, TextIO
-from unittest.mock import ANY, patch
+from unittest.mock import ANY, call, patch
 
 from jsonschema import ValidationError
 from pytest import raises
@@ -83,3 +83,19 @@ def test_should_log_arguments(validate_url_mock) -> None:
         main()
 
         logger_mock.assert_called_once_with(Namespace(metadata_url=ANY_URL))
+
+
+@patch("datalake.backend.processing.check_stac_metadata.task.validate_url")
+def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
+    error_message = "Some error message"
+    expected_calls = [
+        call.write(f'{{"success": false, "message": "{error_message}"}}'),
+        call.write("\n"),
+    ]
+    validate_url_mock.side_effect = ValidationError(error_message)
+    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+
+    with patch("sys.stdout") as stdout_mock:
+        main()
+
+        assert stdout_mock.mock_calls == expected_calls

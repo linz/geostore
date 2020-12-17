@@ -2,7 +2,7 @@
 import logging
 import sys
 from argparse import ArgumentParser
-from json import load
+from json import dumps, load
 from os import environ
 from os.path import dirname, join
 from typing import Callable, TextIO
@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody
-from jsonschema import FormatChecker, validate
+from jsonschema import FormatChecker, ValidationError, validate
 
 SCHEMA_PATH = join(dirname(__file__), "stac-spec/collection-spec/json-schema/collection.json")
 
@@ -65,7 +65,10 @@ def main() -> int:
 
     url_reader = s3_url_reader()
 
-    validate_url(arguments.metadata_url, url_reader)
+    try:
+        validate_url(arguments.metadata_url, url_reader)
+    except ValidationError as error:
+        print(dumps({"success": False, "message": error.message}))
 
     return 0
 
