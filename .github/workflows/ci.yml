@@ -144,9 +144,7 @@ jobs:
 
             - name: Destroy AWS stacks used for testing
               run: |
-                  # Don't drop networking stack. It is updated very rarely and deployment/destroy
-                  # takes a very long time.
-                  poetry run cdk destroy --force storage processing api
+                  poetry run cdk destroy --force networking storage processing api
               if: always()  # clean-up AWS stack after failure
 
 
