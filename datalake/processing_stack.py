@@ -137,7 +137,6 @@ class ProcessingStack(core.Stack):
             "compute-environment",
             compute_resources=aws_batch.ComputeResources(
                 vpc=vpc,
-                # vpc_subnets=vpc.select_subnets(subnet_group_name="ecs-cluster"),  # TODO
                 minv_cpus=0,
                 desiredv_cpus=0,
                 maxv_cpus=1000,
