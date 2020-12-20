@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
-from typing import Callable, TextIO
+from typing import Callable, Iterable, Optional, TextIO
 from urllib.parse import urlparse
 
 import boto3
@@ -15,7 +15,13 @@ from jsonschema import FormatChecker, ValidationError, validate
 SCHEMA_PATH = join(dirname(__file__), "stac-spec/collection-spec/json-schema/collection.json")
 
 
-def validate_url(url: str, url_reader: Callable[[str], TextIO]) -> None:
+def validate_url(
+    url: str, url_reader: Callable[[str], TextIO], traversed_urls: Optional[Iterable[str]] = None
+) -> None:
+    if traversed_urls is None:
+        traversed_urls = []
+    traversed_urls.append(url)
+
     url_stream = url_reader(url)
     url_json = load(url_stream)
 
@@ -24,8 +30,10 @@ def validate_url(url: str, url_reader: Callable[[str], TextIO]) -> None:
 
     validate(url_json, schema_json, format_checker=FormatChecker())
 
-    for link in url_json["links"]:
-        validate_url(link["href"], url_reader)
+    for link_object in url_json["links"]:
+        next_url = link_object["href"]
+        if next_url not in traversed_urls:
+            validate_url(next_url, url_reader, traversed_urls)
 
 
 def parse_arguments():

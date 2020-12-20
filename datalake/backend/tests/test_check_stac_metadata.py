@@ -4,7 +4,7 @@ from argparse import Namespace
 from copy import deepcopy
 from io import StringIO
 from json import dump
-from typing import Dict, TextIO
+from typing import Any, Dict, Optional, TextIO
 from unittest.mock import ANY, Mock, call, patch
 
 from jsonschema import ValidationError
@@ -34,21 +34,29 @@ MINIMAL_VALID_STAC_OBJECT = {
 }
 
 
-def fake_json_url_reader(url_to_json: Dict[str, Dict]) -> Mock:
-    def read_url(url: str) -> TextIO:
+class MockJSONURLReader(Mock):
+    def __init__(
+        self, url_to_json: Dict[str, Dict], call_limit: Optional[int] = None, **kwargs: Any
+    ):
+        super().__init__(**kwargs)
+
+        self.url_to_json = url_to_json
+        self.call_limit = call_limit
+        self.side_effect = self.read_url
+
+    def read_url(self, url: str) -> TextIO:
+        if self.call_limit is not None:
+            assert self.call_count <= self.call_limit
+
         result = StringIO()
-        dump(url_to_json[url], result)
+        dump(self.url_to_json[url], result)
         result.seek(0)
         return result
-
-    reader = Mock(side_effect=read_url)
-
-    return reader
 
 
 def test_should_treat_minimal_stac_object_as_valid() -> None:
     url = any_url()
-    url_reader = fake_json_url_reader({url: MINIMAL_VALID_STAC_OBJECT})
+    url_reader = MockJSONURLReader({url: MINIMAL_VALID_STAC_OBJECT})
     validate_url(url, url_reader)
 
 
@@ -58,7 +66,7 @@ def test_should_treat_any_missing_top_level_key_as_invalid() -> None:
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         stac_object.pop(key)
 
-        url_reader = fake_json_url_reader({url: stac_object})
+        url_reader = MockJSONURLReader({url: stac_object})
         with raises(ValidationError):
             validate_url(url, url_reader)
 
@@ -67,7 +75,7 @@ def test_should_detect_invalid_datetime() -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
     url = any_url()
-    url_reader = fake_json_url_reader({url: stac_object})
+    url_reader = MockJSONURLReader({url: stac_object})
     with raises(ValidationError):
         validate_url(url, url_reader)
 
@@ -131,10 +139,44 @@ def test_should_validate_metadata_files_recursively() -> None:
 
     stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     stac_object["links"].append({"href": child_url, "rel": "child"})
-    url_reader = fake_json_url_reader(
-        {parent_url: stac_object, child_url: MINIMAL_VALID_STAC_OBJECT}
-    )
+    url_reader = MockJSONURLReader({parent_url: stac_object, child_url: MINIMAL_VALID_STAC_OBJECT})
 
     validate_url(parent_url, url_reader)
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
+
+
+def test_should_only_validate_each_file_once() -> None:
+    root_url = any_url()
+    child_url = any_url()
+    leaf_url = any_url()
+
+    root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    root_stac_object["links"] = [
+        {"href": child_url, "rel": "child"},
+        {"href": root_url, "rel": "root"},
+        {"href": root_url, "rel": "self"},
+    ]
+    child_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    child_stac_object["links"] = [
+        {"href": leaf_url, "rel": "child"},
+        {"href": root_url, "rel": "root"},
+        {"href": child_url, "rel": "self"},
+    ]
+    leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    leaf_stac_object["links"] = [
+        {"href": root_url, "rel": "root"},
+        {"href": leaf_url, "rel": "self"},
+    ]
+    url_reader = MockJSONURLReader(
+        {
+            root_url: root_stac_object,
+            child_url: child_stac_object,
+            leaf_url: leaf_stac_object,
+        },
+        call_limit=3,
+    )
+
+    validate_url(root_url, url_reader)
+
+    assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
