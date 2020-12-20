@@ -136,6 +136,8 @@ jobs:
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
+              env:
+                  DATALAKE_USE_EXISTING_VPC: true
 
             - name: Run tests
               run: >
@@ -218,11 +220,12 @@ jobs:
               if: >
                   github.ref == 'refs/heads/master'
                   && github.repository == 'linz/geospatial-data-lake'
-              env:
-                  DEPLOY_ENV: nonprod
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
+              env:
+                  DEPLOY_ENV: nonprod
+                  DATALAKE_USE_EXISTING_VPC: true
 
             # PROD DEPLOYMENT
             - name: (Prod) Configure AWS credentials
@@ -241,8 +244,9 @@ jobs:
               if: >
                   startsWith(github.ref, 'release')
                   && github.repository == 'linz/geospatial-data-lake'
-              env:
-                  DEPLOY_ENV: prod
               run: |
                   poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
                   poetry run cdk deploy --all --require-approval never
+              env:
+                  DEPLOY_ENV: prod
+                  DATALAKE_USE_EXISTING_VPC: true
