@@ -4,8 +4,8 @@ from argparse import Namespace
 from copy import deepcopy
 from io import StringIO
 from json import dump
-from typing import Callable, Dict, TextIO
-from unittest.mock import ANY, call, patch
+from typing import Dict, TextIO
+from unittest.mock import ANY, Mock, call, patch
 
 from jsonschema import ValidationError
 from pytest import raises
@@ -34,14 +34,16 @@ MINIMAL_VALID_STAC_OBJECT = {
 }
 
 
-def fake_json_url_reader(url_to_json: Dict[str, Dict]) -> Callable[[str], TextIO]:
+def fake_json_url_reader(url_to_json: Dict[str, Dict]) -> Mock:
     def read_url(url: str) -> TextIO:
         result = StringIO()
         dump(url_to_json[url], result)
         result.seek(0)
         return result
 
-    return read_url
+    reader = Mock(side_effect=read_url)
+
+    return reader
 
 
 def test_should_treat_minimal_stac_object_as_valid() -> None:
@@ -121,3 +123,18 @@ def test_should_print_json_output_on_validation_failure(validate_url_mock) -> No
         main()
 
         assert stdout_mock.mock_calls == expected_calls
+
+
+def test_should_validate_metadata_files_recursively() -> None:
+    parent_url = any_url()
+    child_url = any_url()
+
+    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object["links"].append({"href": child_url, "rel": "child"})
+    url_reader = fake_json_url_reader(
+        {parent_url: stac_object, child_url: MINIMAL_VALID_STAC_OBJECT}
+    )
+
+    validate_url(parent_url, url_reader)
+
+    assert url_reader.mock_calls == [call(parent_url), call(child_url)]

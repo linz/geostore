@@ -24,6 +24,9 @@ def validate_url(url: str, url_reader: Callable[[str], TextIO]) -> None:
 
     validate(url_json, schema_json, format_checker=FormatChecker())
 
+    for link in url_json["links"]:
+        validate_url(link["href"], url_reader)
+
 
 def parse_arguments():
     argument_parser = ArgumentParser()
