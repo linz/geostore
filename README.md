@@ -93,10 +93,16 @@ Re-run `. .venv/bin/activate` in each shell.
     ```bash
     aws-azure-login --profile=<AWS-PROFILE-NAME>
     ```
+1. Environment variables
+* **DEPLOY_ENV:** set deployment environment. Recommended values: prod, nonprod, ci, dev or any
+    string without spaces. Default: dev.
+* **DATALAKE_USE_EXISTING_VPC:** determine if networking stack will use existing VPC in target AWS
+    account or will create a new one. Existing VPC must to be used must contain following tags -
+    "ApplicationName": "geospatial-data-lake", "ApplicationLayer": "networking".
+    Allowed values: true, false. Default: false.
 1. Deploy CDK stack
 
     ```bash
-    export DEPLOY_ENV=dev # Or 'ci', 'prod'
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
     cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```

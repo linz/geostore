@@ -16,6 +16,14 @@ from datalake.storage_stack import StorageStack
 ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 
+def str2bool(value: str) -> bool:
+    if value.upper() == "TRUE":
+        return True
+    if value.upper() == "FALSE":
+        return False
+    raise ValueError(f"Not a valid boolean: '{value}'")
+
+
 app = core.App()
 
 networking = NetworkingStack(
@@ -23,6 +31,8 @@ networking = NetworkingStack(
     "networking",
     stack_name=f"geospatial-data-lake-networking-{ENV}",
     env={"region": os.environ["CDK_DEFAULT_REGION"], "account": os.environ["CDK_DEFAULT_ACCOUNT"]},
+    deploy_env=ENV,
+    use_existing_vpc=str2bool(os.environ.get("DATALAKE_USE_EXISTING_VPC", "false")),
 )
 
 storage = StorageStack(
