@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
-from typing import Callable, Iterable, Optional, TextIO
+from typing import Callable, TextIO
 from urllib.parse import urlparse
 
 import boto3
@@ -17,37 +17,39 @@ COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema
 CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 
 
-def validate_url(
-    url: str, url_reader: Callable[[str], TextIO], traversed_urls: Optional[Iterable[str]] = None
-) -> None:
-    if traversed_urls is None:
-        traversed_urls = []
-    traversed_urls.append(url)
+class STACSchemaValidator:  # pylint:disable=too-few-public-methods
+    def __init__(self, url_reader: Callable[[str], TextIO]):
+        self.url_reader = url_reader
+        self.traversed_urls = []
 
-    url_stream = url_reader(url)
-    url_json = load(url_stream)
+        with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
+            collection_schema = load(collection_schema_file)
 
-    with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
-        collection_schema = load(collection_schema_file)
+        with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
+            catalog_schema = load(catalog_schema_file)
 
-    with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
-        catalog_schema = load(catalog_schema_file)
+        schema_store = {
+            collection_schema["$id"]: collection_schema,
+            catalog_schema["$id"]: catalog_schema,
+        }
 
-    schema_store = {
-        collection_schema["$id"]: collection_schema,
-        catalog_schema["$id"]: catalog_schema,
-    }
+        resolver = RefResolver.from_schema(collection_schema, store=schema_store)
+        self.validator = Draft7Validator(
+            collection_schema, resolver=resolver, format_checker=FormatChecker()
+        )
 
-    resolver = RefResolver.from_schema(collection_schema, store=schema_store)
-    validator = Draft7Validator(
-        collection_schema, resolver=resolver, format_checker=FormatChecker()
-    )
-    validator.validate(url_json)
+    def validate(self, url: str) -> None:
+        self.traversed_urls.append(url)
 
-    for link_object in url_json["links"]:
-        next_url = link_object["href"]
-        if next_url not in traversed_urls:
-            validate_url(next_url, url_reader, traversed_urls)
+        url_stream = self.url_reader(url)
+        url_json = load(url_stream)
+
+        self.validator.validate(url_json)
+
+        for link_object in url_json["links"]:
+            next_url = link_object["href"]
+            if next_url not in self.traversed_urls:
+                self.validate(next_url)
 
 
 def parse_arguments():
@@ -91,7 +93,7 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        validate_url(arguments.metadata_url, url_reader)
+        STACSchemaValidator(url_reader).validate(arguments.metadata_url)
         print(dumps({"success": True, "message": ""}))
     except ValidationError as error:
         print(dumps({"success": False, "message": error.message}))
