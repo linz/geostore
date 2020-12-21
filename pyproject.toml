@@ -74,6 +74,7 @@ datasets-endpoint = [
     "pynamodb",
 ]
 check-stac-metadata-job = [
+    "boto3",
     "jsonschema",
     "strict-rfc3339",
 ]
