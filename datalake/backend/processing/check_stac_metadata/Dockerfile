@@ -10,7 +10,7 @@ RUN cd /opt && ~/.poetry/bin/poetry install --extras=check-stac-metadata-job
 
 FROM ubuntu:20.04
 
-ENTRYPOINT ["/opt/task.py"]
+ENTRYPOINT ["/opt/.venv/bin/python", "/opt/task.py"]
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*

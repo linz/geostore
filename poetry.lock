@@ -1601,7 +1601,7 @@ datasets-endpoint = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "bf0adbedb1268c6a834350e4bb6ca8d682c1821845d9712b59bc19cb2d626820"
+content-hash = "0488998e378a4ad5cc2eba4175f90836ddc353fe6c74920aa7378dc9f8a7498d"
 
 [metadata.files]
 appdirs = [
