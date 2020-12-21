@@ -1,8 +1,8 @@
 def lambda_handler(event, _context):
     """Main Lambda entry point."""
 
-    total_size = 100
-    iteration_size = 10
+    total_size = 6
+    iteration_size = 2
 
     if "content" in event.keys():
         first_item = int(event["content"]["next_item"])

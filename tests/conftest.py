@@ -10,8 +10,3 @@ def s3_client():
 @pytest.fixture()
 def lambda_client():
     return boto3.client("lambda")
-
-
-@pytest.fixture()
-def batch_client():
-    return boto3.client("batch")
