@@ -10,9 +10,11 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody
-from jsonschema import FormatChecker, ValidationError, validate
+from jsonschema import Draft7Validator, FormatChecker, RefResolver, ValidationError
 
-SCHEMA_PATH = join(dirname(__file__), "stac-spec/collection-spec/json-schema/collection.json")
+SCRIPT_DIR = dirname(__file__)
+COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
+CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 
 
 def validate_url(
@@ -25,10 +27,22 @@ def validate_url(
     url_stream = url_reader(url)
     url_json = load(url_stream)
 
-    with open(SCHEMA_PATH) as schema_file:
-        schema_json = load(schema_file)
+    with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
+        collection_schema = load(collection_schema_file)
 
-    validate(url_json, schema_json, format_checker=FormatChecker())
+    with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
+        catalog_schema = load(catalog_schema_file)
+
+    schema_store = {
+        collection_schema["$id"]: collection_schema,
+        catalog_schema["$id"]: catalog_schema,
+    }
+
+    resolver = RefResolver.from_schema(collection_schema, store=schema_store)
+    validator = Draft7Validator(
+        collection_schema, resolver=resolver, format_checker=FormatChecker()
+    )
+    validator.validate(url_json)
 
     for link_object in url_json["links"]:
         next_url = link_object["href"]
