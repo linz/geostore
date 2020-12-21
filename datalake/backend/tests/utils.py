@@ -51,6 +51,11 @@ def any_dataset_owning_group() -> str:
     return random_string(20)
 
 
+def any_program_name() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
+
+
 class Dataset:
     def __init__(
         self,

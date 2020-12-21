@@ -11,7 +11,12 @@ from jsonschema import ValidationError
 from pytest import raises
 
 from ..processing.check_stac_metadata.task import main, validate_url
-from .utils import any_dataset_description, any_dataset_id, any_past_datetime_string
+from .utils import (
+    any_dataset_description,
+    any_dataset_id,
+    any_past_datetime_string,
+    any_program_name,
+)
 
 STAC_VERSION = "1.0.0-beta.2"
 ANY_URL = "s3://any-bucket/any-file"
@@ -27,8 +32,6 @@ MINIMAL_VALID_STAC_OBJECT = {
         "temporal": {"interval": [[any_past_datetime_string(), None]]},
     },
 }
-
-ANY_PROGRAM_NAME = "any program name"
 
 
 def fake_json_url_reader(url_to_json: Dict[str, Dict]) -> Callable[[str], TextIO]:
@@ -66,7 +69,7 @@ def test_should_detect_invalid_datetime() -> None:
 
 @patch("datalake.backend.processing.check_stac_metadata.task.validate_url")
 def test_should_validate_given_url(validate_url_mock) -> None:
-    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+    sys.argv = [any_program_name(), f"--metadata-url={ANY_URL}"]
 
     assert main() == 0
 
@@ -76,7 +79,7 @@ def test_should_validate_given_url(validate_url_mock) -> None:
 @patch("datalake.backend.processing.check_stac_metadata.task.validate_url")
 def test_should_log_arguments(validate_url_mock) -> None:
     validate_url_mock.return_value = None
-    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+    sys.argv = [any_program_name(), f"--metadata-url={ANY_URL}"]
     logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
 
     with patch.object(logger, "debug") as logger_mock:
@@ -86,7 +89,7 @@ def test_should_log_arguments(validate_url_mock) -> None:
 
 
 def test_should_print_json_output_on_validation_success() -> None:
-    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+    sys.argv = [any_program_name(), f"--metadata-url={ANY_URL}"]
 
     with patch("sys.stdout") as stdout_mock, patch(
         "datalake.backend.processing.check_stac_metadata.task.validate_url"
@@ -107,7 +110,7 @@ def test_should_print_json_output_on_validation_failure(validate_url_mock) -> No
         call.write("\n"),
     ]
     validate_url_mock.side_effect = ValidationError(error_message)
-    sys.argv = [ANY_PROGRAM_NAME, f"--metadata-url={ANY_URL}"]
+    sys.argv = [any_program_name(), f"--metadata-url={ANY_URL}"]
 
     with patch("sys.stdout") as stdout_mock:
         main()
