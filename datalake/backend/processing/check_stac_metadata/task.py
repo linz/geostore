@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import boto3
 from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, FormatChecker, RefResolver, ValidationError
+from jsonschema._utils import URIDict
 
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
@@ -28,9 +29,11 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
             catalog_schema = load(catalog_schema_file)
 
+        # Normalize URLs the same way as jsonschema does
+        uri_dictionary = URIDict()
         schema_store = {
-            collection_schema["$id"]: collection_schema,
-            catalog_schema["$id"]: catalog_schema,
+            uri_dictionary.normalize(collection_schema["$id"]): collection_schema,
+            uri_dictionary.normalize(catalog_schema["$id"]): catalog_schema,
         }
 
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
