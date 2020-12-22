@@ -35,7 +35,7 @@ jobs:
                   python -m pip install --upgrade pip
                   python -m pip install poetry
                   python -m poetry install \
-                      --extras='cdk datasets-endpoint check-stac-metadata-job'
+                      --extras='cdk check-stac-metadata-job datasets-endpoint'
 
             - name: Check all commit messages in Pull Request
               run: >
@@ -80,7 +80,7 @@ jobs:
                   python -m pip install --upgrade pip
                   python -m pip install poetry
                   python -m poetry install \
-                      --extras='cdk datasets-endpoint check-stac-metadata-job'
+                      --extras='cdk check-stac-metadata-job datasets-endpoint'
 
             - name: Install AWS CLI
               run: sudo apt install awscli

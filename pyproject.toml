@@ -69,14 +69,14 @@ cdk = [
     "awscli",
     "cattrs",
 ]
-datasets-endpoint = [
-    "jsonschema",
-    "pynamodb",
-]
 check-stac-metadata-job = [
     "boto3",
     "jsonschema",
     "strict-rfc3339",
+]
+datasets-endpoint = [
+    "jsonschema",
+    "pynamodb",
 ]
 
 [build-system]
