@@ -8,7 +8,6 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
     deploy:
-        needs: [linter, test]
         runs-on: ubuntu-20.04
         strategy:
             matrix:
