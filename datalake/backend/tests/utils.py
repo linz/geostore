@@ -16,7 +16,14 @@ def random_string(length: int) -> str:
     Includes ASCII printable characters and the first printable character from several Unicode
     blocks <https://en.wikipedia.org/wiki/List_of_Unicode_characters>.
     """
-    characters = f"{string.printable}¡ĀƀḂəʰͰἀЀ–⁰₠℀⅐←∀⌀①─▀■☀🬀✁ㄅﬀ"
+    return _random_string_choices(f"{string.printable}¡ĀƀḂəʰͰἀЀ–⁰₠℀⅐←∀⌀①─▀■☀🬀✁ㄅﬀ", length)
+
+
+def random_ascii_letter_string(length: int) -> str:
+    return _random_string_choices(string.ascii_letters, length)
+
+
+def _random_string_choices(characters: str, length: int) -> str:
     return "".join(choice(characters) for _ in range(length))
 
 
@@ -49,6 +56,17 @@ def any_past_datetime_string() -> str:
 def any_dataset_owning_group() -> str:
     """Arbitrary-length string"""
     return random_string(20)
+
+
+def any_program_name() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
+
+
+def any_url() -> str:
+    schema = random_ascii_letter_string(4)
+    path = random_string(20)
+    return f"{schema}://{path}"
 
 
 class Dataset:
