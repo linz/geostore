@@ -36,6 +36,7 @@ python = "^3.8,<3.9"
 "aws-cdk.aws-stepfunctions" = {version="*", optional=true}
 "aws-cdk.aws-stepfunctions_tasks" = {version="*", optional=true}
 awscli = {version="*", optional=true}
+boto3 = {version="*", optional=true}
 cattrs = {version="*", optional=true}
 jsonschema = {version="*", extras = ["format"], optional=true}
 pynamodb = {version="*", optional=true}
@@ -43,7 +44,6 @@ strict-rfc3339 = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
-boto3 = "*"
 gitlint = "*"
 isort = "*"
 pre-commit = "*"
