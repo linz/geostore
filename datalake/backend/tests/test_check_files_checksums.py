@@ -44,3 +44,17 @@ def test_should_validate_given_url_and_checksum(validate_url_multihash_mock: Mag
         assert main() == 0
 
     validate_url_multihash_mock.assert_called_once_with(url, hex_multihash, ANY)
+
+
+@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
+def test_should_return_non_zero_exit_code_when_validation_fails(
+    validate_url_multihash_mock: MagicMock,
+) -> None:
+    validate_url_multihash_mock.return_value = False
+    sys.argv = [
+        any_program_name(),
+        f"--file-url={any_s3_url()}",
+        f"--hex-multihash={any_hex_multihash()}",
+    ]
+
+    assert main() == 1

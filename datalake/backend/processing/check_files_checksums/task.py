@@ -49,9 +49,10 @@ def main() -> int:
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
 
-    validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client)
+    if validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client):
+        return 0
 
-    return 0
+    return 1
 
 
 if __name__ == "__main__":
