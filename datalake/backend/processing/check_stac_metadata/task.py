@@ -10,19 +10,46 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody
-from jsonschema import FormatChecker, ValidationError, validate
+from jsonschema import Draft7Validator, FormatChecker, RefResolver, ValidationError
 
-SCHEMA_PATH = join(dirname(__file__), "stac-spec/collection-spec/json-schema/collection.json")
+SCRIPT_DIR = dirname(__file__)
+COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
+CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 
 
-def validate_url(url: str, url_reader: Callable[[str], TextIO]) -> None:
-    url_stream = url_reader(url)
-    url_json = load(url_stream)
+class STACSchemaValidator:  # pylint:disable=too-few-public-methods
+    def __init__(self, url_reader: Callable[[str], TextIO]):
+        self.url_reader = url_reader
+        self.traversed_urls = []
 
-    with open(SCHEMA_PATH) as schema_file:
-        schema_json = load(schema_file)
+        with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
+            collection_schema = load(collection_schema_file)
 
-    validate(url_json, schema_json, format_checker=FormatChecker())
+        with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
+            catalog_schema = load(catalog_schema_file)
+
+        schema_store = {
+            collection_schema["$id"]: collection_schema,
+            catalog_schema["$id"]: catalog_schema,
+        }
+
+        resolver = RefResolver.from_schema(collection_schema, store=schema_store)
+        self.validator = Draft7Validator(
+            collection_schema, resolver=resolver, format_checker=FormatChecker()
+        )
+
+    def validate(self, url: str) -> None:
+        self.traversed_urls.append(url)
+
+        url_stream = self.url_reader(url)
+        url_json = load(url_stream)
+
+        self.validator.validate(url_json)
+
+        for link_object in url_json["links"]:
+            next_url = link_object["href"]
+            if next_url not in self.traversed_urls:
+                self.validate(next_url)
 
 
 def parse_arguments():
@@ -66,7 +93,7 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        validate_url(arguments.metadata_url, url_reader)
+        STACSchemaValidator(url_reader).validate(arguments.metadata_url)
         print(dumps({"success": True, "message": ""}))
     except ValidationError as error:
         print(dumps({"success": False, "message": error.message}))
