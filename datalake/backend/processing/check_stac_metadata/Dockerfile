@@ -5,7 +5,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
 COPY poetry.lock poetry.toml pyproject.toml /opt/
-RUN cd /opt && ~/.poetry/bin/poetry install --extras=check-stac-metadata-job
+RUN cd /opt && ~/.poetry/bin/poetry install --extras=check-stac-metadata-job --no-dev
 
 
 FROM ubuntu:20.04
