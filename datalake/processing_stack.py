@@ -243,15 +243,14 @@ class ProcessingStack(core.Stack):
                 )
 
                 job_command = [
-                    "--dataset-id",
-                    "Ref::dataset_id",
-                    "--version-id",
-                    "Ref::version_id",
-                    "--type",
-                    "Ref::type",
+                    # "--dataset-id",
+                    # "Ref::dataset_id",
+                    # "--version-id",
+                    # "Ref::version_id",
+                    # "--type",
+                    # "Ref::type",
                     "--metadata-url",
                     "Ref::metadata_url",
-                    "--dataset-id",
                 ]
                 job_environment = {"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"}
 
