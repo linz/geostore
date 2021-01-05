@@ -16,7 +16,6 @@ from .utils import (
     any_dataset_id,
     any_past_datetime_string,
     any_program_name,
-    any_url,
 )
 
 STAC_VERSION = "1.0.0-beta.2"
@@ -54,14 +53,14 @@ class MockJSONURLReader(Mock):
         return result
 
 
-def test_should_treat_minimal_stac_object_as_valid() -> None:
-    url = any_url()
+def test_should_treat_minimal_stac_object_as_valid(faker) -> None:
+    url = faker.uri()
     url_reader = MockJSONURLReader({url: MINIMAL_VALID_STAC_OBJECT})
     STACSchemaValidator(url_reader).validate(url)
 
 
-def test_should_treat_any_missing_top_level_key_as_invalid() -> None:
-    url = any_url()
+def test_should_treat_any_missing_top_level_key_as_invalid(faker) -> None:
+    url = faker.uri()
     for key in MINIMAL_VALID_STAC_OBJECT:
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         stac_object.pop(key)
@@ -71,18 +70,18 @@ def test_should_treat_any_missing_top_level_key_as_invalid() -> None:
             STACSchemaValidator(url_reader).validate(url)
 
 
-def test_should_detect_invalid_datetime() -> None:
+def test_should_detect_invalid_datetime(faker) -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
-    url = any_url()
+    url = faker.uri()
     url_reader = MockJSONURLReader({url: stac_object})
     with raises(ValidationError):
         STACSchemaValidator(url_reader).validate(url)
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_validate_given_url(validate_url_mock) -> None:
-    url = any_url()
+def test_should_validate_given_url(validate_url_mock, faker) -> None:
+    url = faker.uri()
     sys.argv = [any_program_name(), f"--metadata-url={url}"]
 
     assert main() == 0
@@ -91,9 +90,9 @@ def test_should_validate_given_url(validate_url_mock) -> None:
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_log_arguments(validate_url_mock) -> None:
+def test_should_log_arguments(validate_url_mock, faker) -> None:
     validate_url_mock.return_value = None
-    url = any_url()
+    url = faker.uri()
     sys.argv = [any_program_name(), f"--metadata-url={url}"]
     logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
 
@@ -103,8 +102,8 @@ def test_should_log_arguments(validate_url_mock) -> None:
         logger_mock.assert_called_once_with(Namespace(metadata_url=url))
 
 
-def test_should_print_json_output_on_validation_success() -> None:
-    sys.argv = [any_program_name(), f"--metadata-url={any_url()}"]
+def test_should_print_json_output_on_validation_success(faker) -> None:
+    sys.argv = [any_program_name(), f"--metadata-url={faker.uri()}"]
 
     with patch("sys.stdout") as stdout_mock, patch(
         "datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate"
@@ -118,14 +117,14 @@ def test_should_print_json_output_on_validation_success() -> None:
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
+def test_should_print_json_output_on_validation_failure(validate_url_mock, faker) -> None:
     error_message = "Some error message"
     expected_calls = [
         call.write(f'{{"success": false, "message": "{error_message}"}}'),
         call.write("\n"),
     ]
     validate_url_mock.side_effect = ValidationError(error_message)
-    sys.argv = [any_program_name(), f"--metadata-url={any_url()}"]
+    sys.argv = [any_program_name(), f"--metadata-url={faker.uri()}"]
 
     with patch("sys.stdout") as stdout_mock:
         main()
@@ -133,9 +132,9 @@ def test_should_print_json_output_on_validation_failure(validate_url_mock) -> No
         assert stdout_mock.mock_calls == expected_calls
 
 
-def test_should_validate_metadata_files_recursively() -> None:
-    parent_url = any_url()
-    child_url = any_url()
+def test_should_validate_metadata_files_recursively(faker) -> None:
+    parent_url = faker.uri()
+    child_url = faker.uri()
 
     stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     stac_object["links"].append({"href": child_url, "rel": "child"})
@@ -146,10 +145,10 @@ def test_should_validate_metadata_files_recursively() -> None:
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
 
-def test_should_only_validate_each_file_once() -> None:
-    root_url = any_url()
-    child_url = any_url()
-    leaf_url = any_url()
+def test_should_only_validate_each_file_once(faker) -> None:
+    root_url = faker.uri()
+    child_url = faker.uri()
+    leaf_url = faker.uri()
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     root_stac_object["links"] = [

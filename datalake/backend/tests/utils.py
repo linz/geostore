@@ -63,12 +63,6 @@ def any_program_name() -> str:
     return random_string(20)
 
 
-def any_url() -> str:
-    schema = random_ascii_letter_string(4)
-    path = random_string(20)
-    return f"{schema}://{path}"
-
-
 class Dataset:
     def __init__(
         self,

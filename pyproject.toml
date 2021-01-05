@@ -44,6 +44,7 @@ strict-rfc3339 = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
+Faker = "*"
 gitlint = "*"
 isort = "*"
 pre-commit = "*"

@@ -1090,6 +1090,18 @@ optional = true
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "faker"
+version = "5.3.0"
+description = "Faker is a Python package that generates fake data for you."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+python-dateutil = ">=2.4"
+text-unidecode = "1.3"
+
+[[package]]
 name = "filelock"
 version = "3.0.12"
 description = "A platform independent file lock."
@@ -1496,6 +1508,14 @@ optional = true
 python-versions = "*"
 
 [[package]]
+name = "text-unidecode"
+version = "1.3"
+description = "The most basic Text::Unidecode port"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -1601,7 +1621,7 @@ datasets-endpoint = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "c0921d263e026a5047cb6de9b922088b174ef1d5444ee77372616de884daa7e7"
+content-hash = "a56b304c5eb416890b194e8f6588b644d145fb2797f4a76d7b8b561d7ff57fc7"
 
 [metadata.files]
 appdirs = [
@@ -1859,6 +1879,10 @@ docutils = [
     {file = "docutils-0.15.2-py2-none-any.whl", hash = "sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827"},
     {file = "docutils-0.15.2-py3-none-any.whl", hash = "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"},
     {file = "docutils-0.15.2.tar.gz", hash = "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"},
+]
+faker = [
+    {file = "Faker-5.3.0-py3-none-any.whl", hash = "sha256:7e98483fc273ec5cfe1c9efa9b99adaa2de4c6b610fbc62d3767088e4974b0ce"},
+    {file = "Faker-5.3.0.tar.gz", hash = "sha256:7b0c4bb678be21a68640007f254259c73d18f7996a3448267716423360519732"},
 ]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
@@ -2124,6 +2148,10 @@ six = [
 ]
 strict-rfc3339 = [
     {file = "strict-rfc3339-0.7.tar.gz", hash = "sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277"},
+]
+text-unidecode = [
+    {file = "text-unidecode-1.3.tar.gz", hash = "sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93"},
+    {file = "text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
