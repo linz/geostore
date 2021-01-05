@@ -15,6 +15,7 @@ from .utils import (
     any_dataset_id,
     any_dataset_owning_group,
     any_dataset_title,
+    any_lambda_context,
     any_valid_dataset_type,
 )
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_should_fail_if_request_not_containing_method():
-    response = entrypoint.lambda_handler({"body": {}}, "context")
+    response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
 
     assert response == {
         "statusCode": 400,
@@ -32,7 +33,7 @@ def test_should_fail_if_request_not_containing_method():
 
 
 def test_should_fail_if_request_not_containing_body():
-    response = entrypoint.lambda_handler({"httpMethod": "POST"}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
 
     assert response == {
         "statusCode": 400,
@@ -51,7 +52,7 @@ def test_should_create_dataset(db_teardown):  # pylint:disable=unused-argument
     body["title"] = dataset_title
     body["owning_group"] = dataset_owning_group
 
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 201
@@ -68,7 +69,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute():
     body["owning_group"] = any_dataset_owning_group()
 
     # When attempting to create the instance
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
 
     # Then the API should return an error message
     assert response == {
@@ -84,7 +85,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type():
     body["title"] = any_dataset_title()
     body["owning_group"] = any_dataset_owning_group()
 
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 400
@@ -104,7 +105,9 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title():
     body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
-        response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "POST", "body": body}, any_lambda_context()
+        )
 
     assert response == {
         "statusCode": 409,
@@ -127,7 +130,9 @@ def test_should_return_single_dataset(db_teardown):  # pylint:disable=unused-arg
     body["type"] = dataset_type
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         # When requesting the dataset by ID and type
-        response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": body}, any_lambda_context()
+        )
     logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
@@ -140,7 +145,9 @@ def test_should_return_all_datasets(db_teardown):  # pylint:disable=unused-argum
     # Given two datasets
     with Dataset() as first_dataset, Dataset() as second_dataset:
         # When requesting all datasets
-        response = entrypoint.lambda_handler({"httpMethod": "GET", "body": {}}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": {}}, any_lambda_context()
+        )
         logger.info("Response: %s", response)
 
         # Then we should get both datasets in return
@@ -165,7 +172,9 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
         dataset_type="RASTER", title=dataset_title
     ), Dataset(dataset_type=dataset_type):
         # When requesting a specific type and title
-        response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": body}, any_lambda_context()
+        )
         logger.info("Response: %s", response)
 
         # Then only the matching dataset should be returned
@@ -197,7 +206,9 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
         dataset_type="IMAGE", owning_group=dataset_owning_group
     ):
         # When requesting a specific type and owning group
-        response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": body}, any_lambda_context()
+        )
         logger.info("Response: %s", response)
 
         # Then only the matching instances should be returned
@@ -216,7 +227,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter():
     body["title"] = any_dataset_title()
     body["owning_group"] = any_dataset_owning_group()
 
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 400
@@ -234,7 +245,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
     body["id"] = dataset_id
     body["type"] = dataset_type
 
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, "context")
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
 
     assert response == {
         "statusCode": 404,
@@ -257,7 +268,9 @@ def test_should_update_dataset(db_teardown):  # pylint:disable=unused-argument
     body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
-        response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+        )
     logger.info("Response: %s", response)
 
     assert response["statusCode"] == 200
@@ -278,7 +291,9 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     body["owning_group"] = any_dataset_owning_group()
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
-        response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+        )
 
     assert response == {
         "statusCode": 409,
@@ -303,7 +318,9 @@ def test_should_fail_if_updating_not_existing_dataset(
     body["title"] = "New Dataset ABC"
     body["owning_group"] = any_dataset_owning_group()
 
-    response = entrypoint.lambda_handler({"httpMethod": "PATCH", "body": body}, "context")
+    response = entrypoint.lambda_handler(
+        {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+    )
 
     assert response == {
         "statusCode": 404,
@@ -323,7 +340,9 @@ def test_should_delete_dataset(db_teardown):  # pylint:disable=unused-argument
     body["type"] = dataset_type
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
-        response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "DELETE", "body": body}, any_lambda_context()
+        )
 
     assert response == {"statusCode": 204, "body": {}}
 
@@ -341,7 +360,9 @@ def test_should_fail_if_deleting_not_existing_dataset(
     body["title"] = "Dataset ABC"
     body["owning_group"] = any_dataset_owning_group()
 
-    response = entrypoint.lambda_handler({"httpMethod": "DELETE", "body": body}, "context")
+    response = entrypoint.lambda_handler(
+        {"httpMethod": "DELETE", "body": body}, any_lambda_context()
+    )
 
     assert response == {
         "statusCode": 404,

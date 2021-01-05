@@ -69,6 +69,11 @@ def any_url() -> str:
     return f"{schema}://{path}"
 
 
+def any_lambda_context() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
+
+
 class Dataset:
     def __init__(
         self,
