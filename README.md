@@ -135,3 +135,6 @@ To add a production package:
    - If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
 
    Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
+- Update the code coverage minimum in pyproject.toml on branches which increase it.
+
+   Rationale: By updating this continuously we avoid missing test regressions in new branches.

@@ -1,5 +1,6 @@
 cdk.context.json
 cdk.out/
+.coverage
 .idea/
 .mypy_cache/
 node_modules/
