@@ -126,6 +126,7 @@ jobs:
                   timeout 2h \
                       ./.github/workflows/wait-for-stack-teardown.bash \
                       geospatial-data-lake-api-ci \
+                      geospatial-data-lake-networking-ci \
                       geospatial-data-lake-processing-ci \
                       geospatial-data-lake-storage-ci
 
