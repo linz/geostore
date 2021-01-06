@@ -8,7 +8,7 @@ git submodule update --init
 
 npm ci
 
-poetry install --extras='cdk check-stac-metadata-job datasets-endpoint'
+poetry install --extras='cdk check-stac-metadata-job datasets-endpoint' --remove-untracked
 
 # shellcheck source=/dev/null
 . .venv/bin/activate
