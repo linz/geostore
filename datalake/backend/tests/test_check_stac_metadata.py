@@ -4,6 +4,7 @@ from argparse import Namespace
 from copy import deepcopy
 from io import StringIO
 from json import dump
+from random import choice
 from typing import Any, Dict, Optional, TextIO
 from unittest.mock import Mock, call, patch
 
@@ -126,7 +127,7 @@ def test_should_print_json_output_on_validation_failure(validate_url_mock) -> No
         call.write(f'{{"success": false, "message": "{error_message}"}}'),
         call.write("\n"),
     ]
-    validate_url_mock.side_effect = ValidationError(error_message)
+    validate_url_mock.side_effect = choice([ValidationError, AssertionError])(error_message)
     sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]
 
     with patch("sys.stdout") as stdout_mock:

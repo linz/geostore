@@ -104,8 +104,8 @@ def main() -> int:
     try:
         STACSchemaValidator(url_reader).validate(arguments.metadata_url)
         print(dumps({"success": True, "message": ""}))
-    except ValidationError as error:
-        print(dumps({"success": False, "message": error.message}))
+    except (AssertionError, ValidationError) as error:
+        print(dumps({"success": False, "message": str(error)}))
 
     return 0
 
