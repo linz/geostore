@@ -15,6 +15,7 @@ from ..processing.check_stac_metadata.task import STACSchemaValidator, main
 from .utils import (
     any_dataset_description,
     any_dataset_id,
+    any_https_url,
     any_past_datetime_string,
     any_program_name,
     any_s3_url,
@@ -202,3 +203,11 @@ def test_should_raise_exception_if_related_file_is_in_different_directory() -> N
         match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
     ):
         STACSchemaValidator(url_reader).validate(root_url)
+
+
+def test_should_raise_exception_if_non_s3_url_is_passed() -> None:
+    https_url = any_https_url()
+    url_reader = MockJSONURLReader({})
+
+    with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
+        STACSchemaValidator(url_reader).validate(https_url)

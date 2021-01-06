@@ -76,6 +76,16 @@ def any_safe_filename() -> str:
     return _random_string_choices(f"{string.digits}{string.ascii_letters}", 20)
 
 
+def any_host() -> str:
+    return random_ascii_letter_string(20)
+
+
+def any_https_url() -> str:
+    host = any_host()
+    path = any_safe_file_path()
+    return f"https://{host}/{path}"
+
+
 def any_s3_url() -> str:
     bucket_name = any_s3_bucket_name()
     key = any_safe_file_path()
