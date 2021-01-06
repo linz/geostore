@@ -52,6 +52,12 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         for link_object in url_json["links"]:
             next_url = link_object["href"]
             if next_url not in self.traversed_urls:
+                url_prefix = url.rsplit("/", maxsplit=1)[0]
+                next_url_prefix = next_url.rsplit("/", maxsplit=1)[0]
+                assert (
+                    url_prefix == next_url_prefix
+                ), f"“{url}” links to metadata file in different directory: “{next_url}”"
+
                 self.validate(next_url)
 
 
