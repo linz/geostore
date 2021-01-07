@@ -1,3 +1,4 @@
+import logging
 import sys
 from io import BytesIO
 from unittest.mock import ANY, MagicMock, patch
@@ -44,6 +45,24 @@ def test_should_validate_given_url_and_checksum(validate_url_multihash_mock: Mag
         assert main() == 0
 
     validate_url_multihash_mock.assert_called_once_with(url, hex_multihash, ANY)
+
+
+@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
+def test_should_print_json_output_when_validation_succeeds(
+    validate_url_multihash_mock: MagicMock,
+) -> None:
+    validate_url_multihash_mock.return_value = True
+    logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
+    sys.argv = [
+        any_program_name(),
+        f"--file-url={any_s3_url()}",
+        f"--hex-multihash={any_hex_multihash()}",
+    ]
+
+    with patch.object(logger, "info") as info_log_mock, patch("boto3.client"):
+        main()
+
+        info_log_mock.assert_called_with('{"success": true, "message": ""}')
 
 
 @patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")

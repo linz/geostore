@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+import logging
 import sys
 from argparse import ArgumentParser, Namespace
+from json import dumps
+from os import environ
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
@@ -45,11 +48,26 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
+def set_up_logging() -> logging.Logger:
+    logger = logging.getLogger(__name__)
+
+    log_handler = logging.StreamHandler()
+    log_level = environ.get("LOGLEVEL", logging.NOTSET)
+
+    logger.addHandler(log_handler)
+    logger.setLevel(log_level)
+
+    return logger
+
+
 def main() -> int:
+    logger = set_up_logging()
+
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
 
     if validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client):
+        logger.info(dumps({"success": True, "message": ""}))
         return 0
 
     return 1
