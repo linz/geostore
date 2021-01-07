@@ -72,7 +72,15 @@ def any_https_url() -> str:
 
 
 def any_hex_multihash() -> str:
-    hex_digest = sha256(random_string(20).encode()).hexdigest()
+    hex_digest = any_sha256_hex_digest()
+    return sha256_hex_digest_to_multihash(hex_digest)
+
+
+def any_sha256_hex_digest() -> str:
+    return sha256(random_string(20).encode()).hexdigest()
+
+
+def sha256_hex_digest_to_multihash(hex_digest: str) -> str:
     return f"{SHA2_256:x}{32:x}{hex_digest}"
 
 

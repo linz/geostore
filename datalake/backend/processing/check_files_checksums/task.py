@@ -24,7 +24,14 @@ ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 CHUNK_SIZE = 1024
 
 
-def validate_url_multihash(url: str, hex_multihash: str, s3_client: S3Client) -> bool:
+class ChecksumMismatchError(Exception):
+    def __init__(self, actual_hex_digest: str):
+        super().__init__()
+
+        self.actual_hex_digest = actual_hex_digest
+
+
+def validate_url_multihash(url: str, hex_multihash: str, s3_client: S3Client) -> None:
     parsed_url = urlparse(url)
     bucket = parsed_url.netloc
     key = parsed_url.path.lstrip("/")
@@ -36,9 +43,8 @@ def validate_url_multihash(url: str, hex_multihash: str, s3_client: S3Client) ->
     for chunk in url_stream.iter_chunks(chunk_size=CHUNK_SIZE):
         file_digest.update(chunk)
 
-    actual_digest: bytes = file_digest.digest()
-    expected_digest: bytes = decode(bytes.fromhex(hex_multihash))
-    return actual_digest == expected_digest
+    if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
+        raise ChecksumMismatchError(file_digest.hexdigest())
 
 
 def parse_arguments() -> Namespace:
@@ -66,11 +72,22 @@ def main() -> int:
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
 
-    if validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client):
-        logger.info(dumps({"success": True, "message": ""}))
-        return 0
+    try:
+        validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client)
+    except ChecksumMismatchError as error:
+        logger.error(
+            dumps(
+                {
+                    "success": False,
+                    "message": f"Checksum mismatch: expected {arguments.hex_multihash[4:]},"
+                    f" got {error.actual_hex_digest}",
+                }
+            )
+        )
+        return 1
 
-    return 1
+    logger.info(dumps({"success": True, "message": ""}))
+    return 0
 
 
 if __name__ == "__main__":
