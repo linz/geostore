@@ -9,6 +9,7 @@ from aws_cdk import (
     aws_ecs,
     aws_iam,
     aws_lambda,
+    aws_s3,
     aws_stepfunctions,
     aws_stepfunctions_tasks,
     core,
@@ -26,7 +27,18 @@ class ProcessingStack(core.Stack):
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
-        # ### DATASET VERSION CREATE ###############################################################
+        # ### ASSETS STORAGE BUCKET ################################################################
+        ############################################################################################
+        assets_bucket = aws_s3.Bucket(
+            self,
+            "assets-bucket",
+            access_control=aws_s3.BucketAccessControl.PRIVATE,
+            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
+        )
+        Tags.of(assets_bucket).add("ApplicationLayer", "data-processing")
+
+        ############################################################################################
+        # ### PROCESSING STATE MACHINE #############################################################
         ############################################################################################
 
         # STATE MACHINE TASKS CONFIGURATION
@@ -86,6 +98,7 @@ class ProcessingStack(core.Stack):
                 ),
             ],
         )
+        assets_bucket.grant_read(batch_instance_role)
 
         batch_instance_profile = aws_iam.CfnInstanceProfile(
             self,
@@ -184,6 +197,7 @@ class ProcessingStack(core.Stack):
                         ),
                     ),
                 )
+                assets_bucket.grant_read_write(lambda_function)
 
                 step_tasks[task_name] = aws_stepfunctions_tasks.LambdaInvoke(
                     self,
