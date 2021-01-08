@@ -5,6 +5,7 @@ import textwrap
 
 from aws_cdk import (
     aws_batch,
+    aws_dynamodb,
     aws_ec2,
     aws_ecs,
     aws_iam,
@@ -21,12 +22,32 @@ JOB_DEFINITION_SUFFIX = "_job"
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-complex
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env, vpc, **kwargs) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
+        # set resources removal policy for different environments
+        if deploy_env == "prod":
+            REMOVAL_POLICY = core.RemovalPolicy.RETAIN
+        else:
+            REMOVAL_POLICY = core.RemovalPolicy.DESTROY
+
         ############################################################################################
-        # ### DATASET VERSION CREATE ###############################################################
+        # ### PROCESSING ASSETS STORAGE TABLE ######################################################
+        ############################################################################################
+        assets_table = aws_dynamodb.Table(
+            self,
+            "processing-assets",
+            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
+            point_in_time_recovery=True,
+            removal_policy=REMOVAL_POLICY,
+        )
+
+        Tags.of(assets_table).add("ApplicationLayer", "data-processing")
+
+        ############################################################################################
+        # ### PROCESSING STATE MACHINE #############################################################
         ############################################################################################
 
         # STATE MACHINE TASKS CONFIGURATION
@@ -58,6 +79,7 @@ class ProcessingStack(core.Stack):
             "parallel": True,
             "result_path": aws_stepfunctions.JsonPath.DISCARD,
         }
+
         creation_tasks["check_stac_metadata"] = {
             "type": "batch",
             "parallel": False,
@@ -86,6 +108,7 @@ class ProcessingStack(core.Stack):
                 ),
             ],
         )
+        assets_table.grant_read_write_data(batch_instance_role)
 
         batch_instance_profile = aws_iam.CfnInstanceProfile(
             self,
@@ -184,6 +207,7 @@ class ProcessingStack(core.Stack):
                         ),
                     ),
                 )
+                assets_table.grant_read_data(lambda_function)
 
                 step_tasks[task_name] = aws_stepfunctions_tasks.LambdaInvoke(
                     self,
