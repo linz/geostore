@@ -1,6 +1,7 @@
 cdk.context.json
 cdk.out/
 .idea/
+.mypy_cache/
 node_modules/
 *.pyc
 __pycache__

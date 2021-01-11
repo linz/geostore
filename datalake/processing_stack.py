@@ -2,6 +2,7 @@
 Data Lake processing stack.
 """
 import textwrap
+from typing import Any, Dict
 
 from aws_cdk import (
     aws_batch,
@@ -69,7 +70,7 @@ class ProcessingStack(core.Stack):
         # * output_path: "$"
         # * result_path: "$"
         # * items_path: "$"
-        creation_tasks = {}
+        creation_tasks: Dict[str, Any] = {}
 
         creation_tasks["content_iterator"] = {"type": "lambda", "result_path": "$.content"}
 
@@ -77,12 +78,6 @@ class ProcessingStack(core.Stack):
 
         creation_tasks["validation_failure"] = {
             "type": "lambda",
-            "result_path": aws_stepfunctions.JsonPath.DISCARD,
-        }
-
-        creation_tasks["check_flat_directory_structure"] = {
-            "type": "batch",
-            "parallel": False,
             "result_path": aws_stepfunctions.JsonPath.DISCARD,
         }
 
@@ -306,7 +301,6 @@ class ProcessingStack(core.Stack):
         # state machine definition
         dataset_version_creation_definition = (
             step_tasks["check_stac_metadata"]
-            .next(step_tasks["check_flat_directory_structure"])
             .next(step_tasks["content_iterator"])
             .next(step_tasks["check_files_checksums"])
             .next(

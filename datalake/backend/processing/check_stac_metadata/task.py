@@ -5,13 +5,15 @@ from argparse import ArgumentParser
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
-from typing import Callable, TextIO
+from typing import Callable, List, TextIO
 from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, FormatChecker, RefResolver, ValidationError
 from jsonschema._utils import URIDict
+
+S3_URL_PREFIX = "s3://"
 
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
@@ -21,7 +23,7 @@ CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catal
 class STACSchemaValidator:  # pylint:disable=too-few-public-methods
     def __init__(self, url_reader: Callable[[str], TextIO]):
         self.url_reader = url_reader
-        self.traversed_urls = []
+        self.traversed_urls: List[str] = []
 
         with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
             collection_schema = load(collection_schema_file)
@@ -42,6 +44,8 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         )
 
     def validate(self, url: str) -> None:
+        assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
+
         self.traversed_urls.append(url)
 
         url_stream = self.url_reader(url)
@@ -52,6 +56,12 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         for link_object in url_json["links"]:
             next_url = link_object["href"]
             if next_url not in self.traversed_urls:
+                url_prefix = url.rsplit("/", maxsplit=1)[0]
+                next_url_prefix = next_url.rsplit("/", maxsplit=1)[0]
+                assert (
+                    url_prefix == next_url_prefix
+                ), f"“{url}” links to metadata file in different directory: “{next_url}”"
+
                 self.validate(next_url)
 
 
@@ -98,8 +108,8 @@ def main() -> int:
     try:
         STACSchemaValidator(url_reader).validate(arguments.metadata_url)
         print(dumps({"success": True, "message": ""}))
-    except ValidationError as error:
-        print(dumps({"success": False, "message": error.message}))
+    except (AssertionError, ValidationError) as error:
+        print(dumps({"success": False, "message": str(error)}))
 
     return 0
 
