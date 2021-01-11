@@ -9,11 +9,11 @@ class StorageStack(core.Stack):
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
-        # set resources removal policy for different environments
+        # set resources depending on deployment type
         if deploy_env == "prod":
-            REMOVAL_POLICY = core.RemovalPolicy.RETAIN
+            resource_removal_policy = core.RemovalPolicy.RETAIN
         else:
-            REMOVAL_POLICY = core.RemovalPolicy.DESTROY
+            resource_removal_policy = core.RemovalPolicy.DESTROY
 
         ############################################################################################
         # ### STORAGE S3 BUCKET ####################################################################
@@ -27,7 +27,7 @@ class StorageStack(core.Stack):
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
-            removal_policy=REMOVAL_POLICY,
+            removal_policy=resource_removal_policy,
         )
         Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")
 
@@ -41,7 +41,7 @@ class StorageStack(core.Stack):
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,
-            removal_policy=REMOVAL_POLICY,
+            removal_policy=resource_removal_policy,
         )
 
         self.datasets_table.add_global_secondary_index(
