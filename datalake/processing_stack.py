@@ -48,12 +48,6 @@ class ProcessingStack(core.Stack):
             "result_path": aws_stepfunctions.JsonPath.DISCARD,
         }
 
-        creation_tasks["check_flat_directory_structure"] = {
-            "type": "batch",
-            "parallel": False,
-            "result_path": aws_stepfunctions.JsonPath.DISCARD,
-        }
-
         creation_tasks["check_files_checksums"] = {
             "type": "batch",
             "parallel": True,
@@ -284,7 +278,6 @@ class ProcessingStack(core.Stack):
         # state machine definition
         dataset_version_creation_definition = (
             step_tasks["check_stac_metadata"]
-            .next(step_tasks["check_flat_directory_structure"])
             .next(step_tasks["content_iterator"])
             .next(step_tasks["check_files_checksums"])
             .next(
