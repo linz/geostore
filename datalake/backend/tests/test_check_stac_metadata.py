@@ -25,7 +25,7 @@ from .utils import (
 
 STAC_VERSION = "1.0.0-beta.2"
 
-MINIMAL_VALID_STAC_OBJECT = {
+MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
     "stac_version": STAC_VERSION,
     "id": any_dataset_id(),
     "description": any_dataset_description(),

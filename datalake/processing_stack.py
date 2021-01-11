@@ -2,6 +2,7 @@
 Data Lake processing stack.
 """
 import textwrap
+from typing import Any, Dict
 
 from aws_cdk import (
     aws_batch,
@@ -36,7 +37,7 @@ class ProcessingStack(core.Stack):
         # * output_path: "$"
         # * result_path: "$"
         # * items_path: "$"
-        creation_tasks = {}
+        creation_tasks: Dict[str, Any] = {}
 
         creation_tasks["content_iterator"] = {"type": "lambda", "result_path": "$.content"}
 

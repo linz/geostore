@@ -32,6 +32,18 @@ repos:
             stages: [commit]
             types: [python]
 
+          - id: mypy
+            name: mypy
+            # TODO: Change next line to `entry: mypy` once all lints have been fixed
+            entry: bash -c 'mypy "$@" || true' --
+            # TODO: Remove next line once all lints have been fixed
+            verbose: true
+            args: [--no-incremental]
+            language: system
+            stages: [commit]
+            types: [python]
+            require_serial: true
+
           - id: pylint
             name: pylint
             entry: pylint
