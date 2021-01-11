@@ -4,11 +4,11 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..model import DatasetModel
-from ..utils import DATASET_TYPES, JSON_OBJECT, error_response, success_response
+from ..utils import DATASET_TYPES, JsonObject, error_response, success_response
 from .list import list_datasets
 
 
-def handle_get(event: JSON_OBJECT) -> JSON_OBJECT:
+def handle_get(event: JsonObject) -> JsonObject:
     if "id" in event["body"] and "type" in event["body"]:
         return get_dataset_single(event)
 
@@ -21,10 +21,10 @@ def handle_get(event: JSON_OBJECT) -> JSON_OBJECT:
     return error_response(400, "Unhandled request")
 
 
-def get_dataset_single(payload: JSON_OBJECT) -> JSON_OBJECT:
+def get_dataset_single(payload: JsonObject) -> JsonObject:
     """GET: Get single Dataset."""
 
-    BODY_SCHEMA = {
+    body_schema = {
         "type": "object",
         "properties": {
             "id": {"type": "string"},
@@ -39,7 +39,7 @@ def get_dataset_single(payload: JSON_OBJECT) -> JSON_OBJECT:
     # request body validation
     req_body = payload["body"]
     try:
-        validate(req_body, BODY_SCHEMA)
+        validate(req_body, body_schema)
     except ValidationError as err:
         return error_response(400, err.message)
 
@@ -61,10 +61,10 @@ def get_dataset_single(payload: JSON_OBJECT) -> JSON_OBJECT:
     return success_response(200, resp_body)
 
 
-def get_dataset_filter(payload: JSON_OBJECT) -> JSON_OBJECT:
+def get_dataset_filter(payload: JsonObject) -> JsonObject:
     """GET: Get Datasets by filter."""
 
-    BODY_SCHEMA = {
+    body_schema = {
         "type": "object",
         "properties": {
             "type": {
@@ -82,7 +82,7 @@ def get_dataset_filter(payload: JSON_OBJECT) -> JSON_OBJECT:
     # request body validation
     req_body = payload["body"]
     try:
-        validate(req_body, BODY_SCHEMA)
+        validate(req_body, body_schema)
     except ValidationError as err:
         return error_response(400, err.message)
 
