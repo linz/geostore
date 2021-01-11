@@ -22,15 +22,27 @@ JOB_DEFINITION_SUFFIX = "_job"
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
 
-    # pylint: disable=too-many-locals,too-complex
+    # pylint: disable=too-many-locals
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env, vpc, **kwargs) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
-        # set resources removal policy for different environments
+        # set resources depending on deployment type
         if deploy_env == "prod":
-            REMOVAL_POLICY = core.RemovalPolicy.RETAIN
+            resource_removal_policy = core.RemovalPolicy.RETAIN
+            batch_compute_env_instance_types = [
+                aws_ec2.InstanceType("c5.xlarge"),
+                aws_ec2.InstanceType("c5.2xlarge"),
+                aws_ec2.InstanceType("c5.4xlarge"),
+                aws_ec2.InstanceType("c5.9xlarge"),
+            ]
+            batch_job_definition_memory_limit = 3900
         else:
-            REMOVAL_POLICY = core.RemovalPolicy.DESTROY
+            resource_removal_policy = core.RemovalPolicy.DESTROY
+            batch_compute_env_instance_types = [
+                aws_ec2.InstanceType("m5.large"),
+                aws_ec2.InstanceType("m5.xlarge"),
+            ]
+            batch_job_definition_memory_limit = 500
 
         ############################################################################################
         # ### PROCESSING ASSETS STORAGE TABLE ######################################################
@@ -41,7 +53,7 @@ class ProcessingStack(core.Stack):
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,
-            removal_policy=REMOVAL_POLICY,
+            removal_policy=resource_removal_policy,
         )
 
         Tags.of(assets_table).add("ApplicationLayer", "data-processing")
@@ -142,19 +154,6 @@ class ProcessingStack(core.Stack):
             },
         )
 
-        if deploy_env == "prod":
-            instance_types = [
-                aws_ec2.InstanceType("c5.xlarge"),
-                aws_ec2.InstanceType("c5.2xlarge"),
-                aws_ec2.InstanceType("c5.4xlarge"),
-                aws_ec2.InstanceType("c5.9xlarge"),
-            ]
-        else:
-            instance_types = [
-                aws_ec2.InstanceType("m5.large"),
-                aws_ec2.InstanceType("m5.xlarge"),
-            ]
-
         batch_compute_environment = aws_batch.ComputeEnvironment(
             self,
             "compute-environment",
@@ -163,7 +162,7 @@ class ProcessingStack(core.Stack):
                 minv_cpus=0,
                 desiredv_cpus=0,
                 maxv_cpus=1000,
-                instance_types=instance_types,
+                instance_types=batch_compute_env_instance_types,
                 instance_role=batch_instance_profile.instance_profile_name,
                 allocation_strategy=aws_batch.AllocationStrategy("BEST_FIT_PROGRESSIVE"),
                 launch_template=aws_batch.LaunchTemplateSpecification(
@@ -232,7 +231,7 @@ class ProcessingStack(core.Stack):
                             directory=".",
                             file=f"datalake/backend/processing/{task_name}/Dockerfile",
                         ),
-                        memory_limit_mib=3900 if deploy_env == "prod" else 500,
+                        memory_limit_mib=batch_job_definition_memory_limit,
                         vcpus=1,
                     ),
                     retry_attempts=4,
