@@ -19,6 +19,12 @@ repos:
             language: system
             stages: [commit-msg]
 
+          - id: hadolint
+            name: hadolint
+            language: docker_image
+            entry: hadolint/hadolint hadolint
+            files: Dockerfile
+
           - id: isort
             name: isort
             entry: isort

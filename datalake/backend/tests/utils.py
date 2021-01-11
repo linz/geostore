@@ -63,10 +63,37 @@ def any_program_name() -> str:
     return random_string(20)
 
 
-def any_url() -> str:
-    schema = random_ascii_letter_string(4)
-    path = random_string(20)
-    return f"{schema}://{path}"
+def any_stac_relation() -> str:
+    return choice(["child", "root", "self"])
+
+
+def any_safe_file_path():
+    paths = [any_safe_filename() for _ in range(randrange(1, 5))]
+    return "/".join(paths)
+
+
+def any_safe_filename() -> str:
+    return _random_string_choices(f"{string.digits}{string.ascii_letters}", 20)
+
+
+def any_host() -> str:
+    return random_ascii_letter_string(20)
+
+
+def any_https_url() -> str:
+    host = any_host()
+    path = any_safe_file_path()
+    return f"https://{host}/{path}"
+
+
+def any_s3_url() -> str:
+    bucket_name = any_s3_bucket_name()
+    key = any_safe_file_path()
+    return f"s3://{bucket_name}/{key}"
+
+
+def any_s3_bucket_name() -> str:
+    return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
 
 
 def any_lambda_context() -> str:
