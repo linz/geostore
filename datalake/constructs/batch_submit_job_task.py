@@ -1,4 +1,4 @@
-from typing import Mapping, Optional
+from typing import List, Mapping, Optional
 
 from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks, core
 
@@ -13,23 +13,32 @@ class BatchSubmitJobTask(core.Construct):
         *,
         deploy_env: str,
         directory: str,
-        job_role: aws_iam.Role,
+        s3_policy: aws_iam.IManagedPolicy,
         job_queue: aws_batch.JobQueue,
         payload_object: Mapping[str, str],
+        container_overrides_command: List[str],
         container_overrides_environment: Optional[Mapping[str, str]] = None,
         array_size: Optional[int] = None,
     ):
         super().__init__(scope, construct_id)
 
-        job_definition = TaskJobDefinition(
+        self.job_role = aws_iam.Role(
+            self,
+            f"{construct_id}_batch_job_role",
+            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[s3_policy],
+        )
+
+        self.job_definition = TaskJobDefinition(
             self,
             f"{construct_id}_task_definition",
             deploy_env=deploy_env,
             directory=directory,
-            job_role=job_role,
+            job_role=self.job_role,
         )
+
         container_overrides = aws_stepfunctions_tasks.BatchContainerOverrides(
-            command=["--metadata-url", "Ref::metadata_url"],
+            command=container_overrides_command,
             environment=container_overrides_environment,
         )
         payload = aws_stepfunctions.TaskInput.from_object(payload_object)
@@ -37,7 +46,7 @@ class BatchSubmitJobTask(core.Construct):
             scope,
             f"{construct_id}_batch_submit_job",
             job_name=f"{construct_id}_job",
-            job_definition=job_definition,
+            job_definition=self.job_definition,
             job_queue=job_queue,
             array_size=array_size,
             result_path=aws_stepfunctions.JsonPath.DISCARD,

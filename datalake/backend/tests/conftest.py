@@ -38,3 +38,13 @@ def db_teardown():
     yield
 
     return True
+
+
+@pytest.fixture()
+def dynamodb_client():
+    return boto3.client("dynamodb")
+
+
+@pytest.fixture()
+def step_functions_client():
+    return boto3.client("stepfunctions")

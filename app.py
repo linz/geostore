@@ -3,8 +3,7 @@
 """
 CDK application entry point file.
 """
-
-import os
+from os import environ
 
 from aws_cdk import core
 
@@ -15,7 +14,7 @@ from datalake.staging_stack import StagingStack
 from datalake.storage_stack import StorageStack
 
 ENVIRONMENT_TYPE_TAG_NAME = "EnvironmentType"
-ENV = os.environ.get("DEPLOY_ENV", "dev")
+ENV = environ.get("DEPLOY_ENV", "dev")
 
 
 def str2bool(value: str) -> bool:
@@ -27,28 +26,25 @@ def str2bool(value: str) -> bool:
 
 
 def main():
+    region = environ["CDK_DEFAULT_REGION"]
+    account = environ["CDK_DEFAULT_ACCOUNT"]
+
     app = core.App()
 
     networking = NetworkingStack(
         app,
         "networking",
         stack_name=f"geospatial-data-lake-networking-{ENV}",
-        env={
-            "region": os.environ["CDK_DEFAULT_REGION"],
-            "account": os.environ["CDK_DEFAULT_ACCOUNT"],
-        },
+        env={"region": region, "account": account},
         deploy_env=ENV,
-        use_existing_vpc=str2bool(os.environ.get("DATALAKE_USE_EXISTING_VPC", "false")),
+        use_existing_vpc=str2bool(environ.get("DATALAKE_USE_EXISTING_VPC", "false")),
     )
 
     storage = StorageStack(
         app,
         "storage",
         stack_name=f"geospatial-data-lake-storage-{ENV}",
-        env={
-            "region": os.environ["CDK_DEFAULT_REGION"],
-            "account": os.environ["CDK_DEFAULT_ACCOUNT"],
-        },
+        env={"region": region, "account": account},
         deploy_env=ENV,
     )
 
@@ -56,10 +52,7 @@ def main():
         app,
         "processing",
         stack_name=f"geospatial-data-lake-processing-{ENV}",
-        env={
-            "region": os.environ["CDK_DEFAULT_REGION"],
-            "account": os.environ["CDK_DEFAULT_ACCOUNT"],
-        },
+        env={"region": region, "account": account},
         deploy_env=ENV,
         vpc=networking.datalake_vpc,
     )
@@ -68,10 +61,7 @@ def main():
         app,
         "api",
         stack_name=f"geospatial-data-lake-api-{ENV}",
-        env={
-            "region": os.environ["CDK_DEFAULT_REGION"],
-            "account": os.environ["CDK_DEFAULT_ACCOUNT"],
-        },
+        env={"region": region, "account": account},
         datasets_table=storage.datasets_table,
     )
 
@@ -79,10 +69,7 @@ def main():
         app,
         "staging",
         stack_name=f"geospatial-data-lake-staging-{ENV}",
-        env={
-            "region": os.environ["CDK_DEFAULT_REGION"],
-            "account": os.environ["CDK_DEFAULT_ACCOUNT"],
-        },
+        env={"region": region, "account": account},
         deploy_env=ENV,
     )
 

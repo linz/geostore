@@ -111,11 +111,13 @@ gitlint = "*"
 ipdb = "*"
 isort = "*"
 language-formatters-pre-commit-hooks = "*"
+multihash = "*"
 mypy = "*"
 pre-commit = "*"
 pylint = "*"
 pytest = "*"
 pytest-randomly = "*"
+pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
 
@@ -141,6 +143,7 @@ cdk = [
 check-stac-metadata-job = [
     "boto3",
     "jsonschema",
+    "pynamodb",
     "strict-rfc3339",
 ]
 datasets-endpoint = [

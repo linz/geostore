@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
-from typing import Callable, List, TextIO
+from typing import Callable, Dict, List, TextIO
 from urllib.parse import urlparse
 
 import boto3
@@ -17,12 +17,27 @@ from jsonschema import (  # type: ignore[import]
     ValidationError,
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
+from pynamodb.attributes import UnicodeAttribute
+from pynamodb.models import Model
+
+PROCESSING_ASSETS_TABLE_NAME = "processing_assets"
 
 S3_URL_PREFIX = "s3://"
 
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
 CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
+
+
+class ProcessingAssetsModel(Model):
+    class Meta:  # pylint:disable=too-few-public-methods
+        table_name = PROCESSING_ASSETS_TABLE_NAME
+        region = "ap-southeast-2"  # TODO: don't hardcode region
+
+    pk = UnicodeAttribute(hash_key=True)
+    sk = UnicodeAttribute(range_key=True)
+    url = UnicodeAttribute()
+    multihash = UnicodeAttribute()
 
 
 class STACSchemaValidator:  # pylint:disable=too-few-public-methods
@@ -48,7 +63,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str) -> None:
+    def validate(self, url: str) -> List[Dict[str, str]]:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
@@ -57,6 +72,10 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         url_json = load(url_stream)
 
         self.validator.validate(url_json)
+
+        assets = []
+        for asset in url_json.get("assets", {}).values():
+            assets.append({"url": asset["href"], "multihash": asset["checksum:multihash"]})
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -67,12 +86,16 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
 
-                self.validate(next_url)
+                assets.extend(self.validate(next_url))
+
+        return assets
 
 
 def parse_arguments():
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--metadata-url", required=True)
+    argument_parser.add_argument("--dataset-id", required=True)
+    argument_parser.add_argument("--version-id", required=True)
     arguments = argument_parser.parse_args()
     return arguments
 
@@ -111,10 +134,19 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        STACSchemaValidator(url_reader).validate(arguments.metadata_url)
+        assets = STACSchemaValidator(url_reader).validate(arguments.metadata_url)
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
+
+    asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
+    for index, asset in enumerate(assets):
+        ProcessingAssetsModel(
+            pk=asset_pk,
+            sk=f"DATA_ITEM_INDEX#{index}",
+            url=asset["url"],
+            multihash=asset["multihash"],
+        ).save()
 
     logger.info(dumps({"success": True, "message": ""}))
     return 0

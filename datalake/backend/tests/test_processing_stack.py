@@ -94,7 +94,7 @@ def test_should_successfully_run_dataset_version_creation_process(stepfunctions_
                 "dataset_id": "1xyz",
                 "version_id": "2xyz",
                 "type": "RASTER",
-                "metadata_url": f"s3://{s3_metadata_file.bucket_name}/{s3_metadata_file.key}",
+                "metadata_url": s3_metadata_file.url,
             }
         )
 

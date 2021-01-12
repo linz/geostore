@@ -1,18 +1,25 @@
 import string
 from datetime import datetime, timedelta, timezone
+from hashlib import sha256
+from os import urandom
 from random import choice, randrange
 from types import TracebackType
-from typing import BinaryIO, Optional, Type
+from typing import BinaryIO, List, Optional, Type, TypedDict
 from uuid import uuid4
 
 import boto3
+from multihash import SHA2_256  # type: ignore[import]
 
+from app import ENV, ENVIRONMENT_TYPE_TAG_NAME
+
+from ...networking_stack import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from ..endpoints.datasets.common import DATASET_TYPES
 from ..endpoints.datasets.model import DatasetModel
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
+S3_OBJECT_KEY_VERSION = TypedDict("S3_OBJECT_KEY_VERSION", {"Key": str, "VersionId": str})
 
 # General-purpose generators
 
@@ -65,6 +72,16 @@ def any_https_url() -> str:
     return f"https://{host}/{path}"
 
 
+def any_hex_multihash() -> str:
+    hex_digest = sha256(random_string(20).encode()).hexdigest()
+    return f"{SHA2_256:x}{32:x}{hex_digest}"
+
+
+def any_file_contents() -> bytes:
+    """Arbitrary-length bytes"""
+    return urandom(20)
+
+
 def any_error_message() -> str:
     """Arbitrary-length string"""
     return random_string(50)
@@ -75,6 +92,11 @@ def any_error_message() -> str:
 
 def any_dataset_id() -> str:
     return str(uuid4())
+
+
+def any_dataset_version_id() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
 
 
 def any_valid_dataset_type() -> str:
@@ -98,6 +120,11 @@ def any_dataset_owning_group() -> str:
 
 def any_stac_relation() -> str:
     return choice(["child", "root", "self"])
+
+
+def any_stac_asset_name() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
 
 
 # AWS generators
@@ -165,6 +192,7 @@ class S3Object:
         self.file_object = file_object
         self.bucket_name = bucket_name
         self.key = key
+        self.url = f"s3://{self.bucket_name}/{self.key}"
         self.s3 = boto3.client("s3")
 
     def __enter__(self) -> "S3Object":
@@ -180,7 +208,7 @@ class S3Object:
         version_list = self._get_object_versions()
         self._delete_object_versions(version_list)
 
-    def _delete_object_versions(self, version_list):
+    def _delete_object_versions(self, version_list: List[S3_OBJECT_KEY_VERSION]) -> None:
         for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
             response = self.s3.delete_objects(
                 Bucket=self.bucket_name,
@@ -190,8 +218,8 @@ class S3Object:
             )
             print(response)
 
-    def _get_object_versions(self):
-        version_list = []
+    def _get_object_versions(self) -> List[S3_OBJECT_KEY_VERSION]:
+        version_list: List[S3_OBJECT_KEY_VERSION] = []
         object_versions_paginator = self.s3.get_paginator("list_object_versions")
         for object_versions_page in object_versions_paginator.paginate(Bucket=self.bucket_name):
             for marker in object_versions_page.get("DeleteMarkers", []):
@@ -201,3 +229,27 @@ class S3Object:
                 if version["Key"] == self.key:
                     version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
         return version_list
+
+
+class NoStateMachineFound(Exception):
+    pass
+
+
+def get_state_machine(step_functions_client):
+    state_machines_list_response = step_functions_client.list_state_machines()
+
+    # We don't want to introduce pagination until necessary, so just make sure it's not needed
+    assert state_machines_list_response.get("nextToken") is None
+
+    for state_machine in state_machines_list_response["stateMachines"]:
+        tags_list_response = step_functions_client.list_tags_for_resource(
+            resourceArn=state_machine["stateMachineArn"]
+        )
+        tags = {tag["key"]: tag["value"] for tag in tags_list_response["tags"]}
+        if (
+            tags.get(ENVIRONMENT_TYPE_TAG_NAME) == ENV
+            and tags.get(APPLICATION_NAME_TAG_NAME) == APPLICATION_NAME
+        ):
+            return state_machine
+
+    raise NoStateMachineFound()
