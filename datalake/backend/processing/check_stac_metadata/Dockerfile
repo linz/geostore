@@ -19,7 +19,7 @@ ENTRYPOINT ["/opt/.venv/bin/python", "/opt/task.py"]
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends python3 \
+    && apt-get install --assume-yes --no-install-recommends ca-certificates python3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /opt/.venv /opt/.venv
