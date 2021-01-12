@@ -133,7 +133,7 @@ class Dataset:
         if owning_group is None:
             owning_group = any_dataset_owning_group()
 
-        self.model = DatasetModel(
+        self._item = DatasetModel(
             id=f"DATASET#{dataset_id}",
             type=f"TYPE#{dataset_type}",
             title=title,
@@ -143,8 +143,8 @@ class Dataset:
         )
 
     def __enter__(self) -> DatasetModel:
-        self.model.save()
-        return self.model
+        self._item.save()
+        return self._item
 
     def __exit__(
         self,
@@ -152,7 +152,7 @@ class Dataset:
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
-        self.model.delete()
+        self._item.delete()
 
 
 class S3Object:
