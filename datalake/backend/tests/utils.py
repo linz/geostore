@@ -14,6 +14,9 @@ REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
 
+# General-purpose generators
+
+
 def random_string(length: int) -> str:
     """
     Includes ASCII printable characters and the first printable character from several Unicode
@@ -28,6 +31,41 @@ def random_ascii_letter_string(length: int) -> str:
 
 def _random_string_choices(characters: str, length: int) -> str:
     return "".join(choice(characters) for _ in range(length))
+
+
+def any_past_datetime() -> datetime:
+    return REFERENCE_DATETIME - timedelta(seconds=randrange(60_000_000_000))  # Back to year 98
+
+
+def any_past_datetime_string() -> str:
+    return any_past_datetime().isoformat()
+
+
+def any_program_name() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
+
+
+def any_safe_file_path():
+    paths = [any_safe_filename() for _ in range(randrange(1, 5))]
+    return "/".join(paths)
+
+
+def any_safe_filename() -> str:
+    return _random_string_choices(f"{string.digits}{string.ascii_letters}", 20)
+
+
+def any_host() -> str:
+    return random_ascii_letter_string(20)
+
+
+def any_https_url() -> str:
+    host = any_host()
+    path = any_safe_file_path()
+    return f"https://{host}/{path}"
+
+
+# STAC-specific generators
 
 
 def any_dataset_id() -> str:
@@ -48,20 +86,7 @@ def any_dataset_description() -> str:
     return random_string(100)
 
 
-def any_past_datetime() -> datetime:
-    return REFERENCE_DATETIME - timedelta(seconds=randrange(60_000_000_000))  # Back to year 98
-
-
-def any_past_datetime_string() -> str:
-    return any_past_datetime().isoformat()
-
-
 def any_dataset_owning_group() -> str:
-    """Arbitrary-length string"""
-    return random_string(20)
-
-
-def any_program_name() -> str:
     """Arbitrary-length string"""
     return random_string(20)
 
@@ -70,23 +95,7 @@ def any_stac_relation() -> str:
     return choice(["child", "root", "self"])
 
 
-def any_safe_file_path():
-    paths = [any_safe_filename() for _ in range(randrange(1, 5))]
-    return "/".join(paths)
-
-
-def any_safe_filename() -> str:
-    return _random_string_choices(f"{string.digits}{string.ascii_letters}", 20)
-
-
-def any_host() -> str:
-    return random_ascii_letter_string(20)
-
-
-def any_https_url() -> str:
-    host = any_host()
-    path = any_safe_file_path()
-    return f"https://{host}/{path}"
+# AWS generators
 
 
 def any_s3_url() -> str:
