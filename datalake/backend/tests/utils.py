@@ -65,6 +65,11 @@ def any_https_url() -> str:
     return f"https://{host}/{path}"
 
 
+def any_error_message() -> str:
+    """Arbitrary-length string"""
+    return random_string(50)
+
+
 # STAC-specific generators
 
 

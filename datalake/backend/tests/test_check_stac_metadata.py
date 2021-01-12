@@ -12,6 +12,7 @@ from ..processing.check_stac_metadata.task import STACSchemaValidator, main
 from .utils import (
     any_dataset_description,
     any_dataset_id,
+    any_error_message,
     any_https_url,
     any_past_datetime_string,
     any_program_name,
@@ -89,6 +90,14 @@ def test_should_validate_given_url(validate_url_mock) -> None:
     assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
+
+
+@patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
+def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
+    validate_url_mock.side_effect = ValidationError(any_error_message())
+    sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]
+
+    assert main() == 1
 
 
 def test_should_validate_metadata_files_recursively() -> None:

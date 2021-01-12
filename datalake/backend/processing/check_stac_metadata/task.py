@@ -112,10 +112,11 @@ def main() -> int:
 
     try:
         STACSchemaValidator(url_reader).validate(arguments.metadata_url)
-        logger.info(dumps({"success": True, "message": ""}))
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
+        return 1
 
+    logger.info(dumps({"success": True, "message": ""}))
     return 0
 
 
