@@ -144,5 +144,5 @@ jobs:
 
             - name: Destroy AWS stacks used for testing
               run: |
-                  poetry run cdk destroy --force networking storage processing api
+                  poetry run cdk destroy --force --all
               if: always()  # clean-up AWS stack after failure
