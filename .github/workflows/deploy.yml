@@ -19,6 +19,26 @@ jobs:
               with:
                   submodules: 'true'
 
+            - name: Use Node for CDK deployment
+              uses: actions/setup-node@v2.1.4
+              with:
+                  node-version: 14
+                  registry-url: https://registry.npmjs.org
+
+            - name: Cache Node.js packages
+              uses: actions/cache@v2
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - name: Install AWS CDK
+              run: npm install
+
+            - name: Add local Node packages to PATH
+              run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
+
             - name: Use Python ${{ matrix.python }}
               uses: actions/setup-python@v2.2.1
               with:
@@ -37,23 +57,6 @@ jobs:
                   python -m pip install --upgrade pip
                   python -m pip install poetry
                   python -m poetry install --extras=cdk --no-dev
-
-            - name: Use Node.js 12.x for CDK deployment
-              uses: actions/setup-node@v2.1.4
-              with:
-                  node-version: 12.x
-                  registry-url: https://registry.npmjs.org
-
-            - name: Cache Node.js packages
-              uses: actions/cache@v2
-              with:
-                  path: ~/.npm
-                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node-
-
-            - name: Install AWS CDK
-              run: npm install -g aws-cdk
 
             - name: Print CDK version
               run: poetry run cdk --version

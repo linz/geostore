@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "aws-cdk": "^1.78.0"
+    "aws-cdk": "*"
   },
   "devDependencies": {
     "aws-azure-login": "^3.0.3"
