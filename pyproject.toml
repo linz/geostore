@@ -51,6 +51,7 @@ pre-commit = "*"
 pylint = "*"
 pytest = "*"
 pytest-randomly = "*"
+pytest-timeout = "*"
 shellcheck-py = "*"
 yamlfmt = {url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"}
 yamllint = "*"

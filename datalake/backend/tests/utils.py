@@ -2,13 +2,16 @@ import string
 from datetime import datetime, timedelta, timezone
 from random import choice, randrange
 from types import TracebackType
-from typing import Optional, Type
+from typing import BinaryIO, Optional, Type
 from uuid import uuid4
+
+import boto3
 
 from ..endpoints.datasets.common import DATASET_TYPES
 from ..endpoints.datasets.model import DatasetModel
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
+DELETE_OBJECTS_MAX_KEYS = 1000
 
 
 def random_string(length: int) -> str:
@@ -141,3 +144,48 @@ class Dataset:
         exc_tb: Optional[TracebackType],
     ) -> None:
         self.model.delete()
+
+
+class S3Object:
+    def __init__(self, file_object: BinaryIO, bucket_name: str, key: str):
+        self.file_object = file_object
+        self.bucket_name = bucket_name
+        self.key = key
+        self.s3 = boto3.client("s3")
+
+    def __enter__(self) -> "S3Object":
+        self.s3.upload_fileobj(self.file_object, self.bucket_name, self.key)
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
+        version_list = self._get_object_versions()
+        self._delete_object_versions(version_list)
+
+        return False  # Propagate exception
+
+    def _delete_object_versions(self, version_list):
+        for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
+            response = self.s3.delete_objects(
+                Bucket=self.bucket_name,
+                Delete={
+                    "Objects": version_list[index : index + DELETE_OBJECTS_MAX_KEYS],
+                },
+            )
+            print(response)
+
+    def _get_object_versions(self):
+        version_list = []
+        object_versions_paginator = self.s3.get_paginator("list_object_versions")
+        for object_versions_page in object_versions_paginator.paginate(Bucket=self.bucket_name):
+            for marker in object_versions_page.get("DeleteMarkers", []):
+                if marker["Key"] == self.key:
+                    version_list.append({"Key": self.key, "VersionId": marker["VersionId"]})
+            for version in object_versions_page.get("Versions", []):
+                if version["Key"] == self.key:
+                    version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
+        return version_list

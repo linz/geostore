@@ -19,10 +19,11 @@ ENTRYPOINT ["/opt/.venv/bin/python", "/opt/task.py"]
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-    && apt-get install --assume-yes --no-install-recommends python3 \
+    && apt-get install --assume-yes --no-install-recommends ca-certificates python3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /opt/.venv /opt/.venv
 
 COPY datalake/backend/processing/check_stac_metadata/stac-spec/collection-spec/json-schema/collection.json /opt/stac-spec/collection-spec/json-schema/collection.json
+COPY datalake/backend/processing/check_stac_metadata/stac-spec/catalog-spec/json-schema/catalog.json /opt/stac-spec/catalog-spec/json-schema/catalog.json
 COPY datalake/backend/processing/check_stac_metadata/task.py /opt/

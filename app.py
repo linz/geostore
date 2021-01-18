@@ -9,6 +9,7 @@ import os
 from aws_cdk import core
 
 from datalake.api_stack import APIStack
+from datalake.dataset_source_stack import DatasetSourceStack
 from datalake.networking_stack import NetworkingStack
 from datalake.processing_stack import ProcessingStack
 from datalake.storage_stack import StorageStack
@@ -58,6 +59,14 @@ api = APIStack(
     stack_name=f"geospatial-data-lake-api-{ENV}",
     env={"region": os.environ["CDK_DEFAULT_REGION"], "account": os.environ["CDK_DEFAULT_ACCOUNT"]},
     datasets_table=storage.datasets_table,
+)
+
+api = DatasetSourceStack(
+    app,
+    "dataset-source",
+    stack_name=f"geospatial-data-lake-dataset-source-{ENV}",
+    env={"region": os.environ["CDK_DEFAULT_REGION"], "account": os.environ["CDK_DEFAULT_ACCOUNT"]},
+    deploy_env=ENV,
 )
 
 # tag all resources in stack

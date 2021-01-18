@@ -178,6 +178,15 @@ class ProcessingStack(core.Stack):
             priority=10,
         )
 
+        batch_job_role = aws_iam.Role(
+            self,
+            "batch-job-role",
+            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess"),
+            ],
+        )
+
         # LAMBDA AND AWS BATCH BUNDLING AND STATE MACHINE TASKS CREATION
         step_tasks = {}
         for task_name in creation_tasks:
@@ -226,6 +235,7 @@ class ProcessingStack(core.Stack):
                             directory=".",
                             file=f"datalake/backend/processing/{task_name}/Dockerfile",
                         ),
+                        job_role=batch_job_role,
                         memory_limit_mib=batch_job_definition_memory_limit,
                         vcpus=1,
                     ),
@@ -233,15 +243,14 @@ class ProcessingStack(core.Stack):
                 )
 
                 job_command = [
-                    "--dataset-id",
-                    "Ref::dataset_id",
-                    "--version-id",
-                    "Ref::version_id",
-                    "--type",
-                    "Ref::type",
+                    # "--dataset-id",
+                    # "Ref::dataset_id",
+                    # "--version-id",
+                    # "Ref::version_id",
+                    # "--type",
+                    # "Ref::type",
                     "--metadata-url",
                     "Ref::metadata_url",
-                    "--dataset-id",
                 ]
                 job_environment = {"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"}
 
