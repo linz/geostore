@@ -2,6 +2,7 @@
   "app": "python3 app.py",
   "context": {
     "data-lake-storage-bucket-name": "linz-geospatial-data-lake",
+    "data-lake-dataset-source-bucket-name": "linz-geospatial-data-lake-dataset-source",
     "@aws-cdk/core:enableStackNameDuplicates": "true",
     "@aws-cdk:enableDiffNoFail": "true",
     "@aws-cdk/core:stackRelativeExports": "true"
