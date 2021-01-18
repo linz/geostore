@@ -1,6 +1,15 @@
 [tool.black]
 line-length = 100
 
+[tool.coverage.run]
+source = [
+    "datalake",
+    "tests",
+]
+
+[tool.coverage.report]
+fail_under = 84
+
 [tool.isort]
 line_length = 100
 case_sensitive = true
@@ -44,6 +53,7 @@ strict-rfc3339 = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
+coverage = {version = "*", extras = ["toml"]}
 gitlint = "*"
 isort = "*"
 mypy = "*"

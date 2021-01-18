@@ -142,8 +142,13 @@ jobs:
 
             - name: Run tests
               run: >
-                  poetry run pytest --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}"
+                  poetry run coverage run --module pytest
+                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}"
                   datalake/backend/tests tests
+
+            - name: Verify test coverage
+              run: |
+                  poetry run coverage report
 
             - name: Destroy AWS stacks used for testing
               run: |
