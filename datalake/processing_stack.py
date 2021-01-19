@@ -186,9 +186,7 @@ class ProcessingStack(core.Stack):
 
         # LAMBDA AND AWS BATCH BUNDLING AND STATE MACHINE TASKS CREATION
         step_tasks = {}
-        for task_name in creation_tasks:
-
-            task = creation_tasks[task_name]
+        for task_name, task in creation_tasks.items():
 
             # lambda functions
             if task["type"] == "lambda":
