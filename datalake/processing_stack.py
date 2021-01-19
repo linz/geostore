@@ -2,7 +2,7 @@
 Data Lake processing stack.
 """
 import textwrap
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from aws_cdk import (
     aws_batch,
@@ -192,32 +192,13 @@ class ProcessingStack(core.Stack):
 
             # lambda functions
             if task["type"] == "lambda":
-
-                lambda_function = aws_lambda.Function(
-                    self,
-                    f"{task_name}-function",
-                    handler=f"processing.{task_name}.task.lambda_handler",
-                    runtime=aws_lambda.Runtime.PYTHON_3_8,
-                    code=aws_lambda.Code.from_asset(
-                        path=".",
-                        bundling=core.BundlingOptions(
-                            # pylint:disable=no-member
-                            image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                            command=["datalake/backend/bundle.bash", f"processing/{task_name}"],
-                        ),
-                    ),
+                result_path = task.get("result_path", "$")
+                lambda_function, lambda_invoke = self._create_lambda_invoke(
+                    task_name, result_path
                 )
+                step_tasks[task_name] = lambda_invoke
+
                 assets_table.grant_read_data(lambda_function)
-
-                step_tasks[task_name] = aws_stepfunctions_tasks.LambdaInvoke(
-                    self,
-                    task_name,
-                    lambda_function=lambda_function,
-                    result_path=task.get("result_path", "$"),
-                    payload_response_only=True,
-                )
-
-                Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
 
             # aws batch jobs
             if task["type"] == "batch":
@@ -328,4 +309,32 @@ class ProcessingStack(core.Stack):
             self,
             "dataset-version-creation",
             definition=dataset_version_creation_definition,
+        )
+
+    def _create_lambda_invoke(
+        self, task_name: str, result_path: str
+    ) -> Tuple[aws_lambda.Function, aws_stepfunctions_tasks.LambdaInvoke]:
+        lambda_function = aws_lambda.Function(
+            self,
+            f"{task_name}-function",
+            handler=f"processing.{task_name}.task.lambda_handler",
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            code=aws_lambda.Code.from_asset(
+                path=".",
+                bundling=core.BundlingOptions(
+                    # pylint:disable=no-member
+                    image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
+                    command=["datalake/backend/bundle.bash", f"processing/{task_name}"],
+                ),
+            ),
+        )
+
+        Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
+
+        return lambda_function, aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            task_name,
+            lambda_function=lambda_function,
+            result_path=result_path,
+            payload_response_only=True,
         )
