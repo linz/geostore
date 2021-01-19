@@ -2,7 +2,6 @@
 Data Lake processing stack.
 """
 import textwrap
-from typing import Any, Dict, Tuple
 
 from aws_cdk import (
     aws_batch,
@@ -64,33 +63,37 @@ class ProcessingStack(core.Stack):
         ############################################################################################
 
         # STATE MACHINE TASKS CONFIGURATION
-        # * type: lambda|batch
-        # * parallel: True|False
-        # * result_path: "$"
-        creation_tasks: Dict[str, Any] = {}
+        content_iterator_name = "content_iterator"
+        content_iterator_lambda_function = self._create_lambda_function(content_iterator_name)
+        assets_table.grant_read_data(content_iterator_lambda_function)
+        content_iterator_lambda_invocation = self._create_lambda_invoke(
+            content_iterator_lambda_function, content_iterator_name, "$.content"
+        )
 
-        creation_tasks["content_iterator"] = {"type": "lambda", "result_path": "$.content"}
+        validation_summary_name = "validation_summary"
+        validation_summary_lambda_function = self._create_lambda_function(validation_summary_name)
+        validation_summary_lambda_invocation = self._create_lambda_invoke(
+            validation_summary_lambda_function, validation_summary_name, "$.validation"
+        )
 
-        creation_tasks["validation_summary"] = {"type": "lambda", "result_path": "$.validation"}
+        validation_failure_name = "validation_failure"
+        validation_failure_lambda_function = self._create_lambda_function(validation_failure_name)
+        validation_failure_lambda_invocation = self._create_lambda_invoke(
+            validation_failure_lambda_function,
+            validation_failure_name,
+            aws_stepfunctions.JsonPath.DISCARD,
+        )
 
-        creation_tasks["validation_failure"] = {
-            "type": "lambda",
-            "result_path": aws_stepfunctions.JsonPath.DISCARD,
-        }
+        # Batch jobs
+        batch_job_role = aws_iam.Role(
+            self,
+            "batch-job-role",
+            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess")
+            ],
+        )
 
-        creation_tasks["check_files_checksums"] = {
-            "type": "batch",
-            "parallel": True,
-            "result_path": aws_stepfunctions.JsonPath.DISCARD,
-        }
-
-        creation_tasks["check_stac_metadata"] = {
-            "type": "batch",
-            "parallel": False,
-            "result_path": aws_stepfunctions.JsonPath.DISCARD,
-        }
-
-        # AWS BATCH COMPUTE ENVIRONMENT
         batch_service_role = aws_iam.Role(
             self,
             "batch-service-role",
@@ -175,97 +178,56 @@ class ProcessingStack(core.Stack):
             priority=10,
         )
 
-        batch_job_role = aws_iam.Role(
+        check_files_checksums_name = "check_files_checksums"
+        check_files_checksums_job_definition = self._create_job_definition(
+            check_files_checksums_name, batch_job_role, batch_job_definition_memory_limit
+        )
+        check_files_checksums_batch_submit_job = aws_stepfunctions_tasks.BatchSubmitJob(
             self,
-            "batch-job-role",
-            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[
-                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess"),
-            ],
+            check_files_checksums_name,
+            job_name=f"{check_files_checksums_name}{JOB_DEFINITION_SUFFIX}",
+            job_definition=check_files_checksums_job_definition,
+            job_queue=batch_job_queue,
+            array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
+            result_path=aws_stepfunctions.JsonPath.DISCARD,
+            container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
+                command=["--metadata-url", "Ref::metadata_url"],
+                environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
+            ),
+            payload=aws_stepfunctions.TaskInput.from_object(
+                {
+                    "dataset_id.$": "$.dataset_id",
+                    "version_id.$": "$.version_id",
+                    "type.$": "$.type",
+                    "metadata_url.$": "$.metadata_url",
+                    "first_item.$": "$.content.first_item",
+                }
+            ),
         )
 
-        # LAMBDA AND AWS BATCH BUNDLING AND STATE MACHINE TASKS CREATION
-        step_tasks = {}
-        for task_name, task in creation_tasks.items():
-
-            # lambda functions
-            if task["type"] == "lambda":
-                result_path = task.get("result_path", "$")
-                lambda_function, lambda_invoke = self._create_lambda_invoke(
-                    task_name, result_path
-                )
-                step_tasks[task_name] = lambda_invoke
-
-                assets_table.grant_read_data(lambda_function)
-
-            # aws batch jobs
-            if task["type"] == "batch":
-
-                job_definition = aws_batch.JobDefinition(
-                    self,
-                    f"{task_name}{JOB_DEFINITION_SUFFIX}",
-                    container=aws_batch.JobDefinitionContainer(
-                        image=aws_ecs.ContainerImage.from_asset(
-                            directory=".",
-                            file=f"datalake/backend/processing/{task_name}/Dockerfile",
-                        ),
-                        job_role=batch_job_role,
-                        memory_limit_mib=batch_job_definition_memory_limit,
-                        vcpus=1,
-                    ),
-                    retry_attempts=4,
-                )
-
-                job_command = [
-                    # "--dataset-id",
-                    # "Ref::dataset_id",
-                    # "--version-id",
-                    # "Ref::version_id",
-                    # "--type",
-                    # "Ref::type",
-                    "--metadata-url",
-                    "Ref::metadata_url",
-                ]
-                job_payload_data = {
+        check_stac_metadata_name = "check_stac_metadata"
+        check_stac_metadata_job_definition = self._create_job_definition(
+            check_stac_metadata_name, batch_job_role, batch_job_definition_memory_limit
+        )
+        check_stac_metadata_batch_submit_job = aws_stepfunctions_tasks.BatchSubmitJob(
+            self,
+            check_stac_metadata_name,
+            job_name=f"{check_stac_metadata_name}-job",
+            job_definition=check_stac_metadata_job_definition,
+            job_queue=batch_job_queue,
+            result_path=aws_stepfunctions.JsonPath.DISCARD,
+            container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
+                command=["--metadata-url", "Ref::metadata_url"]
+            ),
+            payload=aws_stepfunctions.TaskInput.from_object(
+                {
                     "dataset_id.$": "$.dataset_id",
                     "version_id.$": "$.version_id",
                     "type.$": "$.type",
                     "metadata_url.$": "$.metadata_url",
                 }
-
-                if task["parallel"]:
-                    payload = aws_stepfunctions.TaskInput.from_object(
-                        {**job_payload_data, **{"first_item.$": "$.content.first_item"}}
-                    )
-                    step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
-                        self,
-                        task_name,
-                        job_name=f"{task_name}{JOB_DEFINITION_SUFFIX}",
-                        job_definition=job_definition,
-                        job_queue=batch_job_queue,
-                        array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
-                        result_path=task.get("result_path", "$"),
-                        container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
-                            command=job_command,
-                            environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
-                        ),
-                        payload=payload,
-                    )
-
-                else:
-                    payload = aws_stepfunctions.TaskInput.from_object(job_payload_data)
-                    step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
-                        self,
-                        task_name,
-                        job_name=f"{task_name}-job",
-                        job_definition=job_definition,
-                        job_queue=batch_job_queue,
-                        result_path=task.get("result_path", "$"),
-                        container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
-                            command=job_command,
-                        ),
-                        payload=payload,
-                    )
+            ),
+        )
 
         # success task
         success_task = aws_stepfunctions.Succeed(self, "success")
@@ -273,19 +235,18 @@ class ProcessingStack(core.Stack):
         # STATE MACHINE
         # state machine definition
         dataset_version_creation_definition = (
-            step_tasks["check_stac_metadata"]
-            .next(step_tasks["content_iterator"])
-            .next(step_tasks["check_files_checksums"])
+            check_stac_metadata_batch_submit_job.next(content_iterator_lambda_invocation)
+            .next(check_files_checksums_batch_submit_job)
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.not_(
                         aws_stepfunctions.Condition.number_equals("$.content.next_item", -1)
                     ),
-                    step_tasks["content_iterator"],
+                    content_iterator_lambda_invocation,
                 )
                 .otherwise(
-                    step_tasks["validation_summary"].next(
+                    validation_summary_lambda_invocation.next(
                         aws_stepfunctions.Choice(self, "validation_successful")
                         .when(
                             aws_stepfunctions.Condition.boolean_equals(
@@ -293,7 +254,7 @@ class ProcessingStack(core.Stack):
                             ),
                             success_task,
                         )
-                        .otherwise(step_tasks["validation_failure"])
+                        .otherwise(validation_failure_lambda_invocation)
                     ),
                 )
             )
@@ -306,9 +267,7 @@ class ProcessingStack(core.Stack):
             definition=dataset_version_creation_definition,
         )
 
-    def _create_lambda_invoke(
-        self, task_name: str, result_path: str
-    ) -> Tuple[aws_lambda.Function, aws_stepfunctions_tasks.LambdaInvoke]:
+    def _create_lambda_function(self, task_name: str) -> aws_lambda.Function:
         lambda_function = aws_lambda.Function(
             self,
             f"{task_name}-function",
@@ -326,10 +285,33 @@ class ProcessingStack(core.Stack):
 
         Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
 
-        return lambda_function, aws_stepfunctions_tasks.LambdaInvoke(
+        return lambda_function
+
+    def _create_lambda_invoke(
+        self, lambda_function: aws_lambda.Function, task_name: str, result_path: str
+    ) -> aws_stepfunctions_tasks.LambdaInvoke:
+        return aws_stepfunctions_tasks.LambdaInvoke(
             self,
             task_name,
             lambda_function=lambda_function,
             result_path=result_path,
             payload_response_only=True,
+        )
+
+    def _create_job_definition(
+        self, task_name: str, batch_job_role: aws_iam.Role, batch_job_definition_memory_limit: int
+    ) -> aws_batch.JobDefinition:
+        return aws_batch.JobDefinition(
+            self,
+            f"{task_name}{JOB_DEFINITION_SUFFIX}",
+            container=aws_batch.JobDefinitionContainer(
+                image=aws_ecs.ContainerImage.from_asset(
+                    directory=".",
+                    file=f"datalake/backend/processing/{task_name}/Dockerfile",
+                ),
+                job_role=batch_job_role,
+                memory_limit_mib=batch_job_definition_memory_limit,
+                vcpus=1,
+            ),
+            retry_attempts=4,
         )
