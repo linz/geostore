@@ -292,10 +292,7 @@ class ProcessingStack(core.Stack):
                     )
 
         # success task
-        step_tasks["success"] = aws_stepfunctions.Succeed(
-            self,
-            "success",
-        )
+        success_task = aws_stepfunctions.Succeed(self, "success")
 
         # STATE MACHINE
         # state machine definition
@@ -318,7 +315,7 @@ class ProcessingStack(core.Stack):
                             aws_stepfunctions.Condition.boolean_equals(
                                 "$.validation.success", True
                             ),
-                            step_tasks["success"],
+                            success_task,
                         )
                         .otherwise(step_tasks["validation_failure"])
                     ),
