@@ -66,10 +66,7 @@ class ProcessingStack(core.Stack):
         # STATE MACHINE TASKS CONFIGURATION
         # * type: lambda|batch
         # * parallel: True|False
-        # * input_path: "$"
-        # * output_path: "$"
         # * result_path: "$"
-        # * items_path: "$"
         creation_tasks: Dict[str, Any] = {}
 
         creation_tasks["content_iterator"] = {"type": "lambda", "result_path": "$.content"}
@@ -216,8 +213,6 @@ class ProcessingStack(core.Stack):
                     self,
                     task_name,
                     lambda_function=lambda_function,
-                    input_path=task.get("input_path", "$"),
-                    output_path=task.get("output_path", "$"),
                     result_path=task.get("result_path", "$"),
                     payload_response_only=True,
                 )
@@ -274,8 +269,6 @@ class ProcessingStack(core.Stack):
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
                         array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
-                        input_path=task.get("input_path", "$"),
-                        output_path=task.get("output_path", "$"),
                         result_path=task.get("result_path", "$"),
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
@@ -291,8 +284,6 @@ class ProcessingStack(core.Stack):
                         job_name=f"{task_name}-job",
                         job_definition=job_definition,
                         job_queue=batch_job_queue,
-                        input_path=task.get("input_path", "$"),
-                        output_path=task.get("output_path", "$"),
                         result_path=task.get("result_path", "$"),
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
