@@ -302,7 +302,7 @@ class ProcessingStack(core.Stack):
         )
 
         # state machine
-        creation_process = aws_stepfunctions.StateMachine(  # pylint:disable=unused-variable
+        aws_stepfunctions.StateMachine(
             self,
             "dataset-version-creation",
             definition=dataset_version_creation_definition,
