@@ -228,21 +228,17 @@ class ProcessingStack(core.Stack):
                     "--metadata-url",
                     "Ref::metadata_url",
                 ]
-                job_environment = {"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"}
-
                 job_payload_data = {
                     "dataset_id.$": "$.dataset_id",
                     "version_id.$": "$.version_id",
                     "type.$": "$.type",
                     "metadata_url.$": "$.metadata_url",
                 }
-                job_payload_data_parallel = {"first_item.$": "$.content.first_item"}
-                job_payload_single = aws_stepfunctions.TaskInput.from_object(job_payload_data)
-                job_payload_parallel = aws_stepfunctions.TaskInput.from_object(
-                    {**job_payload_data, **job_payload_data_parallel}
-                )
 
                 if task["parallel"]:
+                    payload = aws_stepfunctions.TaskInput.from_object(
+                        {**job_payload_data, **{"first_item.$": "$.content.first_item"}}
+                    )
                     step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
                         task_name,
@@ -253,12 +249,13 @@ class ProcessingStack(core.Stack):
                         result_path=task.get("result_path", "$"),
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
-                            environment=job_environment,
+                            environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
                         ),
-                        payload=job_payload_parallel,
+                        payload=payload,
                     )
 
                 else:
+                    payload = aws_stepfunctions.TaskInput.from_object(job_payload_data)
                     step_tasks[task_name] = aws_stepfunctions_tasks.BatchSubmitJob(
                         self,
                         task_name,
@@ -269,7 +266,7 @@ class ProcessingStack(core.Stack):
                         container_overrides=aws_stepfunctions_tasks.BatchContainerOverrides(
                             command=job_command,
                         ),
-                        payload=job_payload_single,
+                        payload=payload,
                     )
 
         # success task
