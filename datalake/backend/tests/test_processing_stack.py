@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 from pytest import mark
 
+from ...staging_stack import STAGING_BUCKET_NAME
 from .utils import (
     S3Object,
     any_dataset_description,
@@ -118,7 +119,7 @@ def test_should_successfully_run_dataset_version_creation_process(
 
     metadata_file = "{}/{}.json".format(any_safe_file_path(), any_safe_filename())
     metadata_content = dumps(MINIMAL_VALID_STAC_OBJECT)
-    s3_bucket = f"linz-geospatial-data-lake-dataset-source-{ENV}"
+    s3_bucket = f"{STAGING_BUCKET_NAME}-{ENV}"
 
     with S3Object(
         BytesIO(f"{metadata_content}".encode()),
