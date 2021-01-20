@@ -14,7 +14,6 @@ from aws_cdk import (
     aws_stepfunctions_tasks,
     core,
 )
-from aws_cdk.core import Tags
 
 JOB_DEFINITION_SUFFIX = "_job"
 
@@ -56,7 +55,7 @@ class ProcessingStack(core.Stack):
             removal_policy=resource_removal_policy,
         )
 
-        Tags.of(assets_table).add("ApplicationLayer", "data-processing")
+        core.Tags.of(assets_table).add("ApplicationLayer", "data-processing")
 
         ############################################################################################
         # ### PROCESSING STATE MACHINE #############################################################
@@ -283,7 +282,7 @@ class ProcessingStack(core.Stack):
             ),
         )
 
-        Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
+        core.Tags.of(lambda_function).add("ApplicationLayer", "data-processing")
 
         return lambda_function
 
