@@ -144,9 +144,9 @@ class ProcessingStack(core.Stack):
             self,
             "batch-launch-template",
             launch_template_name="datalake-batch-launch-template",
-            launch_template_data={
-                "userData": core.Fn.base64(batch_launch_template_data.strip()),
-            },
+            launch_template_data=aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
+                user_data=core.Fn.base64(batch_launch_template_data.strip())
+            ),
         )
 
         batch_compute_environment = aws_batch.ComputeEnvironment(
