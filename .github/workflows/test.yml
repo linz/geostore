@@ -64,9 +64,11 @@ jobs:
               with:
                   submodules: 'true'
 
+            - name: Update Apt
+              run: sudo apt-get update
+
             - name: Install AWS CLI
               run: |
-                  sudo apt-get update
                   sudo apt-get install --assume-yes --no-install-recommends awscli
               env:
                   DEBIAN_FRONTEND: noninteractive
