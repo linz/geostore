@@ -7,6 +7,12 @@ from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
+from ....storage_stack import (
+    DATASETS_OWNING_GROUP_INDEX_NAME,
+    DATASETS_TABLE_NAME,
+    DATASETS_TITLE_INDEX_NAME,
+)
+
 
 class DatasetsTitleIdx(GlobalSecondaryIndex):
     """Dataset type/title global index."""
@@ -14,7 +20,7 @@ class DatasetsTitleIdx(GlobalSecondaryIndex):
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = "datasets_title"
+        index_name = DATASETS_TITLE_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -29,7 +35,7 @@ class DatasetsOwningGroupIdx(GlobalSecondaryIndex):
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = "datasets_owning_group"
+        index_name = DATASETS_OWNING_GROUP_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -44,7 +50,7 @@ class DatasetModel(Model):
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        table_name = "datasets"
+        table_name = DATASETS_TABLE_NAME
         region = "ap-southeast-2"  # TODO: don't hardcode region
 
     id = UnicodeAttribute(
