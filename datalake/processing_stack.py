@@ -3,8 +3,9 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_iam, aws_stepfunctions, core
+from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
+from .backend.endpoints.dataset_versions.create import STEP_FUNCTION_ARN_PARAMETER_NAME
 from .backend.endpoints.utils import ResourceName
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
@@ -153,8 +154,16 @@ class ProcessingStack(core.Stack):
             )
         )
 
-        aws_stepfunctions.StateMachine(
+        state_machine = aws_stepfunctions.StateMachine(
             self,
             f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,
+        )
+
+        aws_ssm.StringParameter(
+            self,
+            "StepFunctionStateMachineARN",
+            description=f"Step Function State Machine ARN for {deploy_env}",
+            parameter_name=STEP_FUNCTION_ARN_PARAMETER_NAME,
+            string_value=state_machine.state_machine_arn,
         )

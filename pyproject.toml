@@ -38,6 +38,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.9"
+mypy-boto3-ssm = "^1.17.1"
 
 [tool.poetry.dependencies."aws-cdk.aws-dynamodb"]
 version = "*"

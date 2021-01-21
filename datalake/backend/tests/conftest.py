@@ -10,6 +10,7 @@ from mypy_boto3_batch import BatchClient
 from mypy_boto3_dynamodb import DynamoDBClient
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
+from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 
 from ..endpoints.datasets.model import DatasetModel
@@ -41,6 +42,11 @@ def s3_client() -> S3Client:
 @pytest.fixture()
 def step_functions_client() -> SFNClient:
     return boto3.client("stepfunctions")
+
+
+@pytest.fixture()
+def ssm_client() -> SSMClient:
+    return boto3.client("ssm")
 
 
 @pytest.fixture()

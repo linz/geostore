@@ -25,7 +25,7 @@ class APIStack(core.Stack):
         # ### API ENDPOINTS ########################################################################
         ############################################################################################
 
-        endpoints = ("datasets",)
+        endpoints = ("datasets", "dataset_versions")
 
         for endpoint in endpoints:
             endpoint_function = aws_lambda.Function(

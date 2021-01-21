@@ -10,14 +10,9 @@ from uuid import uuid4
 import boto3
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
-from mypy_boto3_stepfunctions import SFNClient
-from mypy_boto3_stepfunctions.type_defs import StateMachineListItemTypeDef
 
-from app import ENVIRONMENT_TYPE_TAG_NAME
-
-from ...constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from ..endpoints.datasets.model import DatasetModel
-from ..endpoints.utils import DATASET_TYPES, ENV
+from ..endpoints.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
@@ -228,27 +223,3 @@ class S3Object:
                 if version["Key"] == self.key:
                     version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
         return version_list
-
-
-class NoStateMachineFound(Exception):
-    pass
-
-
-def get_state_machine(step_functions_client: SFNClient) -> StateMachineListItemTypeDef:
-    state_machines_list_response = step_functions_client.list_state_machines()
-
-    # We don't want to introduce pagination until necessary, so just make sure it's not needed
-    assert state_machines_list_response.get("nextToken") is None
-
-    for state_machine in state_machines_list_response["stateMachines"]:
-        tags_list_response = step_functions_client.list_tags_for_resource(
-            resourceArn=state_machine["stateMachineArn"]
-        )
-        tags = {tag["key"]: tag["value"] for tag in tags_list_response["tags"]}
-        if (
-            tags.get(ENVIRONMENT_TYPE_TAG_NAME) == ENV
-            and tags.get(APPLICATION_NAME_TAG_NAME) == APPLICATION_NAME
-        ):
-            return state_machine
-
-    raise NoStateMachineFound()

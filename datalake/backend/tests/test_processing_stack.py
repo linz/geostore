@@ -1,22 +1,26 @@
-import json
 import logging
 import time
 from io import BytesIO
 from json import dumps
 from typing import Any, Dict
 
+from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
 
+from ..endpoints.dataset_versions import entrypoint
+from ..endpoints.dataset_versions.create import STEP_FUNCTION_ARN_PARAMETER_NAME
 from ..endpoints.utils import ResourceName
 from .utils import (
+    Dataset,
     S3Object,
     any_dataset_description,
     any_dataset_id,
+    any_lambda_context,
     any_past_datetime_string,
     any_safe_file_path,
     any_safe_filename,
-    get_state_machine,
+    any_valid_dataset_type,
 )
 
 STAC_VERSION = "1.0.0-beta.2"
@@ -45,6 +49,15 @@ class NoComputeEnvironmentFound(Exception):
     pass
 
 
+@mark.infrastructure
+def test_storage_bucket_parameter_created(ssm_client: SSMClient) -> None:
+    """Test if Data Lake State Machine ARN Parameter was created"""
+    parameter_response = ssm_client.get_parameter(Name=STEP_FUNCTION_ARN_PARAMETER_NAME)
+    assert parameter_response["Parameter"]["Name"] == STEP_FUNCTION_ARN_PARAMETER_NAME
+    assert "arn" in parameter_response["Parameter"]["Value"]
+    assert "stateMachine" in parameter_response["Parameter"]["Value"]
+
+
 @mark.timeout(1200)
 @mark.infrastructure
 def test_should_successfully_run_dataset_version_creation_process(
@@ -60,30 +73,27 @@ def test_should_successfully_run_dataset_version_creation_process(
         f"{s3_bucket}",
         f"{metadata_file}",
     ) as s3_metadata_file:
+        dataset_id = any_dataset_id()
+        dataset_type = any_valid_dataset_type()
+        with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
 
-        state_machine_input = json.dumps(
-            {
-                "dataset_id": "1xyz",
-                "version_id": "2xyz",
-                "type": "RASTER",
-                "metadata_url": s3_metadata_file.url,
-            }
-        )
+            body = {}
+            body["id"] = dataset_id
+            body["metadata-url"] = s3_metadata_file.url
+            body["type"] = dataset_type
 
-        # launch State Machine
-        datalake_state_machine = get_state_machine(step_functions_client)
-        execution_response = step_functions_client.start_execution(
-            stateMachineArn=datalake_state_machine["stateMachineArn"], input=state_machine_input
-        )
-        logger.info("Executed State Machine: %s", execution_response)
+            launch_response = entrypoint.lambda_handler(
+                {"httpMethod": "POST", "body": body}, any_lambda_context()
+            )["body"]
+            logger.info("Executed State Machine: %s", launch_response)
 
-        # poll for State Machine State
-        while (
-            execution := step_functions_client.describe_execution(
-                executionArn=execution_response["executionArn"]
-            )
-        )["status"] == "RUNNING":
-            logger.info("Polling for State Machine state %s", "." * 6)
-            time.sleep(5)
+            # poll for State Machine State
+            while (
+                execution := step_functions_client.describe_execution(
+                    executionArn=launch_response["execution_arn"]
+                )
+            )["status"] == "RUNNING":
+                logger.info("Polling for State Machine state %s", "." * 6)
+                time.sleep(5)
 
-        assert execution["status"] == "SUCCEEDED", execution
+            assert execution["status"] == "SUCCEEDED", execution
