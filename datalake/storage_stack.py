@@ -4,6 +4,8 @@ Data Lake AWS resources definitions.
 from aws_cdk import aws_dynamodb, aws_s3, core
 from aws_cdk.core import Tags
 
+from .constructs.table import Table
+
 
 class StorageStack(core.Stack):
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env, **kwargs) -> None:
@@ -34,14 +36,8 @@ class StorageStack(core.Stack):
         ############################################################################################
         # ### APPLICATION DB #######################################################################
         ############################################################################################
-        self.datasets_table = aws_dynamodb.Table(
-            self,
-            "application-db",
-            table_name="datasets",
-            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
-            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
-            point_in_time_recovery=True,
-            removal_policy=resource_removal_policy,
+        self.datasets_table = Table(
+            self, "datasets", deploy_env=deploy_env, application_layer="application-db"
         )
 
         self.datasets_table.add_global_secondary_index(
@@ -56,5 +52,3 @@ class StorageStack(core.Stack):
                 name="owning_group", type=aws_dynamodb.AttributeType.STRING
             ),
         )
-
-        Tags.of(self.datasets_table).add("ApplicationLayer", "application-db")
