@@ -100,13 +100,14 @@ Re-run `. .venv/bin/activate` in each shell.
     aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
     ```
 1. Environment variables
-* **DEPLOY_ENV:** set deployment environment. Recommended values: prod, nonprod, ci, dev or any
-    string without spaces. Default: dev.
-* **DATALAKE_USE_EXISTING_VPC:** determine if networking stack will use existing VPC in target AWS
-    account or will create a new one. Existing VPC must to be used must contain following tags -
-    "ApplicationName": "geospatial-data-lake", "ApplicationLayer": "networking".
-    Allowed values: true, false. Default: false.
-* **DATALAKE_USERS_AWS_ACCOUNTS_IDS:** allow read/write access to Lambda functions API to all users
+   * **`DEPLOY_ENV`:** set deployment environment. 
+     For your personal development stack: set DEPLOY_ENV to your username. 
+     
+     ```bash
+     export DEPLOY_ENV="$USER"
+     ```
+     Other values ued by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
+   * **`DATALAKE_USERS_AWS_ACCOUNTS_IDS`:** allow read/write access to Lambda functions API to all users
     belonging to specified comma separated list of AWS accounts IDs. Default: AWS account where Data
     Lake stack is deployed.
 1. Bootstrap CDK (only once per profile)
@@ -114,6 +115,10 @@ Re-run `. .venv/bin/activate` in each shell.
     ```bash
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
     ```
+1. VPC pre-requisite
+   - A VPC must be created manually in your AWS account with the following tags:
+     - "ApplicationName": "geospatial-data-lake"
+     - "ApplicationLayer": "networking"
 1. Deploy CDK stack
 
     ```bash

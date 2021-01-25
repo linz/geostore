@@ -7,6 +7,8 @@ import uuid
 
 from pytest import mark
 
+from datalake.backend.endpoints.utils import ResourceName
+
 
 @mark.infrastructure
 def test_should_launch_datasets_endpoint_lambda_function(lambda_client):
@@ -22,7 +24,7 @@ def test_should_launch_datasets_endpoint_lambda_function(lambda_client):
     body["owning_group"] = "A_ABC_XYZ"
 
     resp = lambda_client.invoke(
-        FunctionName="datasets-endpoint",
+        FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
         Payload=json.dumps({"httpMethod": method, "body": body}),
         InvocationType="RequestResponse",
     )

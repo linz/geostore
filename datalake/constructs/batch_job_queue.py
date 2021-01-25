@@ -67,7 +67,7 @@ class BatchJobQueue(core.Construct):
         cloudformation_launch_template = aws_ec2.CfnLaunchTemplate(
             self,
             "batch-launch-template",
-            launch_template_name="datalake-batch-launch-template",
+            launch_template_name=f"{deploy_env}-datalake-batch-launch-template",
             launch_template_data=launch_template_data,
         )
         launch_template = aws_batch.LaunchTemplateSpecification(

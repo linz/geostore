@@ -5,7 +5,7 @@ from typing import Any
 
 from aws_cdk import aws_ec2, aws_iam, aws_stepfunctions, core
 
-from .backend.processing.check_stac_metadata.task import PROCESSING_ASSETS_TABLE_NAME
+from .backend.endpoints.utils import ResourceName
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -32,7 +32,7 @@ class ProcessingStack(core.Stack):
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
-            PROCESSING_ASSETS_TABLE_NAME,
+            ResourceName.PROCESSING_ASSETS_TABLE_NAME.value,
             deploy_env=deploy_env,
             application_layer=application_layer,
         )
@@ -157,6 +157,6 @@ class ProcessingStack(core.Stack):
 
         aws_stepfunctions.StateMachine(
             self,
-            "dataset-version-creation",
+            f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,
         )
