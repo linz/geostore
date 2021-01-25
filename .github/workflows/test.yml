@@ -149,7 +149,7 @@ jobs:
             - name: Run tests
               run: >
                   poetry run coverage run --module pytest
-                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}"
+                  --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
                   datalake/backend/tests
 
             - name: Verify test coverage
