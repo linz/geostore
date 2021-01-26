@@ -8,7 +8,7 @@ source = [
 ]
 
 [tool.coverage.report]
-fail_under = 84
+fail_under = 82
 
 [tool.isort]
 line_length = 100
