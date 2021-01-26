@@ -116,6 +116,7 @@ Re-run `. .venv/bin/activate` in each shell.
     ```bash
     cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```
+   Once comfortable with CDK you can add `--require-approval=never` above to deploy non-interactively.
 
 If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
 
