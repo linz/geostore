@@ -8,6 +8,10 @@ Developed by [Land Information New Zealand](https://github.com/linz)
 
 One-time setup, assuming you are in the project directory:
 
+1. Install and configure Docker:
+   1. Install the package: `sudo apt install docker.io`
+   1. Add yourself to the "docker" group: `sudo usermod --append --groups docker "$USER"`
+   1. Either log out and back in, or run `newgrp docker` to enable the new group for yourself in the current terminal.
 1. [Install and enable `pyenv`](https://github.com/pyenv/pyenv#installation):
     1. Install Python build environment:
 
