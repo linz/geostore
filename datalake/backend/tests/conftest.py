@@ -14,11 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture()
-def batch_client():
-    return boto3.client("batch")
-
-
-@pytest.fixture()
 def lambda_client():
     return boto3.client("lambda")
 

@@ -48,40 +48,6 @@ class NoComputeEnvironmentFound(Exception):
     pass
 
 
-def get_compute_environment(batch_client):
-    compute_environment_detection_response = batch_client.describe_compute_environments()
-
-    # make sure there are no more records in next pages
-    assert compute_environment_detection_response.get("nextToken") is None
-
-    for compute_environment in compute_environment_detection_response["computeEnvironments"]:
-        if (
-            compute_environment["tags"][ENVIRONMENT_TYPE_TAG_NAME] == ENV
-            and compute_environment["tags"].get(APPLICATION_TAG_KEY, None) == APPLICATION_TAG_VAL
-        ):
-            datalake_compute_environment = compute_environment
-            logger.info("Datalake Compute Environment: %s", datalake_compute_environment)
-
-            return datalake_compute_environment
-
-    raise NoComputeEnvironmentFound(APPLICATION_TAG_VAL, ENV)
-
-
-def launch_compute_environment_resources(batch_client, datalake_compute_environment):
-    """
-    Trigger immediate launch of computing resources. This will significantly speed up Batch jobs
-    execution.
-    """
-    if (
-        int(datalake_compute_environment["computeResources"]["minvCpus"]) < 1
-        or int(datalake_compute_environment["computeResources"]["desiredvCpus"]) < 1
-    ):
-        batch_client.update_compute_environment(
-            computeEnvironment=datalake_compute_environment["computeEnvironmentName"],
-            computeResources={"minvCpus": 1, "desiredvCpus": 1},
-        )
-
-
 def get_state_machine(stepfunctions_client):
     state_machines_detection_response = stepfunctions_client.list_state_machines()
 
@@ -111,9 +77,7 @@ def get_state_machine(stepfunctions_client):
 
 @mark.timeout(1200)
 @mark.infrastructure
-def test_should_successfully_run_dataset_version_creation_process(
-    batch_client, stepfunctions_client
-):
+def test_should_successfully_run_dataset_version_creation_process(stepfunctions_client):
 
     metadata_file = "{}/{}.json".format(any_safe_file_path(), any_safe_filename())
     metadata_content = dumps(MINIMAL_VALID_STAC_OBJECT)
@@ -133,10 +97,6 @@ def test_should_successfully_run_dataset_version_creation_process(
                 "metadata_url": f"s3://{s3_metadata_file.bucket_name}/{s3_metadata_file.key}",
             }
         )
-
-        # speed-up Compute Environment launch
-        datalake_compute_environment = get_compute_environment(batch_client)
-        launch_compute_environment_resources(batch_client, datalake_compute_environment)
 
         # launch State Machine
         datalake_state_machine = get_state_machine(stepfunctions_client)
