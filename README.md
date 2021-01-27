@@ -106,12 +106,17 @@ Re-run `. .venv/bin/activate` in each shell.
     account or will create a new one. Existing VPC must to be used must contain following tags -
     "ApplicationName": "geospatial-data-lake", "ApplicationLayer": "networking".
     Allowed values: true, false. Default: false.
-1. Deploy CDK stack
+1. Bootstrap CDK (only once per profile)
 
     ```bash
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+    ```
+1. Deploy CDK stack
+
+    ```bash
     cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```
+   Once comfortable with CDK you can add `--require-approval=never` above to deploy non-interactively.
 
 If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
 
