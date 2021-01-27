@@ -149,3 +149,9 @@ To add a production package:
 - Update the code coverage minimum in pyproject.toml on branches which increase it.
 
    Rationale: By updating this continuously we avoid missing test regressions in new branches.
+
+### Debugging
+
+To start debugging at a specific line, insert `import ipdb; ipdb.set_trace()`.
+
+To debug a test run, add `--capture=no` to the `pytest` arguments. You can also automatically start debugging at a test failure point with `--pdb --pdbcls=IPython.terminal.debugger:Pdb`.
