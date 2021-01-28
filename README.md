@@ -94,10 +94,10 @@ Re-run `. .venv/bin/activate` in each shell.
 ## AWS Infrastructure Deployment (CDK Stack)
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
-1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
+1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
 
     ```bash
-    aws-azure-login --profile=<AWS-PROFILE-NAME>
+    aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
     ```
 1. Environment variables
 * **DEPLOY_ENV:** set deployment environment. Recommended values: prod, nonprod, ci, dev or any
@@ -106,12 +106,17 @@ Re-run `. .venv/bin/activate` in each shell.
     account or will create a new one. Existing VPC must to be used must contain following tags -
     "ApplicationName": "geospatial-data-lake", "ApplicationLayer": "networking".
     Allowed values: true, false. Default: false.
-1. Deploy CDK stack
+1. Bootstrap CDK (only once per profile)
 
     ```bash
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+    ```
+1. Deploy CDK stack
+
+    ```bash
     cdk --profile=<AWS-PROFILE-NAME> deploy --all
     ```
+   Once comfortable with CDK you can add `--require-approval=never` above to deploy non-interactively.
 
 If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
 
