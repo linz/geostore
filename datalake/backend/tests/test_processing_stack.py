@@ -1,12 +1,13 @@
 import json
 import logging
-import os
 import time
 from io import BytesIO
 from json import dumps
 from typing import Any, Dict
 
 from pytest import mark
+
+from app import ENV, ENVIRONMENT_TYPE_TAG_NAME
 
 from ...staging_stack import STAGING_BUCKET_NAME
 from .utils import (
@@ -20,9 +21,6 @@ from .utils import (
 
 APPLICATION_TAG_KEY = "ApplicationName"
 APPLICATION_TAG_VAL = "geospatial-data-lake"
-
-ENVIRONMENT_TAG_KEY = "EnvironmentType"
-ENV = os.environ.get("DEPLOY_ENV", "dev")
 
 STAC_VERSION = "1.0.0-beta.2"
 
@@ -58,7 +56,7 @@ def get_compute_environment(batch_client):
 
     for compute_environment in compute_environment_detection_response["computeEnvironments"]:
         if (
-            compute_environment["tags"][ENVIRONMENT_TAG_KEY] == ENV
+            compute_environment["tags"][ENVIRONMENT_TYPE_TAG_NAME] == ENV
             and compute_environment["tags"].get(APPLICATION_TAG_KEY, None) == APPLICATION_TAG_VAL
         ):
             datalake_compute_environment = compute_environment
@@ -100,7 +98,7 @@ def get_state_machine(stepfunctions_client):
         state_machine_tags = {tag["key"]: tag["value"] for tag in tags_detection_response["tags"]}
 
         if (
-            state_machine_tags[ENVIRONMENT_TAG_KEY] == ENV
+            state_machine_tags[ENVIRONMENT_TYPE_TAG_NAME] == ENV
             and state_machine_tags.get(APPLICATION_TAG_KEY, None) == APPLICATION_TAG_VAL
         ):
             datalake_state_machine = state_machine
