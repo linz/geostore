@@ -61,7 +61,7 @@ api = APIStack(
     datasets_table=storage.datasets_table,
 )
 
-api = StagingStack(
+StagingStack(
     app,
     "staging",
     stack_name=f"geospatial-data-lake-staging-{ENV}",
