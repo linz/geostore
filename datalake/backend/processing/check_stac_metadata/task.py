@@ -9,9 +9,14 @@ from typing import Callable, List, TextIO
 from urllib.parse import urlparse
 
 import boto3
-from botocore.response import StreamingBody
-from jsonschema import Draft7Validator, FormatChecker, RefResolver, ValidationError
-from jsonschema._utils import URIDict
+from botocore.response import StreamingBody  # type: ignore[import]
+from jsonschema import (  # type: ignore[import]
+    Draft7Validator,
+    FormatChecker,
+    RefResolver,
+    ValidationError,
+)
+from jsonschema._utils import URIDict  # type: ignore[import]
 
 S3_URL_PREFIX = "s3://"
 
