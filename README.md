@@ -94,10 +94,10 @@ Re-run `. .venv/bin/activate` in each shell.
 ## AWS Infrastructure Deployment (CDK Stack)
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
-1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login)
+1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
 
     ```bash
-    aws-azure-login --profile=<AWS-PROFILE-NAME>
+    aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
     ```
 1. Environment variables
 * **DEPLOY_ENV:** set deployment environment. Recommended values: prod, nonprod, ci, dev or any
