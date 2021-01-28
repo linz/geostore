@@ -47,10 +47,6 @@ jobs:
               run: |
                   poetry run pre-commit run --all-files
 
-            - name: Check Bash scripts
-              run: |
-                  git ls-files -z -- '*.bash' | xargs --null poetry run shellcheck
-
 
     test:
         runs-on: ubuntu-20.04
