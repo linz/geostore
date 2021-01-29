@@ -49,6 +49,14 @@ repos:
             stages: [commit]
             types: [ini]
 
+          - id: pretty-format-toml
+            name: Pretty format TOML
+            entry: pretty-format-toml
+            args: [--autofix]
+            language: system
+            stages: [commit]
+            types: [toml]
+
           - id: pylint
             name: pylint
             entry: pylint

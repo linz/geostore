@@ -1,14 +1,18 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.black]
 line-length = 100
+
+[tool.coverage.report]
+fail_under = 82
 
 [tool.coverage.run]
 source = [
     "datalake",
     "tests",
 ]
-
-[tool.coverage.report]
-fail_under = 82
 
 [tool.isort]
 line_length = 100
@@ -34,27 +38,75 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.9"
-"aws-cdk.aws-dynamodb" = {version="*", optional=true}
-"aws-cdk.aws-ec2" = {version="*", optional=true}
-"aws-cdk.aws-ecr" = {version="*", optional=true}
-"aws-cdk.aws-ecr_assets" = {version="*", optional=true}
-"aws-cdk.aws-ecs" = {version="*", optional=true}
-"aws-cdk.aws-iam" = {version="*", optional=true}
-"aws-cdk.aws-lambda" = {version="*", optional=true}
-"aws-cdk.aws-s3" = {version="*", optional=true}
-"aws-cdk.aws-stepfunctions" = {version="*", optional=true}
-"aws-cdk.aws-stepfunctions_tasks" = {version="*", optional=true}
-awscli = {version="*", optional=true}
-boto3 = {version="*", optional=true}
-cattrs = {version="*", optional=true}
-jsonschema = {version="*", extras = ["format"], optional=true}
-pynamodb = {version="*", optional=true}
-strict-rfc3339 = {version = "*", optional = true}
+
+[tool.poetry.dependencies."aws-cdk.aws-dynamodb"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-ec2"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-ecr"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-ecr_assets"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-ecs"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-iam"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-lambda"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-s3"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-stepfunctions"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies."aws-cdk.aws-stepfunctions_tasks"]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.awscli]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.boto3]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.cattrs]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.jsonschema]
+version = "*"
+extras = ["format"]
+optional = true
+
+[tool.poetry.dependencies.pynamodb]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.strict-rfc3339]
+version = "*"
+optional = true
 
 [tool.poetry.dev-dependencies]
 black = "*"
 boto3-stubs = "*"
-coverage = {version = "*", extras = ["toml"]}
 gitlint = "*"
 ipdb = "*"
 isort = "*"
@@ -66,8 +118,14 @@ pytest = "*"
 pytest-randomly = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
-yamlfmt = {url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"}
 yamllint = "*"
+
+[tool.poetry.dev-dependencies.coverage]
+version = "*"
+extras = ["toml"]
+
+[tool.poetry.dev-dependencies.yamlfmt]
+url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"
 
 [tool.poetry.extras]
 cdk = [
@@ -93,11 +151,6 @@ datasets-endpoint = [
     "jsonschema",
     "pynamodb",
 ]
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
 
 [tool.pytest.ini_options]
 markers = [
