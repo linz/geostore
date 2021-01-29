@@ -27,7 +27,7 @@ class LogTests(TestCase):
         with patch.object(self.logger, "debug") as logger_mock:
             main()
 
-            logger_mock.assert_called_once_with(Namespace(metadata_url=url))
+            logger_mock.assert_any_call(Namespace(metadata_url=url))
 
     def test_should_print_json_output_on_validation_success(self) -> None:
         sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]
@@ -37,7 +37,7 @@ class LogTests(TestCase):
         ):
             main()
 
-            logger_mock.assert_called_once_with('{"success": true, "message": ""}')
+            logger_mock.assert_any_call('{"success": true, "message": ""}')
 
     @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
     def test_should_print_json_output_on_validation_failure(self, validate_url_mock) -> None:
@@ -48,6 +48,4 @@ class LogTests(TestCase):
         with patch.object(self.logger, "error") as logger_mock:
             main()
 
-            logger_mock.assert_called_once_with(
-                f'{{"success": false, "message": "{error_message}"}}'
-            )
+            logger_mock.assert_any_call(f'{{"success": false, "message": "{error_message}"}}')
