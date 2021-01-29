@@ -22,7 +22,7 @@ repos:
     name: hadolint
     language: docker_image
     entry: hadolint/hadolint hadolint
-    files: Dockerfile
+    types: [dockerfile]
 
   - id: isort
     name: isort
