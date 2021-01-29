@@ -1,87 +1,79 @@
----
 # Configuration file for pre-commit (https://pre-commit.com/).
 # Please run `pre-commit run --all-files` when adding or changing entries.
 
 repos:
-    - repo: local
-      hooks:
-          - id: black
-            name: black
-            entry: black
-            language: system
-            stages: [commit]
-            types: [python]
+- repo: local
+  hooks:
+  - id: black
+    name: black
+    entry: black
+    language: system
+    stages: [commit]
+    types: [python]
 
-          - id: gitlint
-            name: gitlint
-            entry: gitlint
-            args: [--msg-filename]
-            language: system
-            stages: [commit-msg]
+  - id: gitlint
+    name: gitlint
+    entry: gitlint
+    args: [--msg-filename]
+    language: system
+    stages: [commit-msg]
 
-          - id: hadolint
-            name: hadolint
-            language: docker_image
-            entry: hadolint/hadolint hadolint
-            files: Dockerfile
+  - id: hadolint
+    name: hadolint
+    language: docker_image
+    entry: hadolint/hadolint hadolint
+    files: Dockerfile
 
-          - id: isort
-            name: isort
-            entry: isort
-            language: system
-            stages: [commit]
-            types: [python]
+  - id: isort
+    name: isort
+    entry: isort
+    language: system
+    stages: [commit]
+    types: [python]
 
-          - id: mypy
-            name: mypy
-            entry: mypy
-            args: [--no-incremental]
-            language: system
-            stages: [commit]
-            types: [python]
-            require_serial: true
+  - id: mypy
+    name: mypy
+    entry: mypy
+    args: [--no-incremental]
+    language: system
+    stages: [commit]
+    types: [python]
+    require_serial: true
 
-          - id: pretty-format-ini
-            name: Pretty format INI
-            entry: pretty-format-ini
-            args: [--autofix]
-            language: system
-            stages: [commit]
-            types: [ini]
+  - id: pretty-format-ini
+    name: Pretty format INI
+    entry: pretty-format-ini
+    args: [--autofix]
+    language: system
+    stages: [commit]
+    types: [ini]
 
-          - id: pretty-format-toml
-            name: Pretty format TOML
-            entry: pretty-format-toml
-            args: [--autofix]
-            language: system
-            stages: [commit]
-            types: [toml]
+  - id: pretty-format-toml
+    name: Pretty format TOML
+    entry: pretty-format-toml
+    args: [--autofix]
+    language: system
+    stages: [commit]
+    types: [toml]
 
-          - id: pylint
-            name: pylint
-            entry: pylint
-            language: system
-            stages: [commit]
-            types: [python]
+  - id: pretty-format-yaml
+    name: Pretty format YAML
+    entry: pretty-format-yaml
+    args: [--autofix]
+    language: system
+    stages: [commit]
+    types: [yaml]
 
-          - id: shellcheck
-            name: shellcheck
-            entry: shellcheck
-            language: system
-            stages: [commit]
-            types: [bash]
+  - id: pylint
+    name: pylint
+    entry: pylint
+    language: system
+    stages: [commit]
+    types: [python]
 
-          - id: yamlfmt
-            name: yamlfmt
-            entry: yamlfmt
-            language: system
-            stages: [commit]
-            types: [yaml]
-
-          - id: yamllint
-            name: yamllint
-            entry: yamllint
-            args: [--strict]
-            language: system
-            stages: [commit]
-            types: [yaml]
+  - id: shellcheck
+    name: shellcheck
+    entry: shellcheck
+    language: system
+    stages: [commit]
+    types: [bash]

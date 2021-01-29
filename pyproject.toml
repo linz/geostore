@@ -118,14 +118,10 @@ pytest = "*"
 pytest-randomly = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
-yamllint = "*"
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"
 extras = ["toml"]
-
-[tool.poetry.dev-dependencies.yamlfmt]
-url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"
 
 [tool.poetry.extras]
 cdk = [
