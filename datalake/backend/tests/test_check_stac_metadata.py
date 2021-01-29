@@ -1,6 +1,4 @@
-import logging
 import sys
-from argparse import Namespace
 from copy import deepcopy
 from io import StringIO
 from json import dump
@@ -92,19 +90,6 @@ def test_should_validate_given_url(validate_url_mock) -> None:
     assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
-
-
-@patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_log_arguments(validate_url_mock) -> None:
-    validate_url_mock.return_value = None
-    url = any_s3_url()
-    sys.argv = [any_program_name(), f"--metadata-url={url}"]
-    logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
-
-    with patch.object(logger, "debug") as logger_mock:
-        main()
-
-        logger_mock.assert_called_once_with(Namespace(metadata_url=url))
 
 
 def test_should_print_json_output_on_validation_success() -> None:
