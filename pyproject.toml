@@ -58,6 +58,7 @@ coverage = {version = "*", extras = ["toml"]}
 gitlint = "*"
 ipdb = "*"
 isort = "*"
+language-formatters-pre-commit-hooks = "*"
 mypy = "*"
 pre-commit = "*"
 pylint = "*"

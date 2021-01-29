@@ -41,6 +41,14 @@ repos:
             types: [python]
             require_serial: true
 
+          - id: pretty-format-ini
+            name: Pretty format INI
+            entry: pretty-format-ini
+            args: [--autofix]
+            language: system
+            stages: [commit]
+            types: [ini]
+
           - id: pylint
             name: pylint
             entry: pylint
