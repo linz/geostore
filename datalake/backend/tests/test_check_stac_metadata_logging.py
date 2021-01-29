@@ -1,6 +1,6 @@
 import logging
 import sys
-from argparse import Namespace
+from json import dumps
 from random import choice
 from unittest import TestCase
 from unittest.mock import patch
@@ -22,12 +22,13 @@ class LogTests(TestCase):
     def test_should_log_arguments(self, validate_url_mock) -> None:
         validate_url_mock.return_value = None
         url = any_s3_url()
+        expected_log = dumps({"arguments": {"metadata_url": url}})
         sys.argv = [any_program_name(), f"--metadata-url={url}"]
 
         with patch.object(self.logger, "debug") as logger_mock:
             main()
 
-            logger_mock.assert_any_call(Namespace(metadata_url=url))
+            logger_mock.assert_any_call(expected_log)
 
     def test_should_print_json_output_on_validation_success(self) -> None:
         sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]

@@ -106,7 +106,7 @@ def main() -> int:
     logger = set_up_logging()
 
     arguments = parse_arguments()
-    logger.debug(arguments)
+    logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
 
