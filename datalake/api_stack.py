@@ -8,7 +8,14 @@ from aws_cdk.core import Tags
 class APIStack(core.Stack):
     """Data Lake stack definition."""
 
-    def __init__(self, scope: core.Construct, stack_id: str, datasets_table, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: core.Construct,
+        stack_id: str,
+        datasets_table,
+        users_role,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
@@ -33,6 +40,8 @@ class APIStack(core.Stack):
                     ),
                 ),
             )
+
+            endpoint_function.grant_invoke(users_role)
 
             datasets_table.grant_read_write_data(endpoint_function)
             datasets_table.grant(
