@@ -141,9 +141,9 @@ def any_s3_bucket_name() -> str:
     return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
 
 
-def any_lambda_context() -> str:
+def any_lambda_context() -> bytes:
     """Arbitrary-length string"""
-    return random_string(10)
+    return random_string(10).encode()
 
 
 class Dataset:
