@@ -45,5 +45,4 @@ def delete_dataset(payload):
     # delete dataset
     dataset.delete()
 
-    resp_body = {}
-    return success_response(204, resp_body)
+    return success_response(204, {})
