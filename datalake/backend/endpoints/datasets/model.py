@@ -71,9 +71,7 @@ class DatasetModel(Model):
     datasets_tile_idx = DatasetsTitleIdx()
     datasets_owning_group_idx = DatasetsOwningGroupIdx()
 
-    def save(
-        self, conditional_operator=None, **expected_values
-    ):  # pylint:disable=unused-argument,arguments-differ
+    def save(self, condition=None):
         self.updated_at = datetime.now(timezone.utc)
         super().save()
 
