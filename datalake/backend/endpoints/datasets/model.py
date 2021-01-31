@@ -8,7 +8,10 @@ from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
 
-class DatasetsTitleIdx(GlobalSecondaryIndex):
+# TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
+class DatasetsTitleIdx(
+    GlobalSecondaryIndex["DatasetModel"]
+):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/title global index."""
 
     class Meta:  # pylint:disable=too-few-public-methods
@@ -23,7 +26,10 @@ class DatasetsTitleIdx(GlobalSecondaryIndex):
     title = UnicodeAttribute(range_key=True)
 
 
-class DatasetsOwningGroupIdx(GlobalSecondaryIndex):
+# TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
+class DatasetsOwningGroupIdx(
+    GlobalSecondaryIndex["DatasetModel"]
+):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/owning_group global index."""
 
     class Meta:  # pylint:disable=too-few-public-methods
