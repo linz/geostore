@@ -162,11 +162,9 @@ class S3Object:
         exc_type: Optional[Type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
-    ) -> bool:
+    ) -> None:
         version_list = self._get_object_versions()
         self._delete_object_versions(version_list)
-
-        return False  # Propagate exception
 
     def _delete_object_versions(self, version_list):
         for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):

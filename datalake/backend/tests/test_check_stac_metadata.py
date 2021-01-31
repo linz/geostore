@@ -8,7 +8,7 @@ from random import choice
 from typing import Any, Dict, Optional, TextIO
 from unittest.mock import Mock, call, patch
 
-from jsonschema import ValidationError
+from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
 
 from ..processing.check_stac_metadata.task import STACSchemaValidator, main
