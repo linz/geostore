@@ -40,7 +40,7 @@ MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
 
 class MockJSONURLReader(Mock):
     def __init__(
-        self, url_to_json: Dict[str, Dict], call_limit: Optional[int] = None, **kwargs: Any
+        self, url_to_json: Dict[str, Any], call_limit: Optional[int] = None, **kwargs: Any
     ):
         super().__init__(**kwargs)
 
