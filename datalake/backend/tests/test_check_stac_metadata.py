@@ -1,10 +1,7 @@
-import logging
 import sys
-from argparse import Namespace
 from copy import deepcopy
 from io import StringIO
 from json import dump
-from random import choice
 from typing import Any, Dict, Optional, TextIO
 from unittest.mock import Mock, call, patch
 
@@ -92,49 +89,6 @@ def test_should_validate_given_url(validate_url_mock) -> None:
     assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
-
-
-@patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_log_arguments(validate_url_mock) -> None:
-    validate_url_mock.return_value = None
-    url = any_s3_url()
-    sys.argv = [any_program_name(), f"--metadata-url={url}"]
-    logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
-
-    with patch.object(logger, "debug") as logger_mock:
-        main()
-
-        logger_mock.assert_called_once_with(Namespace(metadata_url=url))
-
-
-def test_should_print_json_output_on_validation_success() -> None:
-    sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]
-
-    with patch("sys.stdout") as stdout_mock, patch(
-        "datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate"
-    ):
-        main()
-
-        assert stdout_mock.mock_calls == [
-            call.write('{"success": true, "message": ""}'),
-            call.write("\n"),
-        ]
-
-
-@patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
-    error_message = "Some error message"
-    expected_calls = [
-        call.write(f'{{"success": false, "message": "{error_message}"}}'),
-        call.write("\n"),
-    ]
-    validate_url_mock.side_effect = choice([ValidationError, AssertionError])(error_message)
-    sys.argv = [any_program_name(), f"--metadata-url={any_s3_url()}"]
-
-    with patch("sys.stdout") as stdout_mock:
-        main()
-
-        assert stdout_mock.mock_calls == expected_calls
 
 
 def test_should_validate_metadata_files_recursively() -> None:

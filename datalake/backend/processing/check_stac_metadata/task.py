@@ -106,15 +106,15 @@ def main() -> int:
     logger = set_up_logging()
 
     arguments = parse_arguments()
-    logger.debug(arguments)
+    logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
 
     try:
         STACSchemaValidator(url_reader).validate(arguments.metadata_url)
-        print(dumps({"success": True, "message": ""}))
+        logger.info(dumps({"success": True, "message": ""}))
     except (AssertionError, ValidationError) as error:
-        print(dumps({"success": False, "message": str(error)}))
+        logger.error(dumps({"success": False, "message": str(error)}))
 
     return 0
 
