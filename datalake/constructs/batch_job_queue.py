@@ -76,7 +76,7 @@ class BatchJobQueue(core.Construct):
         # use existing VPC in LINZ AWS account.
         # VPC with these tags is required to exist in AWS account before being deployed.
         # A VPC will not be deployed by this project.
-        datalake_vpc = aws_ec2.Vpc.from_lookup(
+        vpc = aws_ec2.Vpc.from_lookup(
             self,
             "datalake-vpc",
             tags={
@@ -86,7 +86,7 @@ class BatchJobQueue(core.Construct):
         )
 
         compute_resources = aws_batch.ComputeResources(
-            vpc=datalake_vpc,
+            vpc=vpc,
             minv_cpus=0,
             desiredv_cpus=0,
             maxv_cpus=1000,

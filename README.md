@@ -90,6 +90,11 @@ Re-run `./reset-dev-env.bash` when packages change.
 
 Re-run `. .venv/bin/activate` in each shell.
 
+## VPC pre-requisite
+
+Before you deploy the application, a VPC must be created manually in your AWS account with the following tags:
+   - "ApplicationName": "geospatial-data-lake"
+   - "ApplicationLayer": "networking"
 
 ## AWS Infrastructure Deployment (CDK Stack)
 
@@ -115,10 +120,6 @@ Re-run `. .venv/bin/activate` in each shell.
     ```bash
     cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
     ```
-1. VPC pre-requisite
-   - A VPC must be created manually in your AWS account with the following tags:
-     - "ApplicationName": "geospatial-data-lake"
-     - "ApplicationLayer": "networking"
 1. Deploy CDK stack
 
     ```bash
