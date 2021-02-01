@@ -1448,6 +1448,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "iniparse"
+version = "0.5"
+description = "Accessing and Modifying INI files"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "ipdb"
 version = "0.13.4"
 description = "IPython-enabled pdb"
@@ -1576,6 +1587,21 @@ webcolors = {version = "*", optional = true, markers = "extra == \"format\""}
 [package.extras]
 format = ["idna", "jsonpointer (>1.13)", "rfc3987", "strict-rfc3339", "webcolors"]
 format_nongpl = ["idna", "jsonpointer (>1.13)", "webcolors", "rfc3986-validator (>0.1.0)", "rfc3339-validator"]
+
+[[package]]
+name = "language-formatters-pre-commit-hooks"
+version = "2.0.0"
+description = "List of pre-commit hooks meant to format your source code."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+iniparse = "*"
+requests = "*"
+"ruamel.yaml" = "*"
+toml-sort = "*"
+tomlkit = "*"
 
 [[package]]
 name = "lazy-object-proxy"
@@ -1871,6 +1897,18 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "requests"
+version = "2.15.1"
+description = "Python HTTP for Humans."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.extras]
+security = ["cryptography (>=1.3.4)", "idna (>=2.0.0)", "pyOpenSSL (>=0.14)"]
+socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+
+[[package]]
 name = "rfc3987"
 version = "1.3.8"
 description = "Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)"
@@ -1964,6 +2002,26 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "toml-sort"
+version = "0.18.0"
+description = "Toml sorting library"
+category = "dev"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[package.dependencies]
+click = ">=7.0"
+tomlkit = ">=0.5.8"
+
+[[package]]
+name = "tomlkit"
+version = "0.7.0"
+description = "Style preserving TOML library"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "traitlets"
 version = "5.0.5"
 description = "Traitlets Python configuration system"
@@ -2048,33 +2106,6 @@ category = "dev"
 optional = false
 python-versions = "*"
 
-[[package]]
-name = "yamlfmt"
-version = "0.0.0"
-description = ""
-category = "dev"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-"ruamel.yaml" = ">=0.16.10"
-
-[package.source]
-type = "url"
-url = "https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/archive/0.1.0.tar.gz"
-
-[[package]]
-name = "yamllint"
-version = "1.25.0"
-description = "A linter for YAML files."
-category = "dev"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-
-[package.dependencies]
-pathspec = ">=0.5.3"
-pyyaml = "*"
-
 [extras]
 cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
 check-stac-metadata-job = ["boto3", "jsonschema", "strict-rfc3339"]
@@ -2083,7 +2114,7 @@ datasets-endpoint = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "de1f47e697661f20e34fac826853eb04a820b8edc5b4a7d4d23e6fd7766e49fe"
+content-hash = "fc39aa378d0293067360bae0f14a4d829d2078c9985008f05557560cc0551b09"
 
 [metadata.files]
 appdirs = [
@@ -2429,6 +2460,11 @@ iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
+iniparse = [
+    {file = "iniparse-0.5-py2-none-any.whl", hash = "sha256:88ca60473b1637055a937933d48840be1b1b6835f381a6158ef118a532583675"},
+    {file = "iniparse-0.5-py3-none-any.whl", hash = "sha256:db6ef1d8a02395448e0e7b17ac0aa28b8d338b632bbd1ffca08c02ddae32cf97"},
+    {file = "iniparse-0.5.tar.gz", hash = "sha256:932e5239d526e7acb504017bb707be67019ac428a6932368e6851691093aa842"},
+]
 ipdb = [
     {file = "ipdb-0.13.4.tar.gz", hash = "sha256:c85398b5fb82f82399fc38c44fe3532c0dde1754abee727d8f5cfcc74547b334"},
 ]
@@ -2463,6 +2499,10 @@ jsonpointer = [
 jsonschema = [
     {file = "jsonschema-3.2.0-py2.py3-none-any.whl", hash = "sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163"},
     {file = "jsonschema-3.2.0.tar.gz", hash = "sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a"},
+]
+language-formatters-pre-commit-hooks = [
+    {file = "language_formatters_pre_commit_hooks-2.0.0-py2.py3-none-any.whl", hash = "sha256:a29f7c2f4e7ace2ed5676ce452d53421cea6af193c129087f19cebfbe3a1200d"},
+    {file = "language_formatters_pre_commit_hooks-2.0.0.tar.gz", hash = "sha256:49318039fda7fa34f255e15429c49ea6100819efead0e3ade50264b7037f54f1"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.4.3.tar.gz", hash = "sha256:f3900e8a5de27447acbf900b4750b0ddfd7ec1ea7fbaf11dfa911141bc522af0"},
@@ -2675,6 +2715,10 @@ regex = [
     {file = "regex-2020.11.13-cp39-cp39-win_amd64.whl", hash = "sha256:a15f64ae3a027b64496a71ab1f722355e570c3fac5ba2801cafce846bf5af01d"},
     {file = "regex-2020.11.13.tar.gz", hash = "sha256:83d6b356e116ca119db8e7c6fc2983289d87b27b3fac238cfe5dca529d884562"},
 ]
+requests = [
+    {file = "requests-2.15.1-py2.py3-none-any.whl", hash = "sha256:ff753b2196cd18b1bbeddc9dcd5c864056599f7a7d9a4fb5677e723efa2b7fb9"},
+    {file = "requests-2.15.1.tar.gz", hash = "sha256:e5659b9315a0610505e050bb7190bf6fa2ccee1ac295f2b760ef9d8a03ebbb2e"},
+]
 rfc3987 = [
     {file = "rfc3987-1.3.8-py2.py3-none-any.whl", hash = "sha256:10702b1e51e5658843460b189b185c0366d2cf4cff716f13111b0ea9fd2dce53"},
     {file = "rfc3987-1.3.8.tar.gz", hash = "sha256:d3c4d257a560d544e9826b38bc81db676890c79ab9d7ac92b39c7a253d5ca733"},
@@ -2745,6 +2789,14 @@ toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
+toml-sort = [
+    {file = "toml-sort-0.18.0.tar.gz", hash = "sha256:93c8ba23c540f9029d20b4a3d6b9ec650fc32d1586d701939e6614390820b3f0"},
+    {file = "toml_sort-0.18.0-py3-none-any.whl", hash = "sha256:9bb460111e2d9e275c4b80ebbc57b4153d4cd24d0ac1d875126d6f86e032da13"},
+]
+tomlkit = [
+    {file = "tomlkit-0.7.0-py2.py3-none-any.whl", hash = "sha256:6babbd33b17d5c9691896b0e68159215a9387ebfa938aa3ac42f4a4beeb2b831"},
+    {file = "tomlkit-0.7.0.tar.gz", hash = "sha256:ac57f29693fab3e309ea789252fcce3061e19110085aa31af5446ca749325618"},
+]
 traitlets = [
     {file = "traitlets-5.0.5-py3-none-any.whl", hash = "sha256:69ff3f9d5351f31a7ad80443c2674b7099df13cc41fc5fa6e2f6d3b0330b0426"},
     {file = "traitlets-5.0.5.tar.gz", hash = "sha256:178f4ce988f69189f7e523337a3e11d91c786ded9360174a3d9ca83e79bc5396"},
@@ -2804,9 +2856,4 @@ webcolors = [
 ]
 wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
-]
-yamlfmt = []
-yamllint = [
-    {file = "yamllint-1.25.0-py2.py3-none-any.whl", hash = "sha256:c7be4d0d2584a1b561498fa9acb77ad22eb434a109725c7781373ae496d823b3"},
-    {file = "yamllint-1.25.0.tar.gz", hash = "sha256:b1549cbe5b47b6ba67bdeea31720f5c51431a4d0c076c1557952d841f7223519"},
 ]
