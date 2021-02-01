@@ -11,7 +11,7 @@ from unittest.mock import Mock, call, patch
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 
-from app import ENV
+from datalake.backend.endpoints.utils import ResourceName
 
 from ..processing.check_stac_metadata.task import ProcessingAssetsModel, STACSchemaValidator, main
 from .utils import (
@@ -47,7 +47,7 @@ MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
     },
 }
 
-BUCKET_NAME = f"linz-geospatial-data-lake-{ENV}"
+BUCKET_NAME = ResourceName.STORAGE_BUCKET_NAME.value
 
 
 class MockJSONURLReader(Mock):

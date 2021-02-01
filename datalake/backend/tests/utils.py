@@ -12,7 +12,7 @@ from multihash import SHA2_256  # type: ignore[import]
 
 from app import ENV, ENVIRONMENT_TYPE_TAG_NAME
 
-from ...networking_stack import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
+from ...constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from ..endpoints.datasets.common import DATASET_TYPES
 from ..endpoints.datasets.model import DatasetModel
 

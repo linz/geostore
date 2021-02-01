@@ -9,6 +9,7 @@ from aws_cdk import core
 
 from datalake.api_stack import APIStack
 from datalake.backend.endpoints.utils import ENV
+from datalake.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from datalake.processing_stack import ProcessingStack
 from datalake.staging_stack import StagingStack
 from datalake.storage_stack import StorageStack
@@ -65,7 +66,7 @@ def main():
 
     # tag all resources in stack
     core.Tag.add(app, "CostCentre", "100005")
-    core.Tag.add(app, "ApplicationName", "geospatial-data-lake")
+    core.Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
     core.Tag.add(app, "Owner", "Bill M. Nelson")
     core.Tag.add(app, ENVIRONMENT_TYPE_TAG_NAME, ENV)
     core.Tag.add(app, "SupportType", "Dev")

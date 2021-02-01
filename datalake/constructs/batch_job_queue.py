@@ -2,6 +2,9 @@ import textwrap
 
 from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam, core
 
+APPLICATION_NAME_TAG_NAME = "ApplicationName"
+APPLICATION_NAME = "geospatial-data-lake"
+
 
 class BatchJobQueue(core.Construct):
     def __init__(
@@ -80,7 +83,7 @@ class BatchJobQueue(core.Construct):
             self,
             "datalake-vpc",
             tags={
-                "ApplicationName": "geospatial-data-lake",
+                APPLICATION_NAME_TAG_NAME: APPLICATION_NAME,
                 "ApplicationLayer": "networking",
             },
         )
