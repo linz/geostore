@@ -83,6 +83,7 @@ jobs:
       env:
         DEPLOY_ENV: nonprod
         DATALAKE_USE_EXISTING_VPC: true
+        DATALAKE_USERS_AWS_ACCOUNTS_IDS: ${{ secrets.DATALAKE_USERS_AWS_ACCOUNTS_IDS_NON_PROD }}
 
     # PROD DEPLOYMENT
     - name: (Prod) Configure AWS credentials
@@ -107,3 +108,4 @@ jobs:
       env:
         DEPLOY_ENV: prod
         DATALAKE_USE_EXISTING_VPC: true
+        DATALAKE_USERS_AWS_ACCOUNTS_IDS: ${{ secrets.DATALAKE_USERS_AWS_ACCOUNTS_IDS_PROD }}
