@@ -116,7 +116,7 @@ as a dependency to processing_stack.
      ```bash
      export DEPLOY_ENV="$USER"
      ```
-     Other values ued by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
+     Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
    * **`DATALAKE_USERS_AWS_ACCOUNTS_IDS`:** allow read/write access to Lambda functions API to all users
     belonging to specified comma separated list of AWS accounts IDs. Default: AWS account where Data
     Lake stack is deployed.
