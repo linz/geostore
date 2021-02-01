@@ -9,7 +9,6 @@ from aws_cdk import core
 
 from datalake.api_stack import APIStack
 from datalake.backend.endpoints.utils import ENV
-from datalake.networking_stack import NetworkingStack
 from datalake.processing_stack import ProcessingStack
 from datalake.staging_stack import StagingStack
 from datalake.storage_stack import StorageStack
@@ -27,14 +26,7 @@ def main():
     users = UsersStack(
         app,
         "users",
-        stack_name=f"geospatial-data-lake-users-{ENV}",
-        env={"region": region, "account": account},
-    )
-
-    networking = NetworkingStack(
-        app,
-        "networking",
-        stack_name="geospatial-data-lake-networking",
+        stack_name=f"{ENV}-geospatial-data-lake-users",
         env={"region": region, "account": account},
     )
 
@@ -52,7 +44,6 @@ def main():
         stack_name=f"{ENV}-geospatial-data-lake-processing",
         env={"region": region, "account": account},
         deploy_env=ENV,
-        vpc=networking.datalake_vpc,
     )
 
     APIStack(

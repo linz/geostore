@@ -3,7 +3,7 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_ec2, aws_iam, aws_stepfunctions, core
+from aws_cdk import aws_iam, aws_stepfunctions, core
 
 from .backend.endpoints.utils import ResourceName
 from .constructs.batch_job_queue import BatchJobQueue
@@ -20,7 +20,6 @@ class ProcessingStack(core.Stack):
         scope: core.Construct,
         stack_id: str,
         deploy_env: str,
-        vpc: aws_ec2.IVpc,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -44,7 +43,6 @@ class ProcessingStack(core.Stack):
             "batch_job_queue",
             deploy_env=deploy_env,
             processing_assets_table=processing_assets_table,
-            vpc=vpc,
         ).job_queue
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(

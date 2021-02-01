@@ -11,7 +11,6 @@ class BatchJobQueue(core.Construct):
         *,
         deploy_env: str,
         processing_assets_table: aws_dynamodb.Table,
-        vpc: aws_ec2.IVpc,
     ):
         # pylint: disable=too-many-locals
         super().__init__(scope, construct_id)
@@ -74,8 +73,20 @@ class BatchJobQueue(core.Construct):
             launch_template_name=cloudformation_launch_template.launch_template_name
         )
 
+        # use existing VPC in LINZ AWS account.
+        # VPC with these tags is required to exist in AWS account before being deployed.
+        # A VPC will not be deployed by this project.
+        datalake_vpc = aws_ec2.Vpc.from_lookup(
+            self,
+            "datalake-vpc",
+            tags={
+                "ApplicationName": "geospatial-data-lake",
+                "ApplicationLayer": "networking",
+            },
+        )
+
         compute_resources = aws_batch.ComputeResources(
-            vpc=vpc,
+            vpc=datalake_vpc,
             minv_cpus=0,
             desiredv_cpus=0,
             maxv_cpus=1000,
