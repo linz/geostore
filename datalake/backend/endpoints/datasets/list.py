@@ -2,7 +2,6 @@
 
 from ..utils import success_response
 from .model import DatasetModel
-from .serializer import serialize_dataset
 
 
 def list_datasets():
@@ -17,7 +16,7 @@ def list_datasets():
     # return response
     resp_body = []
     for dataset in datasets:
-        resp_item = serialize_dataset(dataset)
-        resp_body.append(resp_item)
+        item = dataset._serialize()  # type: ignore[attr-defined] # pylint:disable=protected-access
+        resp_body.append(item)
 
     return success_response(200, resp_body)
