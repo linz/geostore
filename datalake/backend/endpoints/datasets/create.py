@@ -5,7 +5,6 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from ..utils import error_response, success_response
 from .common import DATASET_TYPES
 from .model import DatasetModel
-from .serializer import serialize_dataset
 
 
 def create_dataset(payload):
@@ -50,6 +49,6 @@ def create_dataset(payload):
     dataset.refresh(consistent_read=True)
 
     # return response
-    resp_body = serialize_dataset(dataset)
+    resp_body = dataset.serialize()
 
     return success_response(201, resp_body)

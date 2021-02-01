@@ -7,7 +7,6 @@ from ..utils import error_response, success_response
 from .common import DATASET_TYPES
 from .list import list_datasets
 from .model import DatasetModel
-from .serializer import serialize_dataset
 
 
 def handle_get(event):
@@ -58,7 +57,7 @@ def get_dataset_single(payload):
         )
 
     # return response
-    resp_body = serialize_dataset(dataset)
+    resp_body = dataset.serialize()
 
     return success_response(200, resp_body)
 
@@ -104,7 +103,7 @@ def get_dataset_filter(payload):
     # return response
     resp_body = []
     for dataset in datasets:
-        resp_item = serialize_dataset(dataset)
+        resp_item = dataset.serialize()
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)

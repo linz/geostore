@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime, timezone
+from typing import Any, Dict
 
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
@@ -76,6 +77,13 @@ class DatasetModel(Model):
         self.updated_at = datetime.now(timezone.utc)
         super().save()
 
+    def serialize(self) -> Dict[str, Any]:
+        as_dict = self._serialize()  # type: ignore[attr-defined] # pylint:disable=protected-access
+        result: Dict[str, Any] = {key: value["S"] for key, value in as_dict["attributes"].items()}
+        result["id"] = self.dataset_id
+        result["type"] = self.dataset_type
+        return result
+
     @property
     def dataset_id(self):
         """Dataset ID value."""
@@ -85,7 +93,3 @@ class DatasetModel(Model):
     def dataset_type(self):
         """Dataset type value."""
         return self.type.split("#")[1]
-
-    def __iter__(self):
-        for name, attr in self.get_attributes().items():
-            yield name, attr.serialize(getattr(self, name))
