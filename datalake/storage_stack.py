@@ -4,12 +4,13 @@ Data Lake AWS resources definitions.
 from aws_cdk import aws_dynamodb, aws_s3, core
 from aws_cdk.core import Tags
 
+from datalake.backend.endpoints.datasets.model import (
+    DATASETS_OWNING_GROUP_INDEX_NAME,
+    DATASETS_TITLE_INDEX_NAME,
+)
 from datalake.backend.endpoints.utils import ResourceName
 
 from .constructs.table import Table
-
-DATASETS_TITLE_INDEX_NAME = "datasets_title"
-DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
 
 
 class StorageStack(core.Stack):

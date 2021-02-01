@@ -7,8 +7,10 @@ from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
-from ....storage_stack import DATASETS_OWNING_GROUP_INDEX_NAME, DATASETS_TITLE_INDEX_NAME
 from ..utils import ResourceName
+
+DATASETS_TITLE_INDEX_NAME = "datasets_title"
+DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
