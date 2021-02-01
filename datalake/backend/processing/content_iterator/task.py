@@ -1,3 +1,6 @@
+from typing import MutableMapping, Union
+
+
 def lambda_handler(event, _context):
     """Main Lambda entry point."""
 
@@ -14,7 +17,7 @@ def lambda_handler(event, _context):
     else:
         next_item = -1
 
-    resp = {}
+    resp: MutableMapping[str, Union[int, str]] = {}
 
     # "first_item" value must be string. It is directly passed as value to Batch job environment
     # variable BATCH_JOB_FIRST_ITEM_INDEX. All environment variables must be string and there is no
