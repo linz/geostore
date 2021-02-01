@@ -5,6 +5,7 @@ from typing import Any
 
 from aws_cdk import aws_ec2, aws_iam, aws_stepfunctions, core
 
+from .backend.processing.check_stac_metadata.task import PROCESSING_ASSETS_TABLE_NAME
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -30,7 +31,10 @@ class ProcessingStack(core.Stack):
         ############################################################################################
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
-            self, "processing_assets", deploy_env=deploy_env, application_layer=application_layer
+            self,
+            PROCESSING_ASSETS_TABLE_NAME,
+            deploy_env=deploy_env,
+            application_layer=application_layer,
         )
 
         ############################################################################################
@@ -46,21 +50,15 @@ class ProcessingStack(core.Stack):
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
             "AmazonS3ReadOnlyAccess"
         )
-        batch_job_role = aws_iam.Role(
-            self,
-            "batch-job-role",
-            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[s3_read_only_access_policy],
-        )
 
         ############################################################################################
         # STATE MACHINE TASKS
-        check_stac_metadata_task = BatchSubmitJobTask(
+        check_stac_metadata_job_task = BatchSubmitJobTask(
             self,
             "check_stac_metadata_task",
             deploy_env=deploy_env,
             directory="check_stac_metadata",
-            job_role=batch_job_role,
+            s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object={
                 "dataset_id.$": "$.dataset_id",
@@ -68,7 +66,20 @@ class ProcessingStack(core.Stack):
                 "type.$": "$.type",
                 "metadata_url.$": "$.metadata_url",
             },
-        ).batch_submit_job
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--metadata-url",
+                "Ref::metadata_url",
+            ],
+        )
+        processing_assets_table.grant_read_write_data(check_stac_metadata_job_task.job_role)
+        processing_assets_table.grant(
+            check_stac_metadata_job_task.job_role, "dynamodb:DescribeTable"
+        )
+        check_stac_metadata_task = check_stac_metadata_job_task.batch_submit_job
 
         content_iterator_task = LambdaTask(
             self,
@@ -84,7 +95,7 @@ class ProcessingStack(core.Stack):
             "check_files_checksums_task",
             deploy_env=deploy_env,
             directory="check_files_checksums",
-            job_role=batch_job_role,
+            s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object={
                 "dataset_id.$": "$.dataset_id",
@@ -95,6 +106,7 @@ class ProcessingStack(core.Stack):
             },
             container_overrides_environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
             array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
+            container_overrides_command=["--metadata-url", "Ref::metadata_url"],
         ).batch_submit_job
 
         validation_summary_task = LambdaTask(

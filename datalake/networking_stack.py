@@ -4,6 +4,9 @@ Data Lake networking stack.
 from aws_cdk import aws_ec2, core
 from aws_cdk.core import Tags
 
+APPLICATION_NAME_TAG_NAME = "ApplicationName"
+APPLICATION_NAME = "geospatial-data-lake"
+
 
 class NetworkingStack(core.Stack):
     """Data Lake networking stack definition."""
@@ -23,7 +26,7 @@ class NetworkingStack(core.Stack):
                 self,
                 "datalake-vpc",
                 tags={
-                    "ApplicationName": "geospatial-data-lake",
+                    APPLICATION_NAME_TAG_NAME: APPLICATION_NAME,
                     "ApplicationLayer": "networking",
                 },
             )
