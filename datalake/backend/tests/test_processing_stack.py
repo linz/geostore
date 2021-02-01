@@ -7,9 +7,9 @@ from typing import Any, Dict
 
 from pytest import mark
 
-from ..endpoints.utils import ResourceName
 from app import ENV, ENVIRONMENT_TYPE_TAG_NAME
 
+from ..endpoints.utils import ResourceName
 from .utils import (
     S3Object,
     any_dataset_description,
