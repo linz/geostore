@@ -7,6 +7,7 @@ from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
+from ....storage_stack import DATASETS_OWNING_GROUP_INDEX_NAME, DATASETS_TITLE_INDEX_NAME
 from ..utils import ResourceName
 
 
@@ -19,7 +20,7 @@ class DatasetsTitleIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = ResourceName.DATASETS_TITLE_INDEX_NAME.value
+        index_name = DATASETS_TITLE_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -37,7 +38,7 @@ class DatasetsOwningGroupIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = ResourceName.DATASETS_OWNING_GROUP_INDEX_NAME.value
+        index_name = DATASETS_OWNING_GROUP_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()

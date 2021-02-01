@@ -8,6 +8,9 @@ from datalake.backend.endpoints.utils import ResourceName
 
 from .constructs.table import Table
 
+DATASETS_TITLE_INDEX_NAME = "datasets_title"
+DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
+
 
 class StorageStack(core.Stack):
     def __init__(self, scope: core.Construct, stack_id: str, deploy_env: str, **kwargs) -> None:
@@ -44,12 +47,12 @@ class StorageStack(core.Stack):
         )
 
         self.datasets_table.add_global_secondary_index(
-            index_name=ResourceName.DATASETS_TITLE_INDEX_NAME.value,
+            index_name=DATASETS_TITLE_INDEX_NAME,
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
         )
         self.datasets_table.add_global_secondary_index(
-            index_name=ResourceName.DATASETS_OWNING_GROUP_INDEX_NAME.value,
+            index_name=DATASETS_OWNING_GROUP_INDEX_NAME,
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(
                 name="owning_group", type=aws_dynamodb.AttributeType.STRING
