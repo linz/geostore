@@ -35,10 +35,6 @@ def db_teardown():
     for item in DatasetModel.scan():
         item.delete()
 
-    yield
-
-    return True
-
 
 @pytest.fixture()
 def dynamodb_client():
