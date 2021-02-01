@@ -14,7 +14,7 @@ class StagingStack(core.Stack):
         self.staging_bucket = aws_s3.Bucket(
             self,
             "dataset-staging-bucket",
-            bucket_name=f"{ResourceName.DATASET_STAGING_BUCKET_NAME.value}-{stack_id}",
+            bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,

@@ -28,7 +28,7 @@ class StorageStack(core.Stack):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
-            bucket_name=f"{ResourceName.STORAGE_BUCKET_NAME.value}-{stack_id}",
+            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
