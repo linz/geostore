@@ -1,7 +1,9 @@
 """
 Data Lake AWS resources definitions.
 """
-from aws_cdk import aws_lambda, core
+from typing import Any
+
+from aws_cdk import aws_dynamodb, aws_iam, aws_lambda, core
 from aws_cdk.core import Tags
 
 
@@ -12,10 +14,10 @@ class APIStack(core.Stack):
         self,
         scope: core.Construct,
         stack_id: str,
-        datasets_table,
-        users_role,
+        datasets_table: aws_dynamodb.Table,
+        users_role: aws_iam.Role,
         deploy_env: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
 

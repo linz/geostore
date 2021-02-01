@@ -1,7 +1,9 @@
-from typing import MutableMapping, Union
+from typing import Any, MutableMapping, Union
+
+JSON_OBJECT = MutableMapping[str, Any]
 
 
-def lambda_handler(event, _context):
+def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     """Main Lambda entry point."""
 
     total_size = 6

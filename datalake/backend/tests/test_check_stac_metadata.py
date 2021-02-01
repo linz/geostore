@@ -6,13 +6,14 @@ from io import BytesIO, StringIO
 from json import dump, dumps
 from time import sleep
 from typing import Any, Dict, List, Optional, TextIO
-from unittest.mock import Mock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
+from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark, raises
+from pytest_subtests import SubTests  # type: ignore[import]
 
-from datalake.backend.endpoints.utils import ResourceName
-
+from ..endpoints.utils import ResourceName
 from ..processing.check_stac_metadata.task import ProcessingAssetsModel, STACSchemaValidator, main
 from .utils import (
     S3Object,
@@ -74,7 +75,9 @@ def test_should_treat_minimal_stac_object_as_valid() -> None:
     STACSchemaValidator(url_reader).validate(url)
 
 
-def test_should_treat_any_missing_top_level_key_as_invalid(subtests) -> None:
+def test_should_treat_any_missing_top_level_key_as_invalid(
+    subtests: SubTests,
+) -> None:
     url = any_s3_url()
     for key in MINIMAL_VALID_STAC_OBJECT:
         with subtests.test(msg=key):
@@ -96,7 +99,7 @@ def test_should_detect_invalid_datetime() -> None:
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_validate_given_url(validate_url_mock) -> None:
+def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
     url = any_s3_url()
     sys.argv = [
         any_program_name(),
@@ -112,7 +115,7 @@ def test_should_validate_given_url(validate_url_mock) -> None:
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_print_json_output_on_validation_failure(validate_url_mock) -> None:
+def test_should_print_json_output_on_validation_failure(validate_url_mock: MagicMock) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
     sys.argv = [
         any_program_name(),
@@ -233,7 +236,8 @@ def test_should_return_assets_from_validated_metadata_files() -> None:
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
 def test_should_insert_asset_urls_and_checksums_into_database(
-    step_functions_client, subtests
+    step_functions_client: SFNClient,
+    subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with two assets

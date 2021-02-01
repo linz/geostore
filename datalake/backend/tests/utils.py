@@ -4,11 +4,14 @@ from hashlib import sha256
 from os import urandom
 from random import choice, randrange
 from types import TracebackType
-from typing import BinaryIO, List, Optional, Type, TypedDict
+from typing import BinaryIO, List, Optional, Type
 from uuid import uuid4
 
 import boto3
 from multihash import SHA2_256  # type: ignore[import]
+from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
+from mypy_boto3_stepfunctions import SFNClient
+from mypy_boto3_stepfunctions.type_defs import StateMachineListItemTypeDef
 
 from app import ENVIRONMENT_TYPE_TAG_NAME
 
@@ -19,8 +22,6 @@ from ..endpoints.utils import ENV
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
-
-S3_OBJECT_KEY_VERSION = TypedDict("S3_OBJECT_KEY_VERSION", {"Key": str, "VersionId": str})
 
 # General-purpose generators
 
@@ -54,7 +55,7 @@ def any_program_name() -> str:
     return random_string(20)
 
 
-def any_safe_file_path():
+def any_safe_file_path() -> str:
     paths = [any_safe_filename() for _ in range(randrange(1, 5))]
     return "/".join(paths)
 
@@ -209,18 +210,16 @@ class S3Object:
         version_list = self._get_object_versions()
         self._delete_object_versions(version_list)
 
-    def _delete_object_versions(self, version_list: List[S3_OBJECT_KEY_VERSION]) -> None:
+    def _delete_object_versions(self, version_list: List[ObjectIdentifierTypeDef]) -> None:
         for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
             response = self.s3.delete_objects(
                 Bucket=self.bucket_name,
-                Delete={
-                    "Objects": version_list[index : index + DELETE_OBJECTS_MAX_KEYS],
-                },
+                Delete=DeleteTypeDef(Objects=version_list[index : index + DELETE_OBJECTS_MAX_KEYS]),
             )
             print(response)
 
-    def _get_object_versions(self) -> List[S3_OBJECT_KEY_VERSION]:
-        version_list: List[S3_OBJECT_KEY_VERSION] = []
+    def _get_object_versions(self) -> List[ObjectIdentifierTypeDef]:
+        version_list: List[ObjectIdentifierTypeDef] = []
         object_versions_paginator = self.s3.get_paginator("list_object_versions")
         for object_versions_page in object_versions_paginator.paginate(Bucket=self.bucket_name):
             for marker in object_versions_page.get("DeleteMarkers", []):
@@ -236,7 +235,7 @@ class NoStateMachineFound(Exception):
     pass
 
 
-def get_state_machine(step_functions_client):
+def get_state_machine(step_functions_client: SFNClient) -> StateMachineListItemTypeDef:
     state_machines_list_response = step_functions_client.list_state_machines()
 
     # We don't want to introduce pagination until necessary, so just make sure it's not needed

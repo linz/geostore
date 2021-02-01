@@ -1,11 +1,13 @@
+from typing import Any
+
 from aws_cdk import aws_s3, core
 from aws_cdk.core import Tags
 
-from datalake.backend.endpoints.utils import ResourceName
+from .backend.endpoints.utils import ResourceName
 
 
 class StagingStack(core.Stack):
-    def __init__(self, scope: core.Construct, stack_id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, stack_id: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################

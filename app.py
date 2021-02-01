@@ -18,7 +18,7 @@ from datalake.users_stack import UsersStack
 ENVIRONMENT_TYPE_TAG_NAME = "EnvironmentType"
 
 
-def main():
+def main() -> None:
     region = environ["CDK_DEFAULT_REGION"]
     account = environ["CDK_DEFAULT_ACCOUNT"]
 

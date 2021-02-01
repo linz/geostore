@@ -3,13 +3,13 @@
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
-from ..utils import error_response, success_response
+from ..utils import JSON_OBJECT, error_response, success_response
 from .common import DATASET_TYPES
 from .list import list_datasets
 from .model import DatasetModel
 
 
-def handle_get(event):
+def handle_get(event: JSON_OBJECT) -> JSON_OBJECT:
     if "id" in event["body"] and "type" in event["body"]:
         return get_dataset_single(event)
 
@@ -22,7 +22,7 @@ def handle_get(event):
     return error_response(400, "Unhandled request")
 
 
-def get_dataset_single(payload):
+def get_dataset_single(payload: JSON_OBJECT) -> JSON_OBJECT:
     """GET: Get single Dataset."""
 
     BODY_SCHEMA = {
@@ -62,7 +62,7 @@ def get_dataset_single(payload):
     return success_response(200, resp_body)
 
 
-def get_dataset_filter(payload):
+def get_dataset_filter(payload: JSON_OBJECT) -> JSON_OBJECT:
     """GET: Get Datasets by filter."""
 
     BODY_SCHEMA = {

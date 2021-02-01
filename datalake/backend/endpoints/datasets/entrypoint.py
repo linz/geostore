@@ -1,10 +1,11 @@
 """
 Dataset endpoint Lambda function.
 """
+from typing import Callable, MutableMapping
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..utils import error_response
+from ..utils import JSON_OBJECT, error_response
 from .create import create_dataset
 from .delete import delete_dataset
 from .get import handle_get
@@ -23,7 +24,7 @@ REQUEST_SCHEMA = {
 # TODO: allow Dataset delete only if no Dataset Version exists
 
 
-REQUEST_HANDLERS = {
+REQUEST_HANDLERS: MutableMapping[str, Callable[[JSON_OBJECT], JSON_OBJECT]] = {
     "DELETE": delete_dataset,
     "GET": handle_get,
     "PATCH": update_dataset,
@@ -31,7 +32,7 @@ REQUEST_HANDLERS = {
 }
 
 
-def lambda_handler(event, _context):
+def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     """Main Lambda entry point."""
 
     # request validation

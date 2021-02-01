@@ -5,6 +5,7 @@ from io import BytesIO
 from json import dumps
 from typing import Any, Dict
 
+from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
 
 from ..endpoints.utils import ResourceName
@@ -46,7 +47,9 @@ class NoComputeEnvironmentFound(Exception):
 
 @mark.timeout(1200)
 @mark.infrastructure
-def test_should_successfully_run_dataset_version_creation_process(stepfunctions_client):
+def test_should_successfully_run_dataset_version_creation_process(
+    step_functions_client: SFNClient,
+) -> None:
 
     metadata_file = "{}/{}.json".format(any_safe_file_path(), any_safe_filename())
     metadata_content = dumps(MINIMAL_VALID_STAC_OBJECT)
@@ -68,15 +71,15 @@ def test_should_successfully_run_dataset_version_creation_process(stepfunctions_
         )
 
         # launch State Machine
-        datalake_state_machine = get_state_machine(stepfunctions_client)
-        execution_response = stepfunctions_client.start_execution(
+        datalake_state_machine = get_state_machine(step_functions_client)
+        execution_response = step_functions_client.start_execution(
             stateMachineArn=datalake_state_machine["stateMachineArn"], input=state_machine_input
         )
         logger.info("Executed State Machine: %s", execution_response)
 
         # poll for State Machine State
         while (
-            execution := stepfunctions_client.describe_execution(
+            execution := step_functions_client.describe_execution(
                 executionArn=execution_response["executionArn"]
             )
         )["status"] == "RUNNING":

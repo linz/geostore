@@ -1,20 +1,23 @@
 """
 Data Lake AWS resources definitions.
 """
+from typing import Any
+
 from aws_cdk import aws_dynamodb, aws_s3, core
 from aws_cdk.core import Tags
 
-from datalake.backend.endpoints.datasets.model import (
+from .backend.endpoints.datasets.model import (
     DATASETS_OWNING_GROUP_INDEX_NAME,
     DATASETS_TITLE_INDEX_NAME,
 )
-from datalake.backend.endpoints.utils import ResourceName
-
+from .backend.endpoints.utils import ResourceName
 from .constructs.table import Table
 
 
 class StorageStack(core.Stack):
-    def __init__(self, scope: core.Construct, stack_id: str, deploy_env: str, **kwargs) -> None:
+    def __init__(
+        self, scope: core.Construct, stack_id: str, deploy_env: str, **kwargs: Any
+    ) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         # set resources depending on deployment type

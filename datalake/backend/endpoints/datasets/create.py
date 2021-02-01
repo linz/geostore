@@ -2,12 +2,12 @@
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..utils import error_response, success_response
+from ..utils import JSON_OBJECT, error_response, success_response
 from .common import DATASET_TYPES
 from .model import DatasetModel
 
 
-def create_dataset(payload):
+def create_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
     """POST: Create Dataset."""
 
     BODY_SCHEMA = {
