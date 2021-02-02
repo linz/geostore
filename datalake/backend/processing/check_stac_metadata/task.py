@@ -20,7 +20,8 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
 
-from ...endpoints.utils import ResourceName
+ENV = environ["DEPLOY_ENV"]
+PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
 
 S3_URL_PREFIX = "s3://"
 
@@ -31,7 +32,7 @@ CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catal
 
 class ProcessingAssetsModel(Model):
     class Meta:  # pylint:disable=too-few-public-methods
-        table_name = ResourceName.PROCESSING_ASSETS_TABLE_NAME.value
+        table_name = PROCESSING_ASSETS_TABLE_NAME
         region = "ap-southeast-2"  # TODO: don't hardcode region
 
     pk = UnicodeAttribute(hash_key=True)

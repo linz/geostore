@@ -26,6 +26,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             job_role=job_role,
             memory_limit_mib=batch_job_definition_memory_limit,
             vcpus=1,
+            environment={"DEPLOY_ENV": deploy_env},
         )
 
         super().__init__(scope, construct_id, container=container, retry_attempts=4)
