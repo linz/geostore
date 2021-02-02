@@ -106,6 +106,9 @@ Re-run `. .venv/bin/activate` in each shell.
     account or will create a new one. Existing VPC must to be used must contain following tags -
     "ApplicationName": "geospatial-data-lake", "ApplicationLayer": "networking".
     Allowed values: true, false. Default: false.
+* **DATALAKE_USERS_AWS_ACCOUNTS_IDS:** allow read/write access to Lambda functions API to all users
+    belonging to specified comma separated list of AWS accounts IDs. Default: AWS account where Data
+    Lake stack is deployed.
 1. Bootstrap CDK (only once per profile)
 
     ```bash

@@ -12,6 +12,7 @@ from datalake.networking_stack import NetworkingStack
 from datalake.processing_stack import ProcessingStack
 from datalake.staging_stack import StagingStack
 from datalake.storage_stack import StorageStack
+from datalake.users_stack import UsersStack
 
 ENVIRONMENT_TYPE_TAG_NAME = "EnvironmentType"
 ENV = environ.get("DEPLOY_ENV", "dev")
@@ -30,6 +31,13 @@ def main():
     account = environ["CDK_DEFAULT_ACCOUNT"]
 
     app = core.App()
+
+    users = UsersStack(
+        app,
+        "users",
+        stack_name=f"geospatial-data-lake-users-{ENV}",
+        env={"region": region, "account": account},
+    )
 
     networking = NetworkingStack(
         app,
@@ -63,6 +71,7 @@ def main():
         stack_name=f"geospatial-data-lake-api-{ENV}",
         env={"region": region, "account": account},
         datasets_table=storage.datasets_table,
+        users_role=users.users_role,
     )
 
     StagingStack(
