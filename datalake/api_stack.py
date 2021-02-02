@@ -8,7 +8,7 @@ from aws_cdk.core import Tags
 class APIStack(core.Stack):
     """Data Lake stack definition."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: core.Construct,
         stack_id: str,
