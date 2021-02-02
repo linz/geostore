@@ -138,6 +138,7 @@ cdk = [
     "aws-cdk.aws-stepfunctions",
     "aws-cdk.aws-stepfunctions_tasks",
     "awscli",
+    "boto3",
     "cattrs",
 ]
 check-stac-metadata-job = [
