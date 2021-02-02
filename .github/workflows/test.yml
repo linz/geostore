@@ -132,7 +132,9 @@ jobs:
             geospatial-data-lake-api-ci \
             geospatial-data-lake-networking-ci \
             geospatial-data-lake-processing-ci \
-            geospatial-data-lake-storage-ci
+            geospatial-data-lake-staging-ci \
+            geospatial-data-lake-storage-ci \
+            geospatial-data-lake-users-ci
 
     - name: Deploy AWS stacks for testing
       run: |
