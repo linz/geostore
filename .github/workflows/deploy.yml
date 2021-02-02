@@ -83,7 +83,6 @@ jobs:
         poetry run cdk deploy --all --require-approval never
       env:
         DEPLOY_ENV: nonprod
-        DATALAKE_USE_EXISTING_VPC: true
         DATALAKE_USERS_AWS_ACCOUNTS_IDS: ${{ secrets.DATALAKE_USERS_AWS_ACCOUNTS_IDS_NON_PROD }}
 
     # PROD DEPLOYMENT
@@ -108,5 +107,4 @@ jobs:
         poetry run cdk deploy --all --require-approval never
       env:
         DEPLOY_ENV: prod
-        DATALAKE_USE_EXISTING_VPC: true
         DATALAKE_USERS_AWS_ACCOUNTS_IDS: ${{ secrets.DATALAKE_USERS_AWS_ACCOUNTS_IDS_PROD }}

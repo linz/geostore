@@ -7,9 +7,10 @@ from typing import Any, Dict
 
 from pytest import mark
 
-from app import ENV, ENVIRONMENT_TYPE_TAG_NAME
+from app import ENVIRONMENT_TYPE_TAG_NAME
 
-from ...staging_stack import STAGING_BUCKET_NAME
+from ...constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
+from ..endpoints.utils import ENV, ResourceName
 from .utils import (
     S3Object,
     any_dataset_description,
@@ -18,9 +19,6 @@ from .utils import (
     any_safe_file_path,
     any_safe_filename,
 )
-
-APPLICATION_TAG_KEY = "ApplicationName"
-APPLICATION_TAG_VAL = "geospatial-data-lake"
 
 STAC_VERSION = "1.0.0-beta.2"
 
@@ -65,14 +63,14 @@ def get_state_machine(stepfunctions_client):
 
         if (
             state_machine_tags[ENVIRONMENT_TYPE_TAG_NAME] == ENV
-            and state_machine_tags.get(APPLICATION_TAG_KEY, None) == APPLICATION_TAG_VAL
+            and state_machine_tags.get(APPLICATION_NAME_TAG_NAME, None) == APPLICATION_NAME
         ):
             datalake_state_machine = state_machine
             logger.info("Datalake State Machine: %s", datalake_state_machine)
 
             return datalake_state_machine
 
-    raise NoStateMachineFound(APPLICATION_TAG_VAL, ENV)
+    raise NoStateMachineFound(APPLICATION_NAME, ENV)
 
 
 @mark.timeout(1200)
@@ -81,7 +79,7 @@ def test_should_successfully_run_dataset_version_creation_process(stepfunctions_
 
     metadata_file = "{}/{}.json".format(any_safe_file_path(), any_safe_filename())
     metadata_content = dumps(MINIMAL_VALID_STAC_OBJECT)
-    s3_bucket = f"{STAGING_BUCKET_NAME}-{ENV}"
+    s3_bucket = ResourceName.DATASET_STAGING_BUCKET_NAME.value
 
     with S3Object(
         BytesIO(f"{metadata_content}".encode()),

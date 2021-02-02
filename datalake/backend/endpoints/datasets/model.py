@@ -7,6 +7,11 @@ from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
+from ..utils import ResourceName
+
+DATASETS_TITLE_INDEX_NAME = "datasets_title"
+DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
+
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsTitleIdx(
@@ -17,7 +22,7 @@ class DatasetsTitleIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = "datasets_title"
+        index_name = DATASETS_TITLE_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -35,7 +40,7 @@ class DatasetsOwningGroupIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = "datasets_owning_group"
+        index_name = DATASETS_OWNING_GROUP_INDEX_NAME
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -50,7 +55,7 @@ class DatasetModel(Model):
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        table_name = "datasets"
+        table_name = ResourceName.DATASETS_TABLE_NAME.value
         region = "ap-southeast-2"  # TODO: don't hardcode region
 
     id = UnicodeAttribute(

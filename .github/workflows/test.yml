@@ -140,8 +140,6 @@ jobs:
       run: |
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
         poetry run cdk deploy --all --require-approval never
-      env:
-        DATALAKE_USE_EXISTING_VPC: true
 
     - name: Run tests
       run: >

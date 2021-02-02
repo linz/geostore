@@ -20,7 +20,8 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
 
-PROCESSING_ASSETS_TABLE_NAME = "processing_assets"
+ENV = environ["DEPLOY_ENV"]
+PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
 
 S3_URL_PREFIX = "s3://"
 

@@ -2,6 +2,9 @@ import textwrap
 
 from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam, core
 
+APPLICATION_NAME_TAG_NAME = "ApplicationName"
+APPLICATION_NAME = "geospatial-data-lake"
+
 
 class BatchJobQueue(core.Construct):
     def __init__(
@@ -11,7 +14,6 @@ class BatchJobQueue(core.Construct):
         *,
         deploy_env: str,
         processing_assets_table: aws_dynamodb.Table,
-        vpc: aws_ec2.IVpc,
     ):
         # pylint: disable=too-many-locals
         super().__init__(scope, construct_id)
@@ -67,11 +69,23 @@ class BatchJobQueue(core.Construct):
         cloudformation_launch_template = aws_ec2.CfnLaunchTemplate(
             self,
             "batch-launch-template",
-            launch_template_name="datalake-batch-launch-template",
+            launch_template_name=f"{deploy_env}-datalake-batch-launch-template",
             launch_template_data=launch_template_data,
         )
         launch_template = aws_batch.LaunchTemplateSpecification(
             launch_template_name=cloudformation_launch_template.launch_template_name
+        )
+
+        # use existing VPC in LINZ AWS account.
+        # VPC with these tags is required to exist in AWS account before being deployed.
+        # A VPC will not be deployed by this project.
+        vpc = aws_ec2.Vpc.from_lookup(
+            self,
+            "datalake-vpc",
+            tags={
+                APPLICATION_NAME_TAG_NAME: APPLICATION_NAME,
+                "ApplicationLayer": "networking",
+            },
         )
 
         compute_resources = aws_batch.ComputeResources(

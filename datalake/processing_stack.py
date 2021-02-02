@@ -3,9 +3,9 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_ec2, aws_iam, aws_stepfunctions, core
+from aws_cdk import aws_iam, aws_stepfunctions, core
 
-from .backend.processing.check_stac_metadata.task import PROCESSING_ASSETS_TABLE_NAME
+from .backend.endpoints.utils import ResourceName
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -20,7 +20,6 @@ class ProcessingStack(core.Stack):
         scope: core.Construct,
         stack_id: str,
         deploy_env: str,
-        vpc: aws_ec2.IVpc,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -32,7 +31,7 @@ class ProcessingStack(core.Stack):
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
-            PROCESSING_ASSETS_TABLE_NAME,
+            ResourceName.PROCESSING_ASSETS_TABLE_NAME.value,
             deploy_env=deploy_env,
             application_layer=application_layer,
         )
@@ -44,7 +43,6 @@ class ProcessingStack(core.Stack):
             "batch_job_queue",
             deploy_env=deploy_env,
             processing_assets_table=processing_assets_table,
-            vpc=vpc,
         ).job_queue
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -157,6 +155,6 @@ class ProcessingStack(core.Stack):
 
         aws_stepfunctions.StateMachine(
             self,
-            "dataset-version-creation",
+            f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,
         )

@@ -8,12 +8,13 @@ from aws_cdk.core import Tags
 class APIStack(core.Stack):
     """Data Lake stack definition."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: core.Construct,
         stack_id: str,
         datasets_table,
         users_role,
+        deploy_env: str,
         **kwargs,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -27,8 +28,8 @@ class APIStack(core.Stack):
         for endpoint in endpoints:
             endpoint_function = aws_lambda.Function(
                 self,
-                f"{endpoint}-endpoint-function",
-                function_name=f"{endpoint}-endpoint",
+                f"{deploy_env}-{endpoint}-endpoint-function",
+                function_name=f"{deploy_env}-{endpoint}-endpoint",
                 handler=f"endpoints.{endpoint}.entrypoint.lambda_handler",
                 runtime=aws_lambda.Runtime.PYTHON_3_8,
                 code=aws_lambda.Code.from_asset(
@@ -40,7 +41,7 @@ class APIStack(core.Stack):
                     ),
                 ),
             )
-
+            endpoint_function.add_environment("DEPLOY_ENV", deploy_env)
             endpoint_function.grant_invoke(users_role)
 
             datasets_table.grant_read_write_data(endpoint_function)
