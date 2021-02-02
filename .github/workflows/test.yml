@@ -122,8 +122,8 @@ jobs:
 
     - name: Set unique deployment environment type variable
       run: |
-          DEPLOY_ENV="ci${GITHUB_RUN_ID}"
-          echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+        DEPLOY_ENV="ci${GITHUB_RUN_ID}"
+        echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
 
     - name: Deploy AWS stacks for testing
       run: |
