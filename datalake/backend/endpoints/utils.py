@@ -3,17 +3,21 @@
 import os
 from enum import Enum
 from http.client import responses as http_responses
+from typing import Any, List, MutableMapping, Union
 
 ENV = os.environ["DEPLOY_ENV"]
 
+JSON_LIST = List[Any]
+JSON_OBJECT = MutableMapping[str, Any]
 
-def error_response(code, message):
+
+def error_response(code: int, message: str) -> JSON_OBJECT:
     """Return error response content as string."""
 
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
-def success_response(code, body):
+def success_response(code: int, body: Union[JSON_LIST, JSON_OBJECT]) -> JSON_OBJECT:
     """Return success response content as string."""
 
     return {"statusCode": code, "body": body}

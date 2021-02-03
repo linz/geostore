@@ -3,7 +3,7 @@ import sys
 from json import dumps
 from random import choice
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
@@ -15,11 +15,11 @@ class LogTests(TestCase):
     logger: logging.Logger
 
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         cls.logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
 
     @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-    def test_should_log_arguments(self, validate_url_mock) -> None:
+    def test_should_log_arguments(self, validate_url_mock: MagicMock) -> None:
         validate_url_mock.return_value = set()
         url = any_s3_url()
         dataset_id = any_dataset_id()
@@ -58,7 +58,9 @@ class LogTests(TestCase):
             logger_mock.assert_any_call('{"success": true, "message": ""}')
 
     @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-    def test_should_print_json_output_on_validation_failure(self, validate_url_mock) -> None:
+    def test_should_print_json_output_on_validation_failure(
+        self, validate_url_mock: MagicMock
+    ) -> None:
         error_message = "Some error message"
         validate_url_mock.side_effect = choice([ValidationError, AssertionError])(error_message)
         sys.argv = [

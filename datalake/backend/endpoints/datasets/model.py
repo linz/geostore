@@ -2,9 +2,10 @@
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
+from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
@@ -71,11 +72,9 @@ class DatasetModel(Model):
     datasets_tile_idx = DatasetsTitleIdx()
     datasets_owning_group_idx = DatasetsOwningGroupIdx()
 
-    def save(
-        self, conditional_operator=None, **expected_values
-    ):  # pylint:disable=unused-argument,arguments-differ
+    def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         self.updated_at = datetime.now(timezone.utc)
-        super().save()
+        return super().save()
 
     def serialize(self) -> Dict[str, Any]:
         as_dict = self._serialize()  # type: ignore[attr-defined] # pylint:disable=protected-access
@@ -85,11 +84,11 @@ class DatasetModel(Model):
         return result
 
     @property
-    def dataset_id(self):
+    def dataset_id(self) -> str:
         """Dataset ID value."""
         return self.id.split("#")[1]
 
     @property
-    def dataset_type(self):
+    def dataset_type(self) -> str:
         """Dataset type value."""
         return self.type.split("#")[1]

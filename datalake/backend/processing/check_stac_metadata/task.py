@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
@@ -92,7 +92,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         return assets
 
 
-def parse_arguments():
+def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--metadata-url", required=True)
     argument_parser.add_argument("--dataset-id", required=True)
@@ -114,7 +114,7 @@ def s3_url_reader() -> Callable[[str], StreamingBody]:
     return read
 
 
-def set_up_logging():
+def set_up_logging() -> logging.Logger:
     logger = logging.getLogger(__name__)
 
     log_handler = logging.StreamHandler()

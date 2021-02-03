@@ -1,11 +1,12 @@
 import os
+from typing import Any
 
 from aws_cdk import aws_iam, core
 from aws_cdk.core import Duration, Tags
 
 
 class UsersStack(core.Stack):
-    def __init__(self, scope: core.Construct, stack_id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, stack_id: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         account_ids = (

@@ -5,12 +5,10 @@ from io import BytesIO
 from json import dumps
 from typing import Any, Dict
 
+from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
 
-from app import ENVIRONMENT_TYPE_TAG_NAME
-
-from ...constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
-from ..endpoints.utils import ENV, ResourceName
+from ..endpoints.utils import ResourceName
 from .utils import (
     S3Object,
     any_dataset_description,
@@ -18,6 +16,7 @@ from .utils import (
     any_past_datetime_string,
     any_safe_file_path,
     any_safe_filename,
+    get_state_machine,
 )
 
 STAC_VERSION = "1.0.0-beta.2"
@@ -46,36 +45,11 @@ class NoComputeEnvironmentFound(Exception):
     pass
 
 
-def get_state_machine(stepfunctions_client):
-    state_machines_detection_response = stepfunctions_client.list_state_machines()
-
-    # make sure there are no more records in next pages
-    assert state_machines_detection_response.get("nextToken") is None
-
-    for state_machine in state_machines_detection_response["stateMachines"]:
-
-        tags_detection_response = stepfunctions_client.list_tags_for_resource(
-            resourceArn=state_machine["stateMachineArn"]
-        )
-
-        # reformat returned array of tags to dictionary
-        state_machine_tags = {tag["key"]: tag["value"] for tag in tags_detection_response["tags"]}
-
-        if (
-            state_machine_tags[ENVIRONMENT_TYPE_TAG_NAME] == ENV
-            and state_machine_tags.get(APPLICATION_NAME_TAG_NAME, None) == APPLICATION_NAME
-        ):
-            datalake_state_machine = state_machine
-            logger.info("Datalake State Machine: %s", datalake_state_machine)
-
-            return datalake_state_machine
-
-    raise NoStateMachineFound(APPLICATION_NAME, ENV)
-
-
 @mark.timeout(1200)
 @mark.infrastructure
-def test_should_successfully_run_dataset_version_creation_process(stepfunctions_client):
+def test_should_successfully_run_dataset_version_creation_process(
+    step_functions_client: SFNClient,
+) -> None:
 
     metadata_file = "{}/{}.json".format(any_safe_file_path(), any_safe_filename())
     metadata_content = dumps(MINIMAL_VALID_STAC_OBJECT)
@@ -97,15 +71,15 @@ def test_should_successfully_run_dataset_version_creation_process(stepfunctions_
         )
 
         # launch State Machine
-        datalake_state_machine = get_state_machine(stepfunctions_client)
-        execution_response = stepfunctions_client.start_execution(
+        datalake_state_machine = get_state_machine(step_functions_client)
+        execution_response = step_functions_client.start_execution(
             stateMachineArn=datalake_state_machine["stateMachineArn"], input=state_machine_input
         )
         logger.info("Executed State Machine: %s", execution_response)
 
         # poll for State Machine State
         while (
-            execution := stepfunctions_client.describe_execution(
+            execution := step_functions_client.describe_execution(
                 executionArn=execution_response["executionArn"]
             )
         )["status"] == "RUNNING":

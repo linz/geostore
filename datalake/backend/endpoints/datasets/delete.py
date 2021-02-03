@@ -3,12 +3,12 @@
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
-from ..utils import error_response, success_response
+from ..utils import JSON_OBJECT, error_response, success_response
 from .common import DATASET_TYPES
 from .model import DatasetModel
 
 
-def delete_dataset(payload):
+def delete_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
     """DELETE: Delete Dataset."""
 
     BODY_SCHEMA = {

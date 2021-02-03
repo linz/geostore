@@ -106,7 +106,6 @@ optional = true
 
 [tool.poetry.dev-dependencies]
 black = "*"
-boto3-stubs = "*"
 gitlint = "*"
 ipdb = "*"
 isort = "*"
@@ -120,6 +119,10 @@ pytest-randomly = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
+
+[tool.poetry.dev-dependencies.boto3-stubs]
+version = "*"
+extras = ["batch", "dynamodb", "lambda", "s3", "stepfunctions"]
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"
