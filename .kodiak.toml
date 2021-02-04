@@ -8,3 +8,4 @@ method = "squash"
 
 [merge.message]
 title = "pull_request_title"
+include_coauthors = true
