@@ -18,7 +18,6 @@ class BatchSubmitJobTask(core.Construct):
         job_queue: aws_batch.JobQueue,
         payload_object: Mapping[str, str],
         container_overrides_command: List[str],
-        container_overrides_environment: Optional[Mapping[str, str]] = None,
         array_size: Optional[int] = None,
     ):
         super().__init__(scope, construct_id)
@@ -40,13 +39,9 @@ class BatchSubmitJobTask(core.Construct):
             job_role=self.job_role,
         )
 
-        environment = {"LOGLEVEL": LOG_LEVEL}
-        if container_overrides_environment is not None:
-            environment.update(container_overrides_environment)
-
         container_overrides = aws_stepfunctions_tasks.BatchContainerOverrides(
             command=container_overrides_command,
-            environment=environment,
+            environment={"LOGLEVEL": LOG_LEVEL},
         )
         payload = aws_stepfunctions.TaskInput.from_object(payload_object)
         self.batch_submit_job = aws_stepfunctions_tasks.BatchSubmitJob(

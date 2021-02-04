@@ -105,10 +105,17 @@ class ProcessingStack(core.Stack):
                 "type.$": "$.type",
                 "metadata_url.$": "$.metadata_url",
                 "first_item.$": "$.content.first_item",
+                "iteration_size.$": "$.content.iteration_size",
             },
-            container_overrides_environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
             array_size=array_size,
-            container_overrides_command=["--metadata-url", "Ref::metadata_url"],
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
         ).batch_submit_job
 
         validation_summary_task = LambdaTask(

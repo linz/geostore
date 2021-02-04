@@ -149,6 +149,7 @@ cdk = [
 check_files_checksums = [
     "boto3",
     "multihash",
+    "pynamodb",
 ]
 check_stac_metadata = [
     "boto3",

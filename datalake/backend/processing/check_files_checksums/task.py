@@ -11,13 +11,14 @@ import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
+from ..assets_model import ProcessingAssetsModel
+
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_s3 import S3Client
 else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
-
 
 ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 
@@ -49,8 +50,9 @@ def validate_url_multihash(url: str, hex_multihash: str, s3_client: S3Client) ->
 
 def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
-    argument_parser.add_argument("--file-url", required=True)
-    argument_parser.add_argument("--hex-multihash", required=True)
+    argument_parser.add_argument("--dataset-id", required=True)
+    argument_parser.add_argument("--version-id", required=True)
+    argument_parser.add_argument("--first-item", type=int, required=True)
     return argument_parser.parse_args()
 
 
@@ -72,14 +74,19 @@ def main() -> int:
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
 
+    index = arguments.first_item + int(environ[ARRAY_INDEX_VARIABLE_NAME])
+    item = ProcessingAssetsModel.get(
+        f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}",
+        range_key=f"DATA_ITEM_INDEX#{index}",
+    )
     try:
-        validate_url_multihash(arguments.file_url, arguments.hex_multihash, s3_client)
+        validate_url_multihash(item.url, item.multihash, s3_client)
     except ChecksumMismatchError as error:
         logger.error(
             dumps(
                 {
                     "success": False,
-                    "message": f"Checksum mismatch: expected {arguments.hex_multihash[4:]},"
+                    "message": f"Checksum mismatch: expected {item.multihash[4:]},"
                     f" got {error.actual_hex_digest}",
                 }
             )

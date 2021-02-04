@@ -17,8 +17,8 @@ from jsonschema import (  # type: ignore[import]
     ValidationError,
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
-from pynamodb.attributes import UnicodeAttribute
-from pynamodb.models import Model
+
+from ..assets_model import ProcessingAssetsModel
 
 ENV = environ["DEPLOY_ENV"]
 PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
@@ -28,17 +28,6 @@ S3_URL_PREFIX = "s3://"
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
 CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
-
-
-class ProcessingAssetsModel(Model):
-    class Meta:  # pylint:disable=too-few-public-methods
-        table_name = PROCESSING_ASSETS_TABLE_NAME
-        region = "ap-southeast-2"  # TODO: don't hardcode region
-
-    pk = UnicodeAttribute(hash_key=True)
-    sk = UnicodeAttribute(range_key=True)
-    url = UnicodeAttribute()
-    multihash = UnicodeAttribute()
 
 
 class STACSchemaValidator:  # pylint:disable=too-few-public-methods

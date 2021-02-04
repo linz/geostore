@@ -1,21 +1,28 @@
 import logging
 import sys
 from io import BytesIO
-from unittest.mock import ANY, MagicMock, patch
+from os import environ
+from unittest.mock import MagicMock, call, patch
 
+import boto3
 from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from botocore.stub import Stubber  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3 import S3Client
 from pytest import raises
+from pytest_subtests import SubTests  # type: ignore[import]
 
+from ..processing.assets_model import ProcessingAssetsModel
 from ..processing.check_files_checksums.task import (
+    ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
     main,
     validate_url_multihash,
 )
 from .utils import (
+    any_dataset_id,
+    any_dataset_version_id,
     any_hex_multihash,
     any_program_name,
     any_s3_url,
@@ -46,71 +53,97 @@ def test_should_raise_exception_when_checksum_does_not_match(s3_client: S3Client
         )
 
 
+@patch("boto3.client")
 @patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
-def test_should_validate_given_url_and_checksum(validate_url_multihash_mock: MagicMock) -> None:
+@patch("datalake.backend.processing.check_files_checksums.task.ProcessingAssetsModel")
+def test_should_validate_given_index(
+    processing_assets_model_mock: MagicMock,
+    validate_url_multihash_mock: MagicMock,
+    s3_client_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
+    # Given
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
     url = any_s3_url()
     hex_multihash = any_hex_multihash()
-    sys.argv = [any_program_name(), f"--file-url={url}", f"--hex-multihash={hex_multihash}"]
 
-    with patch("boto3.client"):
-        assert main() == 0
+    array_index = "1"
 
-    validate_url_multihash_mock.assert_called_once_with(url, hex_multihash, ANY)
+    def get_mock(hash_key: str, range_key: str) -> ProcessingAssetsModel:
+        assert hash_key == f"DATASET#{dataset_id}#VERSION#{version_id}"
+        assert range_key == f"DATA_ITEM_INDEX#{array_index}"
+        return ProcessingAssetsModel(
+            hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
+            range_key="DATA_ITEM_INDEX#1",
+            url=url,
+            multihash=hex_multihash,
+        )
 
-
-@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
-def test_should_print_json_output_when_validation_succeeds(
-    validate_url_multihash_mock: MagicMock,
-) -> None:
-    validate_url_multihash_mock.return_value = True
+    processing_assets_model_mock.get.side_effect = get_mock
     logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
+
+    # When
+    environ[ARRAY_INDEX_VARIABLE_NAME] = array_index
     sys.argv = [
         any_program_name(),
-        f"--file-url={any_s3_url()}",
-        f"--hex-multihash={any_hex_multihash()}",
+        f"--dataset-id={dataset_id}",
+        f"--version-id={version_id}",
+        "--first-item=0",
     ]
+    s3_client = boto3.client("s3")
+    with patch.object(logger, "info") as info_log_mock, Stubber(s3_client) as stubber:
+        s3_client_mock.return_value = stubber
 
-    with patch.object(logger, "info") as info_log_mock, patch("boto3.client"):
-        main()
+        # Then
+        with subtests.test(msg="Return code"):
+            assert main() == 0
 
-        info_log_mock.assert_called_with('{"success": true, "message": ""}')
+        with subtests.test(msg="Log message"):
+            info_log_mock.assert_any_call('{"success": true, "message": ""}')
+
+    with subtests.test(msg="Validate checksums"):
+        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash, stubber)])
 
 
 @patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
+@patch("datalake.backend.processing.check_files_checksums.task.ProcessingAssetsModel")
 def test_should_return_non_zero_exit_code_when_validation_fails(
+    processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
+    subtests: SubTests,
 ) -> None:
-    validate_url_multihash_mock.side_effect = ChecksumMismatchError(any_sha256_hex_digest())
-    sys.argv = [
-        any_program_name(),
-        f"--file-url={any_s3_url()}",
-        f"--hex-multihash={any_hex_multihash()}",
-    ]
-
-    assert main() == 1
-
-
-@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
-def test_should_print_json_output_when_validation_fails(
-    validate_url_multihash_mock: MagicMock,
-) -> None:
-    expected_hex_digest = any_sha256_hex_digest()
+    # Given
     actual_hex_digest = any_sha256_hex_digest()
-    validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
-    expected_message = (
+    expected_hex_digest = any_sha256_hex_digest()
+    expected_hex_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
+    processing_assets_model_mock.get.return_value = ProcessingAssetsModel(
+        hash_key=f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}",
+        range_key="DATA_ITEM_INDEX#0",
+        url=any_s3_url(),
+        multihash=expected_hex_multihash,
+    )
+    expected_error_message = (
         '{"success": false, "message": "Checksum mismatch:'
         f' expected {expected_hex_digest}, got {actual_hex_digest}"}}'
     )
+    validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
 
-    expected_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
+    # When
+    environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
     sys.argv = [
         any_program_name(),
-        f"--file-url={any_s3_url()}",
-        f"--hex-multihash={expected_multihash}",
+        f"--dataset-id={any_dataset_id()}",
+        f"--version-id={any_dataset_version_id()}",
+        "--first-item=0",
     ]
 
-    with patch.object(logger, "error") as error_log_mock, patch("boto3.client"):
-        main()
+    # Then
+    with patch.object(logger, "error") as error_log_mock:
+        with subtests.test(msg="Return code"):
+            assert main() == 1
 
-        error_log_mock.assert_called_with(expected_message)
+        with subtests.test(msg="Log message"):
+            error_log_mock.assert_any_call(expected_error_message)

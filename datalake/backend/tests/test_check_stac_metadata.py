@@ -89,7 +89,7 @@ def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    with patch("datalake.backend.processing.check_stac_metadata.task.ProcessingAssetsModel"):
+    with patch("datalake.backend.processing.assets_model.ProcessingAssetsModel"):
         assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
