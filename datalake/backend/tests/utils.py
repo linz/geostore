@@ -157,8 +157,22 @@ def any_lambda_context() -> bytes:
     return random_string(10).encode()
 
 
-def any_next_item() -> int:
+def any_item_index() -> int:
+    """Arbitrary non-negative integer"""
     return randrange(1_000_000_000)
+
+
+def any_item_count() -> int:
+    """Arbitrary non-negative integer"""
+    return randrange(3)
+
+
+def any_iteration_size() -> int:
+    """
+    1 tests serial processing, 10,000 is the max
+    <https://docs.aws.amazon.com/batch/latest/userguide/service_limits.html>
+    """
+    return choice([1, 10_000])
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {

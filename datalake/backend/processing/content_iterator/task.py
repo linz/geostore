@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Any, MutableMapping
 
 from jsonschema import validate  # type: ignore[import]
@@ -11,14 +12,19 @@ EVENT_SCHEMA = {
         "content": {
             "type": "object",
             "properties": {
-                "dataset_id": {"type": "string"},
-                "version_id": {"type": "string"},
+                "first_item": {"type": "integer"},
+                "iteration_size": {"type": "integer"},
                 "next_item": {"$ref": "#/definitions/nonNegativeInteger"},
             },
-            "required": ["dataset_id", "version_id", "next_item"],
-        }
+            "required": ["first_item", "iteration_size", "next_item"],
+            "additionalProperties": False,
+        },
+        "dataset_id": {"type": "string"},
+        "metadata_url": {"type": "string"},
+        "type": {"type": "string"},
+        "version_id": {"type": "string"},
     },
-    "required": ["content"],
+    "required": ["dataset_id", "metadata_url", "type", "version_id"],
     "additionalProperties": False,
     "definitions": {"nonNegativeInteger": {"type": "integer", "minimum": 0}},
 }
@@ -34,9 +40,8 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     else:
         first_item = 0
 
-    event_content = event["content"]
-    dataset_id = event_content["dataset_id"]
-    version_id = event_content["version_id"]
+    dataset_id = event["dataset_id"]
+    version_id = event["version_id"]
 
     total_size = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
 
@@ -45,4 +50,10 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     else:
         next_item = -1
 
-    return {"first_item": first_item, "next_item": next_item, "iteration_size": iteration_size}
+    result = copy(event)
+    result["content"] = {
+        "first_item": first_item,
+        "next_item": next_item,
+        "iteration_size": iteration_size,
+    }
+    return result
