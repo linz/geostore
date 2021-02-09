@@ -20,8 +20,8 @@ class LogTests(TestCase):
 
     @mark.infrastructure
     @patch("datalake.backend.endpoints.dataset_versions.create.sfn_client.start_execution")
-    def test_should_log_payload(self, start_execution_mock: MagicMock) -> None:
-
+    def test_should_log_payload_and_sfn_response(self, start_execution_mock: MagicMock) -> None:
+        # given
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
         metadata_url = any_s3_url()
@@ -38,13 +38,16 @@ class LogTests(TestCase):
             expected_execution_log = dumps({"response": sfn_response})
 
             with patch.object(self.logger, "debug") as logger_mock:
+                # when
                 create_dataset_version(payload)
 
+                # then
                 logger_mock.assert_any_call(expected_payload_log)
                 logger_mock.assert_any_call(expected_execution_log)
 
     @patch("datalake.backend.endpoints.dataset_versions.create.validate")
     def test_should_log_warning_missing_argument(self, validate_schema_mock: MagicMock) -> None:
+        # given
         dataset_type = any_valid_dataset_type()
         metadata_url = any_s3_url()
         error_message = "Some error message"
@@ -58,8 +61,10 @@ class LogTests(TestCase):
         expected_log = dumps({"error": error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
+            # when
             create_dataset_version(payload)
 
+            # then
             logger_mock.assert_any_call(expected_log)
 
     @patch("datalake.backend.endpoints.dataset_versions.create.DatasetModel.get")
