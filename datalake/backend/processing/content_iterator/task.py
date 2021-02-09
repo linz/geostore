@@ -11,13 +11,14 @@ EVENT_SCHEMA = {
             "properties": {
                 "dataset_id": {"type": "string"},
                 "dataset_version_id": {"type": "string"},
-                "next_item": {"type": "integer"},
+                "next_item": {"$ref": "#/definitions/nonNegativeInteger"},
             },
             "required": ["dataset_id", "dataset_version_id", "next_item"],
         }
     },
     "required": ["content"],
     "additionalProperties": False,
+    "definitions": {"nonNegativeInteger": {"type": "integer", "minimum": 0}},
 }
 
 

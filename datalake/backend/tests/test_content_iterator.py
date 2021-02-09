@@ -55,3 +55,10 @@ def test_should_raise_exception_if_event_is_missing_next_item() -> None:
     del event["content"]["next_item"]
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
+
+
+def test_should_raise_exception_if_next_item_is_negative() -> None:
+    event = deepcopy(VALID_EVENT)
+    event["content"]["next_item"] = -any_next_item()
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
