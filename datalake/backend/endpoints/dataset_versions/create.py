@@ -8,7 +8,7 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
-from ..datasets.model import DatasetModel
+from ..model import DatasetModel
 from ..utils import DATASET_TYPES, ENV, JSON_OBJECT, error_response, success_response
 
 sfn_client = boto3.client("stepfunctions")
