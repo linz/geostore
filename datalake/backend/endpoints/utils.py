@@ -31,6 +31,3 @@ class ResourceName(Enum):
     PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
     STORAGE_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake"
     DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
-
-
-DATASET_TYPES: Sequence[str] = ["IMAGE", "RASTER"]

@@ -9,7 +9,7 @@ from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
-from ..utils import ResourceName
+from datalake.backend.endpoints.utils import ResourceName
 
 DATASETS_TITLE_INDEX_NAME = "datasets_title"
 DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
