@@ -1,6 +1,7 @@
 """
 Dataset-versions endpoint Lambda function.
 """
+from typing import Callable, MutableMapping
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
@@ -16,7 +17,7 @@ REQUEST_SCHEMA = {
     "required": ["httpMethod", "body"],
 }
 
-REQUEST_HANDLERS = {
+REQUEST_HANDLERS: MutableMapping[str, Callable[[JSON_OBJECT], JSON_OBJECT]] = {
     "POST": create_dataset_version,
 }
 

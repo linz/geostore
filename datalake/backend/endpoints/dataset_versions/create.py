@@ -1,4 +1,4 @@
-"""Import dataset-version function."""
+"""Dataset versions handler function."""
 import json
 import logging
 import uuid
@@ -11,15 +11,13 @@ from pynamodb.exceptions import DoesNotExist
 from ..datasets.model import DatasetModel
 from ..utils import DATASET_TYPES, ENV, JSON_OBJECT, error_response, success_response
 
-stepfunc_client = boto3.client("stepfunctions")
+sfn_client = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
 
-STEP_FUNCTION_ARN_PARAMETER_NAME = f"/{ENV}/StepFuncStateMachineARN"
+DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/StepFuncStateMachineARN"
 
 
 def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
-    """POST: Create Dataset."""
-
     logger = set_up_logging()
 
     logger.debug(json.dumps({"payload": payload}))
@@ -56,28 +54,28 @@ def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
         logger.warning(json.dumps({"error": err}, default=str))
         return error_response(404, f"dataset '{req_body['id']}' could not be found")
 
-    transaction_id = str(uuid.uuid1())
+    dataset_version_id = str(uuid.uuid1())
 
     # execute step function
-    stepfunction_input = {
+    sfn_input = {
         "dataset_id": dataset.dataset_id,
-        "version_id": transaction_id,
+        "version_id": dataset_version_id,
         "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
-    stepfunc_arn = get_param(STEP_FUNCTION_ARN_PARAMETER_NAME)
+    sfn_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION)
 
-    stepfunc_resp = stepfunc_client.start_execution(
-        stateMachineArn=stepfunc_arn,
-        name=transaction_id,
-        input=json.dumps(stepfunction_input),
+    sfn_response = sfn_client.start_execution(
+        stateMachineArn=sfn_arn,
+        name=dataset_version_id,
+        input=json.dumps(sfn_input),
     )
 
-    logger.debug(json.dumps({"response": stepfunc_resp}, default=str))
+    logger.debug(json.dumps({"response": sfn_response}, default=str))
 
     # return arn of executing process
     return success_response(
-        201, {"dataset_version": transaction_id, "execution_arn": stepfunc_resp["executionArn"]}
+        201, {"dataset_version": dataset_version_id, "execution_arn": sfn_response["executionArn"]}
     )
 
 

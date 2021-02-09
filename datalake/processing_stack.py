@@ -5,7 +5,7 @@ from typing import Any
 
 from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
-from .backend.endpoints.dataset_versions.create import STEP_FUNCTION_ARN_PARAMETER_NAME
+from .backend.endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from .backend.endpoints.utils import ResourceName
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
@@ -164,6 +164,6 @@ class ProcessingStack(core.Stack):
             self,
             "StepFunctionStateMachineARN",
             description=f"Step Function State Machine ARN for {deploy_env}",
-            parameter_name=STEP_FUNCTION_ARN_PARAMETER_NAME,
+            parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
             string_value=state_machine.state_machine_arn,
         )

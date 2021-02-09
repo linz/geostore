@@ -40,13 +40,13 @@ def s3_client() -> S3Client:
 
 
 @pytest.fixture()
-def step_functions_client() -> SFNClient:
-    return boto3.client("stepfunctions")
+def ssm_client() -> SSMClient:
+    return boto3.client("ssm")
 
 
 @pytest.fixture()
-def ssm_client() -> SSMClient:
-    return boto3.client("ssm")
+def step_functions_client() -> SFNClient:
+    return boto3.client("stepfunctions")
 
 
 @pytest.fixture()

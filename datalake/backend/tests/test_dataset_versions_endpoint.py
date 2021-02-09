@@ -9,13 +9,7 @@ import _pytest
 from pytest import mark
 
 from ..endpoints.dataset_versions import entrypoint
-from .utils import (
-    Dataset,
-    any_dataset_id,
-    any_lambda_context,
-    any_metadata_url,
-    any_valid_dataset_type,
-)
+from .utils import Dataset, any_dataset_id, any_lambda_context, any_s3_url, any_valid_dataset_type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,7 +53,7 @@ def test_should_fail_if_post_request_not_containing_type() -> None:
     # Given a missing "type" attribute in the body
     body = {}
     body["id"] = any_dataset_id()
-    body["metadata-url"] = any_metadata_url()
+    body["metadata-url"] = any_s3_url()
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
@@ -74,7 +68,7 @@ def test_should_fail_if_post_request_not_containing_type() -> None:
 def test_should_fail_if_dataset_does_not_exist() -> None:
     body = {}
     body["id"] = any_dataset_id()
-    body["metadata-url"] = any_metadata_url()
+    body["metadata-url"] = any_s3_url()
     body["type"] = any_valid_dataset_type()
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
@@ -87,16 +81,16 @@ def test_should_fail_if_dataset_does_not_exist() -> None:
 
 
 @mark.infrastructure
-def test_should_return_success_dataset_exists(
+def test_should_return_success_if_dataset_exists(
     db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance
-    dataset_id = "111abc"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {}
     body["id"] = dataset_id
-    body["metadata-url"] = any_metadata_url()
+    body["metadata-url"] = any_s3_url()
     body["type"] = dataset_type
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
