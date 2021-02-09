@@ -5,11 +5,12 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
 
 from ..processing.content_iterator.task import lambda_handler
-from .utils import any_dataset_id, any_dictionary_key, any_lambda_context
+from .utils import any_dataset_id, any_dataset_version_id, any_dictionary_key, any_lambda_context
 
 VALID_EVENT: Dict[str, Any] = {
     "content": {
         "dataset_id": any_dataset_id(),
+        "dataset_version_id": any_dataset_version_id(),
     }
 }
 
@@ -31,5 +32,12 @@ def test_should_raise_exception_if_event_has_unknown_top_level_property() -> Non
 def test_should_raise_exception_if_event_is_missing_dataset_id() -> None:
     event = deepcopy(VALID_EVENT)
     del event["content"]["dataset_id"]
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
+
+
+def test_should_raise_exception_if_event_is_missing_dataset_version_id() -> None:
+    event = deepcopy(VALID_EVENT)
+    del event["content"]["dataset_version_id"]
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
