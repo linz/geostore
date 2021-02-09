@@ -7,6 +7,7 @@ EVENT_SCHEMA = {
     "type": "object",
     "properties": {"content": {"type": "object"}},
     "required": ["content"],
+    "additionalProperties": False,
 }
 
 

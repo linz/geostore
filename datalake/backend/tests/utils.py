@@ -94,6 +94,11 @@ def any_error_message() -> str:
     return random_string(50)
 
 
+def any_dictionary_key() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
+
+
 # STAC-specific generators
 
 
