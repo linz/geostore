@@ -97,7 +97,7 @@ extras = ["format"]
 optional = true
 
 [tool.poetry.dependencies.pynamodb]
-version = "*"
+version = "<5"
 optional = true
 
 [tool.poetry.dependencies.strict-rfc3339]
