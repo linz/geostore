@@ -1,41 +1,39 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+title: 'Bug: '
+labels: 'bug'
 ---
 
-**Description**
+<!--
+Checklist before submitting
 
-High-level description of what the bug is.
+- [ ] Search through existing issue reports to check whether the issue already exists
+- [ ] Ensure you are running the latest software release and are using an up-to-date version of the app config (i.e ~/.linz-data-lake/config.yml)
+- [ ] Try running software with debug logging to provide more information.
+- [ ] If you can please create a light and self-contained sample dataset and config to reproduce the issue.
+-->
 
-**Steps to reproduce**
+### Bug Description
+<!-- A clear and concise description of what the bug is. -->
 
-1. Run `…`
-1. Go to […](https://…)
-1. Click on '....'
-1. Scroll down to '....'
+### How to Reproduce**
 
-**Actual behaviour**
+<!-- Steps, sample datasets, config and command/or steps to reproduce the behavior. 
 
-What happened after following the steps above.
+1. Do '...'
+2. Run '....'
+3. See error 
 
-**Expected behaviour**
+Try to include any stack traces or debugging info.
 
-What you expected to happen instead.
+-->
 
-**System:**
+#### Software and OS versions
+ - OS: <!-- e.g. Windows / Ubuntu -->
+ - Environment: <!-- e.g. Megaport config, server, desktop used -->
+ - Relevant Software Versions: <!-- i.e. linz-data-lake --version -->
 
- - Hardware: [for example, "Desktop computer" or "Samsung SM-3 Android phone"]
- - Operating system & version: [for example, "Ubuntu 20.04" or "Windows 10"]
- - Browser & version: [for example, "Firefox 1.2.3" or "Chrome 4.5.6"]
+### Additional context
 
-**Screenshots**
-
-If applicable, add screenshots to help explain your problem.
-
-**Additional context**
-
-Add any other context about the problem here.
+<!-- Add any other context about the problem here. -->
