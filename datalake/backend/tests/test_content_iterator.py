@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import Any, Dict
+from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
@@ -51,3 +52,19 @@ def test_should_raise_exception_if_next_item_is_negative() -> None:
     event["content"]["next_item"] = -any_next_item()
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
+    next_item = any_next_item()
+    event = {
+        "content": {
+            "dataset_id": any_dataset_id(),
+            "version_id": any_dataset_version_id(),
+            "next_item": next_item,
+        }
+    }
+    processing_assets_model_mock.count.return_value = 1
+
+    response = lambda_handler(event, any_lambda_context())
+    assert response["first_item"] == next_item

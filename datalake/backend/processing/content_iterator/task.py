@@ -1,6 +1,8 @@
-from typing import Any, MutableMapping, Union
+from typing import Any, MutableMapping
 
 from jsonschema import validate  # type: ignore[import]
+
+from ..assets_model import ProcessingAssetsModel
 
 JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
@@ -25,7 +27,6 @@ EVENT_SCHEMA = {
 def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     validate(event, EVENT_SCHEMA)
 
-    total_size = 6
     iteration_size = 2
 
     if "content" in event.keys():
@@ -33,19 +34,15 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     else:
         first_item = 0
 
+    event_content = event["content"]
+    dataset_id = event_content["dataset_id"]
+    version_id = event_content["version_id"]
+
+    total_size = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
+
     if (first_item + iteration_size) <= total_size:
         next_item = first_item + iteration_size
     else:
         next_item = -1
 
-    resp: MutableMapping[str, Union[int, str]] = {}
-
-    # "first_item" value must be string. It is directly passed as value to Batch job environment
-    # variable BATCH_JOB_FIRST_ITEM_INDEX. All environment variables must be string and there is no
-    # chance of conversion.
-    resp["first_item"] = str(first_item)
-
-    resp["next_item"] = next_item
-    resp["iteration_size"] = iteration_size
-
-    return resp
+    return {"first_item": first_item, "next_item": next_item, "iteration_size": iteration_size}

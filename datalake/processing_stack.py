@@ -87,8 +87,9 @@ class ProcessingStack(core.Stack):
             "content_iterator_task",
             directory="content_iterator",
             result_path="$.content",
-            permission_functions=[processing_assets_table.grant_read_data],
             application_layer=application_layer,
+            permission_functions=[processing_assets_table.grant_read_data],
+            extra_environment={"DEPLOY_ENV": deploy_env},
         ).lambda_invoke
 
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))

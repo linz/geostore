@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Optional
+from typing import Callable, Iterable, Mapping, Optional
 
 from aws_cdk import aws_stepfunctions_tasks, core
 from aws_cdk.aws_iam import Grant, IGrantable
@@ -14,8 +14,9 @@ class LambdaTask(core.Construct):
         *,
         directory: str,
         result_path: str,
-        permission_functions: Optional[Iterable[Callable[[IGrantable], Grant]]] = None,
         application_layer: str,
+        permission_functions: Optional[Iterable[Callable[[IGrantable], Grant]]] = None,
+        extra_environment: Optional[Mapping[str, str]] = None,
     ):
         super().__init__(scope, construct_id)
 
@@ -24,6 +25,7 @@ class LambdaTask(core.Construct):
             f"{construct_id}_bundled_lambda_function",
             directory=directory,
             application_layer=application_layer,
+            extra_environment=extra_environment,
         )
 
         if permission_functions is not None:

@@ -159,6 +159,7 @@ check_stac_metadata = [
 ]
 content_iterator = [
     "jsonschema",
+    "pynamodb",
 ]
 datasets = [
     "jsonschema",
