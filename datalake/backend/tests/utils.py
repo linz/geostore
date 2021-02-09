@@ -16,9 +16,8 @@ from mypy_boto3_stepfunctions.type_defs import StateMachineListItemTypeDef
 from app import ENVIRONMENT_TYPE_TAG_NAME
 
 from ...constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
-from ..endpoints.datasets.common import DATASET_TYPES
 from ..endpoints.datasets.model import DatasetModel
-from ..endpoints.utils import ENV
+from ..endpoints.utils import DATASET_TYPES, ENV
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
