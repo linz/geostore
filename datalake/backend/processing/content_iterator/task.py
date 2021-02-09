@@ -1,10 +1,17 @@
 from typing import Any, MutableMapping, Union
 
+from jsonschema import validate  # type: ignore[import]
+
 JSON_OBJECT = MutableMapping[str, Any]
+EVENT_SCHEMA = {
+    "type": "object",
+    "properties": {"content": {"type": "object"}},
+    "required": ["content"],
+}
 
 
 def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
-    """Main Lambda entry point."""
+    validate(event, EVENT_SCHEMA)
 
     total_size = 6
     iteration_size = 2

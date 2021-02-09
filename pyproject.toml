@@ -157,6 +157,9 @@ check_stac_metadata = [
     "pynamodb",
     "strict-rfc3339",
 ]
+content_iterator = [
+    "jsonschema",
+]
 datasets = [
     "jsonschema",
     "pynamodb",

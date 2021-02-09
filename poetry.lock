@@ -2224,13 +2224,14 @@ python-versions = "*"
 cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
 check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
+content_iterator = ["jsonschema"]
 dataset_versions = ["jsonschema", "pynamodb"]
 datasets = ["jsonschema", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "20da1bebe5d7d78fffcc90678a52c661c60e3ea83a09cfe38ef60ff117ff6e40"
+content-hash = "e964aac800210f86d39a26f265c35f3e08379b52d8c2e3402c2faa68a49a1a6d"
 
 [metadata.files]
 appdirs = [
