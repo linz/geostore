@@ -5,7 +5,13 @@ from jsonschema import validate  # type: ignore[import]
 JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
     "type": "object",
-    "properties": {"content": {"type": "object"}},
+    "properties": {
+        "content": {
+            "type": "object",
+            "properties": {"dataset_id": {"type": "string"}},
+            "required": ["dataset_id"],
+        }
+    },
     "required": ["content"],
     "additionalProperties": False,
 }
