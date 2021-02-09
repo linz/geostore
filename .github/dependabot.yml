@@ -10,6 +10,10 @@ updates:
     interval: daily
   commit-message:
     prefix: build(deps)
+- package-ecosystem: gitsubmodule
+  directory: /
+  schedule:
+    interval: daily
 - package-ecosystem: npm
   directory: /
   schedule:
