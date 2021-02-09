@@ -154,6 +154,10 @@ datasets-endpoint = [
     "jsonschema",
     "pynamodb",
 ]
+dataset_versions-endpoint = [
+    "jsonschema",
+    "pynamodb",
+]
 
 [tool.pytest.ini_options]
 markers = [
