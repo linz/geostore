@@ -157,6 +157,10 @@ def any_lambda_context() -> bytes:
     return random_string(10).encode()
 
 
+def any_next_item() -> int:
+    return randrange(1_000_000_000)
+
+
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
     "stac_version": STAC_VERSION,
     "id": any_dataset_id(),

@@ -11,8 +11,9 @@ EVENT_SCHEMA = {
             "properties": {
                 "dataset_id": {"type": "string"},
                 "dataset_version_id": {"type": "string"},
+                "next_item": {"type": "integer"},
             },
-            "required": ["dataset_id", "dataset_version_id"],
+            "required": ["dataset_id", "dataset_version_id", "next_item"],
         }
     },
     "required": ["content"],
