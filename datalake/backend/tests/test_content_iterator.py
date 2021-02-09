@@ -17,7 +17,7 @@ from .utils import (
 VALID_EVENT: Dict[str, Any] = {
     "content": {
         "dataset_id": any_dataset_id(),
-        "dataset_version_id": any_dataset_version_id(),
+        "version_id": any_dataset_version_id(),
         "next_item": any_next_item(),
     }
 }
@@ -38,7 +38,7 @@ def test_should_raise_exception_if_event_has_unknown_top_level_property() -> Non
 
 
 def test_should_raise_exception_if_event_is_missing_dataset_id(subtests: SubTests) -> None:
-    for property_name in ["dataset_id", "dataset_version_id", "next_item"]:
+    for property_name in ["dataset_id", "version_id", "next_item"]:
         event = deepcopy(VALID_EVENT)
         del event["content"][property_name]
         expected_message = f"'{property_name}' is a required property"

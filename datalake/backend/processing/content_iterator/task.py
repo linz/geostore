@@ -10,10 +10,10 @@ EVENT_SCHEMA = {
             "type": "object",
             "properties": {
                 "dataset_id": {"type": "string"},
-                "dataset_version_id": {"type": "string"},
+                "version_id": {"type": "string"},
                 "next_item": {"$ref": "#/definitions/nonNegativeInteger"},
             },
-            "required": ["dataset_id", "dataset_version_id", "next_item"],
+            "required": ["dataset_id", "version_id", "next_item"],
         }
     },
     "required": ["content"],
