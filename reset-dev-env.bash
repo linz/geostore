@@ -86,7 +86,7 @@ then
     if [[ -n "${delete-}" ]]
     then
         echo "Removing Node.js packages"
-        rm --recursive ./node_modules
+        rm --force --recursive ./node_modules
     fi
 
     echo "Installing Node.js packages"
@@ -98,7 +98,7 @@ then
     if [[ -n "${delete-}" ]]
     then
         echo "Removing Python packages"
-        rm --recursive ./.venv
+        rm --force --recursive ./.venv
     fi
 
     echo "Installing Python packages"
