@@ -49,7 +49,7 @@ def test_should_raise_exception_if_event_is_missing_dataset_id(subtests: SubTest
 
 def test_should_raise_exception_if_next_item_is_negative() -> None:
     event = deepcopy(VALID_EVENT)
-    event["content"]["next_item"] = -any_next_item()
+    event["content"]["next_item"] = -1
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
 
