@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from ..processing.content_iterator.task import lambda_handler
 from .utils import (
@@ -36,25 +37,13 @@ def test_should_raise_exception_if_event_has_unknown_top_level_property() -> Non
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_event_is_missing_dataset_id() -> None:
-    event = deepcopy(VALID_EVENT)
-    del event["content"]["dataset_id"]
-    with raises(ValidationError):
-        lambda_handler(event, any_lambda_context())
-
-
-def test_should_raise_exception_if_event_is_missing_dataset_version_id() -> None:
-    event = deepcopy(VALID_EVENT)
-    del event["content"]["dataset_version_id"]
-    with raises(ValidationError):
-        lambda_handler(event, any_lambda_context())
-
-
-def test_should_raise_exception_if_event_is_missing_next_item() -> None:
-    event = deepcopy(VALID_EVENT)
-    del event["content"]["next_item"]
-    with raises(ValidationError):
-        lambda_handler(event, any_lambda_context())
+def test_should_raise_exception_if_event_is_missing_dataset_id(subtests: SubTests) -> None:
+    for property_name in ["dataset_id", "dataset_version_id", "next_item"]:
+        event = deepcopy(VALID_EVENT)
+        del event["content"][property_name]
+        expected_message = f"'{property_name}' is a required property"
+        with subtests.test(msg=property_name), raises(ValidationError, match=expected_message):
+            lambda_handler(event, any_lambda_context())
 
 
 def test_should_raise_exception_if_next_item_is_negative() -> None:
