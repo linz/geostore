@@ -4,12 +4,10 @@ from datetime import timedelta
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import dump, dumps
-from time import sleep
 from typing import Any, Dict, List, Optional, TextIO
 from unittest.mock import MagicMock, Mock, call, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
-from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -30,8 +28,6 @@ from .utils import (
     any_safe_filename,
     any_stac_asset_name,
     any_stac_relation,
-    any_valid_dataset_type,
-    get_state_machine,
 )
 
 STAC_VERSION = "1.0.0-beta.2"
@@ -236,7 +232,6 @@ def test_should_return_assets_from_validated_metadata_files() -> None:
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
 def test_should_insert_asset_urls_and_checksums_into_database(
-    step_functions_client: SFNClient,
     subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
@@ -293,25 +288,15 @@ def test_should_insert_asset_urls_and_checksums_into_database(
             any_safe_filename(),
         ) as metadata_s3_object:
             # When
-            datalake_state_machine = get_state_machine(step_functions_client)
-            state_machine_input = {
-                "dataset_id": dataset_id,
-                "version_id": version_id,
-                "type": any_valid_dataset_type(),
-                "metadata_url": metadata_s3_object.url,
-            }
-            execution_response = step_functions_client.start_execution(
-                stateMachineArn=datalake_state_machine["stateMachineArn"],
-                input=dumps(state_machine_input),
-            )
 
-            while (
-                execution := step_functions_client.describe_execution(
-                    executionArn=execution_response["executionArn"]
-                )
-            )["status"] == "RUNNING":
-                sleep(5)
-            assert execution["status"] == "SUCCEEDED", execution
+            sys.argv = [
+                any_program_name(),
+                f"--metadata-url={metadata_s3_object.url}",
+                f"--dataset-id={dataset_id}",
+                f"--version-id={version_id}",
+            ]
+
+            assert main() == 0
 
             # Then
             actual_items = ProcessingAssetsModel.query(expected_hash_key)
