@@ -6,7 +6,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.content_iterator.task import lambda_handler
+from ..processing.content_iterator.task import ITERATION_SIZE, lambda_handler
 from .utils import (
     any_dataset_id,
     any_dataset_version_id,
@@ -46,6 +46,7 @@ def test_should_raise_exception_if_event_is_missing_state_machine_properties(
         event = deepcopy(INITIAL_EVENT)
         del event[property_name]
         expected_message = f"'{property_name}' is a required property"
+
         with subtests.test(msg=property_name), raises(ValidationError, match=expected_message):
             lambda_handler(event, any_lambda_context())
 
@@ -53,6 +54,7 @@ def test_should_raise_exception_if_event_is_missing_state_machine_properties(
 def test_should_raise_exception_if_event_has_unknown_top_level_property() -> None:
     event = deepcopy(INITIAL_EVENT)
     event[any_dictionary_key()] = 1
+
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
 
@@ -62,6 +64,7 @@ def test_should_raise_exception_if_content_is_missing_any_property(subtests: Sub
         event = deepcopy(SUBSEQUENT_EVENT)
         del event["content"][property_name]
         expected_message = f"'{property_name}' is a required property"
+
         with subtests.test(msg=property_name), raises(ValidationError, match=expected_message):
             lambda_handler(event, any_lambda_context())
 
@@ -69,6 +72,7 @@ def test_should_raise_exception_if_content_is_missing_any_property(subtests: Sub
 def test_should_raise_exception_if_content_has_unknown_property() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"][any_dictionary_key()] = 1
+
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
 
@@ -76,17 +80,9 @@ def test_should_raise_exception_if_content_has_unknown_property() -> None:
 def test_should_raise_exception_if_next_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = -1
+
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
-
-
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
-    event = deepcopy(SUBSEQUENT_EVENT)
-    processing_assets_model_mock.count.return_value = any_item_count()
-
-    response = lambda_handler(event, any_lambda_context())
-    assert response["content"]["first_item"] == event["content"]["next_item"]
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -97,4 +93,62 @@ def test_should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock.count.return_value = any_item_index()
 
     response = lambda_handler(event, any_lambda_context())
-    assert response["content"]["first_item"] == 0
+
+    assert response["content"]["first_item"] == 0, response
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
+    event = deepcopy(SUBSEQUENT_EVENT)
+    next_item_index = any_item_index()
+    event["content"]["next_item"] = next_item_index
+    processing_assets_model_mock.count.return_value = any_item_count()
+
+    response = lambda_handler(event, any_lambda_context())
+
+    assert response["content"]["first_item"] == next_item_index, response
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
+    processing_assets_model_mock: MagicMock,
+) -> None:
+    remaining_item_count = ITERATION_SIZE - 1
+    next_item_index = any_item_index()
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["next_item"] = next_item_index
+    processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+
+    response = lambda_handler(event, any_lambda_context())
+
+    assert response["content"]["next_item"] == -1, response
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
+    processing_assets_model_mock: MagicMock,
+) -> None:
+    remaining_item_count = ITERATION_SIZE
+    next_item_index = any_item_index()
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["next_item"] = next_item_index
+    processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+
+    response = lambda_handler(event, any_lambda_context())
+
+    assert response["content"]["next_item"] == -1, response
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_increased_next_item_if_remaining_item_count_is_more_than_iteration_size(
+    processing_assets_model_mock: MagicMock,
+) -> None:
+    remaining_item_count = ITERATION_SIZE + 1
+    next_item_index = any_item_index()
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["next_item"] = next_item_index
+    processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+
+    response = lambda_handler(event, any_lambda_context())
+
+    assert response["content"]["next_item"] == next_item_index + ITERATION_SIZE, response

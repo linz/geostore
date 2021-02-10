@@ -5,6 +5,8 @@ from jsonschema import validate  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
+ITERATION_SIZE = 2
+
 JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
     "type": "object",
@@ -33,8 +35,6 @@ EVENT_SCHEMA = {
 def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     validate(event, EVENT_SCHEMA)
 
-    iteration_size = 2
-
     if "content" in event.keys():
         first_item = int(event["content"]["next_item"])
     else:
@@ -45,8 +45,8 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
 
     total_size = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
 
-    if (first_item + iteration_size) <= total_size:
-        next_item = first_item + iteration_size
+    if first_item + ITERATION_SIZE < total_size:
+        next_item = first_item + ITERATION_SIZE
     else:
         next_item = -1
 
@@ -54,6 +54,6 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     result["content"] = {
         "first_item": first_item,
         "next_item": next_item,
-        "iteration_size": iteration_size,
+        "iteration_size": ITERATION_SIZE,
     }
     return result

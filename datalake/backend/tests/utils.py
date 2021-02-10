@@ -11,9 +11,9 @@ import boto3
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
-from datalake.backend.endpoints.model import DatasetModel
-
+from ..endpoints.model import DatasetModel
 from ..endpoints.utils import DATASET_TYPES
+from ..processing.content_iterator.task import ITERATION_SIZE
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
@@ -169,10 +169,10 @@ def any_item_count() -> int:
 
 def any_iteration_size() -> int:
     """
-    1 tests serial processing, 10,000 is the max
+    1 tests serial processing, ITERATION_SIZE is the production value, and 10,000 is the max
     <https://docs.aws.amazon.com/batch/latest/userguide/service_limits.html>
     """
-    return choice([1, 10_000])
+    return choice([1, ITERATION_SIZE, 10_000])
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
