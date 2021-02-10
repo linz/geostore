@@ -1,4 +1,3 @@
-from copy import copy
 from typing import Any, MutableMapping
 
 from jsonschema import validate  # type: ignore[import]
@@ -60,10 +59,8 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         next_item_index = -1
         iteration_size = remaining_assets
 
-    result = copy(event)
-    result["content"] = {
+    return {
         "first_item": first_item_index,
         "iteration_size": iteration_size,
         "next_item": next_item_index,
     }
-    return result

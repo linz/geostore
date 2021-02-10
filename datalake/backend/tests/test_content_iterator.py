@@ -143,7 +143,7 @@ def test_should_return_zero_as_first_item_if_no_content(
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"]["first_item"] == 0, response
+    assert response["first_item"] == 0, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -155,7 +155,7 @@ def test_should_return_next_item_as_first_item(processing_assets_model_mock: Mag
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"]["first_item"] == next_item_index, response
+    assert response["first_item"] == next_item_index, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -167,7 +167,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
-    expected_content = {
+    expected_response = {
         "first_item": next_item_index,
         "iteration_size": remaining_item_count,
         "next_item": -1,
@@ -175,7 +175,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"] == expected_content, response
+    assert response == expected_response, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -187,7 +187,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
-    expected_content = {
+    expected_response = {
         "first_item": next_item_index,
         "iteration_size": MAX_ITERATION_SIZE,
         "next_item": -1,
@@ -195,7 +195,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"] == expected_content, response
+    assert response == expected_response, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -207,7 +207,7 @@ def test_should_return_content_when_remaining_item_count_is_more_than_iteration_
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
-    expected_content = {
+    expected_response = {
         "first_item": next_item_index,
         "iteration_size": MAX_ITERATION_SIZE,
         "next_item": next_item_index + MAX_ITERATION_SIZE,
@@ -215,4 +215,4 @@ def test_should_return_content_when_remaining_item_count_is_more_than_iteration_
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"] == expected_content, response
+    assert response == expected_response, response
