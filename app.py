@@ -39,7 +39,7 @@ def main() -> None:
         deploy_env=ENV,
     )
 
-    ProcessingStack(
+    processing = ProcessingStack(
         app,
         "processing",
         stack_name=f"{ENV}-geospatial-data-lake-processing",
@@ -55,7 +55,7 @@ def main() -> None:
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
         users_role=users.users_role,
-    )
+    ).add_dependency(processing)
 
     StagingStack(
         app,

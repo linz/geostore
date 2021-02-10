@@ -3,9 +3,9 @@
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
+from ..model import DatasetModel
 from ..utils import DATASET_TYPES, JSON_OBJECT, error_response, success_response
 from .list import list_datasets
-from .model import DatasetModel
 
 
 def handle_get(event: JSON_OBJECT) -> JSON_OBJECT:

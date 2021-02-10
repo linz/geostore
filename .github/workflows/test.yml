@@ -35,7 +35,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install poetry
         python -m poetry install \
-            --extras='cdk check-stac-metadata-job datasets-endpoint'
+            --extras='cdk check-stac-metadata-job datasets-endpoint dataset_versions-endpoint'
 
     - name: Check all commit messages in Pull Request
       run: >
@@ -106,7 +106,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install poetry
         python -m poetry install \
-            --extras='cdk check-stac-metadata-job datasets-endpoint'
+            --extras='cdk check-stac-metadata-job datasets-endpoint dataset_versions-endpoint'
 
     - name: Print CDK version
       run: poetry run cdk --version
