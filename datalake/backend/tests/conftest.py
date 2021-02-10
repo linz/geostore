@@ -10,9 +10,10 @@ from mypy_boto3_batch import BatchClient
 from mypy_boto3_dynamodb import DynamoDBClient
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
+from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 
-from ..endpoints.datasets.model import DatasetModel
+from datalake.backend.endpoints.model import DatasetModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,6 +37,11 @@ def lambda_client() -> LambdaClient:
 @pytest.fixture()
 def s3_client() -> S3Client:
     return boto3.client("s3")
+
+
+@pytest.fixture()
+def ssm_client() -> SSMClient:
+    return boto3.client("ssm")
 
 
 @pytest.fixture()
