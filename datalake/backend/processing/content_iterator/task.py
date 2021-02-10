@@ -5,7 +5,7 @@ from jsonschema import validate  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
-ITERATION_SIZE = 2
+MAX_ITERATION_SIZE = 2
 
 JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
@@ -14,16 +14,16 @@ EVENT_SCHEMA = {
         "content": {
             "type": "object",
             "properties": {
-                "first_item": {"type": "integer", "minimum": 0, "multipleOf": ITERATION_SIZE},
+                "first_item": {"type": "integer", "minimum": 0, "multipleOf": MAX_ITERATION_SIZE},
                 "iteration_size": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": ITERATION_SIZE,
+                    "maximum": MAX_ITERATION_SIZE,
                 },
                 "next_item": {
                     "type": "integer",
                     "minimum": 1,
-                    "multipleOf": ITERATION_SIZE,
+                    "multipleOf": MAX_ITERATION_SIZE,
                 },
             },
             "required": ["first_item", "iteration_size", "next_item"],
@@ -53,9 +53,9 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     asset_count = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
 
     remaining_assets = asset_count - first_item_index
-    if remaining_assets > ITERATION_SIZE:
-        next_item_index = first_item_index + ITERATION_SIZE
-        iteration_size = ITERATION_SIZE
+    if remaining_assets > MAX_ITERATION_SIZE:
+        next_item_index = first_item_index + MAX_ITERATION_SIZE
+        iteration_size = MAX_ITERATION_SIZE
     else:
         next_item_index = -1
         iteration_size = remaining_assets

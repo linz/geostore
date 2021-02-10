@@ -13,7 +13,7 @@ from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from ..endpoints.model import DatasetModel
 from ..endpoints.utils import DATASET_TYPES
-from ..processing.content_iterator.task import ITERATION_SIZE
+from ..processing.content_iterator.task import MAX_ITERATION_SIZE
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
@@ -159,7 +159,7 @@ def any_lambda_context() -> bytes:
 
 def any_item_index() -> int:
     """Arbitrary non-negative multiple of iteration size"""
-    return randrange(1_000_000) * ITERATION_SIZE
+    return randrange(1_000_000) * MAX_ITERATION_SIZE
 
 
 def any_item_count() -> int:
