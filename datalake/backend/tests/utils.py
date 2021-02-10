@@ -88,7 +88,7 @@ def any_error_message() -> str:
 
 
 def any_dataset_id() -> str:
-    return str(uuid4())
+    return uuid4().hex
 
 
 def any_dataset_version_id() -> str:

@@ -54,7 +54,7 @@ def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
         logger.warning(json.dumps({"error": err}, default=str))
         return error_response(404, f"dataset '{req_body['id']}' could not be found")
 
-    dataset_version_id = str(uuid.uuid1())
+    dataset_version_id = uuid.uuid1().hex
 
     # execute step function
     step_functions_input = {
