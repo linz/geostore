@@ -14,7 +14,7 @@ from ..utils import DATASET_TYPES, ENV, JsonObject, error_response, success_resp
 stepfunctions_client = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
 
-DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/StepFuncStateMachineARN"
+DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
 
 
 def create_dataset_version(payload: JsonObject) -> JsonObject:

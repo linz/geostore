@@ -62,8 +62,15 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
 
         url_prefix = get_url_before_filename(url)
 
+<<<<<<< HEAD
         assets = []
         for asset in url_json.get("item_assets", {}).values():
+=======
+        files = []
+        files.append({"url": url, "multihash": None})
+
+        for asset in url_json.get("assets", {}).values():
+>>>>>>> a9e441c... feat: import dataset task
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
             assert (
@@ -71,7 +78,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             logger.debug(dumps({"asset": asset_dict}))
-            assets.append(asset_dict)
+            files.append(asset_dict)
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -80,10 +87,9 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
+                files.extend(self.validate(next_url, logger))
 
-                assets.extend(self.validate(next_url, logger))
-
-        return assets
+        return files
 
 
 def get_url_before_filename(url: str) -> str:
@@ -139,12 +145,12 @@ def main() -> int:
         return 1
 
     asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    for index, asset in enumerate(assets):
+    for index, file in enumerate(files):
         ProcessingAssetsModel(
             pk=asset_pk,
             sk=f"DATA_ITEM_INDEX#{index}",
-            url=asset["url"],
-            multihash=asset["multihash"],
+            url=file["url"],
+            multihash=file["multihash"],
         ).save()
 
     logger.info(dumps({"success": True, "message": ""}))

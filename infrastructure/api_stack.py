@@ -59,7 +59,7 @@ class APIStack(core.Stack):
             if endpoint == "dataset_versions":
                 state_machine_parameter = aws_ssm.StringParameter.from_string_parameter_attributes(
                     self,
-                    "StepFunctionStateMachineARN",
+                    "step-func-statemachine-arn",
                     parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
                 )
                 state_machine_parameter.grant_read(endpoint_function)

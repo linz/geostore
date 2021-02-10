@@ -109,7 +109,7 @@ then
     fi
 
     echo "Installing Python packages"
-    poetry install --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions' --remove-untracked
+    poetry install --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset' --remove-untracked
 fi
 
 if [[ -n "${hooks-}" ]]

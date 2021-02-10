@@ -17,7 +17,7 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.model import DatasetModel
+from backend.model import DatasetModel, ProcessingAssetsModel
 from backend.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
@@ -120,7 +120,11 @@ def any_dataset_id() -> str:
 
 def any_dataset_version_id() -> str:
     """Arbitrary-length string"""
-    return random_string(20)
+    return uuid4().hex
+
+
+def any_asset_id() -> str:
+    return f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
 
 
 def any_valid_dataset_type() -> str:
@@ -227,6 +231,46 @@ class Dataset:
         )
 
     def __enter__(self) -> DatasetModel:
+        self._item.save()
+        return self._item
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        self._item.delete()
+
+
+class ProcessingAsset:
+    def __init__(
+        self,
+        asset_id: Optional[str] = None,
+        item_index: Optional[str] = None,
+        multihash: Optional[str] = None,
+        url: Optional[str] = None,
+    ):
+        if asset_id is None:
+            asset_id = any_asset_id()
+
+        if item_index is None:
+            item_index = "0"
+
+        if multihash is None:
+            multihash = any_hex_multihash()
+
+        if url is None:
+            url = any_s3_url()
+
+        self._item = ProcessingAssetsModel(
+            pk=asset_id,
+            sk=f"DATA_ITEM_INDEX#{item_index}",
+            url=url,
+            multihash=multihash,
+        )
+
+    def __enter__(self) -> ProcessingAssetsModel:
         self._item.save()
         return self._item
 
