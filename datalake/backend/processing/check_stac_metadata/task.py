@@ -20,9 +20,6 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
-ENV = environ["DEPLOY_ENV"]
-PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
-
 S3_URL_PREFIX = "s3://"
 
 SCRIPT_DIR = dirname(__file__)
