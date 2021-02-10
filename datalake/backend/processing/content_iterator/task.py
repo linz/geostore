@@ -14,9 +14,13 @@ EVENT_SCHEMA = {
         "content": {
             "type": "object",
             "properties": {
-                "first_item": {"$ref": "#/definitions/iterationMultiple"},
+                "first_item": {"type": "integer", "minimum": 0, "multipleOf": ITERATION_SIZE},
                 "iteration_size": {"type": "integer"},
-                "next_item": {"$ref": "#/definitions/iterationMultiple"},
+                "next_item": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "multipleOf": ITERATION_SIZE,
+                },
             },
             "required": ["first_item", "iteration_size", "next_item"],
             "additionalProperties": False,
@@ -28,9 +32,6 @@ EVENT_SCHEMA = {
     },
     "required": ["dataset_id", "metadata_url", "type", "version_id"],
     "additionalProperties": False,
-    "definitions": {
-        "iterationMultiple": {"type": "integer", "minimum": 0, "multipleOf": ITERATION_SIZE}
-    },
 }
 
 

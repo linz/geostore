@@ -85,6 +85,14 @@ def test_should_raise_exception_if_next_item_is_negative() -> None:
         lambda_handler(event, any_lambda_context())
 
 
+def test_should_raise_exception_if_next_item_is_zero() -> None:
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["next_item"] = 0
+
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
+
+
 def test_should_raise_exception_if_next_item_is_not_a_multiple_of_iteration_size() -> None:
     """Assumes iteration size is not 1"""
     event = deepcopy(SUBSEQUENT_EVENT)
