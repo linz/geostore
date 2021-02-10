@@ -43,27 +43,27 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     validate(event, EVENT_SCHEMA)
 
     if "content" in event.keys():
-        first_item = int(event["content"]["next_item"])
+        first_item_index = int(event["content"]["next_item"])
     else:
-        first_item = 0
+        first_item_index = 0
 
     dataset_id = event["dataset_id"]
     version_id = event["version_id"]
 
-    total_size = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
+    asset_count = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
 
-    remaining_items = total_size - first_item
-    if remaining_items > ITERATION_SIZE:
-        next_item = first_item + ITERATION_SIZE
+    remaining_assets = asset_count - first_item_index
+    if remaining_assets > ITERATION_SIZE:
+        next_item_index = first_item_index + ITERATION_SIZE
         iteration_size = ITERATION_SIZE
     else:
-        next_item = -1
-        iteration_size = remaining_items
+        next_item_index = -1
+        iteration_size = remaining_assets
 
     result = copy(event)
     result["content"] = {
-        "first_item": first_item,
-        "next_item": next_item,
+        "first_item": first_item_index,
+        "next_item": next_item_index,
         "iteration_size": iteration_size,
     }
     return result
