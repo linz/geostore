@@ -158,8 +158,8 @@ def any_lambda_context() -> bytes:
 
 
 def any_item_index() -> int:
-    """Arbitrary non-negative integer"""
-    return randrange(1_000_000_000)
+    """Arbitrary non-negative multiple of iteration size"""
+    return randrange(1_000_000) * ITERATION_SIZE
 
 
 def any_item_count() -> int:
