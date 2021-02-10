@@ -52,15 +52,18 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
 
     total_size = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
 
-    if first_item + ITERATION_SIZE < total_size:
+    remaining_items = total_size - first_item
+    if remaining_items > ITERATION_SIZE:
         next_item = first_item + ITERATION_SIZE
+        iteration_size = ITERATION_SIZE
     else:
         next_item = -1
+        iteration_size = remaining_items
 
     result = copy(event)
     result["content"] = {
         "first_item": first_item,
         "next_item": next_item,
-        "iteration_size": ITERATION_SIZE,
+        "iteration_size": iteration_size,
     }
     return result

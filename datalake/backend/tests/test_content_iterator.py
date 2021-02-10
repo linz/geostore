@@ -167,10 +167,15 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+    expected_content = {
+        "first_item": next_item_index,
+        "iteration_size": remaining_item_count,
+        "next_item": -1,
+    }
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"]["next_item"] == -1, response
+    assert response["content"] == expected_content, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -182,14 +187,19 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+    expected_content = {
+        "first_item": next_item_index,
+        "iteration_size": ITERATION_SIZE,
+        "next_item": -1,
+    }
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"]["next_item"] == -1, response
+    assert response["content"] == expected_content, response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_increased_next_item_if_remaining_item_count_is_more_than_iteration_size(
+def test_should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = ITERATION_SIZE + 1
@@ -197,7 +207,12 @@ def test_should_return_increased_next_item_if_remaining_item_count_is_more_than_
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+    expected_content = {
+        "first_item": next_item_index,
+        "iteration_size": ITERATION_SIZE,
+        "next_item": next_item_index + ITERATION_SIZE,
+    }
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["content"]["next_item"] == next_item_index + ITERATION_SIZE, response
+    assert response["content"] == expected_content, response
