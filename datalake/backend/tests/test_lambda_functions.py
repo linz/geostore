@@ -38,7 +38,7 @@ def test_should_launch_datasets_endpoint_lambda_function(
         Payload=json.dumps({"httpMethod": method, "body": body}).encode(),
         InvocationType="RequestResponse",
     )
-    json_resp = json.loads(resp["Payload"].read().decode("utf-8"))
+    json_resp = json.load(resp["Payload"])
 
     assert json_resp.get("statusCode") == 201, json_resp
 
@@ -65,6 +65,6 @@ def test_should_launch_dataset_versions_endpoint_lambda_function(
             Payload=json.dumps({"httpMethod": method, "body": body}).encode(),
             InvocationType="RequestResponse",
         )
-        json_resp = json.loads(resp["Payload"].read().decode("utf-8"))
+        json_resp = json.load(resp["Payload"])
 
         assert json_resp.get("statusCode") == 201, json_resp

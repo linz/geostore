@@ -122,7 +122,7 @@ shellcheck-py = "*"
 
 [tool.poetry.dev-dependencies.boto3-stubs]
 version = "*"
-extras = ["batch", "dynamodb", "lambda", "s3", "stepfunctions", "ssm"]
+extras = ["batch", "dynamodb", "lambda", "s3", "ssm", "stepfunctions"]
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"

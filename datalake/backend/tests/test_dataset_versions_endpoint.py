@@ -1,6 +1,5 @@
 """
-Dataset Versions endpoint Lambda function tests. Working Data Lake AWS environment is
-required (run '$ cdk deploy' before running tests).
+Dataset Versions endpoint Lambda function tests.
 """
 
 import logging
@@ -15,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def test_should_fail_if_request_not_containing_method() -> None:
+def test_should_return_required_property_error_when_missing_http_method() -> None:
     response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
 
     assert response == {
@@ -24,7 +23,7 @@ def test_should_fail_if_request_not_containing_method() -> None:
     }
 
 
-def test_should_fail_if_request_not_containing_body() -> None:
+def test_should_return_required_property_error_when_missing_body() -> None:
     response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
 
     assert response == {
@@ -33,7 +32,7 @@ def test_should_fail_if_request_not_containing_body() -> None:
     }
 
 
-def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> None:
+def test_should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:
     # Given a missing "type" attribute in the body
     body = {}
     body["id"] = any_dataset_id()
@@ -49,7 +48,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> Non
     }
 
 
-def test_should_fail_if_post_request_not_containing_type() -> None:
+def test_should_return_required_property_error_when_missing_mandatory_type_property() -> None:
     # Given a missing "type" attribute in the body
     body = {}
     body["id"] = any_dataset_id()
@@ -65,7 +64,7 @@ def test_should_fail_if_post_request_not_containing_type() -> None:
     }
 
 
-def test_should_fail_if_dataset_does_not_exist() -> None:
+def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     body = {}
     body["id"] = any_dataset_id()
     body["metadata-url"] = any_s3_url()

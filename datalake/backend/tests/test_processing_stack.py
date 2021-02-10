@@ -50,7 +50,7 @@ class NoComputeEnvironmentFound(Exception):
 
 
 @mark.infrastructure
-def test_storage_bucket_parameter_created(ssm_client: SSMClient) -> None:
+def test_should_create_state_machine_arn_parameter(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
     parameter_response = ssm_client.get_parameter(Name=DATASET_VERSION_CREATION_STEP_FUNCTION)
     assert parameter_response["Parameter"]["Name"] == DATASET_VERSION_CREATION_STEP_FUNCTION

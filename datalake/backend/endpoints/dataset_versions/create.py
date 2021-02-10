@@ -11,7 +11,7 @@ from pynamodb.exceptions import DoesNotExist
 from ..model import DatasetModel
 from ..utils import DATASET_TYPES, ENV, JSON_OBJECT, error_response, success_response
 
-sfn_client = boto3.client("stepfunctions")
+stepfunctions_client = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
 
 DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/StepFuncStateMachineARN"
@@ -57,30 +57,33 @@ def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
     dataset_version_id = str(uuid.uuid1())
 
     # execute step function
-    sfn_input = {
+    step_functions_input = {
         "dataset_id": dataset.dataset_id,
         "version_id": dataset_version_id,
         "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
-    sfn_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION)
+    state_machine_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION)
 
-    sfn_response = sfn_client.start_execution(
-        stateMachineArn=sfn_arn,
+    step_functions_response = stepfunctions_client.start_execution(
+        stateMachineArn=state_machine_arn,
         name=dataset_version_id,
-        input=json.dumps(sfn_input),
+        input=json.dumps(step_functions_input),
     )
 
-    logger.debug(json.dumps({"response": sfn_response}, default=str))
+    logger.debug(json.dumps({"response": step_functions_response}, default=str))
 
     # return arn of executing process
     return success_response(
-        201, {"dataset_version": dataset_version_id, "execution_arn": sfn_response["executionArn"]}
+        201,
+        {
+            "dataset_version": dataset_version_id,
+            "execution_arn": step_functions_response["executionArn"],
+        },
     )
 
 
 def get_param(parameter: str) -> str:
-    """Retrieve ARN of State Function Machine"""
     parameter_response = ssm_client.get_parameter(Name=parameter)
 
     try:
