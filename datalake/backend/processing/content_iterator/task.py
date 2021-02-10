@@ -15,7 +15,11 @@ EVENT_SCHEMA = {
             "type": "object",
             "properties": {
                 "first_item": {"type": "integer", "minimum": 0, "multipleOf": ITERATION_SIZE},
-                "iteration_size": {"type": "integer"},
+                "iteration_size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": ITERATION_SIZE,
+                },
                 "next_item": {
                     "type": "integer",
                     "minimum": 1,

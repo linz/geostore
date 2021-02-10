@@ -167,14 +167,6 @@ def any_item_count() -> int:
     return randrange(3)
 
 
-def any_iteration_size() -> int:
-    """
-    1 tests serial processing, ITERATION_SIZE is the production value, and 10,000 is the max
-    <https://docs.aws.amazon.com/batch/latest/userguide/service_limits.html>
-    """
-    return choice([1, ITERATION_SIZE, 10_000])
-
-
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
     "stac_version": STAC_VERSION,
     "id": any_dataset_id(),

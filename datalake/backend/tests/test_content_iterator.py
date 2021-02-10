@@ -13,7 +13,6 @@ from .utils import (
     any_dictionary_key,
     any_item_count,
     any_item_index,
-    any_iteration_size,
     any_lambda_context,
     any_s3_url,
     any_valid_dataset_type,
@@ -29,8 +28,8 @@ INITIAL_EVENT: Dict[str, Any] = {
 SUBSEQUENT_EVENT: Dict[str, Any] = {
     "content": {
         "first_item": any_item_index(),
+        "iteration_size": ITERATION_SIZE,
         "next_item": any_item_index(),
-        "iteration_size": any_iteration_size(),
     },
     "dataset_id": any_dataset_id(),
     "metadata_url": any_s3_url(),
@@ -97,6 +96,22 @@ def test_should_raise_exception_if_next_item_is_not_a_multiple_of_iteration_size
     """Assumes iteration size is not 1"""
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = ITERATION_SIZE - 1
+
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
+
+
+def test_should_raise_exception_if_iteration_size_is_not_positive() -> None:
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["iteration_size"] = 0
+
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
+
+
+def test_should_raise_exception_if_iteration_size_is_more_than_production_iteration_size() -> None:
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["iteration_size"] = ITERATION_SIZE + 1
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
