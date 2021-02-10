@@ -63,7 +63,7 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     result = copy(event)
     result["content"] = {
         "first_item": first_item_index,
-        "next_item": next_item_index,
         "iteration_size": iteration_size,
+        "next_item": next_item_index,
     }
     return result
