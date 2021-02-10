@@ -64,6 +64,7 @@ def test_should_return_required_property_error_when_missing_mandatory_type_prope
     }
 
 
+@mark.infrastructure
 def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     body = {}
     body["id"] = any_dataset_id()
