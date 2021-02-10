@@ -85,6 +85,14 @@ def test_should_raise_exception_if_next_item_is_negative() -> None:
         lambda_handler(event, any_lambda_context())
 
 
+def test_should_raise_exception_if_first_item_is_negative() -> None:
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["first_item"] = -1
+
+    with raises(ValidationError):
+        lambda_handler(event, any_lambda_context())
+
+
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock: MagicMock,

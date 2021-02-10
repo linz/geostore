@@ -14,7 +14,7 @@ EVENT_SCHEMA = {
         "content": {
             "type": "object",
             "properties": {
-                "first_item": {"type": "integer"},
+                "first_item": {"$ref": "#/definitions/nonNegativeInteger"},
                 "iteration_size": {"type": "integer"},
                 "next_item": {"$ref": "#/definitions/nonNegativeInteger"},
             },
