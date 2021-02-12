@@ -24,7 +24,7 @@ python -m pip install poetry
 asset_root='/asset-output'
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
 pip install \
-    --requirement=<(poetry export --extras="$(basename "${1}")-endpoint" \
+    --requirement=<(poetry export --extras="$(basename "${1}")" \
     --without-hashes) "--target=${asset_root}"
 
 mkdir --parents "${asset_root}/${1}"

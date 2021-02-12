@@ -143,17 +143,17 @@ cdk = [
     "awscli",
     "cattrs",
 ]
-check-stac-metadata-job = [
+check_stac_metadata = [
     "boto3",
     "jsonschema",
     "pynamodb",
     "strict-rfc3339",
 ]
-datasets-endpoint = [
+datasets = [
     "jsonschema",
     "pynamodb",
 ]
-dataset_versions-endpoint = [
+dataset_versions = [
     "jsonschema",
     "pynamodb",
 ]
