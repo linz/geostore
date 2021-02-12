@@ -10,7 +10,7 @@ RUN curl --location --show-error --silent --output get-poetry.py https://raw.git
     && rm get-poetry.py get-poetry.py.sha256
 COPY poetry.lock poetry.toml pyproject.toml /opt/
 WORKDIR /opt
-RUN ~/.poetry/bin/poetry install --extras=check-stac-metadata-job --no-dev
+RUN ~/.poetry/bin/poetry install --extras=check_stac_metadata --no-dev
 
 
 FROM ubuntu:20.04
