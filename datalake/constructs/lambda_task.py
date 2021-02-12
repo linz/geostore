@@ -1,6 +1,7 @@
 from typing import Callable, Iterable, Optional
 
-from aws_cdk import aws_lambda, aws_stepfunctions_tasks, core
+from aws_cdk import aws_stepfunctions_tasks, core
+from aws_cdk.aws_iam import Grant, IGrantable
 
 from .bundled_lambda_function import BundledLambdaFunction
 
@@ -13,7 +14,7 @@ class LambdaTask(core.Construct):
         *,
         directory: str,
         result_path: str,
-        permission_functions: Optional[Iterable[Callable[[aws_lambda.Function], None]]] = None,
+        permission_functions: Optional[Iterable[Callable[[IGrantable], Grant]]] = None,
         application_layer: str,
     ):
         super().__init__(scope, construct_id)

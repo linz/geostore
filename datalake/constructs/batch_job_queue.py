@@ -72,6 +72,7 @@ class BatchJobQueue(core.Construct):
             launch_template_name=f"{deploy_env}-datalake-batch-launch-template",
             launch_template_data=launch_template_data,
         )
+        assert cloudformation_launch_template.launch_template_name is not None
         launch_template = aws_batch.LaunchTemplateSpecification(
             launch_template_name=cloudformation_launch_template.launch_template_name
         )
