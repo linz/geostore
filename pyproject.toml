@@ -149,11 +149,11 @@ check-stac-metadata-job = [
     "pynamodb",
     "strict-rfc3339",
 ]
-datasets-endpoint = [
+datasets = [
     "jsonschema",
     "pynamodb",
 ]
-dataset_versions-endpoint = [
+dataset_versions = [
     "jsonschema",
     "pynamodb",
 ]
