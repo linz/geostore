@@ -89,6 +89,7 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         ).lambda_invoke
 
+        array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_task = BatchSubmitJobTask(
             self,
             "check_files_checksums_task",
@@ -104,7 +105,7 @@ class ProcessingStack(core.Stack):
                 "first_item.$": "$.content.first_item",
             },
             container_overrides_environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
-            array_size=aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"),
+            array_size=array_size,
             container_overrides_command=["--metadata-url", "Ref::metadata_url"],
         ).batch_submit_job
 
@@ -140,7 +141,7 @@ class ProcessingStack(core.Stack):
                     content_iterator_task,
                 )
                 .otherwise(
-                    validation_summary_task.next(
+                    validation_summary_task.next(  # type: ignore[arg-type]
                         aws_stepfunctions.Choice(self, "validation_successful")
                         .when(
                             aws_stepfunctions.Condition.boolean_equals(
@@ -157,7 +158,7 @@ class ProcessingStack(core.Stack):
         state_machine = aws_stepfunctions.StateMachine(
             self,
             f"{deploy_env}-dataset-version-creation",
-            definition=dataset_version_creation_definition,
+            definition=dataset_version_creation_definition,  # type: ignore[arg-type]
         )
 
         aws_ssm.StringParameter(

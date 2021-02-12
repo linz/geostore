@@ -56,7 +56,7 @@ version = "*"
 optional = true
 
 [tool.poetry.dependencies."aws-cdk.aws-ecs"]
-version = "*"
+version = "^1.73"
 optional = true
 
 [tool.poetry.dependencies."aws-cdk.aws-iam"]
