@@ -22,11 +22,13 @@ python -m pip install --upgrade pip
 python -m pip install poetry
 
 asset_root='/asset-output'
+task_directory="$(basename "$1")"
+requirements_file="${work_dir}/requirements.txt"
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
-pip install \
-    --requirement=<(poetry export --extras="$(basename "${1}")" \
-    --without-hashes) "--target=${asset_root}"
+poetry export --extras="$task_directory" --without-hashes > "$requirements_file"
+pip install --requirement="$requirements_file" --target="$asset_root"
 
 mkdir --parents "${asset_root}/${1}"
-cp --archive --update --verbose "${script_dir}/$(dirname "${1}")/"*.py "${asset_root}/$(dirname "${1}")"
+task_parent_directory=$(dirname "$1")
+cp --archive --update --verbose "${script_dir}/${task_parent_directory}/"*.py "${asset_root}/${task_parent_directory}"
 cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/${1}"
