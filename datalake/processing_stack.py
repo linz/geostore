@@ -149,7 +149,7 @@ class ProcessingStack(core.Stack):
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.not_(
-                        aws_stepfunctions.Condition.number_equals("$.content.next_item", -1)
+                        aws_stepfunctions.Condition.string_equals("$.content.next_item", "-1")
                     ),
                     content_iterator_task.lambda_invoke,
                 )

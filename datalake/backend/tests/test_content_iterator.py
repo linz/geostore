@@ -27,9 +27,9 @@ INITIAL_EVENT: Dict[str, Any] = {
 
 SUBSEQUENT_EVENT: Dict[str, Any] = {
     "content": {
-        "first_item": any_item_index(),
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": any_item_index(),
+        "first_item": str(any_item_index()),
+        "iteration_size": str(MAX_ITERATION_SIZE),
+        "next_item": str(any_item_index()),
     },
     "dataset_id": any_dataset_id(),
     "metadata_url": any_s3_url(),
@@ -78,7 +78,7 @@ def test_should_raise_exception_if_content_has_unknown_property() -> None:
 
 def test_should_raise_exception_if_next_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = -1
+    event["content"]["next_item"] = "-1"
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -86,40 +86,31 @@ def test_should_raise_exception_if_next_item_is_negative() -> None:
 
 def test_should_raise_exception_if_next_item_is_zero() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = 0
+    event["content"]["next_item"] = "0"
 
-    with raises(ValidationError):
-        lambda_handler(event, any_lambda_context())
-
-
-def test_should_raise_exception_if_next_item_is_not_a_multiple_of_iteration_size() -> None:
-    """Assumes iteration size is not 1"""
-    event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = MAX_ITERATION_SIZE - 1
-
-    with raises(ValidationError):
+    with raises(AssertionError):
         lambda_handler(event, any_lambda_context())
 
 
 def test_should_raise_exception_if_iteration_size_is_not_positive() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["iteration_size"] = 0
+    event["content"]["iteration_size"] = "0"
 
-    with raises(ValidationError):
+    with raises(AssertionError):
         lambda_handler(event, any_lambda_context())
 
 
 def test_should_raise_exception_if_iteration_size_is_more_than_production_iteration_size() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["iteration_size"] = MAX_ITERATION_SIZE + 1
+    event["content"]["iteration_size"] = str(MAX_ITERATION_SIZE + 1)
 
-    with raises(ValidationError):
+    with raises(AssertionError):
         lambda_handler(event, any_lambda_context())
 
 
 def test_should_raise_exception_if_first_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["first_item"] = -1
+    event["content"]["first_item"] = "-1"
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -128,9 +119,9 @@ def test_should_raise_exception_if_first_item_is_negative() -> None:
 def test_should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_size() -> None:
     """Assumes iteration size is not 1"""
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["first_item"] = MAX_ITERATION_SIZE - 1
+    event["content"]["first_item"] = str(MAX_ITERATION_SIZE - 1)
 
-    with raises(ValidationError):
+    with raises(AssertionError):
         lambda_handler(event, any_lambda_context())
 
 
@@ -143,19 +134,19 @@ def test_should_return_zero_as_first_item_if_no_content(
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["first_item"] == 0, response
+    assert response["first_item"] == "0", response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     next_item_index = any_item_index()
-    event["content"]["next_item"] = next_item_index
+    event["content"]["next_item"] = str(next_item_index)
     processing_assets_model_mock.count.return_value = any_item_count()
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["first_item"] == next_item_index, response
+    assert response["first_item"] == str(next_item_index), response
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
@@ -165,12 +156,12 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
     remaining_item_count = MAX_ITERATION_SIZE - 1
     next_item_index = any_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event["content"]["next_item"] = str(next_item_index)
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
     expected_response = {
-        "first_item": next_item_index,
-        "iteration_size": remaining_item_count,
-        "next_item": -1,
+        "first_item": str(next_item_index),
+        "iteration_size": str(remaining_item_count),
+        "next_item": "-1",
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -185,12 +176,12 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
     remaining_item_count = MAX_ITERATION_SIZE
     next_item_index = any_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event["content"]["next_item"] = str(next_item_index)
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
     expected_response = {
-        "first_item": next_item_index,
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": -1,
+        "first_item": str(next_item_index),
+        "iteration_size": str(MAX_ITERATION_SIZE),
+        "next_item": "-1",
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -205,12 +196,12 @@ def test_should_return_content_when_remaining_item_count_is_more_than_iteration_
     remaining_item_count = MAX_ITERATION_SIZE + 1
     next_item_index = any_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event["content"]["next_item"] = str(next_item_index)
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
     expected_response = {
-        "first_item": next_item_index,
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": next_item_index + MAX_ITERATION_SIZE,
+        "first_item": str(next_item_index),
+        "iteration_size": str(MAX_ITERATION_SIZE),
+        "next_item": str(next_item_index + MAX_ITERATION_SIZE),
     }
 
     response = lambda_handler(event, any_lambda_context())

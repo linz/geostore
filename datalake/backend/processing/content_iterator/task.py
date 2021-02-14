@@ -13,17 +13,9 @@ EVENT_SCHEMA = {
         "content": {
             "type": "object",
             "properties": {
-                "first_item": {"type": "integer", "minimum": 0, "multipleOf": MAX_ITERATION_SIZE},
-                "iteration_size": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": MAX_ITERATION_SIZE,
-                },
-                "next_item": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "multipleOf": MAX_ITERATION_SIZE,
-                },
+                "first_item": {"type": "string", "pattern": r"^\d+$"},
+                "iteration_size": {"type": "string", "pattern": r"^\d+$"},
+                "next_item": {"type": "string", "pattern": r"^\d+$"},
             },
             "required": ["first_item", "iteration_size", "next_item"],
             "additionalProperties": False,
@@ -42,7 +34,10 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     validate(event, EVENT_SCHEMA)
 
     if "content" in event.keys():
+        assert int(event["content"]["first_item"]) % MAX_ITERATION_SIZE == 0
+        assert 0 < int(event["content"]["iteration_size"]) <= MAX_ITERATION_SIZE
         first_item_index = int(event["content"]["next_item"])
+        assert first_item_index != 0
     else:
         first_item_index = 0
 
@@ -60,7 +55,7 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         iteration_size = remaining_assets
 
     return {
-        "first_item": first_item_index,
-        "iteration_size": iteration_size,
-        "next_item": next_item_index,
+        "first_item": str(first_item_index),
+        "iteration_size": str(iteration_size),
+        "next_item": str(next_item_index),
     }
