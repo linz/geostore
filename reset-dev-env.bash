@@ -75,6 +75,12 @@ fi
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+if [[ -n "${delete-}" ]]
+then
+    echo "Cleaning Git repository"
+    git clean -d --force -x
+fi
+
 if [[ -n "${submodule-}" ]]
 then
     echo "Updating submodules"
