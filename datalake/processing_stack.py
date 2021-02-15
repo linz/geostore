@@ -7,6 +7,7 @@ from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
 from .backend.endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from .backend.endpoints.utils import ResourceName
+from .backend.processing.content_iterator.task import MAX_ITERATION_SIZE
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -95,7 +96,6 @@ class ProcessingStack(core.Stack):
             content_iterator_task.lambda_function, "dynamodb:DescribeTable"
         )
 
-        array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_task = BatchSubmitJobTask(
             self,
             "check_files_checksums_task",
@@ -111,7 +111,7 @@ class ProcessingStack(core.Stack):
                 "first_item.$": "$.content.first_item",
                 "iteration_size.$": "$.content.iteration_size",
             },
-            array_size=array_size,
+            array_size=MAX_ITERATION_SIZE,
             container_overrides_command=[
                 "--dataset-id",
                 "Ref::dataset_id",
