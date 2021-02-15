@@ -4,7 +4,7 @@ from jsonschema import validate  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
-MAX_ITERATION_SIZE = 2
+MAX_ITERATION_SIZE = 5
 
 JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
