@@ -52,7 +52,7 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         iteration_size = MAX_ITERATION_SIZE
     else:
         next_item_index = -1
-        iteration_size = remaining_assets
+        iteration_size = max(remaining_assets, 2)
 
     return {
         "first_item": str(first_item_index),

@@ -150,6 +150,26 @@ def test_should_return_next_item_as_first_item(processing_assets_model_mock: Mag
 
 
 @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+def test_should_return_iteration_size_of_two_if_remaining_item_count_is_one(
+    processing_assets_model_mock: MagicMock,
+) -> None:
+    remaining_item_count = 1
+    next_item_index = any_item_index()
+    event = deepcopy(SUBSEQUENT_EVENT)
+    event["content"]["next_item"] = str(next_item_index)
+    processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
+    expected_response = {
+        "first_item": str(next_item_index),
+        "iteration_size": "2",
+        "next_item": "-1",
+    }
+
+    response = lambda_handler(event, any_lambda_context())
+
+    assert response == expected_response, response
+
+
+@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
