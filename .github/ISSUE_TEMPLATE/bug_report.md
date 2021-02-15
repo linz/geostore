@@ -6,12 +6,11 @@ labels: 'bug'
 ---
 
 <!--
-Checklist before submitting
+Checklist before submitting:
 
 - [ ] Search through existing issue reports to check whether the issue already exists
-- [ ] Ensure you are running the latest software release and are using an up-to-date version of the app config (i.e ~/.linz-data-lake/config.yml)
-- [ ] Try running software with debug logging to provide more information.
-- [ ] If you can please create a light and self-contained sample dataset and config to reproduce the issue.
+- [ ] If you can, please create a light and self-contained sample dataset
+- [ ] Provide stacktrace / debugging messages where possible
 -->
 
 ### Bug Description
@@ -19,7 +18,7 @@ Checklist before submitting
 
 ### How to Reproduce**
 
-<!-- Steps, sample datasets, config and command/or steps to reproduce the behavior. 
+<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
 
 1. Do '...'
 2. Run '....'
@@ -30,9 +29,9 @@ Try to include any stack traces or debugging info.
 -->
 
 #### Software and OS versions
- - OS: <!-- e.g. Windows / Ubuntu -->
- - Environment: <!-- e.g. Megaport config, server, desktop used -->
- - Relevant Software Versions: <!-- i.e. linz-data-lake --version -->
+ - OS: <!-- e.g. Windows / Ubuntu / Mac -->
+ - Environment: <!-- e.g. network, AWS environment -->
+ - Relevant Software Versions: <!-- e.g. aws --version -->
 
 ### Additional context
 
