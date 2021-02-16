@@ -1,6 +1,5 @@
 import logging
 from json import dumps
-from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -11,7 +10,7 @@ from ..endpoints.dataset_versions.create import create_dataset_version
 from .utils import Dataset, any_dataset_id, any_s3_url, any_valid_dataset_type
 
 
-class LogTests(TestCase):
+class TestLogging:
     logger: logging.Logger
 
     @classmethod
