@@ -120,7 +120,13 @@ class ProcessingStack(core.Stack):
                 "--first-item",
                 "Ref::first_item",
             ],
-        ).batch_submit_job
+        )
+        processing_assets_table.grant_read_data(
+            check_files_checksums_task.job_role  # type: ignore[arg-type]
+        )
+        processing_assets_table.grant(
+            check_files_checksums_task.job_role, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+        )
 
         validation_summary_lambda_invoke = LambdaTask(
             self,
@@ -144,7 +150,7 @@ class ProcessingStack(core.Stack):
         # STATE MACHINE
         dataset_version_creation_definition = (
             check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task.lambda_invoke)
-            .next(check_files_checksums_task)
+            .next(check_files_checksums_task.batch_submit_job)
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
