@@ -30,4 +30,4 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             environment={"DEPLOY_ENV": deploy_env},
         )
 
-        super().__init__(scope, construct_id, container=container, retry_attempts=4)
+        super().__init__(scope, construct_id, container=container)
