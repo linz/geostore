@@ -2,7 +2,6 @@ import logging
 import sys
 from json import dumps
 from random import choice
-from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -11,7 +10,7 @@ from ..processing.check_stac_metadata.task import main
 from .utils import any_dataset_id, any_dataset_version_id, any_program_name, any_s3_url
 
 
-class LogTests(TestCase):
+class TestLogging:
     logger: logging.Logger
 
     @classmethod
