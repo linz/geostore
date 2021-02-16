@@ -68,6 +68,11 @@ def set_up_logging() -> logging.Logger:
     return logger
 
 
+def success(logger: logging.Logger) -> int:
+    logger.info(dumps({"success": True, "message": ""}))
+    return 0
+
+
 def main() -> int:
     logger = set_up_logging()
 
@@ -75,10 +80,22 @@ def main() -> int:
     s3_client = boto3.client("s3")
 
     index = arguments.first_item + int(environ[ARRAY_INDEX_VARIABLE_NAME])
-    item = ProcessingAssetsModel.get(
-        f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}",
-        range_key=f"DATA_ITEM_INDEX#{index}",
-    )
+    hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
+    range_key = f"DATA_ITEM_INDEX#{index}"
+
+    try:
+        item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
+    except ProcessingAssetsModel.DoesNotExist as error:
+        logger.warning(
+            dumps(
+                {
+                    "error": {"message": error.msg, "cause": error.cause},
+                    "parameters": {"hash_key": hash_key, "range_key": range_key},
+                }
+            )
+        )
+        return success(logger)
+
     try:
         validate_url_multihash(item.url, item.multihash, s3_client)
     except ChecksumMismatchError as error:
@@ -93,8 +110,7 @@ def main() -> int:
         )
         return 1
 
-    logger.info(dumps({"success": True, "message": ""}))
-    return 0
+    return success(logger)
 
 
 if __name__ == "__main__":
