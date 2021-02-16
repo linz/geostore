@@ -151,9 +151,17 @@ To add a production package:
 
 ### Development patterns
 
-- Commit package upgrades separately from package installs/removals. That is, if you want to run `poetry update`, make sure any existing changes to poetry.lock and pyproject.toml are already committed. Beware that `poetry lock` will also upgrade packages by default; see next point.
+- Make sure to update packages separately from adding packages. Basically, follow this process before running `poetry add`, and do the equivalent when updating Node.js packages or changing Docker base images:
 
-   Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting history.
+   1. Check out a new branch on top of origin/master: `git checkout -b update-python-packages origin/master`.
+   1. Update the Python packages: `poetry update`. The rest of the steps are only necessary if this step changes poetry.lock. Otherwise you can just change back to the original branch and delete "update-python-packages".
+   1. Commit, push and create pull request.
+   1. Check out the branch where you originally wanted to run `poetry add`.
+   1. Rebase the branch onto the package update branch: `git rebase update-python-packages`.
+
+   At this point any `poetry add` commands should not result in any package updates other than those necessary to fulfil the new packages' dependencies.
+
+   Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting history. It also makes code review easier.
 - When there's a merge conflict in poetry.lock, first check whether either or both commits contain a package upgrade:
    - If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
    - If one of them does, check out that file (`git checkout --ours -- poetry.lock` or `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate `poetry.lock` with the current package versions.
