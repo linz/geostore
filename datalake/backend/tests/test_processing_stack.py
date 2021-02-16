@@ -25,14 +25,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class NoStateMachineFound(Exception):
-    pass
-
-
-class NoComputeEnvironmentFound(Exception):
-    pass
-
-
 @mark.infrastructure
 def test_should_create_state_machine_arn_parameter(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
