@@ -2,6 +2,7 @@ from typing import List, Mapping, Optional
 
 from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks, core
 
+from ..common import LOG_LEVEL
 from .task_job_definition import TaskJobDefinition
 
 
@@ -37,9 +38,13 @@ class BatchSubmitJobTask(core.Construct):
             job_role=self.job_role,
         )
 
+        environment = {"LOGLEVEL": LOG_LEVEL}
+        if container_overrides_environment is not None:
+            environment.update(container_overrides_environment)
+
         container_overrides = aws_stepfunctions_tasks.BatchContainerOverrides(
             command=container_overrides_command,
-            environment=container_overrides_environment,
+            environment=environment,
         )
         payload = aws_stepfunctions.TaskInput.from_object(payload_object)
         self.batch_submit_job = aws_stepfunctions_tasks.BatchSubmitJob(

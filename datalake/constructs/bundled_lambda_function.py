@@ -1,5 +1,7 @@
 from aws_cdk import aws_lambda, core
 
+from ..common import LOG_LEVEL
+
 
 class BundledLambdaFunction(aws_lambda.Function):
     def __init__(
@@ -18,6 +20,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             handler=f"processing.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=lambda_code,
+            environment={"LOGLEVEL": LOG_LEVEL},
         )
 
         core.Tags.of(self).add("ApplicationLayer", application_layer)
