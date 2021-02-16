@@ -14,35 +14,20 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from ..endpoints.utils import ResourceName
 from ..processing.check_stac_metadata.task import ProcessingAssetsModel, STACSchemaValidator, main
 from .utils import (
+    MINIMAL_VALID_STAC_OBJECT,
     S3Object,
-    any_dataset_description,
     any_dataset_id,
     any_dataset_version_id,
     any_error_message,
     any_file_contents,
     any_hex_multihash,
     any_https_url,
-    any_past_datetime_string,
     any_program_name,
     any_s3_url,
     any_safe_filename,
     any_stac_asset_name,
     any_stac_relation,
 )
-
-STAC_VERSION = "1.0.0-beta.2"
-
-MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
-    "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
-    "extent": {
-        "spatial": {"bbox": [[-180, -90, 180, 90]]},
-        "temporal": {"interval": [[any_past_datetime_string(), None]]},
-    },
-}
 
 
 class MockJSONURLReader(Mock):

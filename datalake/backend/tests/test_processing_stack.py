@@ -2,7 +2,6 @@ import logging
 import time
 from io import BytesIO
 from json import dumps
-from typing import Any, Dict
 
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
@@ -12,30 +11,15 @@ from ..endpoints.dataset_versions import entrypoint
 from ..endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from ..endpoints.utils import ResourceName
 from .utils import (
+    MINIMAL_VALID_STAC_OBJECT,
     Dataset,
     S3Object,
-    any_dataset_description,
     any_dataset_id,
     any_lambda_context,
-    any_past_datetime_string,
     any_safe_file_path,
     any_safe_filename,
     any_valid_dataset_type,
 )
-
-STAC_VERSION = "1.0.0-beta.2"
-
-MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
-    "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
-    "extent": {
-        "spatial": {"bbox": [[-180, -90, 180, 90]]},
-        "temporal": {"interval": [[any_past_datetime_string(), None]]},
-    },
-}
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
