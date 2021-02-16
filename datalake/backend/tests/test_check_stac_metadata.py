@@ -1,11 +1,12 @@
+import logging
 import sys
 from copy import deepcopy
 from datetime import timedelta
 from hashlib import sha256, sha512
-from io import BytesIO, StringIO
-from json import dump, dumps
-from typing import Any, Dict, List, Optional, TextIO
-from unittest.mock import MagicMock, Mock, call, patch
+from io import BytesIO
+from json import dumps
+from typing import Dict, List
+from unittest.mock import MagicMock, call, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
@@ -15,6 +16,7 @@ from ..endpoints.utils import ResourceName
 from ..processing.check_stac_metadata.task import ProcessingAssetsModel, STACSchemaValidator, main
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
+    MockJSONURLReader,
     S3Object,
     any_dataset_id,
     any_dataset_version_id,
@@ -29,31 +31,13 @@ from .utils import (
     any_stac_relation,
 )
 
-
-class MockJSONURLReader(Mock):
-    def __init__(
-        self, url_to_json: Dict[str, Any], call_limit: Optional[int] = None, **kwargs: Any
-    ):
-        super().__init__(**kwargs)
-
-        self.url_to_json = url_to_json
-        self.call_limit = call_limit
-        self.side_effect = self.read_url
-
-    def read_url(self, url: str) -> TextIO:
-        if self.call_limit is not None:
-            assert self.call_count <= self.call_limit
-
-        result = StringIO()
-        dump(self.url_to_json[url], result)
-        result.seek(0)
-        return result
+logger = logging.getLogger("datalake.backend.processing.check_stac_metadata.task")
 
 
 def test_should_treat_minimal_stac_object_as_valid() -> None:
     url = any_s3_url()
     url_reader = MockJSONURLReader({url: deepcopy(MINIMAL_VALID_STAC_OBJECT)})
-    STACSchemaValidator(url_reader).validate(url)
+    STACSchemaValidator(url_reader).validate(url, logger)
 
 
 def test_should_treat_any_missing_top_level_key_as_invalid(
@@ -67,7 +51,7 @@ def test_should_treat_any_missing_top_level_key_as_invalid(
 
             url_reader = MockJSONURLReader({url: stac_object})
             with raises(ValidationError):
-                STACSchemaValidator(url_reader).validate(url)
+                STACSchemaValidator(url_reader).validate(url, logger)
 
 
 def test_should_detect_invalid_datetime() -> None:
@@ -76,11 +60,13 @@ def test_should_detect_invalid_datetime() -> None:
     url = any_s3_url()
     url_reader = MockJSONURLReader({url: stac_object})
     with raises(ValidationError):
-        STACSchemaValidator(url_reader).validate(url)
+        STACSchemaValidator(url_reader).validate(url, logger)
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
+def test_should_validate_given_url(
+    validate_url_mock: MagicMock,
+) -> None:
     url = any_s3_url()
     sys.argv = [
         any_program_name(),
@@ -92,11 +78,13 @@ def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
     with patch("datalake.backend.processing.assets_model.ProcessingAssetsModel"):
         assert main() == 0
 
-    validate_url_mock.assert_called_once_with(url)
+    validate_url_mock.assert_called_once_with(url, logger)
 
 
 @patch("datalake.backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
-def test_should_print_json_output_on_validation_failure(validate_url_mock: MagicMock) -> None:
+def test_should_return_non_zero_exit_code_on_validation_failure(
+    validate_url_mock: MagicMock,
+) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
     sys.argv = [
         any_program_name(),
@@ -119,7 +107,7 @@ def test_should_validate_metadata_files_recursively() -> None:
         {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
     )
 
-    STACSchemaValidator(url_reader).validate(parent_url)
+    STACSchemaValidator(url_reader).validate(parent_url, logger)
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -156,7 +144,7 @@ def test_should_only_validate_each_file_once() -> None:
         call_limit=3,
     )
 
-    STACSchemaValidator(url_reader).validate(root_url)
+    STACSchemaValidator(url_reader).validate(root_url, logger)
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
@@ -175,7 +163,7 @@ def test_should_raise_exception_if_metadata_file_is_in_different_directory() -> 
         AssertionError,
         match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
     ):
-        STACSchemaValidator(url_reader).validate(root_url)
+        STACSchemaValidator(url_reader).validate(root_url, logger)
 
 
 def test_should_raise_exception_if_asset_file_is_in_different_directory() -> None:
@@ -194,7 +182,7 @@ def test_should_raise_exception_if_asset_file_is_in_different_directory() -> Non
         AssertionError,
         match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
     ):
-        STACSchemaValidator(url_reader).validate(root_url)
+        STACSchemaValidator(url_reader).validate(root_url, logger)
 
 
 def test_should_raise_exception_if_non_s3_url_is_passed() -> None:
@@ -202,7 +190,7 @@ def test_should_raise_exception_if_non_s3_url_is_passed() -> None:
     url_reader = MockJSONURLReader({})
 
     with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-        STACSchemaValidator(url_reader).validate(https_url)
+        STACSchemaValidator(url_reader).validate(https_url, logger)
 
 
 def test_should_return_assets_from_validated_metadata_files() -> None:
@@ -224,12 +212,12 @@ def test_should_return_assets_from_validated_metadata_files() -> None:
         },
     }
     expected_assets = [
-        {"url": first_asset_url, "multihash": first_asset_multihash},
-        {"url": second_asset_url, "multihash": second_asset_multihash},
+        {"multihash": first_asset_multihash, "url": first_asset_url},
+        {"multihash": second_asset_multihash, "url": second_asset_url},
     ]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-    assets = STACSchemaValidator(url_reader).validate(metadata_url)
+    assets = STACSchemaValidator(url_reader).validate(metadata_url, logger)
 
     assert _sort_assets(assets) == _sort_assets(expected_assets)
 

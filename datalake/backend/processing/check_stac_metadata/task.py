@@ -50,7 +50,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str) -> List[Dict[str, str]]:
+    def validate(self, url: str, logger: logging.Logger) -> List[Dict[str, str]]:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
@@ -69,7 +69,9 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             assert (
                 url_prefix == asset_url_prefix
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
-            assets.append({"url": asset_url, "multihash": asset["checksum:multihash"]})
+            asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
+            logger.debug(dumps({"asset": asset_dict}))
+            assets.append(asset_dict)
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -79,7 +81,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
 
-                assets.extend(self.validate(next_url))
+                assets.extend(self.validate(next_url, logger))
 
         return assets
 
@@ -131,7 +133,7 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        assets = STACSchemaValidator(url_reader).validate(arguments.metadata_url)
+        assets = STACSchemaValidator(url_reader).validate(arguments.metadata_url, logger)
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1

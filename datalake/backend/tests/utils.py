@@ -1,10 +1,13 @@
 import string
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
+from io import StringIO
+from json import dump
 from os import urandom
 from random import choice, randrange
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Type
+from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Type
+from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
@@ -262,3 +265,23 @@ class S3Object:
                 if version["Key"] == self.key:
                     version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
         return version_list
+
+
+class MockJSONURLReader(Mock):
+    def __init__(
+        self, url_to_json: Dict[str, Any], call_limit: Optional[int] = None, **kwargs: Any
+    ):
+        super().__init__(**kwargs)
+
+        self.url_to_json = url_to_json
+        self.call_limit = call_limit
+        self.side_effect = self.read_url
+
+    def read_url(self, url: str) -> TextIO:
+        if self.call_limit is not None:
+            assert self.call_count <= self.call_limit
+
+        result = StringIO()
+        dump(self.url_to_json[url], result)
+        result.seek(0)
+        return result
