@@ -11,6 +11,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
+from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
@@ -22,6 +23,9 @@ REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
 STAC_VERSION = "1.0.0-beta.2"
+
+SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
+EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
 
 # General-purpose generators
 

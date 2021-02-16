@@ -5,7 +5,6 @@ from os import environ
 from unittest.mock import MagicMock, call, patch
 
 import boto3
-from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from botocore.stub import Stubber  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
@@ -21,6 +20,7 @@ from ..processing.check_files_checksums.task import (
     validate_url_multihash,
 )
 from .utils import (
+    EMPTY_FILE_MULTIHASH,
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
@@ -29,9 +29,6 @@ from .utils import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
-
-SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
-EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
 
 
 def test_should_return_when_empty_file_checksum_matches(s3_client: S3Client) -> None:
