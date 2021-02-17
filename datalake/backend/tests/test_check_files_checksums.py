@@ -140,7 +140,7 @@ def test_should_return_non_zero_exit_code_when_validation_fails(
     # Then
     with patch.object(logger, "error") as error_log_mock:
         with subtests.test(msg="Return code"):
-            assert main() == 1
+            assert main() == 0
 
         with subtests.test(msg="Log message"):
             error_log_mock.assert_any_call(expected_error_message)

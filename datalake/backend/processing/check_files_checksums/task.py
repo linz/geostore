@@ -4,7 +4,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps
 from os import environ
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Mapping
 from urllib.parse import urlparse
 
 import boto3
@@ -73,6 +73,11 @@ def success(logger: logging.Logger) -> int:
     return 0
 
 
+def failure(content: Mapping[str, Any], logger: logging.Logger) -> int:
+    logger.error(dumps({"success": False, **content}))
+    return 0
+
+
 def main() -> int:
     logger = set_up_logging()
 
@@ -99,16 +104,11 @@ def main() -> int:
     try:
         validate_url_multihash(item.url, item.multihash, s3_client)
     except ChecksumMismatchError as error:
-        logger.error(
-            dumps(
-                {
-                    "success": False,
-                    "message": f"Checksum mismatch: expected {item.multihash[4:]},"
-                    f" got {error.actual_hex_digest}",
-                }
-            )
-        )
-        return 1
+        content = {
+            "message": f"Checksum mismatch: expected {item.multihash[4:]},"
+            f" got {error.actual_hex_digest}"
+        }
+        return failure(content, logger)
 
     return success(logger)
 
