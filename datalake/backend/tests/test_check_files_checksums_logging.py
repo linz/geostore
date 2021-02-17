@@ -2,8 +2,9 @@ import logging
 import sys
 from json import dumps
 from os import environ
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
+from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from ..processing.assets_model import ProcessingAssetsModel
@@ -18,15 +19,12 @@ class TestLogging:
     def setup_class(cls) -> None:
         cls.logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
 
-    @patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
-    def test_should_log_missing_item(
-        self, processing_assets_model_mock: MagicMock, subtests: SubTests
-    ) -> None:
+    @mark.infrastructure
+    def test_should_log_missing_item(self, subtests: SubTests) -> None:
         # Given
         dataset_id = any_dataset_id()
         version_id = any_dataset_version_id()
         index = 0
-        processing_assets_model_mock.get.side_effect = ProcessingAssetsModel.DoesNotExist
         expected_log = dumps(
             {
                 "error": {"message": ProcessingAssetsModel.DoesNotExist.msg, "cause": None},
