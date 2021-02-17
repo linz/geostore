@@ -4,7 +4,7 @@ from hashlib import sha256
 from os import urandom
 from random import choice, randrange
 from types import TracebackType
-from typing import BinaryIO, List, Optional, Type
+from typing import Any, BinaryIO, Dict, List, Optional, Type
 from uuid import uuid4
 
 import boto3
@@ -17,6 +17,8 @@ from ..endpoints.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
+
+STAC_VERSION = "1.0.0-beta.2"
 
 # General-purpose generators
 
@@ -140,6 +142,19 @@ def any_s3_bucket_name() -> str:
 def any_lambda_context() -> bytes:
     """Arbitrary-length string"""
     return random_string(10).encode()
+
+
+MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
+    "stac_version": STAC_VERSION,
+    "id": any_dataset_id(),
+    "description": any_dataset_description(),
+    "links": [],
+    "license": "MIT",
+    "extent": {
+        "spatial": {"bbox": [[-180, -90, 180, 90]]},
+        "temporal": {"interval": [[any_past_datetime_string(), None]]},
+    },
+}
 
 
 class Dataset:
