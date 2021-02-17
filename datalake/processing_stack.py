@@ -109,7 +109,6 @@ class ProcessingStack(core.Stack):
                 "type.$": "$.type",
                 "metadata_url.$": "$.metadata_url",
                 "first_item.$": "$.content.first_item",
-                "iteration_size.$": "$.content.iteration_size",
             },
             array_size=MAX_ITERATION_SIZE,
             container_overrides_command=[
@@ -155,7 +154,7 @@ class ProcessingStack(core.Stack):
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.not_(
-                        aws_stepfunctions.Condition.string_equals("$.content.next_item", "-1")
+                        aws_stepfunctions.Condition.number_equals("$.content.next_item", -1)
                     ),
                     content_iterator_task.lambda_invoke,
                 )
