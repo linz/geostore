@@ -4,6 +4,11 @@ from jsonschema import validate  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
+# From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
+MIN_ITERATION_SIZE = 2
+
+# TODO: Set MAX_ITERATION_SIZE to 10_000 once we figure out [how to set a numeric
+# size](https://stackoverflow.com/q/66202138/96588)
 MAX_ITERATION_SIZE = 5
 
 JSON_OBJECT = MutableMapping[str, Any]
@@ -52,7 +57,7 @@ def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         iteration_size = MAX_ITERATION_SIZE
     else:
         next_item_index = -1
-        iteration_size = max(remaining_assets, 2)
+        iteration_size = max(remaining_assets, MIN_ITERATION_SIZE)
 
     return {
         "first_item": str(first_item_index),
