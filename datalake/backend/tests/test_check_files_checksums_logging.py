@@ -27,6 +27,7 @@ class TestLogging:
         index = 0
         expected_log = dumps(
             {
+                "success": False,
                 "error": {"message": ProcessingAssetsModel.DoesNotExist.msg, "cause": None},
                 "parameters": {
                     "hash_key": f"DATASET#{dataset_id}#VERSION#{version_id}",
@@ -44,7 +45,7 @@ class TestLogging:
         ]
 
         # When/Then
-        with patch.object(self.logger, "warning") as log_mock:
+        with patch.object(self.logger, "error") as log_mock:
             with subtests.test(msg="Return code"):
                 assert main() == 0
 

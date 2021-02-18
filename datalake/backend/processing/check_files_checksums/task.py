@@ -68,6 +68,10 @@ def set_up_logging() -> logging.Logger:
     return logger
 
 
+def get_job_offset() -> int:
+    return int(environ.get(ARRAY_INDEX_VARIABLE_NAME, 0))
+
+
 def success(logger: logging.Logger) -> int:
     logger.info(dumps({"success": True, "message": ""}))
     return 0
@@ -84,22 +88,20 @@ def main() -> int:
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
 
-    index = arguments.first_item + int(environ[ARRAY_INDEX_VARIABLE_NAME])
+    index = arguments.first_item + get_job_offset()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
     range_key = f"DATA_ITEM_INDEX#{index}"
 
     try:
         item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
     except ProcessingAssetsModel.DoesNotExist as error:
-        logger.warning(
-            dumps(
-                {
-                    "error": {"message": error.msg, "cause": error.cause},
-                    "parameters": {"hash_key": hash_key, "range_key": range_key},
-                }
-            )
+        return failure(
+            {
+                "error": {"message": error.msg, "cause": error.cause},
+                "parameters": {"hash_key": hash_key, "range_key": range_key},
+            },
+            logger,
         )
-        return success(logger)
 
     try:
         validate_url_multihash(item.url, item.multihash, s3_client)

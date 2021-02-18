@@ -169,6 +169,11 @@ def any_item_index() -> int:
     return randrange(1_000_000) * MAX_ITERATION_SIZE
 
 
+def any_batch_job_array_index() -> int:
+    # https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
+    return randrange(2, 10_001)
+
+
 def any_item_count() -> int:
     """Arbitrary non-negative integer"""
     return randrange(3)

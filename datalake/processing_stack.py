@@ -7,7 +7,6 @@ from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
 from .backend.endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from .backend.endpoints.utils import ResourceName
-from .backend.processing.content_iterator.task import MAX_ITERATION_SIZE
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -91,41 +90,56 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
-        processing_assets_table.grant_read_write_data(content_iterator_task.lambda_function)
-        processing_assets_table.grant(
-            content_iterator_task.lambda_function, "dynamodb:DescribeTable"
-        )
 
-        check_files_checksums_task = BatchSubmitJobTask(
+        check_files_checksums_directory = "check_files_checksums"
+        check_files_checksums_default_payload_object = {
+            "dataset_id.$": "$.dataset_id",
+            "version_id.$": "$.version_id",
+            "type.$": "$.type",
+            "metadata_url.$": "$.metadata_url",
+            "first_item.$": "$.content.first_item",
+        }
+        check_files_checksums_default_container_overrides_command = [
+            "--dataset-id",
+            "Ref::dataset_id",
+            "--version-id",
+            "Ref::version_id",
+            "--first-item",
+            "Ref::first_item",
+        ]
+        check_files_checksums_single_task = BatchSubmitJobTask(
             self,
-            "check_files_checksums_task",
+            "check_files_checksums_single_task",
             deploy_env=deploy_env,
-            directory="check_files_checksums",
+            directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
-            payload_object={
-                "dataset_id.$": "$.dataset_id",
-                "version_id.$": "$.version_id",
-                "type.$": "$.type",
-                "metadata_url.$": "$.metadata_url",
-                "first_item.$": "$.content.first_item",
-            },
-            array_size=MAX_ITERATION_SIZE,
-            container_overrides_command=[
-                "--dataset-id",
-                "Ref::dataset_id",
-                "--version-id",
-                "Ref::version_id",
-                "--first-item",
-                "Ref::first_item",
-            ],
+            payload_object=check_files_checksums_default_payload_object,
+            container_overrides_command=check_files_checksums_default_container_overrides_command,
         )
-        processing_assets_table.grant_read_data(
-            check_files_checksums_task.job_role  # type: ignore[arg-type]
+        array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
+        check_files_checksums_array_task = BatchSubmitJobTask(
+            self,
+            "check_files_checksums_array_task",
+            deploy_env=deploy_env,
+            directory=check_files_checksums_directory,
+            s3_policy=s3_read_only_access_policy,
+            job_queue=batch_job_queue,
+            payload_object=check_files_checksums_default_payload_object,
+            container_overrides_command=check_files_checksums_default_container_overrides_command,
+            array_size=array_size,
         )
-        processing_assets_table.grant(
-            check_files_checksums_task.job_role, "dynamodb:DescribeTable"  # type: ignore[arg-type]
-        )
+
+        processing_assets_table_readers = [
+            content_iterator_task.lambda_function,
+            check_files_checksums_single_task.job_role,
+            check_files_checksums_array_task.job_role,
+        ]
+        for reader in processing_assets_table_readers:
+            processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
+            processing_assets_table.grant(
+                reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+            )
 
         validation_summary_lambda_invoke = LambdaTask(
             self,
@@ -149,7 +163,17 @@ class ProcessingStack(core.Stack):
         # STATE MACHINE
         dataset_version_creation_definition = (
             check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task.lambda_invoke)
-            .next(check_files_checksums_task.batch_submit_job)
+            .next(
+                aws_stepfunctions.Choice(  # type: ignore[arg-type]
+                    self, "check_files_checksums_maybe_array"
+                )
+                .when(
+                    aws_stepfunctions.Condition.number_equals("$.content.iteration_size", 1),
+                    check_files_checksums_single_task.batch_submit_job,
+                )
+                .otherwise(check_files_checksums_array_task.batch_submit_job)
+                .afterwards()
+            )
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
