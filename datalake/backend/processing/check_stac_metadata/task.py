@@ -27,7 +27,6 @@ S3_URL_PREFIX = "s3://"
 
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
-CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 
 
 class ProcessingAssetsModel(Model):
@@ -49,14 +48,10 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
             collection_schema = load(collection_schema_file)
 
-        with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
-            catalog_schema = load(catalog_schema_file)
-
         # Normalize URLs the same way as jsonschema does
         uri_dictionary = URIDict()
         schema_store = {
             uri_dictionary.normalize(collection_schema["$id"]): collection_schema,
-            uri_dictionary.normalize(catalog_schema["$id"]): catalog_schema,
         }
 
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
