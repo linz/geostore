@@ -1,4 +1,12 @@
-.venv
 cdk.out
+.coverage
+.git
+.github
+.idea
+.mypy_cache/
 node_modules
+*.pyc
 __pycache__
+.pytest_cache
+.venv
+.vscode
