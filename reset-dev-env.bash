@@ -31,7 +31,6 @@ do
         --delete)
             delete=1
             shift
-            exit
             ;;
         --help)
             usage
