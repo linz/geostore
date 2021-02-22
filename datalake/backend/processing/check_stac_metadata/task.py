@@ -74,15 +74,21 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
 
         self.validator.validate(url_json)
 
+        url_prefix = get_url_before_filename(url)
+
         assets = []
         for asset in url_json.get("assets", {}).values():
-            assets.append({"url": asset["href"], "multihash": asset["checksum:multihash"]})
+            asset_url = asset["href"]
+            asset_url_prefix = get_url_before_filename(asset_url)
+            assert (
+                url_prefix == asset_url_prefix
+            ), f"“{url}” links to asset file in different directory: “{asset_url}”"
+            assets.append({"url": asset_url, "multihash": asset["checksum:multihash"]})
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
             if next_url not in self.traversed_urls:
-                url_prefix = url.rsplit("/", maxsplit=1)[0]
-                next_url_prefix = next_url.rsplit("/", maxsplit=1)[0]
+                next_url_prefix = get_url_before_filename(next_url)
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
@@ -90,6 +96,10 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assets.extend(self.validate(next_url))
 
         return assets
+
+
+def get_url_before_filename(url: str) -> str:
+    return url.rsplit("/", maxsplit=1)[0]
 
 
 def parse_arguments() -> Namespace:
