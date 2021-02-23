@@ -96,6 +96,10 @@ version = "*"
 extras = ["format"]
 optional = true
 
+[tool.poetry.dependencies.multihash]
+version = "*"
+optional = true
+
 [tool.poetry.dependencies.pynamodb]
 version = "<5"
 optional = true
@@ -110,7 +114,6 @@ gitlint = "*"
 ipdb = "*"
 isort = "*"
 language-formatters-pre-commit-hooks = "*"
-multihash = "*"
 mypy = "*"
 pre-commit = "*"
 pylint = "*"
@@ -143,11 +146,20 @@ cdk = [
     "awscli",
     "cattrs",
 ]
+check_files_checksums = [
+    "boto3",
+    "multihash",
+    "pynamodb",
+]
 check_stac_metadata = [
     "boto3",
     "jsonschema",
     "pynamodb",
     "strict-rfc3339",
+]
+content_iterator = [
+    "jsonschema",
+    "pynamodb",
 ]
 datasets = [
     "jsonschema",

@@ -18,7 +18,8 @@ class TaskJobDefinition(aws_batch.JobDefinition):
 
         image = aws_ecs.ContainerImage.from_asset(
             directory=".",
-            file=f"datalake/backend/processing/{directory}/Dockerfile",
+            build_args={"task": directory},
+            file="datalake/backend/processing/Dockerfile",
         )
 
         container = aws_batch.JobDefinitionContainer(
@@ -29,4 +30,4 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             environment={"DEPLOY_ENV": deploy_env},
         )
 
-        super().__init__(scope, construct_id, container=container, retry_attempts=4)
+        super().__init__(scope, construct_id, container=container)

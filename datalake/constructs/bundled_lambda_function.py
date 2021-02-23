@@ -1,3 +1,5 @@
+from typing import Mapping, Optional
+
 from aws_cdk import aws_lambda, core
 
 from ..common import LOG_LEVEL
@@ -5,7 +7,13 @@ from ..common import LOG_LEVEL
 
 class BundledLambdaFunction(aws_lambda.Function):
     def __init__(
-        self, scope: core.Construct, construct_id: str, *, directory: str, application_layer: str
+        self,
+        scope: core.Construct,
+        construct_id: str,
+        *,
+        directory: str,
+        application_layer: str,
+        extra_environment: Optional[Mapping[str, str]] = None,
     ):
         bundling_options = core.BundlingOptions(
             # pylint:disable=no-member
@@ -14,13 +22,17 @@ class BundledLambdaFunction(aws_lambda.Function):
         )
         lambda_code = aws_lambda.Code.from_asset(path=".", bundling=bundling_options)
 
+        environment = {"LOGLEVEL": LOG_LEVEL}
+        if extra_environment is not None:
+            environment.update(extra_environment)
+
         super().__init__(
             scope,
             construct_id,
+            code=lambda_code,
             handler=f"processing.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
-            code=lambda_code,
-            environment={"LOGLEVEL": LOG_LEVEL},
+            environment=environment,
         )
 
         core.Tags.of(self).add("ApplicationLayer", application_layer)

@@ -1,13 +1,24 @@
 import logging
 import sys
+from copy import deepcopy
 from json import dumps
 from random import choice
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
-from ..processing.check_stac_metadata.task import main
-from .utils import any_dataset_id, any_dataset_version_id, any_program_name, any_s3_url
+from ..processing.check_stac_metadata.task import STACSchemaValidator, main
+from .utils import (
+    MINIMAL_VALID_STAC_OBJECT,
+    MockJSONURLReader,
+    any_dataset_id,
+    any_dataset_version_id,
+    any_hex_multihash,
+    any_program_name,
+    any_s3_url,
+    any_safe_filename,
+    any_stac_asset_name,
+)
 
 
 class TestLogging:
@@ -35,7 +46,7 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "datalake.backend.processing.check_stac_metadata.task.ProcessingAssetsModel"
+            "datalake.backend.processing.assets_model.ProcessingAssetsModel"
         ):
             main()
 
@@ -71,3 +82,24 @@ class TestLogging:
             main()
 
             logger_mock.assert_any_call(f'{{"success": false, "message": "{error_message}"}}')
+
+    def test_should_log_assets(self) -> None:
+        base_url = any_s3_url()
+        metadata_url = f"{base_url}/{any_safe_filename()}"
+        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+        asset_url = f"{base_url}/{any_safe_filename()}"
+        asset_multihash = any_hex_multihash()
+        stac_object["assets"] = {
+            any_stac_asset_name(): {
+                "href": asset_url,
+                "checksum:multihash": asset_multihash,
+            },
+        }
+
+        url_reader = MockJSONURLReader({metadata_url: stac_object})
+        expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
+
+        with patch.object(self.logger, "debug") as logger_mock:
+            STACSchemaValidator(url_reader).validate(metadata_url, self.logger)
+
+            logger_mock.assert_any_call(expected_message)

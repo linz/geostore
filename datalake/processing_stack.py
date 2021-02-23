@@ -7,6 +7,7 @@ from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
 from .backend.endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from .backend.endpoints.utils import ResourceName
+from .backend.processing.content_iterator.task import MAX_ITERATION_SIZE
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
@@ -87,11 +88,14 @@ class ProcessingStack(core.Stack):
             "content_iterator_task",
             directory="content_iterator",
             result_path="$.content",
-            permission_functions=[processing_assets_table.grant_read_data],
             application_layer=application_layer,
-        ).lambda_invoke
+            extra_environment={"DEPLOY_ENV": deploy_env},
+        )
+        processing_assets_table.grant_read_write_data(content_iterator_task.lambda_function)
+        processing_assets_table.grant(
+            content_iterator_task.lambda_function, "dynamodb:DescribeTable"
+        )
 
-        array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_task = BatchSubmitJobTask(
             self,
             "check_files_checksums_task",
@@ -105,13 +109,26 @@ class ProcessingStack(core.Stack):
                 "type.$": "$.type",
                 "metadata_url.$": "$.metadata_url",
                 "first_item.$": "$.content.first_item",
+                "iteration_size.$": "$.content.iteration_size",
             },
-            container_overrides_environment={"BATCH_JOB_FIRST_ITEM_INDEX": "Ref::first_item"},
-            array_size=array_size,
-            container_overrides_command=["--metadata-url", "Ref::metadata_url"],
-        ).batch_submit_job
+            array_size=MAX_ITERATION_SIZE,
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
+        )
+        processing_assets_table.grant_read_data(
+            check_files_checksums_task.job_role  # type: ignore[arg-type]
+        )
+        processing_assets_table.grant(
+            check_files_checksums_task.job_role, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+        )
 
-        validation_summary_task = LambdaTask(
+        validation_summary_lambda_invoke = LambdaTask(
             self,
             "validation_summary_task",
             directory="validation_summary",
@@ -119,7 +136,7 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         ).lambda_invoke
 
-        validation_failure_task = LambdaTask(
+        validation_failure_lambda_invoke = LambdaTask(
             self,
             "validation_failure_task",
             directory="validation_failure",
@@ -132,18 +149,18 @@ class ProcessingStack(core.Stack):
         ############################################################################################
         # STATE MACHINE
         dataset_version_creation_definition = (
-            check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task)
-            .next(check_files_checksums_task)
+            check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task.lambda_invoke)
+            .next(check_files_checksums_task.batch_submit_job)
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.not_(
-                        aws_stepfunctions.Condition.number_equals("$.content.next_item", -1)
+                        aws_stepfunctions.Condition.string_equals("$.content.next_item", "-1")
                     ),
-                    content_iterator_task,
+                    content_iterator_task.lambda_invoke,
                 )
                 .otherwise(
-                    validation_summary_task.next(
+                    validation_summary_lambda_invoke.next(
                         aws_stepfunctions.Choice(  # type: ignore[arg-type]
                             self, "validation_successful"
                         )
@@ -153,7 +170,7 @@ class ProcessingStack(core.Stack):
                             ),
                             success_task,  # type: ignore[arg-type]
                         )
-                        .otherwise(validation_failure_task)
+                        .otherwise(validation_failure_lambda_invoke)
                     )
                 )
             )

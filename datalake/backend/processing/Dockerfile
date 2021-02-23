@@ -10,12 +10,13 @@ RUN curl --location --show-error --silent --output get-poetry.py https://raw.git
     && rm get-poetry.py get-poetry.py.sha256
 COPY poetry.lock poetry.toml pyproject.toml /opt/
 WORKDIR /opt
-RUN ~/.poetry/bin/poetry install --extras=check_stac_metadata --no-dev
+ARG task
+RUN ~/.poetry/bin/poetry install --extras=${task} --no-dev
 
 
 FROM ubuntu:20.04
 
-ENTRYPOINT ["/opt/.venv/bin/python", "/opt/task.py"]
+ENTRYPOINT ["/opt/.venv/bin/python", "-m", "src.task.task"]
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -24,6 +25,6 @@ RUN apt-get update \
 
 COPY --from=build /opt/.venv /opt/.venv
 
-COPY datalake/backend/processing/check_stac_metadata/stac-spec/collection-spec/json-schema/collection.json /opt/stac-spec/collection-spec/json-schema/collection.json
-COPY datalake/backend/processing/check_stac_metadata/stac-spec/catalog-spec/json-schema/catalog.json /opt/stac-spec/catalog-spec/json-schema/catalog.json
-COPY datalake/backend/processing/check_stac_metadata/task.py /opt/
+COPY datalake/backend/processing/*.py /src/
+ARG task
+COPY datalake/backend/processing/${task} /src/task/

@@ -1,24 +1,31 @@
 import string
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
+from io import StringIO
+from json import dump
 from os import urandom
 from random import choice, randrange
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Type
+from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Type
+from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
+from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
-from datalake.backend.endpoints.model import DatasetModel
-
+from ..endpoints.model import DatasetModel
 from ..endpoints.utils import DATASET_TYPES
+from ..processing.content_iterator.task import MAX_ITERATION_SIZE
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
 STAC_VERSION = "1.0.0-beta.2"
+
+SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
+EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
 
 # General-purpose generators
 
@@ -72,7 +79,15 @@ def any_https_url() -> str:
 
 
 def any_hex_multihash() -> str:
-    hex_digest = sha256(random_string(20).encode()).hexdigest()
+    hex_digest = any_sha256_hex_digest()
+    return sha256_hex_digest_to_multihash(hex_digest)
+
+
+def any_sha256_hex_digest() -> str:
+    return sha256(random_string(20).encode()).hexdigest()
+
+
+def sha256_hex_digest_to_multihash(hex_digest: str) -> str:
     return f"{SHA2_256:x}{32:x}{hex_digest}"
 
 
@@ -84,6 +99,11 @@ def any_file_contents() -> bytes:
 def any_error_message() -> str:
     """Arbitrary-length string"""
     return random_string(50)
+
+
+def any_dictionary_key() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
 
 
 # STAC-specific generators
@@ -142,6 +162,16 @@ def any_s3_bucket_name() -> str:
 def any_lambda_context() -> bytes:
     """Arbitrary-length string"""
     return random_string(10).encode()
+
+
+def any_item_index() -> int:
+    """Arbitrary non-negative multiple of iteration size"""
+    return randrange(1_000_000) * MAX_ITERATION_SIZE
+
+
+def any_item_count() -> int:
+    """Arbitrary non-negative integer"""
+    return randrange(3)
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
@@ -239,3 +269,23 @@ class S3Object:
                 if version["Key"] == self.key:
                     version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
         return version_list
+
+
+class MockJSONURLReader(Mock):
+    def __init__(
+        self, url_to_json: Dict[str, Any], call_limit: Optional[int] = None, **kwargs: Any
+    ):
+        super().__init__(**kwargs)
+
+        self.url_to_json = url_to_json
+        self.call_limit = call_limit
+        self.side_effect = self.read_url
+
+    def read_url(self, url: str) -> TextIO:
+        if self.call_limit is not None:
+            assert self.call_count <= self.call_limit
+
+        result = StringIO()
+        dump(self.url_to_json[url], result)
+        result.seek(0)
+        return result
