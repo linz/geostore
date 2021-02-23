@@ -46,7 +46,7 @@ class APIStack(core.Stack):
                 ),
             )
             endpoint_function.add_environment("DEPLOY_ENV", deploy_env)
-            endpoint_function.grant_invoke(users_role)
+            endpoint_function.grant_invoke(users_role)  # type: ignore[arg-type]
 
             datasets_table.grant_read_write_data(endpoint_function)
             datasets_table.grant(

@@ -23,7 +23,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
 
         container = aws_batch.JobDefinitionContainer(
             image=image,
-            job_role=job_role,
+            job_role=job_role,  # type: ignore[arg-type]
             memory_limit_mib=batch_job_definition_memory_limit,
             vcpus=1,
             environment={"DEPLOY_ENV": deploy_env},

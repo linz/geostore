@@ -39,7 +39,7 @@ class StorageStack(core.Stack):
             versioned=True,
             removal_policy=resource_removal_policy,
         )
-        Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")
+        Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 
         ############################################################################################
         # ### APPLICATION DB #######################################################################

@@ -161,7 +161,7 @@ def test_should_only_validate_each_file_once() -> None:
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
 
-def test_should_raise_exception_if_related_file_is_in_different_directory() -> None:
+def test_should_raise_exception_if_metadata_file_is_in_different_directory() -> None:
     base_url = any_s3_url()
     root_url = f"{base_url}/{any_safe_filename()}"
     other_url = f"{base_url}/{any_safe_filename()}/{any_safe_filename()}"
@@ -178,6 +178,25 @@ def test_should_raise_exception_if_related_file_is_in_different_directory() -> N
         STACSchemaValidator(url_reader).validate(root_url)
 
 
+def test_should_raise_exception_if_asset_file_is_in_different_directory() -> None:
+    base_url = any_s3_url()
+    root_url = f"{base_url}/{any_safe_filename()}"
+    other_url = f"{base_url}/{any_safe_filename()}/{any_safe_filename()}"
+
+    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object["assets"] = {
+        any_stac_asset_name(): {"href": other_url, "checksum:multihash": any_hex_multihash()}
+    }
+
+    url_reader = MockJSONURLReader({root_url: stac_object})
+
+    with raises(
+        AssertionError,
+        match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
+    ):
+        STACSchemaValidator(url_reader).validate(root_url)
+
+
 def test_should_raise_exception_if_non_s3_url_is_passed() -> None:
     https_url = any_https_url()
     url_reader = MockJSONURLReader({})
@@ -187,11 +206,12 @@ def test_should_raise_exception_if_non_s3_url_is_passed() -> None:
 
 
 def test_should_return_assets_from_validated_metadata_files() -> None:
-    url = any_s3_url()
+    base_url = any_s3_url()
+    metadata_url = f"{base_url}/{any_safe_filename()}"
     stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-    first_asset_url = any_s3_url()
+    first_asset_url = f"{base_url}/{any_safe_filename()}"
     first_asset_multihash = any_hex_multihash()
-    second_asset_url = any_s3_url()
+    second_asset_url = f"{base_url}/{any_safe_filename()}"
     second_asset_multihash = any_hex_multihash()
     stac_object["assets"] = {
         any_stac_asset_name(): {
@@ -207,9 +227,9 @@ def test_should_return_assets_from_validated_metadata_files() -> None:
         {"url": first_asset_url, "multihash": first_asset_multihash},
         {"url": second_asset_url, "multihash": second_asset_multihash},
     ]
-    url_reader = MockJSONURLReader({url: stac_object})
+    url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-    assets = STACSchemaValidator(url_reader).validate(url)
+    assets = STACSchemaValidator(url_reader).validate(metadata_url)
 
     assert _sort_assets(assets) == _sort_assets(expected_assets)
 

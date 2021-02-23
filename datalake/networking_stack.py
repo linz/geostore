@@ -39,4 +39,4 @@ class NetworkingStack(core.Stack):
             ],
             max_azs=99 if deploy_env == "prod" else 1,
         )
-        Tags.of(self.datalake_vpc).add("ApplicationLayer", "networking")
+        Tags.of(self.datalake_vpc).add("ApplicationLayer", "networking")  # type: ignore[arg-type]
