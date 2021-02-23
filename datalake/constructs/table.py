@@ -20,4 +20,4 @@ class Table(aws_dynamodb.Table):
             removal_policy=resource_removal_policy,
         )
 
-        core.Tags.of(self).add("ApplicationLayer", application_layer)
+        core.Tags.of(self).add("ApplicationLayer", application_layer)  # type: ignore[arg-type]
