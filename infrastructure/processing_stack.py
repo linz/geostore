@@ -187,22 +187,27 @@ class ProcessingStack(core.Stack):
         s3_batch_copy_role.add_to_policy(
             aws_iam.PolicyStatement(
                 actions=[
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:GetObjectTagging",
+                ],
+                resources=[
+                    staging_bucket_arn.string_value + "/*",
+                ],
+            ),
+        )
+        s3_batch_copy_role.add_to_policy(
+            aws_iam.PolicyStatement(
+                actions=[
                     "s3:PutObject",
-                    "s3:PutObjectVersionAcl",
                     "s3:PutObjectAcl",
-                    "s3:PutObjectVersionTagging",
                     "s3:PutObjectTagging",
                     "s3:GetObject",
                     "s3:GetObjectVersion",
-                    "s3:GetObjectAcl",
-                    "s3:GetObjectTagging",
-                    "s3:GetObjectVersionAcl",
-                    "s3:GetObjectVersionTagging",
                     "s3:GetBucketLocation",
                 ],
                 resources=[
                     storage_bucket_arn.string_value + "/*",
-                    staging_bucket_arn.string_value + "/*",
                 ],
             )
         )
@@ -223,6 +228,7 @@ class ProcessingStack(core.Stack):
             permission_functions=[
                 storage_bucket_arn.grant_read,
                 storage_bucket.grant_read_write,
+                processing_assets_table.grant_read_data,
             ],
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
@@ -233,7 +239,11 @@ class ProcessingStack(core.Stack):
             PolicyStatement(
                 resources=["*"],
                 actions=["s3:CreateJob", "iam:PassRole"],
-            )
+            ),
+        )
+
+        processing_assets_table.grant(
+            import_dataset_task.lambda_function.role, "dynamodb:DescribeTable"
         )
 
         success_task = aws_stepfunctions.Succeed(self, "success")

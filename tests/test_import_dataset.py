@@ -94,9 +94,7 @@ def test_should_batch_copy_files_to_storage(
                 body["metadata_url"] = metadata_s3_object.url
                 body["type"] = any_valid_dataset_type()
 
-                response = lambda_handler(
-                    {"httpMethod": "POST", "body": body}, any_lambda_context()
-                )
+                response = lambda_handler(body, any_lambda_context())
 
                 final_states = ["Complete", "Failed", "Cancelled"]
                 # poll for S3 Batch Copy completion
@@ -113,5 +111,6 @@ def test_should_batch_copy_files_to_storage(
                 # Then
                 for key in [metadata_processing_asset.url, processing_asset.url]:
                     s3_client.head_object(
-                        Bucket=ResourceName.STORAGE_BUCKET_NAME.value, Key=urlparse(key).path[1:]
+                        Bucket=ResourceName.STORAGE_BUCKET_NAME.value,
+                        Key=f"{dataset_id}/{version_id}/{urlparse(key).path[1:]}",
                     )

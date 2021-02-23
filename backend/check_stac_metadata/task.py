@@ -63,11 +63,16 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         url_prefix = get_url_before_filename(url)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         assets = []
         for asset in url_json.get("item_assets", {}).values():
 =======
         files = []
         files.append({"url": url, "multihash": None})
+=======
+        dataset_files = []
+        dataset_files.append({"url": url})
+>>>>>>> 323d605... fix: fixed broken tests and permission issues
 
         for asset in url_json.get("assets", {}).values():
 >>>>>>> a9e441c... feat: import dataset task
@@ -78,7 +83,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             logger.debug(dumps({"asset": asset_dict}))
-            files.append(asset_dict)
+            dataset_files.append(asset_dict)
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -87,9 +92,9 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
-                files.extend(self.validate(next_url, logger))
+                dataset_files.extend(self.validate(next_url, logger))
 
-        return files
+        return dataset_files
 
 
 def get_url_before_filename(url: str) -> str:
@@ -139,18 +144,17 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        assets = STACSchemaValidator(url_reader).validate(arguments.metadata_url, logger)
+        dataset_files = STACSchemaValidator(url_reader).validate(arguments.metadata_url, logger)
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
 
     asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    for index, file in enumerate(files):
+    for index, dataset_file in enumerate(dataset_files):
         ProcessingAssetsModel(
             pk=asset_pk,
             sk=f"DATA_ITEM_INDEX#{index}",
-            url=file["url"],
-            multihash=file["multihash"],
+            **dataset_file,
         ).save()
 
     logger.info(dumps({"success": True, "message": ""}))

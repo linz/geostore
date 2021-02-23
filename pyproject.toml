@@ -177,6 +177,7 @@ dataset_versions = [
 ]
 import_dataset = [
     "boto3",
+    "jsonschema",
     "pynamodb",
     "smart-open"
 ]

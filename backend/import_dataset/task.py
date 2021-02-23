@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 import boto3
+from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
 from smart_open import open as smart_open  # type: ignore[import]
@@ -35,23 +36,37 @@ class ProcessingAssetsModel(Model):
     multihash = UnicodeAttribute(null=True)
 
 
-# noinspection PyArgumentList
+BODY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "dataset_id": {"type": "string"},
+        "version_id": {"type": "string"},
+        "metadata_url": {"type": "string"},
+    },
+    "required": ["dataset_id", "metadata_url", "version_id"],
+}
+
+
 def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     """Main Lambda entry point."""
 
     logger = set_up_logging()
-    req_body = payload["body"]
 
-    dataset_id = req_body["dataset_id"]
-    dataset_version_id = req_body["version_id"]
-    metadata_url = req_body["metadata_url"]
+    # validate input
+    try:
+        validate(payload, BODY_SCHEMA)
+    except ValidationError as err:
+        logger.warning(json.dumps({"error": err}, default=str))
+        return {"statusCode": "400", "body": err.message}
+
+    dataset_id = payload["dataset_id"]
+    dataset_version_id = payload["version_id"]
+    metadata_url = payload["metadata_url"]
 
     storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
-    staging_bucket = boto3.resource("s3").Bucket(
-        urlparse(metadata_url, allow_fragments=False).netloc
-    )
+    staging_bucket = boto3.resource("s3").Bucket(urlparse(metadata_url).netloc)
 
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
@@ -59,10 +74,9 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         for file in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            key = urlparse(file.url, allow_fragments=False).path[1:]
+            logger.debug(json.dumps({"Adding file to manifest": file.url}, default=str))
+            key = urlparse(file.url).path[1:]
             s3_manifest.write(f"{staging_bucket.name},{key}\n")
-
-    # TODO: do we need to handle case where this dataset_id already exists in storage?
 
     # trigger s3 batch copy operation
     response = s3control_client.create_job(
@@ -88,14 +102,18 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
             },
         },
         Report={
-            "Enabled": False,
+            "Enabled": True,
+            "Bucket": storage_bucket_arn,
+            "Format": "Report_CSV_20180820",
+            "Prefix": f"reports/{dataset_version_id}/report.csv",
+            "ReportScope": "AllTasks",
         },
         Priority=1,
         RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER),
         ClientRequestToken=uuid4().hex,
     )
 
-    logger.debug(json.dumps({"response": response}, default=str))
+    logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
     return {"statusCode": "200", "body": response}
 
