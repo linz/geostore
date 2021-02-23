@@ -26,7 +26,9 @@ class BatchSubmitJobTask(core.Construct):
         self.job_role = aws_iam.Role(
             self,
             f"{construct_id}_batch_job_role",
-            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
+                "ecs-tasks.amazonaws.com"
+            ),
             managed_policies=[s3_policy],
         )
 
@@ -51,8 +53,8 @@ class BatchSubmitJobTask(core.Construct):
             scope,
             f"{construct_id}_batch_submit_job",
             job_name=f"{construct_id}_job",
-            job_definition=self.job_definition,
-            job_queue=job_queue,
+            job_definition=self.job_definition,  # type: ignore[arg-type]
+            job_queue=job_queue,  # type: ignore[arg-type]
             array_size=array_size,
             result_path=aws_stepfunctions.JsonPath.DISCARD,
             container_overrides=container_overrides,

@@ -74,11 +74,13 @@ class ProcessingStack(core.Stack):
                 "Ref::metadata_url",
             ],
         )
-        processing_assets_table.grant_read_write_data(check_stac_metadata_job_task.job_role)
-        processing_assets_table.grant(
-            check_stac_metadata_job_task.job_role, "dynamodb:DescribeTable"
+        processing_assets_table.grant_read_write_data(
+            check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
         )
-        check_stac_metadata_task = check_stac_metadata_job_task.batch_submit_job
+        processing_assets_table.grant(
+            check_stac_metadata_job_task.job_role,  # type: ignore[arg-type]
+            "dynamodb:DescribeTable",
+        )
 
         content_iterator_task = LambdaTask(
             self,
@@ -130,7 +132,7 @@ class ProcessingStack(core.Stack):
         ############################################################################################
         # STATE MACHINE
         dataset_version_creation_definition = (
-            check_stac_metadata_task.next(content_iterator_task)
+            check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task)
             .next(check_files_checksums_task)
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
@@ -141,16 +143,18 @@ class ProcessingStack(core.Stack):
                     content_iterator_task,
                 )
                 .otherwise(
-                    validation_summary_task.next(  # type: ignore[arg-type]
-                        aws_stepfunctions.Choice(self, "validation_successful")
+                    validation_summary_task.next(
+                        aws_stepfunctions.Choice(  # type: ignore[arg-type]
+                            self, "validation_successful"
+                        )
                         .when(
                             aws_stepfunctions.Condition.boolean_equals(
                                 "$.validation.success", True
                             ),
-                            success_task,
+                            success_task,  # type: ignore[arg-type]
                         )
                         .otherwise(validation_failure_task)
-                    ),
+                    )
                 )
             )
         )

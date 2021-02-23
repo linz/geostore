@@ -21,8 +21,8 @@ class UsersStack(core.Stack):
         self.users_role = aws_iam.Role(
             self,
             "users-role",
-            assumed_by=principals,
+            assumed_by=principals,  # type: ignore[arg-type]
             max_session_duration=Duration.hours(12),
         )
 
-        Tags.of(self.users_role).add("ApplicationLayer", "users")
+        Tags.of(self.users_role).add("ApplicationLayer", "users")  # type: ignore[arg-type]

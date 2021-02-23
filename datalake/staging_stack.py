@@ -22,4 +22,4 @@ class StagingStack(core.Stack):
             versioned=True,
             removal_policy=core.RemovalPolicy.DESTROY,
         )
-        Tags.of(self.staging_bucket).add("ApplicationLayer", "storage")
+        Tags.of(self.staging_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
