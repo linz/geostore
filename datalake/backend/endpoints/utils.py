@@ -5,7 +5,7 @@ from enum import Enum
 from http.client import responses as http_responses
 from typing import Any, List, MutableMapping, Sequence, Union
 
-ENV = os.environ["DEPLOY_ENV"]
+ENV = os.environ.get("DEPLOY_ENV", "test")
 DATASET_TYPES: Sequence[str] = ["IMAGE", "RASTER"]
 
 JSON_LIST = List[Any]
