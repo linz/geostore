@@ -1,8 +1,8 @@
 # Software Stack
 
-- Python 3 - CLI
-- [AWS Python CDK](https://aws.amazon.com/cdk/) - AWS infrastructure provisioning
-- [Localstack](https://www.pylint.org/) - local AWS development environment
+- [Python](https://www.python.org/) - Application code
+- [AWS CDK](https://aws.amazon.com/cdk/) - AWS infrastructure provisioning
+- [GitHub](https://github.com/) - Source code distribution and integration pipeline
 
 
 # Software Development Conventions
