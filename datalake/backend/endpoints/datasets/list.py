@@ -1,10 +1,10 @@
 """List all datasets function."""
 
 from ..model import DatasetModel
-from ..utils import JSON_OBJECT, success_response
+from ..utils import JsonObject, success_response
 
 
-def list_datasets() -> JSON_OBJECT:
+def list_datasets() -> JsonObject:
     """GET: List all Datasets."""
 
     # list all datasets

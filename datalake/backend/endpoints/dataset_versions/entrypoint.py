@@ -5,7 +5,7 @@ from typing import Callable, MutableMapping
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..utils import JSON_OBJECT, error_response
+from ..utils import JsonObject, error_response
 from .create import create_dataset_version
 
 REQUEST_SCHEMA = {
@@ -17,12 +17,12 @@ REQUEST_SCHEMA = {
     "required": ["httpMethod", "body"],
 }
 
-REQUEST_HANDLERS: MutableMapping[str, Callable[[JSON_OBJECT], JSON_OBJECT]] = {
+REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
     "POST": create_dataset_version,
 }
 
 
-def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
+def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
 
     # request validation

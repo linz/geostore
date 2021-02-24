@@ -3,13 +3,13 @@
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..model import DatasetModel
-from ..utils import DATASET_TYPES, JSON_OBJECT, error_response, success_response
+from ..utils import DATASET_TYPES, JsonObject, error_response, success_response
 
 
-def create_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
+def create_dataset(payload: JsonObject) -> JsonObject:
     """POST: Create Dataset."""
 
-    BODY_SCHEMA = {
+    body_schema = {
         "type": "object",
         "properties": {
             "type": {
@@ -25,7 +25,7 @@ def create_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
     # request body validation
     req_body = payload["body"]
     try:
-        validate(req_body, BODY_SCHEMA)
+        validate(req_body, body_schema)
     except ValidationError as err:
         return error_response(400, err.message)
 
