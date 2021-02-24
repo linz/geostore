@@ -95,13 +95,12 @@ Re-run `. .venv/bin/activate` in each shell.
 ## VPC pre-requisite
 
 A VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are managed internally by the 
-IT team.
-If you are deploying this application outside LINZ, you will need to create a VPC with the following tags:
-   - "ApplicationName": "geospatial-data-lake"
-   - "ApplicationLayer": "networking"
+IT team. If you are deploying this application outside LINZ, you will need to create a VPC with the following tags:
 
-You can achieve this by adding the networking_stack (datalake/networking_stack.py) into `app.py` when deploying. Be sure to add this networking_stack
-as a dependency to processing_stack.
+- "ApplicationName": "geospatial-data-lake"
+- "ApplicationLayer": "networking"
+
+You can achieve this by adding the networking_stack (datalake/networking_stack.py) into `app.py` when deploying. Be sure to add this networking_stack as a dependency to processing_stack.
 
 ## AWS Infrastructure Deployment (CDK Stack)
 
