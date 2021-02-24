@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 from http.client import responses as http_responses
 from os import environ
 from typing import Any, List, MutableMapping, Union
@@ -24,7 +25,6 @@ ENV = environ.get("DEPLOY_ENV", "test")
 STORAGE_BUCKET_PARAMETER = f"/{ENV}/storage-bucket-arn"
 S3_BATCH_COPY_ROLE_PARAMETER = f"/{ENV}/s3-batch-copy-role-arn"
 
-PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
 
 BODY_SCHEMA = {
     "type": "object",
@@ -41,12 +41,13 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     """Main Lambda entry point."""
 
     logger = set_up_logging()
+    logger.debug(json.dumps({"payload": payload}))
 
     # validate input
     try:
         validate(payload, BODY_SCHEMA)
     except ValidationError as error:
-        return error_response(400, error.message)
+        return error_response(400, error.message, logger)
 
     dataset_id = payload["dataset_id"]
     dataset_version_id = payload["version_id"]
@@ -94,14 +95,14 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
             "Enabled": True,
             "Bucket": storage_bucket_arn,
             "Format": "Report_CSV_20180820",
-            "Prefix": f"reports/{dataset_version_id}/report.csv",
+            "Prefix": f"reports/{datetime.now()}-{dataset_version_id}",
             "ReportScope": "AllTasks",
         },
         Priority=1,
         RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER),
         ClientRequestToken=uuid4().hex,
     )
-
+    print("SUCCCESS" + response["JobId"])
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
     return success_response(200, {"job_id": response["JobId"]})
@@ -119,9 +120,9 @@ def set_up_logging() -> logging.Logger:
     return logger
 
 
-def error_response(code: int, message: str) -> JSON_OBJECT:
+def error_response(code: int, message: str, logger: logging.Logger) -> JSON_OBJECT:
     """Return error response content as string."""
-
+    logger.warning(json.dumps({"error": message}, default=str))
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 

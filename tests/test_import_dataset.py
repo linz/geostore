@@ -103,11 +103,10 @@ def test_should_batch_copy_files_to_storage(
             asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
             with ProcessingAsset(
-                asset_id=asset_id, multihash=None, item_index="0", url=metadata_s3_object.url
+                asset_id=asset_id, multihash=None, url=metadata_s3_object.url
             ) as metadata_processing_asset, ProcessingAsset(
                 asset_id=asset_id,
                 multihash=first_asset_multihash,
-                item_index="1",
                 url=asset_s3_object.url,
             ) as processing_asset:
 
@@ -125,7 +124,7 @@ def test_should_batch_copy_files_to_storage(
                 while (
                     copy_job := s3_control_client.describe_job(
                         AccountId=sts_client.get_caller_identity()["Account"],
-                        JobId=response["body"]["JobId"],
+                        JobId=response["body"]["job_id"],
                     )
                 )["Job"]["Status"] not in final_states:
                     time.sleep(5)

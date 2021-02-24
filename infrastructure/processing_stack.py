@@ -238,6 +238,12 @@ class ProcessingStack(core.Stack):
                 actions=["iam:PassRole"],
             ),
         )
+        import_dataset_task.lambda_function.role.add_to_policy(
+            PolicyStatement(
+                resources=["*"],
+                actions=["s3:CreateJob"],
+            ),
+        )
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
         storage_bucket_arn.grant_read(import_dataset_task.lambda_function)

@@ -287,7 +287,10 @@ class TestsWithLogger:
         ):
             STACSchemaValidator(url_reader).validate(root_url, self.logger)
 
-    def test_should_return_assets_from_validated_metadata_files(self) -> None:
+    def test_should_return_assets_from_validated_metadata_files(
+        self,
+        subtests: SubTests,
+    ) -> None:
         base_url = any_s3_url()
         metadata_url = f"{base_url}/{any_safe_filename()}"
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
@@ -318,8 +321,10 @@ class TestsWithLogger:
 
         validator.validate(metadata_url, self.logger)
 
-        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
-        assert validator.dataset_metadata == expected_metadata
+        with subtests.test():
+            assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+        with subtests.test():
+            assert validator.dataset_metadata == expected_metadata
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
