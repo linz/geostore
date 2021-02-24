@@ -106,7 +106,7 @@ def test_should_validate_given_index(
 
 @patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
 @patch("datalake.backend.processing.check_files_checksums.task.ProcessingAssetsModel")
-def test_should_return_non_zero_exit_code_when_validation_fails(
+def test_should_log_error_when_validation_fails(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
