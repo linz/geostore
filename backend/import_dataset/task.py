@@ -1,16 +1,18 @@
 import json
 import logging
+from http.client import responses as http_responses
 from os import environ
-from typing import Any, MutableMapping
+from typing import Any, List, MutableMapping, Union
 from urllib.parse import urlparse
 from uuid import uuid4
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
-from pynamodb.attributes import UnicodeAttribute
-from pynamodb.models import Model
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..assets_model import ProcessingAssetsModel
+
+JSON_LIST = List[Any]
 JSON_OBJECT = MutableMapping[str, Any]
 
 ssm_client = boto3.client("ssm")
@@ -18,23 +20,11 @@ sts_client = boto3.client("sts")
 s3_client = boto3.client("s3")
 s3control_client = boto3.client("s3control")
 
-ENV = environ["DEPLOY_ENV"]
+ENV = environ.get("DEPLOY_ENV", "test")
 STORAGE_BUCKET_PARAMETER = f"/{ENV}/storage-bucket-arn"
 S3_BATCH_COPY_ROLE_PARAMETER = f"/{ENV}/s3-batch-copy-role-arn"
 
 PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
-
-
-class ProcessingAssetsModel(Model):
-    class Meta:  # pylint:disable=too-few-public-methods
-        table_name = PROCESSING_ASSETS_TABLE_NAME
-        region = "ap-southeast-2"  # TODO: don't hardcode region
-
-    pk = UnicodeAttribute(hash_key=True)
-    sk = UnicodeAttribute(range_key=True)
-    url = UnicodeAttribute()
-    multihash = UnicodeAttribute(null=True)
-
 
 BODY_SCHEMA = {
     "type": "object",
@@ -55,9 +45,8 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     # validate input
     try:
         validate(payload, BODY_SCHEMA)
-    except ValidationError as err:
-        logger.warning(json.dumps({"error": err}, default=str))
-        return {"statusCode": "400", "body": err.message}
+    except ValidationError as error:
+        return error_response(400, error.message)
 
     dataset_id = payload["dataset_id"]
     dataset_version_id = payload["version_id"]
@@ -115,7 +104,7 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
 
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
-    return {"statusCode": "200", "body": response}
+    return success_response(200, {"job_id": response["JobId"]})
 
 
 def set_up_logging() -> logging.Logger:
@@ -128,6 +117,18 @@ def set_up_logging() -> logging.Logger:
     logger.setLevel(log_level)
 
     return logger
+
+
+def error_response(code: int, message: str) -> JSON_OBJECT:
+    """Return error response content as string."""
+
+    return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
+
+
+def success_response(code: int, body: Union[JSON_LIST, JSON_OBJECT]) -> JSON_OBJECT:
+    """Return success response content as string."""
+
+    return {"statusCode": code, "body": body}
 
 
 def get_param(parameter: str) -> str:

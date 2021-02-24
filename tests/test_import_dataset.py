@@ -4,7 +4,6 @@ from datetime import timedelta
 from hashlib import sha256
 from io import BytesIO
 from json import dumps
-from typing import Any, Dict
 from urllib.parse import urlparse
 
 from mypy_boto3_s3 import S3Client
@@ -15,32 +14,57 @@ from pytest import mark
 from ..endpoints.utils import ResourceName
 from ..processing.import_dataset.task import lambda_handler
 from .utils import (
+    MINIMAL_VALID_STAC_OBJECT,
     ProcessingAsset,
     S3Object,
-    any_dataset_description,
     any_dataset_id,
     any_dataset_version_id,
     any_file_contents,
     any_lambda_context,
-    any_past_datetime_string,
+    any_s3_url,
     any_safe_filename,
     any_stac_asset_name,
     any_valid_dataset_type,
 )
 
-STAC_VERSION = "1.0.0-beta.2"
 
-MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
-    "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
-    "extent": {
-        "spatial": {"bbox": [[-180, -90, 180, 90]]},
-        "temporal": {"interval": [[any_past_datetime_string(), None]]},
-    },
-}
+def test_should_return_required_property_error_when_missing_metadata_url() -> None:
+    # When
+    body = {}
+    body["dataset_id"] = any_dataset_id()
+    body["version_id"] = any_dataset_version_id()
+    response = lambda_handler(body, any_lambda_context())
+
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'metadata_url' is a required property"},
+    }
+
+
+def test_should_return_required_property_error_when_missing_dataset_id() -> None:
+    # When
+    body = {}
+    body["metadata_url"] = any_s3_url()
+    body["version_id"] = any_dataset_version_id()
+    response = lambda_handler(body, any_lambda_context())
+
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'dataset_id' is a required property"},
+    }
+
+
+def test_should_return_required_property_error_when_missing_version_id() -> None:
+    # When
+    body = {}
+    body["dataset_id"] = any_dataset_id()
+    body["metadata_url"] = any_s3_url()
+    response = lambda_handler(body, any_lambda_context())
+
+    assert response == {
+        "statusCode": 400,
+        "body": {"message": "Bad Request: 'version_id' is a required property"},
+    }
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())

@@ -182,7 +182,9 @@ class ProcessingStack(core.Stack):
         s3_batch_copy_role = aws_iam.Role(
             self,
             "s3_batch_copy_role",
-            assumed_by=aws_iam.ServicePrincipal("batchoperations.s3.amazonaws.com"),
+            assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
+                "batchoperations.s3.amazonaws.com"
+            ),
         )
         s3_batch_copy_role.add_to_policy(
             aws_iam.PolicyStatement(
@@ -225,11 +227,6 @@ class ProcessingStack(core.Stack):
             "import_dataset_task",
             directory="import_dataset",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
-            permission_functions=[
-                storage_bucket_arn.grant_read,
-                storage_bucket.grant_read_write,
-                processing_assets_table.grant_read_data,
-            ],
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
@@ -237,14 +234,16 @@ class ProcessingStack(core.Stack):
         assert import_dataset_task.lambda_function.role is not None
         import_dataset_task.lambda_function.role.add_to_policy(
             PolicyStatement(
-                resources=["*"],
-                actions=["s3:CreateJob", "iam:PassRole"],
+                resources=[s3_batch_copy_role.role_arn],
+                actions=["iam:PassRole"],
             ),
         )
 
-        processing_assets_table.grant(
-            import_dataset_task.lambda_function.role, "dynamodb:DescribeTable"
-        )
+        storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        storage_bucket_arn.grant_read(import_dataset_task.lambda_function)
+
+        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
+        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
         success_task = aws_stepfunctions.Succeed(self, "success")
 

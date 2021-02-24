@@ -31,6 +31,8 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
     def __init__(self, url_reader: Callable[[str], StreamingBody]):
         self.url_reader = url_reader
         self.traversed_urls: List[str] = []
+        self.dataset_assets: List[Dict[str, str]] = []
+        self.dataset_metadata: List[Dict[str, str]] = []
 
         with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
             collection_schema = load(collection_schema_file)
@@ -50,7 +52,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str, logger: logging.Logger) -> List[Dict[str, str]]:
+    def validate(self, url: str, logger: logging.Logger) -> None:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
@@ -62,20 +64,9 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
 
         url_prefix = get_url_before_filename(url)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        assets = []
-        for asset in url_json.get("item_assets", {}).values():
-=======
-        files = []
-        files.append({"url": url, "multihash": None})
-=======
-        dataset_files = []
-        dataset_files.append({"url": url})
->>>>>>> 323d605... fix: fixed broken tests and permission issues
+        self.dataset_metadata.append({"url": url})
 
         for asset in url_json.get("assets", {}).values():
->>>>>>> a9e441c... feat: import dataset task
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
             assert (
@@ -83,7 +74,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             logger.debug(dumps({"asset": asset_dict}))
-            dataset_files.append(asset_dict)
+            self.dataset_assets.append(asset_dict)
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -92,9 +83,22 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
-                dataset_files.extend(self.validate(next_url, logger))
+                self.validate(next_url, logger)
 
-        return dataset_files
+    def save(self, key: str) -> None:
+        for index, metadata_file in enumerate(self.dataset_metadata):
+            ProcessingAssetsModel(
+                pk=key,
+                sk=f"METADATA_ITEM_INDEX#{index}",
+                **metadata_file,
+            ).save()
+
+        for index, asset in enumerate(self.dataset_assets):
+            ProcessingAssetsModel(
+                pk=key,
+                sk=f"DATA_ITEM_INDEX#{index}",
+                **asset,
+            ).save()
 
 
 def get_url_before_filename(url: str) -> str:
@@ -144,18 +148,15 @@ def main() -> int:
     url_reader = s3_url_reader()
 
     try:
-        dataset_files = STACSchemaValidator(url_reader).validate(arguments.metadata_url, logger)
+        validator = STACSchemaValidator(url_reader)
+        validator.validate(arguments.metadata_url, logger)
+
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
 
     asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    for index, dataset_file in enumerate(dataset_files):
-        ProcessingAssetsModel(
-            pk=asset_pk,
-            sk=f"DATA_ITEM_INDEX#{index}",
-            **dataset_file,
-        ).save()
+    validator.save(asset_pk)
 
     logger.info(dumps({"success": True, "message": ""}))
     return 0

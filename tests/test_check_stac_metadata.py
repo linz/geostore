@@ -75,20 +75,6 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_items = [
-            ProcessingAssetsModel(
-                hash_key=expected_hash_key,
-                range_key="DATA_ITEM_INDEX#0",
-                url=first_asset_s3_object.url,
-                multihash=first_asset_multihash,
-            ),
-            ProcessingAssetsModel(
-                hash_key=expected_hash_key,
-                range_key="DATA_ITEM_INDEX#1",
-                url=second_asset_s3_object.url,
-                multihash=second_asset_multihash,
-            ),
-        ]
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         metadata_stac_object["item_assets"] = {
@@ -109,6 +95,29 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         ) as metadata_s3_object:
             # When
 
+            expected_asset_items = [
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="DATA_ITEM_INDEX#0",
+                    url=first_asset_s3_object.url,
+                    multihash=first_asset_multihash,
+                ),
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="DATA_ITEM_INDEX#1",
+                    url=second_asset_s3_object.url,
+                    multihash=second_asset_multihash,
+                ),
+            ]
+
+            expected_metadata_items = [
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="METADATA_ITEM_INDEX#0",
+                    url=metadata_s3_object.url,
+                ),
+            ]
+
             sys.argv = [
                 any_program_name(),
                 f"--metadata-url={metadata_s3_object.url}",
@@ -119,8 +128,17 @@ def test_should_insert_asset_urls_and_checksums_into_database(
             assert main() == 0
 
             # Then
-            actual_items = ProcessingAssetsModel.query(expected_hash_key)
-            for actual_item, expected_item in zip(actual_items, expected_items):
+            actual_items = ProcessingAssetsModel.query(
+                expected_hash_key, ProcessingAssetsModel.sk.startswith("DATA_ITEM_INDEX#")
+            )
+            for actual_item, expected_item in zip(actual_items, expected_asset_items):
+                with subtests.test():
+                    assert actual_item.attribute_values == expected_item.attribute_values
+
+            actual_items = ProcessingAssetsModel.query(
+                expected_hash_key, ProcessingAssetsModel.sk.startswith("METADATA_ITEM_INDEX#")
+            )
+            for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():
                     assert actual_item.attribute_values == expected_item.attribute_values
 
@@ -290,95 +308,18 @@ class TestsWithLogger:
         expected_assets = [
             {"multihash": first_asset_multihash, "url": first_asset_url},
             {"multihash": second_asset_multihash, "url": second_asset_url},
-            {"url": metadata_url}
+        ]
+        expected_metadata = [
+            {"url": metadata_url},
         ]
         url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        assets = STACSchemaValidator(url_reader).validate(metadata_url, self.logger)
+        validator = STACSchemaValidator(url_reader)
 
-        assert _sort_assets(assets) == _sort_assets(expected_assets)
+        validator.validate(metadata_url, self.logger)
 
-
-@mark.timeout(timedelta(minutes=20).total_seconds())
-@mark.infrastructure
-def test_should_insert_asset_urls_and_checksums_into_database(
-    subtests: SubTests,
-) -> None:
-    # pylint: disable=too-many-locals
-    # Given a metadata file with two assets
-    first_asset_content = any_file_contents()
-    first_asset_multihash = sha256(first_asset_content).hexdigest()
-
-    second_asset_content = any_file_contents()
-    second_asset_multihash = sha512(second_asset_content).hexdigest()
-
-    dataset_id = any_dataset_id()
-    version_id = any_dataset_version_id()
-
-    with S3Object(
-        BytesIO(initial_bytes=first_asset_content),
-        ResourceName.STORAGE_BUCKET_NAME.value,
-        any_safe_filename(),
-    ) as first_asset_s3_object, S3Object(
-        BytesIO(initial_bytes=second_asset_content),
-        ResourceName.STORAGE_BUCKET_NAME.value,
-        any_safe_filename(),
-    ) as second_asset_s3_object:
-        expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-
-        metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        metadata_stac_object["assets"] = {
-            any_stac_asset_name(): {
-                "href": first_asset_s3_object.url,
-                "checksum:multihash": first_asset_multihash,
-            },
-            any_stac_asset_name(): {
-                "href": second_asset_s3_object.url,
-                "checksum:multihash": second_asset_multihash,
-            },
-        }
-        metadata_content = dumps(metadata_stac_object).encode()
-        with S3Object(
-            BytesIO(initial_bytes=metadata_content),
-            ResourceName.STORAGE_BUCKET_NAME.value,
-            any_safe_filename(),
-        ) as metadata_s3_object:
-            # When
-
-            expected_items = [
-                ProcessingAssetsModel(
-                    hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#0",
-                    url=metadata_s3_object.url,
-                ),
-                ProcessingAssetsModel(
-                    hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#1",
-                    url=first_asset_s3_object.url,
-                    multihash=first_asset_multihash,
-                ),
-                ProcessingAssetsModel(
-                    hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#2",
-                    url=second_asset_s3_object.url,
-                    multihash=second_asset_multihash,
-                ),
-            ]
-
-            sys.argv = [
-                any_program_name(),
-                f"--metadata-url={metadata_s3_object.url}",
-                f"--dataset-id={dataset_id}",
-                f"--version-id={version_id}",
-            ]
-
-            assert main() == 0
-
-            # Then
-            actual_items = ProcessingAssetsModel.query(expected_hash_key)
-            for actual_item, expected_item in zip(actual_items, expected_items):
-                with subtests.test():
-                    assert actual_item.attribute_values == expected_item.attribute_values
+        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+        assert validator.dataset_metadata == expected_metadata
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
