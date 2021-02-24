@@ -9,21 +9,11 @@
 
 ## Software Development Conventions
 
-### General
-
-- submit Pull Request for all changes, wait for CI/CD passing and review
-- use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style commit messages
-- always provide scope for commit message type (ex.: `fix(infra): fixed xyz, feat(cli): new xyz)`
-- use preferably 80 characters line limit (max 120)
-- development code lives in `master` branch
-- release code and tags lives in release branches
-- [Semantic Versioning](https://semver.org/) is used for software versioning
-- release branch naming convention is `release-<MAJOR>.<MINOR>` (ex.: `release-1.3`)
-- release tag naming convention is `<MAJOR>.<MINOR>.<PATCH>` (ex.: `1.3.1`)
-
-### Python Development Conventions
-
-- code must be checked by [Pylint](https://www.pylint.org/) and issue free
-- code must be formatted by [Black](https://github.com/psf/black)
-
-
+- Any new code should first go on a branch
+- Submit pull request for a branch, wait for a review and passing pipeline before merging
+- Release code and tags lives in release branches
+- Use [Semantic Versioning](https://semver.org/)
+- Release branch naming convention is `release-<MAJOR>.<MINOR>` (ex.: `release-1.3`)
+- Release tag naming convention is `<MAJOR>.<MINOR>.<PATCH>` (ex.: `1.3.1`)
+- The formatting of code, configuration and commits are enforced by Git hooks
+   - Use [Conventional Commits](https://www.conventionalcommits.org/) style commit messages
