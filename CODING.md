@@ -1,16 +1,3 @@
-# Source Code Layout
-
-```
-├── cli             - command line interface code
-├── .github         - CI/CD code
-│   └── workflows
-│       └── ci.yml
-│       └── cd.yml
-├── LICENSE
-└── README.md
-```
-
-
 # Software Stack
 * Python 3 - CLI
 * [AWS Python CDK](https://aws.amazon.com/cdk/) - AWS infrastructure
