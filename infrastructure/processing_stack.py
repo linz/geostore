@@ -214,7 +214,7 @@ class ProcessingStack(core.Stack):
             )
         )
 
-        aws_ssm.StringParameter(
+        s3_batch_copy_role_arn = aws_ssm.StringParameter(
             self,
             "s3-batch-copy-role-arn",
             description=f"S3 Batch Copy Role ARN for {deploy_env}",
@@ -244,6 +244,7 @@ class ProcessingStack(core.Stack):
                 actions=["s3:CreateJob"],
             ),
         )
+        s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
         storage_bucket_arn.grant_read(import_dataset_task.lambda_function)
