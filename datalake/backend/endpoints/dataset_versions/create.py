@@ -9,7 +9,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..model import DatasetModel
-from ..utils import DATASET_TYPES, ENV, JSON_OBJECT, error_response, success_response
+from ..utils import DATASET_TYPES, ENV, JsonObject, error_response, success_response
 
 stepfunctions_client = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
@@ -17,12 +17,12 @@ ssm_client = boto3.client("ssm")
 DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/StepFuncStateMachineARN"
 
 
-def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
+def create_dataset_version(payload: JsonObject) -> JsonObject:
     logger = set_up_logging()
 
     logger.debug(json.dumps({"payload": payload}))
 
-    BODY_SCHEMA = {
+    body_schema = {
         "type": "object",
         "properties": {
             "id": {"type": "string"},
@@ -38,7 +38,7 @@ def create_dataset_version(payload: JSON_OBJECT) -> JSON_OBJECT:
     # validate input
     req_body = payload["body"]
     try:
-        validate(req_body, BODY_SCHEMA)
+        validate(req_body, body_schema)
     except ValidationError as err:
         logger.warning(json.dumps({"error": err}, default=str))
         return error_response(400, err.message)

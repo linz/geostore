@@ -9,7 +9,6 @@ from ..assets_model import ProcessingAssetsModel
 # size](https://stackoverflow.com/q/66202138/96588)
 MAX_ITERATION_SIZE = 5
 
-JSON_OBJECT = MutableMapping[str, Any]
 EVENT_SCHEMA = {
     "type": "object",
     "properties": {
@@ -40,8 +39,10 @@ EVENT_SCHEMA = {
     "additionalProperties": False,
 }
 
+JsonObject = MutableMapping[str, Any]
 
-def lambda_handler(event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
+
+def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     validate(event, EVENT_SCHEMA)
 
     if "content" in event.keys():

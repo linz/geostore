@@ -247,10 +247,10 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
         self.bucket_name = bucket_name
         self.key = key
         self.url = f"s3://{self.bucket_name}/{self.key}"
-        self.s3 = boto3.client("s3")
+        self._s3_client = boto3.client("s3")
 
     def __enter__(self) -> "S3Object":
-        self.s3.upload_fileobj(self.file_object, self.bucket_name, self.key)
+        self._s3_client.upload_fileobj(self.file_object, self.bucket_name, self.key)
         return self
 
     def __exit__(
@@ -264,7 +264,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
     def _delete_object_versions(self, version_list: List[ObjectIdentifierTypeDef]) -> None:
         for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
-            response = self.s3.delete_objects(
+            response = self._s3_client.delete_objects(
                 Bucket=self.bucket_name,
                 Delete=DeleteTypeDef(Objects=version_list[index : index + DELETE_OBJECTS_MAX_KEYS]),
             )
@@ -272,7 +272,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
     def _get_object_versions(self) -> List[ObjectIdentifierTypeDef]:
         version_list: List[ObjectIdentifierTypeDef] = []
-        object_versions_paginator = self.s3.get_paginator("list_object_versions")
+        object_versions_paginator = self._s3_client.get_paginator("list_object_versions")
         for object_versions_page in object_versions_paginator.paginate(Bucket=self.bucket_name):
             for marker in object_versions_page.get("DeleteMarkers", []):
                 if marker["Key"] == self.key:

@@ -4,13 +4,13 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..model import DatasetModel
-from ..utils import DATASET_TYPES, JSON_OBJECT, error_response, success_response
+from ..utils import DATASET_TYPES, JsonObject, error_response, success_response
 
 
-def update_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
+def update_dataset(payload: JsonObject) -> JsonObject:
     """PATCH: Update Dataset."""
 
-    BODY_SCHEMA = {
+    body_schema = {
         "type": "object",
         "properties": {
             "id": {"type": "string"},
@@ -31,7 +31,7 @@ def update_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
     # request body validation
     req_body = payload["body"]
     try:
-        validate(req_body, BODY_SCHEMA)
+        validate(req_body, body_schema)
     except ValidationError as err:
         return error_response(400, err.message)
 
@@ -67,7 +67,7 @@ def update_dataset(payload: JSON_OBJECT) -> JSON_OBJECT:
     return success_response(200, resp_body)
 
 
-def update_dataset_attributes(dataset: DatasetModel, req_body: JSON_OBJECT) -> None:
+def update_dataset_attributes(dataset: DatasetModel, req_body: JsonObject) -> None:
     for attr in DatasetModel.get_attributes():
         if attr in req_body and attr not in ("id", "type"):
             setattr(dataset, attr, req_body[attr])

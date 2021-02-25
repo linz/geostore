@@ -1,9 +1,9 @@
 from typing import Any, MutableMapping
 
-JSON_OBJECT = MutableMapping[str, Any]
+JsonObject = MutableMapping[str, Any]
 
 
-def lambda_handler(_event: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
+def lambda_handler(_event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
 
     resp = {"success": True, "message": ""}

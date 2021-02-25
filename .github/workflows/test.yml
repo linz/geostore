@@ -69,7 +69,7 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
 
     - name: Use Node.js for CDK deployment
-      uses: actions/setup-node@v2.1.4
+      uses: actions/setup-node@v2.1.5
       with:
         node-version: 14
         registry-url: https://registry.npmjs.org

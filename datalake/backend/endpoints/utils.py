@@ -5,20 +5,20 @@ from enum import Enum
 from http.client import responses as http_responses
 from typing import Any, List, MutableMapping, Sequence, Union
 
-ENV = os.environ["DEPLOY_ENV"]
+ENV = os.environ.get("DEPLOY_ENV", "test")
 DATASET_TYPES: Sequence[str] = ["IMAGE", "RASTER"]
 
-JSON_LIST = List[Any]
-JSON_OBJECT = MutableMapping[str, Any]
+JsonList = List[Any]
+JsonObject = MutableMapping[str, Any]
 
 
-def error_response(code: int, message: str) -> JSON_OBJECT:
+def error_response(code: int, message: str) -> JsonObject:
     """Return error response content as string."""
 
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
-def success_response(code: int, body: Union[JSON_LIST, JSON_OBJECT]) -> JSON_OBJECT:
+def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
     """Return success response content as string."""
 
     return {"statusCode": code, "body": body}
