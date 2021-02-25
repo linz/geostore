@@ -64,13 +64,13 @@ def test_should_insert_asset_urls_and_checksums_into_database(
     version_id = any_dataset_version_id()
 
     with S3Object(
-        BytesIO(initial_bytes=first_asset_content),
-        ResourceName.STORAGE_BUCKET_NAME.value,
-        any_safe_filename(),
+        file_object=BytesIO(initial_bytes=first_asset_content),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=any_safe_filename(),
     ) as first_asset_s3_object, S3Object(
-        BytesIO(initial_bytes=second_asset_content),
-        ResourceName.STORAGE_BUCKET_NAME.value,
-        any_safe_filename(),
+        file_object=BytesIO(initial_bytes=second_asset_content),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
         expected_items = [
@@ -101,9 +101,9 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         }
         metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
-            BytesIO(initial_bytes=metadata_content),
-            ResourceName.STORAGE_BUCKET_NAME.value,
-            any_safe_filename(),
+            file_object=BytesIO(initial_bytes=metadata_content),
+            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            key=any_safe_filename(),
         ) as metadata_s3_object:
             # When
 

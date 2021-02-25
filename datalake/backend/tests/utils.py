@@ -1,10 +1,11 @@
 import string
+from contextlib import AbstractContextManager
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from io import StringIO
 from json import dump
 from os import urandom
-from random import choice, randrange
+from random import choice, getrandbits, randrange
 from types import TracebackType
 from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Type
 from unittest.mock import Mock
@@ -106,6 +107,10 @@ def any_dictionary_key() -> str:
     return random_string(20)
 
 
+def any_boolean() -> bool:
+    return bool(getrandbits(1))
+
+
 # STAC-specific generators
 
 
@@ -169,6 +174,11 @@ def any_item_index() -> int:
     return randrange(1_000_000) * MAX_ITERATION_SIZE
 
 
+def any_batch_job_array_index() -> int:
+    # https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
+    return randrange(2, 10_001)
+
+
 def any_item_count() -> int:
     """Arbitrary non-negative integer"""
     return randrange(3)
@@ -229,8 +239,10 @@ class Dataset:
         self._item.delete()
 
 
-class S3Object:
-    def __init__(self, file_object: BinaryIO, bucket_name: str, key: str):
+class S3Object(AbstractContextManager):  # type: ignore[type-arg]
+    def __init__(self, /, file_object: BinaryIO, bucket_name: str, key: str):
+        super().__init__()
+
         self.file_object = file_object
         self.bucket_name = bucket_name
         self.key = key
