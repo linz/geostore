@@ -1,5 +1,9 @@
 # Using the Geospatial Data Lake
 
+The purpose of GDL is to store geospatial datasets. This document should provide the technical know-how to create and maintain such datasets.
+
+The keywords "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended",  "may", and "optional" in this document are to be interpreted as described in [RFC 2119](https://tools.ietf.org/html/rfc2119).
+
 ## Prerequisites
 Currently, Data Lake allows read/write access for all users from all AWS accounts (users home accounts) specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` during deployment time (see [README](README.md#aws-infrastructure-deployment-cdk-stack)). Please contact the Data Lake product team to add your AWS account to this list.
 
@@ -50,6 +54,19 @@ export AWS_ACCESS_KEY_ID=$(echo $credentials | jq -r ".Credentials[\"AccessKeyId
 export AWS_SECRET_ACCESS_KEY=$(echo $credentials | jq -r ".Credentials[\"SecretAccessKey\"]")
 export AWS_SESSION_TOKEN=$(echo $credentials | jq -r ".Credentials[\"SessionToken\"]")
 ```
+
+## Dataset format
+
+The GDL performs many checks on datasets. If any of the checks fail the dataset will not be imported, so it's important to know what they are. The following list is a reference of all the checks which are currently in place.
+
+- Every metadata file must follow the [STAC Collection Specification](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md).
+- Every metadata URL (in the [`links` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#link-object)) must be an S3 URL of the form `s3://BUCKET_NAME/KEY`, for example, `s3://my-bucket/some-path/foo.tif`.
+- Every asset (in the [`item_assets` property](https://github.com/radiantearth/stac-spec/blob/master/extensions/item-assets/README.md)) must have:
+   - an S3 [URL](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object), as defined above
+   - a [multihash](https://github.com/radiantearth/stac-spec/blob/master/extensions/checksum/README.md) corresponding to the contents of the asset file
+- Every metadata and asset must be in the same S3 "folder." That is, every metadata and asset URL must have the same content up to the last slash. For example, a having a root metadata URL `s3://bucket/folder/collection.json` and an asset URL `s3://bucket/folder/subfolder/1.tif` is invalid.
+- Every metadata and asset URL must be readable by the GDL.
+- A dataset *may* refer to the same asset more than once. All references to the same asset must have the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be considered invalid, even if both checksums are valid. This is to enable a simpler checksum validation.
 
 ## Data Lake Lambda Endpoints Usage
 
