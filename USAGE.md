@@ -1,12 +1,15 @@
-# Getting Access to Data Lake
+# Using the Geospatial Data Lake
+
 ## Prerequisites
-Currently, the Data Lake allows read/write access for AWS accounts specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` (see [README](README.md#aws-infrastructure-deployment-cdk-stack)). To add your AWS account to this list, contact the Data Lake product team. 
+Currently, Data Lake allows read/write access for all users from all AWS accounts (users home accounts) specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` during deployment time (see [README](README.md#aws-infrastructure-deployment-cdk-stack)). Please contact the Data Lake product team to add your AWS account to this list.
 
 The product team will provide you the following information to enable to you to start using the Data Lake:
 
-* Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
-* Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
-* Data Lake lambda function endpoint names (`DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME`)
+Also, following information must be provided by Data Lake instance maintainer in order to star using it:
+
+- Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
+- Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
+- Data Lake lambda function endpoint names (`DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME`)
 
 ### Data Maintainers
 To import data in to the Data Lake, you will need a 'staging' S3 bucket with your data in it. You will need to give permissions to Data Lake AWS account to read your data.
@@ -32,9 +35,10 @@ Example bucket policy:
 ```
 
 ## Credentials
-Temporary access credentials for Data Lake can be requested by running the following commands while
-authenticated using user's home AWS account credentials:
-```
+
+Temporary access credentials for Data Lake can be requested by running the following commands while authenticated using user's home AWS account credentials:
+
+```bash
 export DATALAKE_AWS_ACCOUNT_ID=<DATALAKE-AWS-ACCOUNT-ID>
 export DATALAKE_USER_ROLE_NAME=<DATALAKE-USER-ROLE-NAME>
 
@@ -47,9 +51,11 @@ export AWS_SECRET_ACCESS_KEY=$(echo $credentials | jq -r ".Credentials[\"SecretA
 export AWS_SESSION_TOKEN=$(echo $credentials | jq -r ".Credentials[\"SessionToken\"]")
 ```
 
-# Data Lake Lambda Endpoints Usage
-## Endpoint Request Format
-```
+## Data Lake Lambda Endpoints Usage
+
+### Endpoint Request Format
+
+```bash
 export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
 
 aws lambda invoke \
@@ -59,48 +65,54 @@ aws lambda invoke \
 /dev/stdout
 ```
 
-## Dataset Space Endpoint Usage Examples
-* Set Dataset Space Endpont Lambda function name
-    ```
-    export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
-    ```
-* Example of Dataset creation request
-    ```
-    $ aws lambda invoke \
-        --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-        --invocation-type RequestResponse \
-        --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020", "owning_group": "A_XYZ_XYZ"}}' \
-    /dev/stdout
+### Dataset Space Endpoint Usage Examples
 
-    {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-    ```
-* Example of all Datasets listing request
-    ```
-    $ aws lambda invoke \
-        --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-        --invocation-type RequestResponse \
-        --payload '{"httpMethod": "GET", "body": {}}' \
-    /dev/stdout
+- Set Dataset Space Endpont Lambda function name
+  
+   ```bash
+   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
+   ```
+- Example of Dataset creation request
 
-    {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
-    ```
-* Example of single Dataset listing request
-    ```
-    $ aws lambda invoke \
-        --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-        --invocation-type RequestResponse \
-        --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
-    /dev/stdout
+   ```console
+   $ aws lambda invoke \
+       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --invocation-type RequestResponse \
+       --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020", "owning_group": "A_XYZ_XYZ"}}' \
+       /dev/stdout
+  
+   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   ```
+- Example of all Datasets listing request
+  
+   ```console
+   $ aws lambda invoke \
+       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --invocation-type RequestResponse \
+       --payload '{"httpMethod": "GET", "body": {}}' \
+       /dev/stdout
 
-    {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-    ```
-* Example of Dataset delete request
-    ```
-    $ aws lambda invoke \
-        --function-name datasets-endpoint \
-        --invocation-type RequestResponse \
-        --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
-    /dev/stdout
+   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+   ```
+- Example of single Dataset listing request
+  
+   ```console
+   $ aws lambda invoke \
+       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --invocation-type RequestResponse \
+       --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       /dev/stdout
 
-    {"statusCode": 204, "body": {}}
-    ```
+   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   ```
+- Example of Dataset delete request
+  
+   ```console
+   $ aws lambda invoke \
+       --function-name datasets-endpoint \
+       --invocation-type RequestResponse \
+       --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       /dev/stdout
+
+   {"statusCode": 204, "body": {}}
+   ```
