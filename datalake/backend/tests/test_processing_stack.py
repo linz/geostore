@@ -1,8 +1,11 @@
 import logging
 import time
+from contextlib import nullcontext
 from copy import deepcopy
+from hashlib import sha256
 from io import BytesIO
 from json import dumps
+from typing import ContextManager, Optional
 
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
@@ -12,16 +15,18 @@ from ..endpoints.dataset_versions import entrypoint
 from ..endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from ..endpoints.utils import ResourceName
 from .utils import (
-    EMPTY_FILE_MULTIHASH,
     MINIMAL_VALID_STAC_OBJECT,
     Dataset,
     S3Object,
+    any_boolean,
     any_dataset_id,
+    any_file_contents,
     any_lambda_context,
     any_safe_file_path,
     any_safe_filename,
     any_stac_asset_name,
     any_valid_dataset_type,
+    sha256_hex_digest_to_multihash,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -43,26 +48,49 @@ def test_should_successfully_run_dataset_version_creation_process(
     step_functions_client: SFNClient,
 ) -> None:
     key_prefix = any_safe_file_path()
-    metadata_object_key = "{}/{}.json".format(key_prefix, any_safe_filename())
     metadata = deepcopy(MINIMAL_VALID_STAC_OBJECT)
     s3_bucket_name = ResourceName.DATASET_STAGING_BUCKET_NAME.value
 
+    mandatory_asset_contents = any_file_contents()
+
+    # Test either branch of check_files_checksums_maybe_array randomly. Trade-off between cost of
+    # running test (~2m) and coverage.
+    optional_asset: ContextManager[Optional[S3Object]]
+    if any_boolean():
+        optional_asset_contents = any_file_contents()
+        optional_asset = S3Object(
+            file_object=BytesIO(initial_bytes=optional_asset_contents),
+            bucket_name=s3_bucket_name,
+            key=f"{key_prefix}/{any_safe_filename()}.txt",
+        )
+    else:
+        optional_asset = nullcontext()
+
     with S3Object(
-        BytesIO(initial_bytes=b""),
-        s3_bucket_name,
-        f"{key_prefix}/{any_safe_filename()}.tif",
-    ) as asset_s3_object:
+        file_object=BytesIO(initial_bytes=mandatory_asset_contents),
+        bucket_name=s3_bucket_name,
+        key=f"{key_prefix}/{any_safe_filename()}.txt",
+    ) as mandatory_asset_s3_object, optional_asset as optional_asset_s3_object:
         metadata["assets"] = {
             any_stac_asset_name(): {
-                "href": asset_s3_object.url,
-                "checksum:multihash": EMPTY_FILE_MULTIHASH,
+                "href": mandatory_asset_s3_object.url,
+                "checksum:multihash": sha256_hex_digest_to_multihash(
+                    sha256(mandatory_asset_contents).hexdigest()
+                ),
             },
         }
+        if optional_asset_s3_object is not None:
+            metadata["assets"][any_stac_asset_name()] = {
+                "href": optional_asset_s3_object.url,
+                "checksum:multihash": sha256_hex_digest_to_multihash(
+                    sha256(optional_asset_contents).hexdigest()
+                ),
+            }
 
         with S3Object(
-            BytesIO(initial_bytes=dumps(metadata).encode()),
-            s3_bucket_name,
-            metadata_object_key,
+            file_object=BytesIO(initial_bytes=dumps(metadata).encode()),
+            bucket_name=s3_bucket_name,
+            key=("{}/{}.json".format(key_prefix, any_safe_filename())),
         ) as s3_metadata_file:
             dataset_id = any_dataset_id()
             dataset_type = any_valid_dataset_type()

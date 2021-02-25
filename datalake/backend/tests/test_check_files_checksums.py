@@ -16,11 +16,13 @@ from ..processing.assets_model import ProcessingAssetsModel
 from ..processing.check_files_checksums.task import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
+    get_job_offset,
     main,
     validate_url_multihash,
 )
 from .utils import (
     EMPTY_FILE_MULTIHASH,
+    any_batch_job_array_index,
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
@@ -29,6 +31,19 @@ from .utils import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
+
+
+def test_should_return_offset_from_array_index_variable() -> None:
+    index = any_batch_job_array_index()
+    environ[ARRAY_INDEX_VARIABLE_NAME] = str(index)
+
+    assert get_job_offset() == index
+
+
+def test_should_return_default_offset_to_zero() -> None:
+    environ.pop(ARRAY_INDEX_VARIABLE_NAME, default=None)
+
+    assert get_job_offset() == 0
 
 
 def test_should_return_when_empty_file_checksum_matches(s3_client: S3Client) -> None:
