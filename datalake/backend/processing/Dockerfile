@@ -23,6 +23,8 @@ RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends ca-certificates python3 \
     && rm -rf /var/lib/apt/lists/*
 
+USER 10000:10000
+
 COPY --from=build /opt/.venv /opt/.venv
 
 COPY datalake/backend/processing/*.py /src/
