@@ -13,8 +13,8 @@ from smart_open import open as smart_open  # type: ignore[import]
 
 from ..assets_model import ProcessingAssetsModel
 
-JSON_LIST = List[Any]
-JSON_OBJECT = MutableMapping[str, Any]
+JsonList = List[Any]
+JsonObject = MutableMapping[str, Any]
 
 ssm_client = boto3.client("ssm")
 sts_client = boto3.client("sts")
@@ -37,7 +37,7 @@ BODY_SCHEMA = {
 }
 
 
-def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
+def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
 
     logger = set_up_logging()
@@ -66,8 +66,6 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
             logger.debug(json.dumps({"Adding file to manifest": file.url}, default=str))
             key = urlparse(file.url).path[1:]
             s3_manifest.write(f"{staging_bucket_name},{key}\n")
-
-    logger.debug("triggering s3 batch")
 
     # trigger s3 batch copy operation
     response = s3control_client.create_job(
@@ -103,7 +101,6 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER),
         ClientRequestToken=uuid4().hex,
     )
-    print("SUCCCESS" + response["JobId"])
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
     return success_response(200, {"job_id": response["JobId"]})
@@ -121,13 +118,13 @@ def set_up_logging() -> logging.Logger:
     return logger
 
 
-def error_response(code: int, message: str, logger: logging.Logger) -> JSON_OBJECT:
+def error_response(code: int, message: str, logger: logging.Logger) -> JsonObject:
     """Return error response content as string."""
     logger.warning(json.dumps({"error": message}, default=str))
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
-def success_response(code: int, body: Union[JSON_LIST, JSON_OBJECT]) -> JSON_OBJECT:
+def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
     """Return success response content as string."""
 
     return {"statusCode": code, "body": body}
