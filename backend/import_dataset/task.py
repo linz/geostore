@@ -56,8 +56,7 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
     storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
-    staging_bucket = boto3.resource("s3").Bucket(urlparse(metadata_url).netloc)
-
+    staging_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
     with smart_open(f"s3://{storage_bucket_name}/{manifest_key}", "w") as s3_manifest:
@@ -66,7 +65,9 @@ def lambda_handler(payload: JSON_OBJECT, _context: bytes) -> JSON_OBJECT:
         ):
             logger.debug(json.dumps({"Adding file to manifest": file.url}, default=str))
             key = urlparse(file.url).path[1:]
-            s3_manifest.write(f"{staging_bucket.name},{key}\n")
+            s3_manifest.write(f"{staging_bucket_name},{key}\n")
+
+    logger.debug("triggering s3 batch")
 
     # trigger s3 batch copy operation
     response = s3control_client.create_job(
