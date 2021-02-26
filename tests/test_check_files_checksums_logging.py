@@ -7,8 +7,8 @@ from unittest.mock import patch
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.processing.check_files_checksums.task import ARRAY_INDEX_VARIABLE_NAME, main
-from backend.processing.model import ProcessingAssetsModel
+from backend.check_files_checksums.task import ARRAY_INDEX_VARIABLE_NAME, main
+from backend.model import ProcessingAssetsModel
 
 from .utils import any_dataset_id, any_dataset_version_id, any_program_name
 
@@ -18,7 +18,7 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.processing.check_files_checksums.task")
+        cls.logger = logging.getLogger("backend.check_files_checksums.task")
 
     @mark.infrastructure
     def test_should_log_missing_item(self, subtests: SubTests) -> None:

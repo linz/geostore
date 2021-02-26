@@ -5,8 +5,8 @@ from typing import Any
 
 from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 
-from backend.processing.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.processing.utils import ResourceName
+from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
+from backend.utils import ResourceName
 
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask

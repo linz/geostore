@@ -3,7 +3,7 @@ from typing import Any
 from aws_cdk import aws_s3, core
 from aws_cdk.core import Tags
 
-from backend.processing.utils import ResourceName
+from backend.utils import ResourceName
 
 
 class StagingStack(core.Stack):

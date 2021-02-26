@@ -19,7 +19,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
         image = aws_ecs.ContainerImage.from_asset(
             directory=".",
             build_args={"task": directory},
-            file="backend/processing/Dockerfile",
+            file="backend/Dockerfile",
         )
 
         container = aws_batch.JobDefinitionContainer(

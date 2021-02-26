@@ -27,6 +27,6 @@ USER 10000:10000
 
 COPY --from=build /opt/.venv /opt/.venv
 
-COPY backend/processing/*.py /src/
+COPY backend/*.py /src/
 ARG task
-COPY backend/processing/${task} /src/task/
+COPY backend/${task} /src/task/

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
-from backend.processing.check_stac_metadata.task import STACSchemaValidator, main
+from backend.check_stac_metadata.task import STACSchemaValidator, main
 
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
@@ -27,9 +27,9 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.processing.check_stac_metadata.task")
+        cls.logger = logging.getLogger("backend.check_stac_metadata.task")
 
-    @patch("backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
+    @patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
     def test_should_log_arguments(self, validate_url_mock: MagicMock) -> None:
         validate_url_mock.return_value = set()
         url = any_s3_url()
@@ -47,7 +47,7 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.processing.model.ProcessingAssetsModel"
+            "backend.model.ProcessingAssetsModel"
         ):
             main()
 
@@ -62,13 +62,13 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "info") as logger_mock, patch(
-            "backend.processing.check_stac_metadata.task.STACSchemaValidator.validate"
+            "backend.check_stac_metadata.task.STACSchemaValidator.validate"
         ):
             main()
 
             logger_mock.assert_any_call('{"success": true, "message": ""}')
 
-    @patch("backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
+    @patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
     def test_should_log_on_validation_failure(self, validate_url_mock: MagicMock) -> None:
         error_message = "Some error message"
         validate_url_mock.side_effect = choice([ValidationError, AssertionError])(error_message)

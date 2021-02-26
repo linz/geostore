@@ -18,7 +18,7 @@ from jsonschema import (  # type: ignore[import]
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
 
-from backend.processing.model import ProcessingAssetsModel
+from ..model import ProcessingAssetsModel
 
 S3_URL_PREFIX = "s3://"
 

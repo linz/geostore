@@ -11,7 +11,7 @@ import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
-from backend.processing.model import ProcessingAssetsModel
+from ..model import ProcessingAssetsModel
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub

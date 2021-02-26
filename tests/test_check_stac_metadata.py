@@ -12,9 +12,9 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.processing.check_stac_metadata.task import STACSchemaValidator, main
-from backend.processing.model import ProcessingAssetsModel
-from backend.processing.utils import ResourceName
+from backend.check_stac_metadata.task import STACSchemaValidator, main
+from backend.model import ProcessingAssetsModel
+from backend.utils import ResourceName
 
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
@@ -34,7 +34,7 @@ from .utils import (
 )
 
 
-@patch("backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
+@patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
 def test_should_return_non_zero_exit_code_on_validation_failure(
     validate_url_mock: MagicMock,
 ) -> None:
@@ -130,7 +130,7 @@ class TestsWithLogger:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.processing.check_stac_metadata.task")
+        cls.logger = logging.getLogger("backend.check_stac_metadata.task")
 
     def test_should_treat_minimal_stac_object_as_valid(self) -> None:
         url = any_s3_url()
@@ -159,7 +159,7 @@ class TestsWithLogger:
         with raises(ValidationError):
             STACSchemaValidator(url_reader).validate(url, self.logger)
 
-    @patch("backend.processing.check_stac_metadata.task.STACSchemaValidator.validate")
+    @patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
     def test_should_validate_given_url(
         self,
         validate_url_mock: MagicMock,
@@ -172,7 +172,7 @@ class TestsWithLogger:
             f"--version-id={any_dataset_version_id()}",
         ]
 
-        with patch("backend.processing.model.ProcessingAssetsModel"):
+        with patch("backend.model.ProcessingAssetsModel"):
             assert main() == 0
 
         validate_url_mock.assert_called_once_with(url, self.logger)

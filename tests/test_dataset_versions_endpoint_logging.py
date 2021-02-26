@@ -6,7 +6,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 from pytest import mark
 
-from backend.processing.dataset_versions.create import create_dataset_version
+from backend.dataset_versions.create import create_dataset_version
 
 from .utils import Dataset, any_dataset_id, any_s3_url, any_valid_dataset_type
 
@@ -16,7 +16,7 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.processing.dataset_versions.create")
+        cls.logger = logging.getLogger("backend.dataset_versions.create")
 
     @mark.infrastructure
     def test_should_log_payload(self) -> None:
@@ -41,7 +41,7 @@ class TestLogging:
                 logger_mock.assert_any_call(expected_payload_log)
 
     @mark.infrastructure
-    @patch("backend.processing.dataset_versions.create.stepfunctions_client.start_execution")
+    @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
     def test_should_log_step_function_state_machine_response(
         self, start_execution_mock: MagicMock
     ) -> None:
@@ -68,7 +68,7 @@ class TestLogging:
 
                 logger_mock.assert_any_call(expected_execution_log)
 
-    @patch("backend.processing.dataset_versions.create.validate")
+    @patch("backend.dataset_versions.create.validate")
     def test_should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
         # given
         dataset_type = any_valid_dataset_type()
@@ -90,7 +90,7 @@ class TestLogging:
             # then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.processing.dataset_versions.create.DatasetModel.get")
+    @patch("backend.dataset_versions.create.DatasetModel.get")
     def test_should_log_warning_if_dataset_does_not_exist(
         self, validate_dataset_mock: MagicMock
     ) -> None:

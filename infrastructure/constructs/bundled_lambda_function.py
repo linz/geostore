@@ -18,7 +18,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         bundling_options = core.BundlingOptions(
             # pylint:disable=no-member
             image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-            command=["backend/bundle.bash", f"processing/{directory}"],
+            command=["backend/bundle.bash", f"{directory}"],
         )
         lambda_code = aws_lambda.Code.from_asset(path=".", bundling=bundling_options)
 
@@ -30,7 +30,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             scope,
             construct_id,
             code=lambda_code,
-            handler=f"processing.{directory}.task.lambda_handler",
+            handler=f"backend.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             environment=environment,
         )
