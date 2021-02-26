@@ -6,12 +6,8 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_s3, core
 from aws_cdk.core import Tags
 
-from datalake.backend.endpoints.model import (
-    DATASETS_OWNING_GROUP_INDEX_NAME,
-    DATASETS_TITLE_INDEX_NAME,
-)
-
-from .backend.endpoints.utils import ResourceName
+from .backend.processing.model import DATASETS_OWNING_GROUP_INDEX_NAME, DATASETS_TITLE_INDEX_NAME
+from .backend.processing.utils import ResourceName
 from .constructs.table import Table
 
 

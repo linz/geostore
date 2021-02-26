@@ -18,7 +18,7 @@ from jsonschema import (  # type: ignore[import]
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
 
-from ..assets_model import ProcessingAssetsModel
+from datalake.backend.processing.model import ProcessingAssetsModel
 
 S3_URL_PREFIX = "s3://"
 

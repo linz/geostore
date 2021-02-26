@@ -5,7 +5,7 @@ Data Lake Storage Bucket tests.
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 
-from ..endpoints.utils import ResourceName
+from ..processing.utils import ResourceName
 
 
 @mark.infrastructure

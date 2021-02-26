@@ -12,7 +12,6 @@ from mypy_boto3_s3 import S3Client
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.assets_model import ProcessingAssetsModel
 from ..processing.check_files_checksums.task import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
@@ -20,6 +19,7 @@ from ..processing.check_files_checksums.task import (
     main,
     validate_url_multihash,
 )
+from ..processing.model import ProcessingAssetsModel
 from .utils import (
     EMPTY_FILE_MULTIHASH,
     any_batch_job_array_index,

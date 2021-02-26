@@ -13,7 +13,7 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 
-from datalake.backend.endpoints.model import DatasetModel
+from ..processing.model import DatasetModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

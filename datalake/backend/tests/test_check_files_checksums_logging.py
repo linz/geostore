@@ -7,8 +7,8 @@ from unittest.mock import patch
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.assets_model import ProcessingAssetsModel
 from ..processing.check_files_checksums.task import ARRAY_INDEX_VARIABLE_NAME, main
+from ..processing.model import ProcessingAssetsModel
 from .utils import any_dataset_id, any_dataset_version_id, any_program_name
 
 

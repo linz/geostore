@@ -11,9 +11,9 @@ from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
 
-from ..endpoints.dataset_versions import entrypoint
-from ..endpoints.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from ..endpoints.utils import ResourceName
+from ..processing.dataset_versions import entrypoint
+from ..processing.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
+from ..processing.utils import ResourceName
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
     Dataset,

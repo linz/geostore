@@ -2,7 +2,7 @@ from typing import Any, MutableMapping
 
 from jsonschema import validate  # type: ignore[import]
 
-from ..assets_model import ProcessingAssetsModel
+from ..model import ProcessingAssetsModel
 
 # From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
 # TODO: Set MAX_ITERATION_SIZE to 10_000 once we figure out [how to set a numeric

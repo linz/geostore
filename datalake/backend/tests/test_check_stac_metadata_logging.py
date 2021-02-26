@@ -46,7 +46,7 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "datalake.backend.processing.assets_model.ProcessingAssetsModel"
+            "datalake.backend.processing.model.ProcessingAssetsModel"
         ):
             main()
 

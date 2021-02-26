@@ -6,7 +6,7 @@ if [[ "$#" -lt 1 ]]
 then
     cat >&2 <<'EOF'
 Synopsis: ./bundle.bash DIRECTORY
-Example: ./bundle.bash endpoints/datasets
+Example: ./bundle.bash processing/datasets
 EOF
     exit 1
 fi

@@ -8,7 +8,7 @@ from os import environ
 from aws_cdk import core
 
 from datalake.api_stack import APIStack
-from datalake.backend.endpoints.utils import ENV
+from datalake.backend.processing.utils import ENV
 from datalake.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from datalake.processing_stack import ProcessingStack
 from datalake.staging_stack import StagingStack

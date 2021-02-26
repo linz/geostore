@@ -9,8 +9,8 @@ import re
 import _pytest
 from pytest import mark
 
-from ..endpoints.datasets import entrypoint
-from ..endpoints.utils import DATASET_TYPES
+from ..processing.datasets import entrypoint
+from ..processing.utils import DATASET_TYPES
 from .utils import (
     Dataset,
     any_dataset_id,

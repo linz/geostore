@@ -12,8 +12,9 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..endpoints.utils import ResourceName
-from ..processing.check_stac_metadata.task import ProcessingAssetsModel, STACSchemaValidator, main
+from ..processing.check_stac_metadata.task import STACSchemaValidator, main
+from ..processing.model import ProcessingAssetsModel
+from ..processing.utils import ResourceName
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
     MockJSONURLReader,
@@ -170,7 +171,7 @@ class TestsWithLogger:
             f"--version-id={any_dataset_version_id()}",
         ]
 
-        with patch("datalake.backend.processing.assets_model.ProcessingAssetsModel"):
+        with patch("datalake.backend.processing.model.ProcessingAssetsModel"):
             assert main() == 0
 
         validate_url_mock.assert_called_once_with(url, self.logger)

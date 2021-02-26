@@ -7,7 +7,7 @@ import json
 from mypy_boto3_lambda import LambdaClient
 from pytest import mark
 
-from ..endpoints.utils import ResourceName
+from ..processing.utils import ResourceName
 from .utils import (
     Dataset,
     any_dataset_id,
