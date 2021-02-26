@@ -5,6 +5,7 @@ from typing import Any
 
 from aws_cdk import aws_iam, aws_s3, aws_ssm, aws_stepfunctions, core
 from aws_cdk.aws_iam import PolicyStatement
+from aws_cdk.aws_s3 import Bucket
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.utils import ResourceName
@@ -16,7 +17,6 @@ from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.lambda_task import LambdaTask
 from .constructs.table import Table
-from .staging_stack import STAGING_BUCKET_PARAMETER
 
 
 class ProcessingStack(core.Stack):
@@ -27,6 +27,7 @@ class ProcessingStack(core.Stack):
         scope: core.Construct,
         stack_id: str,
         deploy_env: str,
+        staging_bucket: Bucket,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -169,12 +170,6 @@ class ProcessingStack(core.Stack):
             parameter_name=STORAGE_BUCKET_PARAMETER,
         )
 
-        staging_bucket_arn = aws_ssm.StringParameter.from_string_parameter_attributes(
-            self,
-            "staging-bucket-arn",
-            parameter_name=STAGING_BUCKET_PARAMETER,
-        )
-
         storage_bucket = aws_s3.Bucket.from_bucket_arn(
             self, "storage-bucket", storage_bucket_arn.string_value
         )
@@ -194,7 +189,7 @@ class ProcessingStack(core.Stack):
                     "s3:GetObjectTagging",
                 ],
                 resources=[
-                    staging_bucket_arn.string_value + "/*",
+                    f"{staging_bucket.bucket_arn}/*",
                 ],
             ),
         )
@@ -209,7 +204,7 @@ class ProcessingStack(core.Stack):
                     "s3:GetBucketLocation",
                 ],
                 resources=[
-                    storage_bucket_arn.string_value + "/*",
+                    f"{storage_bucket_arn.string_value}/*",
                 ],
             )
         )

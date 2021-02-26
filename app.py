@@ -44,7 +44,6 @@ def main() -> None:
         "staging",
         stack_name=f"{ENV}-geospatial-data-lake-staging",
         env={"region": region, "account": account},
-        deploy_env=ENV,
     )
 
     processing = ProcessingStack(
@@ -53,9 +52,9 @@ def main() -> None:
         stack_name=f"{ENV}-geospatial-data-lake-processing",
         env={"region": region, "account": account},
         deploy_env=ENV,
+        staging_bucket=staging.staging_bucket,
     )
     processing.add_dependency(storage)
-    processing.add_dependency(staging)
 
     APIStack(
         app,
