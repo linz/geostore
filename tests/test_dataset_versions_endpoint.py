@@ -4,7 +4,6 @@ Dataset Versions endpoint Lambda function tests.
 
 import logging
 
-import _pytest
 from pytest import mark
 
 from backend.dataset_versions import entrypoint
@@ -82,9 +81,7 @@ def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
 
 @mark.infrastructure
-def test_should_return_success_if_dataset_exists(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def test_should_return_success_if_dataset_exists() -> None:
     # Given a dataset instance
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()

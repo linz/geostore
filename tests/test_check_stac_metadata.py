@@ -8,6 +8,7 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
+import _pytest
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -53,6 +54,9 @@ def test_should_return_non_zero_exit_code_on_validation_failure(
 @mark.infrastructure
 def test_should_insert_asset_urls_and_checksums_into_database(
     subtests: SubTests,
+    processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
+        object
+    ],  # pylint:disable=unused-argument
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with two assets

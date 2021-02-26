@@ -7,6 +7,7 @@ from io import BytesIO
 from json import dumps
 from typing import ContextManager, Optional
 
+import _pytest
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
@@ -57,11 +58,15 @@ def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMCli
 @mark.infrastructure
 def test_should_successfully_run_dataset_version_creation_process(
     step_functions_client: SFNClient,
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
+        object
+    ],  # pylint:disable=unused-argument
+    storage_bucket_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
+    # pylint: disable=too-many-locals
     key_prefix = any_safe_file_path()
     metadata = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-    s3_bucket_name = ResourceName.DATASET_STAGING_BUCKET_NAME.value
-
     mandatory_asset_contents = any_file_contents()
 
     # Test either branch of check_files_checksums_maybe_array randomly. Trade-off between cost of
@@ -71,7 +76,7 @@ def test_should_successfully_run_dataset_version_creation_process(
         optional_asset_contents = any_file_contents()
         optional_asset = S3Object(
             file_object=BytesIO(initial_bytes=optional_asset_contents),
-            bucket_name=s3_bucket_name,
+            bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
             key=f"{key_prefix}/{any_safe_filename()}.txt",
         )
     else:
@@ -79,7 +84,7 @@ def test_should_successfully_run_dataset_version_creation_process(
 
     with S3Object(
         file_object=BytesIO(initial_bytes=mandatory_asset_contents),
-        bucket_name=s3_bucket_name,
+        bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as mandatory_asset_s3_object, optional_asset as optional_asset_s3_object:
         metadata["item_assets"] = {
@@ -100,24 +105,28 @@ def test_should_successfully_run_dataset_version_creation_process(
 
         with S3Object(
             file_object=BytesIO(initial_bytes=dumps(metadata).encode()),
-            bucket_name=s3_bucket_name,
+            bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
             key=("{}/{}.json".format(key_prefix, any_safe_filename())),
         ) as s3_metadata_file:
             dataset_id = any_dataset_id()
             dataset_type = any_valid_dataset_type()
             with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
 
-                body = {}
-                body["id"] = dataset_id
-                body["metadata-url"] = s3_metadata_file.url
-                body["type"] = dataset_type
-
+                # When
                 launch_response = entrypoint.lambda_handler(
-                    {"httpMethod": "POST", "body": body}, any_lambda_context()
+                    {
+                        "httpMethod": "POST",
+                        "body": {
+                            "id": dataset_id,
+                            "metadata-url": s3_metadata_file.url,
+                            "type": dataset_type,
+                        },
+                    },
+                    any_lambda_context(),
                 )["body"]
                 logger.info("Executed State Machine: %s", launch_response)
 
-                # poll for State Machine State
+                # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
                         executionArn=launch_response["execution_arn"]

@@ -6,6 +6,7 @@ from io import BytesIO
 from json import dumps
 from urllib.parse import urlparse
 
+import _pytest
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_sts import STSClient
@@ -73,6 +74,7 @@ def test_should_batch_copy_files_to_storage(
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,
+    storage_bucket_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with an asset
@@ -87,6 +89,7 @@ def test_should_batch_copy_files_to_storage(
         ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         any_safe_filename(),
     ) as asset_s3_object:
+
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         metadata_stac_object["assets"] = {
             any_stac_asset_name(): {
@@ -95,11 +98,13 @@ def test_should_batch_copy_files_to_storage(
             },
         }
         metadata_content = dumps(metadata_stac_object).encode()
+
         with S3Object(
             BytesIO(initial_bytes=metadata_content),
             ResourceName.DATASET_STAGING_BUCKET_NAME.value,
             any_safe_filename(),
         ) as metadata_s3_object:
+
             asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
             with ProcessingAsset(

@@ -45,7 +45,7 @@ def test_should_fail_if_request_not_containing_body() -> None:
 
 @mark.infrastructure
 def test_should_create_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_type = any_valid_dataset_type()
     dataset_title = any_dataset_title()
@@ -125,7 +125,7 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title() -> Non
 
 @mark.infrastructure
 def test_should_return_single_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance
     dataset_id = "111abc"
@@ -148,7 +148,7 @@ def test_should_return_single_dataset(
 
 @mark.infrastructure
 def test_should_return_all_datasets(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given two datasets
     with Dataset() as first_dataset, Dataset() as second_dataset:
@@ -166,7 +166,7 @@ def test_should_return_all_datasets(
 
 @mark.infrastructure
 def test_should_return_single_dataset_filtered_by_type_and_title(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given matching and non-matching dataset instances
     dataset_type = "IMAGE"
@@ -194,7 +194,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
 
 @mark.infrastructure
 def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given matching and non-matching dataset instances
     dataset_type = "RASTER"
@@ -244,7 +244,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter() ->
 
 @mark.infrastructure
 def test_should_fail_if_get_request_requests_not_existing_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
@@ -265,7 +265,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
 
 @mark.infrastructure
 def test_should_update_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = "111abc"
     dataset_type = any_valid_dataset_type()
@@ -289,7 +289,7 @@ def test_should_update_dataset(
 
 @mark.infrastructure
 def test_should_fail_if_updating_with_already_existing_dataset_title(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset XYZ"
@@ -317,7 +317,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
 @mark.infrastructure
 def test_should_fail_if_updating_not_existing_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
@@ -342,7 +342,7 @@ def test_should_fail_if_updating_not_existing_dataset(
 
 @mark.infrastructure
 def test_should_delete_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = "111abc"
     dataset_type = any_valid_dataset_type()
@@ -361,7 +361,7 @@ def test_should_delete_dataset(
 
 @mark.infrastructure
 def test_should_fail_if_deleting_not_existing_dataset(
-    db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
