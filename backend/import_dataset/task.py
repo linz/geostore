@@ -11,7 +11,7 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
-from ..assets_model import ProcessingAssetsModel
+from ..model import ProcessingAssetsModel
 
 JsonList = List[Any]
 JsonObject = MutableMapping[str, Any]

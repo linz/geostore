@@ -7,7 +7,8 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.import_dataset.task import lambda_handler
+from backend.import_dataset.task import lambda_handler
+
 from .utils import (
     ProcessingAsset,
     any_dataset_id,
@@ -23,10 +24,10 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("datalake.backend.processing.import_dataset.task")
+        cls.logger = logging.getLogger("backend.import_dataset.task")
 
     @mark.infrastructure
-    @patch("datalake.backend.processing.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.s3control_client.create_job")
     def test_should_log_payload(self, create_job_mock: MagicMock) -> None:
         # Given
 
@@ -46,7 +47,7 @@ class TestLogging:
             # Then
             log_mock.assert_any_call(expected_payload_log)
 
-    @patch("datalake.backend.processing.import_dataset.task.validate")
+    @patch("backend.import_dataset.task.validate")
     def test_should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
@@ -66,7 +67,7 @@ class TestLogging:
             # Then
             log_mock.assert_any_call(expected_log)
 
-    @patch("datalake.backend.processing.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.s3control_client.create_job")
     @mark.infrastructure
     def test_should_log_assets_added_to_manifest(
         self, create_job_mock: MagicMock, subtests: SubTests
@@ -105,7 +106,8 @@ class TestLogging:
                 with subtests.test():
                     log_mock.assert_any_call(expected_metadata_log)
 
-    @patch("datalake.backend.processing.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.s3control_client.create_job")
+    @mark.infrastructure
     def test_should_log_s3_batch_repsonse(self, create_job_mock: MagicMock) -> None:
         # Given
 

@@ -12,8 +12,9 @@ from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_sts import STSClient
 from pytest import mark
 
-from ..endpoints.utils import ResourceName
-from ..processing.import_dataset.task import lambda_handler
+from backend.import_dataset.task import lambda_handler
+from backend.utils import ResourceName
+
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,
     ProcessingAsset,
