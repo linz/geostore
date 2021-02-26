@@ -7,7 +7,8 @@ import logging
 import _pytest
 from pytest import mark
 
-from ..processing.dataset_versions import entrypoint
+from backend.processing.dataset_versions import entrypoint
+
 from .utils import Dataset, any_dataset_id, any_lambda_context, any_s3_url, any_valid_dataset_type
 
 logging.basicConfig(level=logging.INFO)

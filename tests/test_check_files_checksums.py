@@ -12,14 +12,15 @@ from mypy_boto3_s3 import S3Client
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.check_files_checksums.task import (
+from backend.processing.check_files_checksums.task import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
     get_job_offset,
     main,
     validate_url_multihash,
 )
-from ..processing.model import ProcessingAssetsModel
+from backend.processing.model import ProcessingAssetsModel
+
 from .utils import (
     EMPTY_FILE_MULTIHASH,
     any_batch_job_array_index,
@@ -66,8 +67,8 @@ def test_should_raise_exception_when_checksum_does_not_match(s3_client: S3Client
 
 
 @patch("boto3.client")
-@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
-@patch("datalake.backend.processing.check_files_checksums.task.ProcessingAssetsModel")
+@patch("backend.processing.check_files_checksums.task.validate_url_multihash")
+@patch("backend.processing.check_files_checksums.task.ProcessingAssetsModel")
 def test_should_validate_given_index(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
@@ -94,7 +95,7 @@ def test_should_validate_given_index(
         )
 
     processing_assets_model_mock.get.side_effect = get_mock
-    logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
+    logger = logging.getLogger("backend.processing.check_files_checksums.task")
 
     # When
     environ[ARRAY_INDEX_VARIABLE_NAME] = array_index
@@ -119,8 +120,8 @@ def test_should_validate_given_index(
         validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash, stubber)])
 
 
-@patch("datalake.backend.processing.check_files_checksums.task.validate_url_multihash")
-@patch("datalake.backend.processing.check_files_checksums.task.ProcessingAssetsModel")
+@patch("backend.processing.check_files_checksums.task.validate_url_multihash")
+@patch("backend.processing.check_files_checksums.task.ProcessingAssetsModel")
 def test_should_log_error_when_validation_fails(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
@@ -141,7 +142,7 @@ def test_should_log_error_when_validation_fails(
         f' expected {expected_hex_digest}, got {actual_hex_digest}"}}'
     )
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
-    logger = logging.getLogger("datalake.backend.processing.check_files_checksums.task")
+    logger = logging.getLogger("backend.processing.check_files_checksums.task")
 
     # When
     environ[ARRAY_INDEX_VARIABLE_NAME] = "0"

@@ -6,7 +6,8 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from ..processing.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
+from backend.processing.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
+
 from .utils import (
     any_dataset_id,
     any_dataset_version_id,
@@ -125,7 +126,7 @@ def test_should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_siz
         lambda_handler(event, any_lambda_context())
 
 
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+@patch("backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock: MagicMock,
 ) -> None:
@@ -137,7 +138,7 @@ def test_should_return_zero_as_first_item_if_no_content(
     assert response["first_item"] == "0", response
 
 
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+@patch("backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     next_item_index = any_item_index()
@@ -149,7 +150,7 @@ def test_should_return_next_item_as_first_item(processing_assets_model_mock: Mag
     assert response["first_item"] == str(next_item_index), response
 
 
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+@patch("backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
@@ -169,7 +170,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
     assert response == expected_response, response
 
 
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+@patch("backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
@@ -189,7 +190,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
     assert response == expected_response, response
 
 
-@patch("datalake.backend.processing.content_iterator.task.ProcessingAssetsModel")
+@patch("backend.processing.content_iterator.task.ProcessingAssetsModel")
 def test_should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:

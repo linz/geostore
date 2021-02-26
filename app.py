@@ -7,13 +7,13 @@ from os import environ
 
 from aws_cdk import core
 
-from datalake.api_stack import APIStack
-from datalake.backend.processing.utils import ENV
-from datalake.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
-from datalake.processing_stack import ProcessingStack
-from datalake.staging_stack import StagingStack
-from datalake.storage_stack import StorageStack
-from datalake.users_stack import UsersStack
+from backend.processing.utils import ENV
+from infrastructure.api_stack import APIStack
+from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
+from infrastructure.processing_stack import ProcessingStack
+from infrastructure.staging_stack import StagingStack
+from infrastructure.storage_stack import StorageStack
+from infrastructure.users_stack import UsersStack
 
 ENVIRONMENT_TYPE_TAG_NAME = "EnvironmentType"
 

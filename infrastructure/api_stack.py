@@ -6,7 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda, aws_ssm, aws_stepfunctions, core
 from aws_cdk.core import Tags
 
-from .backend.processing.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
+from backend.processing.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 
 
 class APIStack(core.Stack):
@@ -41,7 +41,7 @@ class APIStack(core.Stack):
                     bundling=core.BundlingOptions(
                         # pylint:disable=no-member
                         image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                        command=["datalake/backend/bundle.bash", f"processing/{endpoint}"],
+                        command=["backend/bundle.bash", f"processing/{endpoint}"],
                     ),
                 ),
             )
