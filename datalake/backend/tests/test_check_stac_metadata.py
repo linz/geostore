@@ -89,7 +89,7 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         ]
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        metadata_stac_object["assets"] = {
+        metadata_stac_object["item_assets"] = {
             any_stac_asset_name(): {
                 "href": first_asset_s3_object.url,
                 "checksum:multihash": first_asset_multihash,
@@ -255,7 +255,7 @@ class TestsWithLogger:
         other_url = f"{base_url}/{any_safe_filename()}/{any_safe_filename()}"
 
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        stac_object["assets"] = {
+        stac_object["item_assets"] = {
             any_stac_asset_name(): {"href": other_url, "checksum:multihash": any_hex_multihash()}
         }
 
@@ -275,7 +275,7 @@ class TestsWithLogger:
         first_asset_multihash = any_hex_multihash()
         second_asset_url = f"{base_url}/{any_safe_filename()}"
         second_asset_multihash = any_hex_multihash()
-        stac_object["assets"] = {
+        stac_object["item_assets"] = {
             any_stac_asset_name(): {
                 "href": first_asset_url,
                 "checksum:multihash": first_asset_multihash,

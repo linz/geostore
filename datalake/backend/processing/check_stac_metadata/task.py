@@ -63,7 +63,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         url_prefix = get_url_before_filename(url)
 
         assets = []
-        for asset in url_json.get("assets", {}).values():
+        for asset in url_json.get("item_assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
             assert (
