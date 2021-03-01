@@ -1,15 +1,37 @@
 # Getting Access to Data Lake
 ## Prerequisites
-Currently, Data Lake allows read/write access for all users from all AWS accounts (users home
-accounts) specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` during deployment time
-(see [README](README.md#aws-infrastructure-deployment-cdk-stack)).
+Currently, the Data Lake allows read/write access for AWS accounts specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` (see [README](README.md#aws-infrastructure-deployment-cdk-stack)). To add your AWS account to this list, contact the Data Lake product team. 
 
-Also, following information must be provided by Data Lake instance maintainer in order to star using
-it:
+The product team will provide you the following information to enable to you to start using the Data Lake:
 
 * Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
 * Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
 * Data Lake lambda function endpoint names (`DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME`)
+
+### Data Maintainers
+To import data in to the Data Lake, you will need a 'staging' S3 bucket with your data in it. You will need to give permissions to Data Lake AWS account to read your data.
+
+Example bucket policy:
+
+```
+{
+    "Version": "2012-10-17",
+    "Id": "data-lake-policy",
+    "Statement": [
+        {
+            "Sid": "data-lake-readonly",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::<DATALAKE_AWS_ACCOUNT_ID>:root"
+            },
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3:::<YOUR_STAGING_BUCKET>/<YOUR_DATASET>"
+        }
+    ]
+}
+```
 
 ## Credentials
 Temporary access credentials for Data Lake can be requested by running the following commands while
