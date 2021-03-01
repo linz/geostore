@@ -985,14 +985,14 @@ publication = ">=0.0.3"
 
 [[package]]
 name = "awscli"
-version = "1.19.15"
+version = "1.19.17"
 description = "Universal Command Line Environment for AWS."
 category = "main"
 optional = true
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = "1.20.15"
+botocore = "1.20.17"
 colorama = ">=0.2.5,<0.4.4"
 docutils = ">=0.10,<0.16"
 PyYAML = ">=3.10,<5.5"
@@ -1322,7 +1322,7 @@ xray = ["mypy-boto3-xray (==1.17.17.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.20.15"
+version = "1.20.17"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = true
@@ -2455,8 +2455,8 @@ attrs = [
     {file = "aws_cdk.region_info-1.90.1-py3-none-any.whl", hash = "sha256:9e0e70fff764512f12f15ab4e8bfdfef4de174ab2e9706d65610fb61b460f510"},
 ]
 awscli = [
-    {file = "awscli-1.19.15-py2.py3-none-any.whl", hash = "sha256:9ded101d563ea19a9f35468f1b618a52b4c7351379c07f38baa6d67b948a1aab"},
-    {file = "awscli-1.19.15.tar.gz", hash = "sha256:c8c4e758aff6693da8a015899933fde6df6caa22cb28e57415b5125d97007a3f"},
+    {file = "awscli-1.19.17-py2.py3-none-any.whl", hash = "sha256:dd41bcfcc3901b790ade627284dc254f19d21a16057caac24a7e28b8ee52bc08"},
+    {file = "awscli-1.19.17.tar.gz", hash = "sha256:61d924784d8f3b178781a1a3a74b9fcdb3ff2eabede32b52b4791167ed8ab13b"},
 ]
 backcall = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
@@ -2474,8 +2474,8 @@ boto3-stubs = [
     {file = "boto3_stubs-1.17.17.0-py3-none-any.whl", hash = "sha256:44abc2e37b527b449fb59068865cde7a4d243a162094d5e41f63ed4f7c49e8be"},
 ]
 botocore = [
-    {file = "botocore-1.20.15-py2.py3-none-any.whl", hash = "sha256:71c5073c7f042dc8d4684c7ddd0ab1fce1e9d1db7ab9cdb0ab4c6bd5a6855db4"},
-    {file = "botocore-1.20.15.tar.gz", hash = "sha256:e4f6184ef463f047f78d95ff735228d934b34c1fcc22e247076a1dd69c4a7c2d"},
+    {file = "botocore-1.20.17-py2.py3-none-any.whl", hash = "sha256:931d16867dbb0fa60843204dc88ea01fd9d1ce8c28294ec4865fdf96adddbc29"},
+    {file = "botocore-1.20.17.tar.gz", hash = "sha256:178ce315d19fe0ef33e8ce6754a482d009e8d132c5adcc457f5cf1d99a98753b"},
 ]
 cattrs = [
     {file = "cattrs-1.1.2-py3-none-any.whl", hash = "sha256:967ce8f99b79f112a500fc03d02c4da669966055ea190b0c59a023af0ae33e5f"},
