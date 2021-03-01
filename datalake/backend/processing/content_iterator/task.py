@@ -5,8 +5,6 @@ from jsonschema import validate  # type: ignore[import]
 from ..assets_model import ProcessingAssetsModel
 
 # From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
-MIN_ITERATION_SIZE = 2
-
 # TODO: Set MAX_ITERATION_SIZE to 10_000 once we figure out [how to set a numeric
 # size](https://stackoverflow.com/q/66202138/96588)
 MAX_ITERATION_SIZE = 5
@@ -18,8 +16,16 @@ EVENT_SCHEMA = {
             "type": "object",
             "properties": {
                 "first_item": {"type": "string", "pattern": r"^\d+$"},
-                "iteration_size": {"type": "string", "pattern": r"^\d+$"},
-                "next_item": {"type": "string", "pattern": r"^\d+$"},
+                "iteration_size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": MAX_ITERATION_SIZE,
+                },
+                "next_item": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "multipleOf": MAX_ITERATION_SIZE,
+                },
             },
             "required": ["first_item", "iteration_size", "next_item"],
             "additionalProperties": False,
@@ -41,9 +47,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     if "content" in event.keys():
         assert int(event["content"]["first_item"]) % MAX_ITERATION_SIZE == 0
-        assert 0 < int(event["content"]["iteration_size"]) <= MAX_ITERATION_SIZE
-        first_item_index = int(event["content"]["next_item"])
-        assert first_item_index != 0
+        first_item_index = event["content"]["next_item"]
     else:
         first_item_index = 0
 
@@ -58,10 +62,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         iteration_size = MAX_ITERATION_SIZE
     else:
         next_item_index = -1
-        iteration_size = max(remaining_assets, MIN_ITERATION_SIZE)
+        iteration_size = remaining_assets
 
     return {
         "first_item": str(first_item_index),
-        "iteration_size": str(iteration_size),
-        "next_item": str(next_item_index),
+        "iteration_size": iteration_size,
+        "next_item": next_item_index,
     }
