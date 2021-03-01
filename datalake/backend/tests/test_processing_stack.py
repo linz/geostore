@@ -71,7 +71,7 @@ def test_should_successfully_run_dataset_version_creation_process(
         bucket_name=s3_bucket_name,
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as mandatory_asset_s3_object, optional_asset as optional_asset_s3_object:
-        metadata["assets"] = {
+        metadata["item_assets"] = {
             any_stac_asset_name(): {
                 "href": mandatory_asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
@@ -80,7 +80,7 @@ def test_should_successfully_run_dataset_version_creation_process(
             },
         }
         if optional_asset_s3_object is not None:
-            metadata["assets"][any_stac_asset_name()] = {
+            metadata["item_assets"][any_stac_asset_name()] = {
                 "href": optional_asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
                     sha256(optional_asset_contents).hexdigest()

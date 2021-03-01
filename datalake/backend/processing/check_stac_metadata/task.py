@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from json import dumps, load
 from os import environ
 from os.path import dirname, join
-from typing import Callable, Dict, List, TextIO
+from typing import Callable, Dict, List
 from urllib.parse import urlparse
 
 import boto3
@@ -28,7 +28,7 @@ CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catal
 
 
 class STACSchemaValidator:  # pylint:disable=too-few-public-methods
-    def __init__(self, url_reader: Callable[[str], TextIO]):
+    def __init__(self, url_reader: Callable[[str], StreamingBody]):
         self.url_reader = url_reader
         self.traversed_urls: List[str] = []
 
@@ -63,7 +63,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         url_prefix = get_url_before_filename(url)
 
         assets = []
-        for asset in url_json.get("assets", {}).values():
+        for asset in url_json.get("item_assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
             assert (
