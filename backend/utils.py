@@ -17,17 +17,14 @@ JsonList = List[Any]
 JsonObject = MutableMapping[str, Any]
 
 
-def error_response(code: int, message: str, logger: logging.Logger) -> JsonObject:
-    """Return error response content as string."""
+def error_response(code: int, message: str) -> JsonObject:
+    logger = set_up_logging(__name__)
     logger.warning(json.dumps({"error": message}, default=str))
-
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
-def success_response(
-    code: int, body: Union[JsonList, JsonObject], logger: logging.Logger
-) -> JsonObject:
-    """Return success response content as string."""
+def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
+    logger = set_up_logging(__name__)
     logger.debug(json.dumps({"success": body}, default=str))
     return {"statusCode": code, "body": body}
 

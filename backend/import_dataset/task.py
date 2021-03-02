@@ -42,7 +42,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        return error_response(400, error.message, logger)
+        return error_response(400, error.message)
 
     dataset_id = payload["dataset_id"]
     dataset_version_id = payload["version_id"]
@@ -98,4 +98,4 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     )
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
-    return success_response(200, {"job_id": response["JobId"]}, logger)
+    return success_response(200, {"job_id": response["JobId"]})

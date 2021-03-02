@@ -41,7 +41,7 @@ def create_dataset_version(payload: JsonObject) -> JsonObject:
         validate(req_body, body_schema)
     except ValidationError as err:
         logger.warning(json.dumps({"error": err}, default=str))
-        return error_response(400, err.message, logger)
+        return error_response(400, err.message)
 
     # validate dataset exists
     try:
@@ -52,7 +52,7 @@ def create_dataset_version(payload: JsonObject) -> JsonObject:
         )
     except DoesNotExist as err:
         logger.warning(json.dumps({"error": err}, default=str))
-        return error_response(404, f"dataset '{req_body['id']}' could not be found", logger)
+        return error_response(404, f"dataset '{req_body['id']}' could not be found")
 
     dataset_version_id = uuid.uuid1().hex
 
@@ -80,7 +80,6 @@ def create_dataset_version(payload: JsonObject) -> JsonObject:
             "dataset_version": dataset_version_id,
             "execution_arn": step_functions_response["executionArn"],
         },
-        logger,
     )
 
 
