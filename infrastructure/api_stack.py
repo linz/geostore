@@ -6,8 +6,6 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda, aws_ssm, aws_stepfunctions, core
 from aws_cdk.core import Duration, Tags
 
-from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-
 
 class APIStack(core.Stack):
     """Data Lake stack definition."""
@@ -19,6 +17,8 @@ class APIStack(core.Stack):
         datasets_table: aws_dynamodb.Table,
         users_role: aws_iam.Role,
         deploy_env: str,
+        state_machine: aws_stepfunctions.StateMachine,
+        state_machine_parameter: aws_ssm.StringParameter,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -58,14 +58,5 @@ class APIStack(core.Stack):
 
             # dataset_versions specific permissions
             if endpoint == "dataset_versions":
-                state_machine_parameter = aws_ssm.StringParameter.from_string_parameter_attributes(
-                    self,
-                    "Step Function State Machine Parameter",
-                    parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
-                )
                 state_machine_parameter.grant_read(endpoint_function)
-
-                state_machine = aws_stepfunctions.StateMachine.from_state_machine_arn(
-                    self, "StepFunctionStateMachine", state_machine_parameter.string_value
-                )
                 state_machine.grant_start_execution(endpoint_function)

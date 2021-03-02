@@ -39,7 +39,7 @@ class StorageStack(core.Stack):
         )
         Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 
-        aws_ssm.StringParameter(
+        self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
             "Storage Bucket ARN Parameter",
             description=f"Storage Bucket ARN for {deploy_env}",

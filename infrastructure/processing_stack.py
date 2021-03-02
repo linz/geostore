@@ -3,15 +3,13 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_iam, aws_s3, aws_ssm, aws_stepfunctions, core
+from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
 from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_s3 import Bucket
+from aws_cdk.aws_ssm import StringParameter
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import (
-    S3_BATCH_COPY_ROLE_PARAMETER_NAME,
-    STORAGE_BUCKET_PARAMETER_NAME,
-)
+from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.utils import ResourceName
 
 from .constructs.batch_job_queue import BatchJobQueue
@@ -23,12 +21,14 @@ from .constructs.table import Table
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: core.Construct,
         stack_id: str,
         deploy_env: str,
         staging_bucket: Bucket,
+        storage_bucket: Bucket,
+        storage_bucket_parameter: StringParameter,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -165,16 +165,6 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         ).lambda_invoke
 
-        storage_bucket_arn_param = aws_ssm.StringParameter.from_string_parameter_attributes(
-            self,
-            "Storage Bucket ARN Parameter",
-            parameter_name=STORAGE_BUCKET_PARAMETER_NAME,
-        )
-
-        storage_bucket = aws_s3.Bucket.from_bucket_arn(
-            self, "storage-bucket", storage_bucket_arn_param.string_value
-        )
-
         s3_batch_copy_role = aws_iam.Role(
             self,
             "s3_batch_copy_role",
@@ -205,7 +195,7 @@ class ProcessingStack(core.Stack):
                     "s3:GetBucketLocation",
                 ],
                 resources=[
-                    f"{storage_bucket_arn_param.string_value}/*",
+                    f"{storage_bucket.bucket_arn}/*",
                 ],
             )
         )
@@ -243,7 +233,7 @@ class ProcessingStack(core.Stack):
         s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
-        storage_bucket_arn_param.grant_read(import_dataset_task.lambda_function)
+        storage_bucket_parameter.grant_read(import_dataset_task.lambda_function)
 
         processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
         processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
@@ -288,16 +278,16 @@ class ProcessingStack(core.Stack):
             )
         )
 
-        state_machine = aws_stepfunctions.StateMachine(
+        self.state_machine = aws_stepfunctions.StateMachine(
             self,
             f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,  # type: ignore[arg-type]
         )
 
-        aws_ssm.StringParameter(
+        self.state_machine_parameter = aws_ssm.StringParameter(
             self,
             "Step Function State Machine Parameter",
             description=f"Step Function State Machine ARN for {deploy_env}",
             parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
-            string_value=state_machine.state_machine_arn,
+            string_value=self.state_machine.state_machine_arn,
         )
