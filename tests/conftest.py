@@ -88,12 +88,3 @@ def storage_bucket_teardown() -> Generator[None, None, None]:
 
     bucket = boto3.resource("s3").Bucket(ResourceName.STORAGE_BUCKET_NAME.value)
     bucket.objects.all().delete()
-
-
-@pytest.fixture(autouse=True, scope="session")
-def storage_bucket_teardown_after_test_run() -> Generator[None, None, None]:
-    yield
-    logger.debug("Removing all items from storage bucket")
-
-    bucket = boto3.resource("s3").Bucket(ResourceName.STORAGE_BUCKET_NAME.value)
-    bucket.objects.all().delete()

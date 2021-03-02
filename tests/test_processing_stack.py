@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 from contextlib import nullcontext
@@ -8,11 +9,11 @@ from json import dumps
 from typing import ContextManager, Optional
 
 import _pytest
+from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark
 
-from backend.dataset_versions import entrypoint
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.utils import ResourceName
@@ -24,7 +25,6 @@ from .utils import (
     any_boolean,
     any_dataset_id,
     any_file_contents,
-    any_lambda_context,
     any_safe_file_path,
     any_safe_filename,
     any_stac_asset_name,
@@ -58,6 +58,7 @@ def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMCli
 @mark.infrastructure
 def test_should_successfully_run_dataset_version_creation_process(
     step_functions_client: SFNClient,
+    lambda_client: LambdaClient,
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
     processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
         object
@@ -113,26 +114,35 @@ def test_should_successfully_run_dataset_version_creation_process(
             with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
 
                 # When
-                launch_response = entrypoint.lambda_handler(
-                    {
-                        "httpMethod": "POST",
-                        "body": {
-                            "id": dataset_id,
-                            "metadata-url": s3_metadata_file.url,
-                            "type": dataset_type,
-                        },
-                    },
-                    any_lambda_context(),
-                )["body"]
-                logger.info("Executed State Machine: %s", launch_response)
+                resp = lambda_client.invoke(
+                    FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                    Payload=json.dumps(
+                        {
+                            "httpMethod": "POST",
+                            "body": {
+                                "id": dataset_id,
+                                "metadata-url": s3_metadata_file.url,
+                                "type": dataset_type,
+                            },
+                        }
+                    ).encode(),
+                    InvocationType="RequestResponse",
+                )
+                json_resp = json.load(resp["Payload"])
 
-                # Then poll for State Machine State
-                while (
-                    execution := step_functions_client.describe_execution(
-                        executionArn=launch_response["execution_arn"]
-                    )
-                )["status"] == "RUNNING":
-                    logger.info("Polling for State Machine state %s", "." * 6)
-                    time.sleep(5)
+                assert json_resp.get("statusCode") == 201, json_resp
 
-                assert execution["status"] == "SUCCEEDED", execution
+                # When
+
+            logger.info("Executed State Machine: %s", json_resp)
+
+            # Then poll for State Machine State
+            while (
+                execution := step_functions_client.describe_execution(
+                    executionArn=json_resp["execution_arn"]
+                )
+            )["status"] == "RUNNING":
+                logger.info("Polling for State Machine state %s", "." * 6)
+                time.sleep(5)
+
+            assert execution["status"] == "SUCCEEDED", execution
