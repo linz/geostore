@@ -57,6 +57,8 @@ export AWS_SESSION_TOKEN=$(echo $credentials | jq -r ".Credentials[\"SessionToke
 
 ## Dataset format
 
+A dataset consists of a set of files in Amazon Web Services Simple Storage Service (AWS S3). The dataset consists of geospatial metadata files in [SpatioTemporal Asset Catalogs (STAC)](https://stacspec.org/) format and data files, which are called "assets" in STAC.
+
 The GDL performs many checks on datasets. If any of the checks fail the dataset will not be imported, so it's important to know what they are. The following list is a reference of all the checks which are currently in place.
 
 - Every metadata file must follow the [STAC Collection Specification](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md).
