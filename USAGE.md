@@ -85,7 +85,7 @@ Both of these are implemented as AWS Lambda functions, which means they can be r
 export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
 
 aws lambda invoke \
-    --function-name  $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+    --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
     --invocation-type RequestResponse \
     --payload '<REQUEST-PAYLOAD-JSON>'
 /dev/stdout
@@ -102,7 +102,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
        --invocation-type RequestResponse \
        --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020", "owning_group": "A_XYZ_XYZ"}}' \
        /dev/stdout
@@ -113,7 +113,7 @@ aws lambda invoke \
   
    ```console
    $ aws lambda invoke \
-       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
        --invocation-type RequestResponse \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
@@ -124,7 +124,7 @@ aws lambda invoke \
   
    ```console
    $ aws lambda invoke \
-       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
        --invocation-type RequestResponse \
        --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
