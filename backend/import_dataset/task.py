@@ -14,6 +14,7 @@ from ..utils import JsonObject, error_response, get_param, set_up_logging, succe
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
+SSM_CLIENT = boto3.client("ssm")
 
 ENV = environ.get("DEPLOY_ENV", "test")
 STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
@@ -42,13 +43,14 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
+        logger.warning(json.dumps({"error": error}, default=str))
         return error_response(400, error.message)
 
     dataset_id = payload["dataset_id"]
     dataset_version_id = payload["version_id"]
     metadata_url = payload["metadata_url"]
 
-    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME)
+    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, SSM_CLIENT)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
     staging_bucket_name = urlparse(metadata_url).netloc
@@ -64,6 +66,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
 
     account_number = STS_CLIENT.get_caller_identity()["Account"]
     manifest_s3_etag = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)["ETag"]
+    s3_batch_copy_role_arn_name = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
@@ -93,7 +96,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             "ReportScope": "AllTasks",
         },
         Priority=1,
-        RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME),
+        RoleArn=s3_batch_copy_role_arn_name,
         ClientRequestToken=uuid4().hex,
     )
     logger.debug(json.dumps({"s3 batch response": response}, default=str))

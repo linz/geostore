@@ -27,7 +27,7 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.import_dataset.task")
 
     @mark.infrastructure
-    @patch("backend.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     def test_should_log_payload(self, create_job_mock: MagicMock) -> None:
         # Given
 
@@ -56,7 +56,6 @@ class TestLogging:
         expected_log = dumps({"error": error_message})
 
         body = {}
-        body["dataset_id"] = any_dataset_id()
         body["metadata_url"] = any_s3_url()
         body["version_id"] = any_dataset_version_id()
 
@@ -67,7 +66,7 @@ class TestLogging:
             # Then
             log_mock.assert_any_call(expected_log)
 
-    @patch("backend.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure
     def test_should_log_assets_added_to_manifest(
         self, create_job_mock: MagicMock, subtests: SubTests
@@ -106,7 +105,7 @@ class TestLogging:
                 with subtests.test():
                     log_mock.assert_any_call(expected_metadata_log)
 
-    @patch("backend.import_dataset.task.s3control_client.create_job")
+    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure
     def test_should_log_s3_batch_repsonse(self, create_job_mock: MagicMock) -> None:
         # Given

@@ -1,14 +1,11 @@
 """Utility functions."""
-import json
 import logging
 import os
 from enum import Enum
 from http.client import responses as http_responses
 from typing import Any, List, MutableMapping, Sequence, Union
 
-import boto3
-
-SSM_CLIENT = boto3.client("ssm")
+from mypy_boto3_ssm import SSMClient
 
 ENV = os.environ.get("DEPLOY_ENV", "test")
 DATASET_TYPES: Sequence[str] = ["IMAGE", "RASTER"]
@@ -18,14 +15,10 @@ JsonObject = MutableMapping[str, Any]
 
 
 def error_response(code: int, message: str) -> JsonObject:
-    logger = set_up_logging(__name__)
-    logger.warning(json.dumps({"error": message}, default=str))
     return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
 def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
-    logger = set_up_logging(__name__)
-    logger.debug(json.dumps({"success": body}, default=str))
     return {"statusCode": code, "body": body}
 
 
@@ -38,8 +31,8 @@ class ResourceName(Enum):
     DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
 
 
-def get_param(parameter: str) -> str:
-    parameter_response = SSM_CLIENT.get_parameter(Name=parameter)
+def get_param(parameter: str, ssm_client: SSMClient) -> str:
+    parameter_response = ssm_client.get_parameter(Name=parameter)
 
     try:
         parameter = parameter_response["Parameter"]["Value"]
