@@ -66,7 +66,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
 
     account_number = STS_CLIENT.get_caller_identity()["Account"]
     manifest_s3_etag = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)["ETag"]
-    s3_batch_copy_role_arn_name = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT)
+    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
@@ -96,7 +96,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             "ReportScope": "AllTasks",
         },
         Priority=1,
-        RoleArn=s3_batch_copy_role_arn_name,
+        RoleArn=s3_batch_copy_role_arn,
         ClientRequestToken=uuid4().hex,
     )
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
