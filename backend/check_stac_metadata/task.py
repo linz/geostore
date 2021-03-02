@@ -146,17 +146,16 @@ def main() -> int:
     logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
+    validator = STACSchemaValidator(url_reader)
 
     try:
-        validator = STACSchemaValidator(url_reader)
         validator.validate(arguments.metadata_url, logger)
 
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
 
-    asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    validator.save(asset_pk)
+    validator.save(f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}")
 
     logger.info(dumps({"success": True, "message": ""}))
     return 0

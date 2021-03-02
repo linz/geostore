@@ -14,7 +14,7 @@ from pytest import mark
 
 from backend.dataset_versions import entrypoint
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER
+from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.utils import ResourceName
 
 from .utils import (
@@ -48,8 +48,8 @@ def test_should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) 
 @mark.infrastructure
 def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=S3_BATCH_COPY_ROLE_PARAMETER)
-    assert parameter_response["Parameter"]["Name"] == S3_BATCH_COPY_ROLE_PARAMETER
+    parameter_response = ssm_client.get_parameter(Name=S3_BATCH_COPY_ROLE_PARAMETER_NAME)
+    assert parameter_response["Parameter"]["Name"] == S3_BATCH_COPY_ROLE_PARAMETER_NAME
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 

@@ -1,9 +1,6 @@
 import json
-import logging
 from datetime import datetime
-from http.client import responses as http_responses
 from os import environ
-from typing import Any, List, MutableMapping, Union
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -12,40 +9,38 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
+from ..utils import JsonObject, error_response, get_param, set_up_logging, success_response
 
-JsonList = List[Any]
-JsonObject = MutableMapping[str, Any]
-
-ssm_client = boto3.client("ssm")
-sts_client = boto3.client("sts")
-s3_client = boto3.client("s3")
-s3control_client = boto3.client("s3control")
+STS_CLIENT = boto3.client("sts")
+S3_CLIENT = boto3.client("s3")
+S3CONTROL_CLIENT = boto3.client("s3control")
 
 ENV = environ.get("DEPLOY_ENV", "test")
-STORAGE_BUCKET_PARAMETER = f"/{ENV}/storage-bucket-arn"
-S3_BATCH_COPY_ROLE_PARAMETER = f"/{ENV}/s3-batch-copy-role-arn"
-
-
-BODY_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "dataset_id": {"type": "string"},
-        "version_id": {"type": "string"},
-        "metadata_url": {"type": "string"},
-    },
-    "required": ["dataset_id", "metadata_url", "version_id"],
-}
+STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
+S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
 
 
 def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
+    # pylint: disable=too-many-locals
 
-    logger = set_up_logging()
+    logger = set_up_logging(__name__)
     logger.debug(json.dumps({"payload": payload}))
 
     # validate input
     try:
-        validate(payload, BODY_SCHEMA)
+        validate(
+            payload,
+            {
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string"},
+                    "version_id": {"type": "string"},
+                    "metadata_url": {"type": "string"},
+                },
+                "required": ["dataset_id", "metadata_url", "version_id"],
+            },
+        )
     except ValidationError as error:
         return error_response(400, error.message, logger)
 
@@ -53,7 +48,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = payload["version_id"]
     metadata_url = payload["metadata_url"]
 
-    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER)
+    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
     staging_bucket_name = urlparse(metadata_url).netloc
@@ -67,9 +62,12 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             key = urlparse(file.url).path[1:]
             s3_manifest.write(f"{staging_bucket_name},{key}\n")
 
+    account_number = STS_CLIENT.get_caller_identity()["Account"]
+    manifest_s3_etag = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)["ETag"]
+
     # trigger s3 batch copy operation
-    response = s3control_client.create_job(
-        AccountId=sts_client.get_caller_identity()["Account"],
+    response = S3CONTROL_CLIENT.create_job(
+        AccountId=account_number,
         ConfirmationRequired=False,
         Operation={
             "S3PutObjectCopy": {
@@ -80,14 +78,11 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
         Manifest={
             "Spec": {
                 "Format": "S3BatchOperations_CSV_20180820",
-                "Fields": [
-                    "Bucket",
-                    "Key",
-                ],
+                "Fields": ["Bucket", "Key"],
             },
             "Location": {
                 "ObjectArn": f"{storage_bucket_arn}/{manifest_key}",
-                "ETag": s3_client.head_object(Bucket=storage_bucket_name, Key=manifest_key)["ETag"],
+                "ETag": manifest_s3_etag,
             },
         },
         Report={
@@ -98,45 +93,9 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             "ReportScope": "AllTasks",
         },
         Priority=1,
-        RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER),
+        RoleArn=get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME),
         ClientRequestToken=uuid4().hex,
     )
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
-    return success_response(200, {"job_id": response["JobId"]})
-
-
-def set_up_logging() -> logging.Logger:
-    logger = logging.getLogger(__name__)
-
-    log_handler = logging.StreamHandler()
-    log_level = environ.get("LOGLEVEL", logging.NOTSET)
-
-    logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-
-    return logger
-
-
-def error_response(code: int, message: str, logger: logging.Logger) -> JsonObject:
-    """Return error response content as string."""
-    logger.warning(json.dumps({"error": message}, default=str))
-    return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
-
-
-def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
-    """Return success response content as string."""
-
-    return {"statusCode": code, "body": body}
-
-
-def get_param(parameter: str) -> str:
-    parameter_response = ssm_client.get_parameter(Name=parameter)
-
-    try:
-        parameter = parameter_response["Parameter"]["Value"]
-    except KeyError:
-        print(parameter_response)
-        raise
-
-    return parameter
+    return success_response(200, {"job_id": response["JobId"]}, logger)
