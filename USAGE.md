@@ -70,7 +70,14 @@ The GDL performs many checks on datasets. If any of the checks fail the dataset 
 - Every metadata and asset URL must be readable by the GDL.
 - A dataset *may* refer to the same asset more than once. All references to the same asset must have the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be considered invalid, even if both checksums are valid. This is to enable a simpler checksum validation.
 
-## Data Lake Lambda Endpoints Usage
+## Data Lake Endpoints Usage
+
+There are two end user interaction points in GDL:
+
+- A [dataset space endpoint](TODO), to create, get, update or delete individual datasets, and to list all datasets
+- A [dataset versions endpoint](TODO), to create new versions of datasets. The S3 files which constitute the dataset are all linked to a specific dataset version.
+
+Both of these are implemented as AWS Lambda functions, which means they can be run ("invoked") either via the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
 
 ### Endpoint Request Format
 
