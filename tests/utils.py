@@ -246,16 +246,10 @@ class Dataset:
 class ProcessingAsset:
     def __init__(
         self,
-        asset_id: Optional[str] = None,
-        item_index: Optional[str] = None,
+        asset_id: str,
         multihash: Optional[str] = None,
         url: Optional[str] = None,
     ):
-        if asset_id is None:
-            asset_id = any_asset_id()
-
-        if item_index is None:
-            item_index = "0"
 
         prefix = "METADATA" if multihash is None else "DATA"
 
@@ -264,7 +258,7 @@ class ProcessingAsset:
 
         self._item = ProcessingAssetsModel(
             pk=asset_id,
-            sk=f"{prefix}_ITEM_INDEX#{item_index}",
+            sk=f"{prefix}_ITEM_INDEX#0",
             url=url,
             multihash=multihash,
         )

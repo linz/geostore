@@ -139,7 +139,7 @@ def test_should_successfully_run_dataset_version_creation_process(
             # Then poll for State Machine State
             while (
                 execution := step_functions_client.describe_execution(
-                    executionArn=json_resp["execution_arn"]
+                    executionArn=json_resp["body"]["execution_arn"]
                 )
             )["status"] == "RUNNING":
                 logger.info("Polling for State Machine state %s", "." * 6)
