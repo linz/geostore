@@ -50,9 +50,9 @@ credentials="$(aws sts assume-role \
     --role-arn "arn:aws:iam::${DATALAKE_AWS_ACCOUNT_ID}:role/${DATALAKE_USER_ROLE_NAME}" \
     --role-session-name datalake-user)"
 
-export AWS_ACCESS_KEY_ID=$(echo $credentials | jq -r ".Credentials[\"AccessKeyId\"]")
-export AWS_SECRET_ACCESS_KEY=$(echo $credentials | jq -r ".Credentials[\"SecretAccessKey\"]")
-export AWS_SESSION_TOKEN=$(echo $credentials | jq -r ".Credentials[\"SessionToken\"]")
+export AWS_ACCESS_KEY_ID=$(jq -r ".Credentials[\"AccessKeyId\"]" <<< "$credentials")
+export AWS_SECRET_ACCESS_KEY=$(jq -r ".Credentials[\"SecretAccessKey\"]" <<< "$credentials")
+export AWS_SESSION_TOKEN=$(jq -r ".Credentials[\"SessionToken\"]" <<< "$credentials")
 ```
 
 ## Dataset format
