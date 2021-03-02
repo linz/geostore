@@ -10,7 +10,7 @@ fail_under = 82
 
 [tool.coverage.run]
 source = [
-    "datalake",
+    "backend",
     "tests",
 ]
 
