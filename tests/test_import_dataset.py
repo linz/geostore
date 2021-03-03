@@ -32,10 +32,11 @@ from .utils import (
 
 def test_should_return_required_property_error_when_missing_metadata_url() -> None:
     # When
-    body = {}
-    body["dataset_id"] = any_dataset_id()
-    body["version_id"] = any_dataset_version_id()
-    response = lambda_handler(body, any_lambda_context())
+
+    response = lambda_handler(
+        {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()},
+        any_lambda_context(),
+    )
 
     assert response == {
         "statusCode": 400,
@@ -45,10 +46,9 @@ def test_should_return_required_property_error_when_missing_metadata_url() -> No
 
 def test_should_return_required_property_error_when_missing_dataset_id() -> None:
     # When
-    body = {}
-    body["metadata_url"] = any_s3_url()
-    body["version_id"] = any_dataset_version_id()
-    response = lambda_handler(body, any_lambda_context())
+    response = lambda_handler(
+        {"metadata_url": any_s3_url(), "version_id": any_dataset_version_id()}, any_lambda_context()
+    )
 
     assert response == {
         "statusCode": 400,
@@ -58,10 +58,10 @@ def test_should_return_required_property_error_when_missing_dataset_id() -> None
 
 def test_should_return_required_property_error_when_missing_version_id() -> None:
     # When
-    body = {}
-    body["dataset_id"] = any_dataset_id()
-    body["metadata_url"] = any_s3_url()
-    response = lambda_handler(body, any_lambda_context())
+
+    response = lambda_handler(
+        {"dataset_id": any_dataset_id(), "metadata_url": any_s3_url()}, any_lambda_context()
+    )
 
     assert response == {
         "statusCode": 400,
@@ -117,15 +117,19 @@ def test_should_batch_copy_files_to_storage(
             ) as processing_asset:
 
                 # When
-                body = {}
-                body["dataset_id"] = dataset_id
-                body["version_id"] = version_id
-                body["metadata_url"] = metadata_s3_object.url
-                body["type"] = any_valid_dataset_type()
 
-                response = lambda_handler(body, any_lambda_context())
+                response = lambda_handler(
+                    {
+                        "dataset_id": dataset_id,
+                        "version_id": version_id,
+                        "metadata_url": metadata_s3_object.url,
+                        "type": any_valid_dataset_type(),
+                    },
+                    any_lambda_context(),
+                )
 
                 final_states = ["Complete", "Failed", "Cancelled"]
+
                 # poll for S3 Batch Copy completion
                 while (
                     copy_job := s3_control_client.describe_job(

@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 from os import environ
 from urllib.parse import urlparse
@@ -50,23 +51,29 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = payload["version_id"]
     metadata_url = payload["metadata_url"]
 
-    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME)
+    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, logger)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
     staging_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
     with smart_open(f"s3://{storage_bucket_name}/{manifest_key}", "w") as s3_manifest:
-        for file in ProcessingAssetsModel.query(
+        for item in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            logger.debug(json.dumps({"Adding file to manifest": file.url}, default=str))
-            key = urlparse(file.url).path[1:]
+            logger.debug(json.dumps({"Adding file to manifest": item.url}))
+            key = urlparse(item.url).path[1:]
             s3_manifest.write(f"{staging_bucket_name},{key}\n")
 
-    account_number = STS_CLIENT.get_caller_identity()["Account"]
-    manifest_s3_etag = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)["ETag"]
-    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME)
+    caller_identity = STS_CLIENT.get_caller_identity()
+    assert "Account" in caller_identity
+    account_number = caller_identity["Account"]
+
+    manifest_s3_object = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)
+    assert "ETag" in manifest_s3_object
+    manifest_s3_etag = manifest_s3_object["ETag"]
+
+    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, logger)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
@@ -104,13 +111,11 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     return success_response(200, {"job_id": response["JobId"]})
 
 
-def get_param(parameter: str) -> str:
+def get_param(parameter: str, logger: logging.Logger) -> str:
     parameter_response = SSM_CLIENT.get_parameter(Name=parameter)
 
     try:
-        parameter = parameter_response["Parameter"]["Value"]
-    except KeyError:
-        print(parameter_response)
+        return parameter_response["Parameter"]["Value"]
+    except KeyError as error:
+        logger.warning(json.dumps({"error": error}, default=str))
         raise
-
-    return parameter
