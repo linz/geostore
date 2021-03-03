@@ -1,5 +1,4 @@
 import json
-import logging
 from datetime import datetime
 from os import environ
 from urllib.parse import urlparse
@@ -10,7 +9,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
-from ..utils import JsonObject, error_response, set_up_logging, success_response
+from ..utils import JsonObject, error_response, get_param, set_up_logging, success_response
 
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
@@ -51,7 +50,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = payload["version_id"]
     metadata_url = payload["metadata_url"]
 
-    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, logger)
+    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, SSM_CLIENT, logger)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
     staging_bucket_name = urlparse(metadata_url).netloc
@@ -73,7 +72,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     assert "ETag" in manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
-    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, logger)
+    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT, logger)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
@@ -109,13 +108,3 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
     return success_response(200, {"job_id": response["JobId"]})
-
-
-def get_param(parameter: str, logger: logging.Logger) -> str:
-    parameter_response = SSM_CLIENT.get_parameter(Name=parameter)
-
-    try:
-        return parameter_response["Parameter"]["Value"]
-    except KeyError as error:
-        logger.warning(json.dumps({"error": error}, default=str))
-        raise

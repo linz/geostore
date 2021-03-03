@@ -1,15 +1,23 @@
 """Utility functions."""
+import json
 import logging
 import os
 from enum import Enum
 from http.client import responses as http_responses
-from typing import Any, List, MutableMapping, Sequence, Union
+from typing import TYPE_CHECKING, Any, List, MutableMapping, Sequence, Union
 
 ENV = os.environ.get("DEPLOY_ENV", "test")
 DATASET_TYPES: Sequence[str] = ["IMAGE", "RASTER"]
 
 JsonList = List[Any]
 JsonObject = MutableMapping[str, Any]
+
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_ssm import SSMClient
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    SSMClient = object
 
 
 def error_response(code: int, message: str) -> JsonObject:
@@ -39,3 +47,13 @@ def set_up_logging(name: str) -> logging.Logger:
     logger.setLevel(log_level)
 
     return logger
+
+
+def get_param(parameter: str, ssm_client: SSMClient, logger: logging.Logger) -> str:
+    parameter_response = ssm_client.get_parameter(Name=parameter)
+
+    try:
+        return parameter_response["Parameter"]["Value"]
+    except KeyError as error:
+        logger.warning(json.dumps({"error": error}, default=str))
+        raise
