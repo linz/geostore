@@ -88,3 +88,4 @@ def storage_bucket_teardown() -> Generator[None, None, None]:
 
     bucket = boto3.resource("s3").Bucket(ResourceName.STORAGE_BUCKET_NAME.value)
     bucket.objects.all().delete()
+    bucket.object_versions.all().delete()
