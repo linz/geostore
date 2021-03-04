@@ -52,10 +52,7 @@ def test_should_create_dataset(
     dataset_title = any_dataset_title()
     dataset_owning_group = any_dataset_owning_group()
 
-    body = {}
-    body["type"] = dataset_type
-    body["title"] = dataset_title
-    body["owning_group"] = dataset_owning_group
+    body = {"type": dataset_type, "title": dataset_title, "owning_group": dataset_owning_group}
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -69,9 +66,7 @@ def test_should_create_dataset(
 
 def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> None:
     # Given a missing "type" attribute in the body
-    body = {}
-    body["title"] = any_dataset_title()
-    body["owning_group"] = any_dataset_owning_group()
+    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
@@ -85,10 +80,11 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> Non
 
 def test_should_fail_if_post_request_containing_incorrect_dataset_type() -> None:
     dataset_type = f"{''.join(DATASET_TYPES)}x"  # Guaranteed not in `DATASET_TYPES`
-    body = {}
-    body["type"] = dataset_type
-    body["title"] = any_dataset_title()
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "type": dataset_type,
+        "title": any_dataset_title(),
+        "owning_group": any_dataset_owning_group(),
+    }
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -104,11 +100,11 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title() -> Non
     dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset ABC"
 
-    body = {}
-    body["type"] = dataset_type
-    body["title"] = dataset_title
-    body["owning_group"] = any_dataset_owning_group()
-
+    body = {
+        "type": dataset_type,
+        "title": dataset_title,
+        "owning_group": any_dataset_owning_group(),
+    }
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler(
             {"httpMethod": "POST", "body": body}, any_lambda_context()
@@ -132,9 +128,7 @@ def test_should_return_single_dataset(
     dataset_id = "111abc"
     dataset_type = any_valid_dataset_type()
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
+    body = {"id": dataset_id, "type": dataset_type}
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
@@ -173,9 +167,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
     dataset_type = "IMAGE"
     dataset_title = "Dataset ABC"
 
-    body = {}
-    body["type"] = dataset_type
-    body["title"] = dataset_title
+    body = {"type": dataset_type, "title": dataset_title}
 
     with Dataset(dataset_type=dataset_type, title=dataset_title) as matching_dataset, Dataset(
         dataset_type="RASTER", title=dataset_title
@@ -201,9 +193,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
     dataset_type = "RASTER"
     dataset_owning_group = "A_ABC_XYZ"
 
-    body = {}
-    body["type"] = dataset_type
-    body["owning_group"] = dataset_owning_group
+    body = {"type": dataset_type, "owning_group": dataset_owning_group}
 
     with Dataset(
         dataset_type=dataset_type, owning_group=dataset_owning_group
@@ -231,10 +221,11 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
 
 @mark.infrastructure
 def test_should_fail_if_get_request_containing_tile_and_owning_group_filter() -> None:
-    body = {}
-    body["type"] = any_valid_dataset_type()
-    body["title"] = any_dataset_title()
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "type": any_valid_dataset_type(),
+        "title": any_dataset_title(),
+        "owning_group": any_dataset_owning_group(),
+    }
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -250,9 +241,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
+    body = {"id": dataset_id, "type": dataset_type}
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
 
@@ -272,11 +261,12 @@ def test_should_update_dataset(
     dataset_type = any_valid_dataset_type()
     new_dataset_title = "New Dataset ABC"
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
-    body["title"] = new_dataset_title
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "id": dataset_id,
+        "type": dataset_type,
+        "title": new_dataset_title,
+        "owning_group": any_dataset_owning_group(),
+    }
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         response = entrypoint.lambda_handler(
@@ -295,11 +285,12 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
     dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset XYZ"
 
-    body = {}
-    body["id"] = "111abc"
-    body["type"] = dataset_type
-    body["title"] = dataset_title
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "id": any_dataset_id(),
+        "type": dataset_type,
+        "title": dataset_title,
+        "owning_group": any_dataset_owning_group(),
+    }
 
     with Dataset(dataset_type=dataset_type, title=dataset_title):
         response = entrypoint.lambda_handler(
@@ -323,12 +314,12 @@ def test_should_fail_if_updating_not_existing_dataset(
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
-    body["title"] = "New Dataset ABC"
-    body["owning_group"] = any_dataset_owning_group()
-
+    body = {
+        "id": dataset_id,
+        "type": dataset_type,
+        "title": any_dataset_title(),
+        "owning_group": any_dataset_owning_group(),
+    }
     response = entrypoint.lambda_handler(
         {"httpMethod": "PATCH", "body": body}, any_lambda_context()
     )
@@ -345,12 +336,10 @@ def test_should_fail_if_updating_not_existing_dataset(
 def test_should_delete_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
-    dataset_id = "111abc"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
+    body = {"id": dataset_id, "type": dataset_type}
 
     with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
         response = entrypoint.lambda_handler(
@@ -367,11 +356,12 @@ def test_should_fail_if_deleting_not_existing_dataset(
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
-    body = {}
-    body["id"] = dataset_id
-    body["type"] = dataset_type
-    body["title"] = "Dataset ABC"
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "id": dataset_id,
+        "type": dataset_type,
+        "title": any_dataset_title(),
+        "owning_group": any_dataset_owning_group(),
+    }
 
     response = entrypoint.lambda_handler(
         {"httpMethod": "DELETE", "body": body}, any_lambda_context()
@@ -396,10 +386,11 @@ def test_should_launch_datasets_endpoint_lambda_function(
     """
 
     method = "POST"
-    body = {}
-    body["type"] = any_valid_dataset_type()
-    body["title"] = any_dataset_title()
-    body["owning_group"] = any_dataset_owning_group()
+    body = {
+        "type": any_valid_dataset_type(),
+        "title": any_dataset_title(),
+        "owning_group": any_dataset_owning_group(),
+    }
 
     resp = lambda_client.invoke(
         FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,

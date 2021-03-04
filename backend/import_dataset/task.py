@@ -65,11 +65,11 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             s3_manifest.write(f"{staging_bucket_name},{key}\n")
 
     caller_identity = STS_CLIENT.get_caller_identity()
-    assert "Account" in caller_identity
+    assert "Account" in caller_identity, caller_identity
     account_number = caller_identity["Account"]
 
     manifest_s3_object = S3_CLIENT.head_object(Bucket=storage_bucket_name, Key=manifest_key)
-    assert "ETag" in manifest_s3_object
+    assert "ETag" in manifest_s3_object, manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
     s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT, logger)

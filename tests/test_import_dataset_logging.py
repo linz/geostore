@@ -37,13 +37,14 @@ class TestLogging:
     ) -> None:
         # Given
 
-        body = {}
-        body["dataset_id"] = any_dataset_id()
-        body["metadata_url"] = any_s3_url()
-        body["version_id"] = any_dataset_version_id()
+        body = {
+            "dataset_id": any_dataset_id(),
+            "metadata_url": any_s3_url(),
+            "version_id": any_dataset_version_id(),
+        }
         expected_payload_log = dumps({"payload": body})
 
-        with patch.object(self.logger, "debug") as log_mock, patch(
+        with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
         ):
 
@@ -51,7 +52,7 @@ class TestLogging:
             lambda_handler(body, any_lambda_context())
 
             # Then
-            log_mock.assert_any_call(expected_payload_log)
+            logger_mock.assert_any_call(expected_payload_log)
 
     @patch("backend.import_dataset.task.validate")
     def test_should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
@@ -99,7 +100,7 @@ class TestLogging:
                 {"Adding file to manifest": metadata_processing_asset.url}
             )
 
-            with patch.object(self.logger, "debug") as log_mock:
+            with patch.object(self.logger, "debug") as logger_mock:
                 # When
                 lambda_handler(
                     {
@@ -112,9 +113,9 @@ class TestLogging:
 
                 # Then
                 with subtests.test():
-                    log_mock.assert_any_call(expected_asset_log)
+                    logger_mock.assert_any_call(expected_asset_log)
                 with subtests.test():
-                    log_mock.assert_any_call(expected_metadata_log)
+                    logger_mock.assert_any_call(expected_metadata_log)
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure

@@ -146,3 +146,4 @@ def test_should_successfully_run_dataset_version_creation_process(
                 time.sleep(5)
 
             assert execution["status"] == "SUCCEEDED", execution
+            time.sleep(60)

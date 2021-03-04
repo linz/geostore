@@ -253,9 +253,6 @@ class ProcessingAsset:
 
         prefix = "METADATA" if multihash is None else "DATA"
 
-        if url is None:
-            url = any_s3_url()
-
         self._item = ProcessingAssetsModel(
             pk=asset_id,
             sk=f"{prefix}_ITEM_INDEX#0",
