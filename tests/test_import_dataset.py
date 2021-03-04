@@ -38,10 +38,7 @@ def test_should_return_required_property_error_when_missing_metadata_url() -> No
         any_lambda_context(),
     )
 
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'metadata_url' is a required property"},
-    }
+    assert response == {"error message": "'metadata_url' is a required property"}
 
 
 def test_should_return_required_property_error_when_missing_dataset_id() -> None:
@@ -50,10 +47,7 @@ def test_should_return_required_property_error_when_missing_dataset_id() -> None
         {"metadata_url": any_s3_url(), "version_id": any_dataset_version_id()}, any_lambda_context()
     )
 
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'dataset_id' is a required property"},
-    }
+    assert response == {"error message": "'dataset_id' is a required property"}
 
 
 def test_should_return_required_property_error_when_missing_version_id() -> None:
@@ -63,10 +57,7 @@ def test_should_return_required_property_error_when_missing_version_id() -> None
         {"dataset_id": any_dataset_id(), "metadata_url": any_s3_url()}, any_lambda_context()
     )
 
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'version_id' is a required property"},
-    }
+    assert response == {"error message": "'version_id' is a required property"}
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
@@ -134,7 +125,7 @@ def test_should_batch_copy_files_to_storage(
                 while (
                     copy_job := s3_control_client.describe_job(
                         AccountId=sts_client.get_caller_identity()["Account"],
-                        JobId=response["body"]["job_id"],
+                        JobId=response["job_id"],
                     )
                 )["Job"]["Status"] not in final_states:
                     time.sleep(5)

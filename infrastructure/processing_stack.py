@@ -212,7 +212,7 @@ class ProcessingStack(core.Stack):
             self,
             "import_dataset_task",
             directory="import_dataset",
-            result_path=aws_stepfunctions.JsonPath.DISCARD,
+            result_path="$.s3_batch_copy",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )

@@ -10,8 +10,10 @@ from typing import ContextManager, Optional
 
 import _pytest
 from mypy_boto3_lambda import LambdaClient
+from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
+from mypy_boto3_sts import STSClient
 from pytest import mark
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
@@ -57,8 +59,11 @@ def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMCli
 @mark.timeout(1200)
 @mark.infrastructure
 def test_should_successfully_run_dataset_version_creation_process(
+    # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,
+    s3_control_client: S3ControlClient,
+    sts_client: STSClient,
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
     processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
         object
@@ -146,4 +151,17 @@ def test_should_successfully_run_dataset_version_creation_process(
                 time.sleep(5)
 
             assert execution["status"] == "SUCCEEDED", execution
-            time.sleep(60)
+
+            s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+            final_states = ["Complete", "Failed", "Cancelled"]
+
+            # poll for S3 Batch Copy completion
+            while (
+                copy_job := s3_control_client.describe_job(
+                    AccountId=sts_client.get_caller_identity()["Account"],
+                    JobId=s3_batch_copy_arn,
+                )
+            )["Job"]["Status"] not in final_states:
+                time.sleep(5)
+
+            assert copy_job["Job"]["Status"] == "Complete", copy_job

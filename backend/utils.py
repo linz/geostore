@@ -55,5 +55,5 @@ def get_param(parameter: str, ssm_client: SSMClient, logger: logging.Logger) -> 
     try:
         return parameter_response["Parameter"]["Value"]
     except KeyError as error:
-        logger.warning(json.dumps({"error": error}, default=str))
+        logger.error(json.dumps({"error": error}, default=str))
         raise

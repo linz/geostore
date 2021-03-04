@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from os import environ
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -9,7 +8,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
-from ..utils import JsonObject, error_response, get_param, set_up_logging, success_response
+from ..utils import JsonObject, get_param, set_up_logging
 
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
@@ -44,7 +43,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
         )
     except ValidationError as error:
         logger.warning(json.dumps({"error": error}, default=str))
-        return error_response(400, error.message)
+        return {"error message": error.message}
 
     dataset_id = payload["dataset_id"]
     dataset_version_id = payload["version_id"]
@@ -98,7 +97,7 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
             "Enabled": True,
             "Bucket": storage_bucket_arn,
             "Format": "Report_CSV_20180820",
-            "Prefix": f"reports/{datetime.now()}-{dataset_version_id}",
+            "Prefix": f"reports/{dataset_version_id}",
             "ReportScope": "AllTasks",
         },
         Priority=1,
@@ -107,4 +106,4 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
     )
     logger.debug(json.dumps({"s3 batch response": response}, default=str))
 
-    return success_response(200, {"job_id": response["JobId"]})
+    return {"job_id": response["JobId"]}
