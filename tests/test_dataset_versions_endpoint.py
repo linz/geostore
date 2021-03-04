@@ -3,6 +3,7 @@ Dataset Versions endpoint Lambda function tests.
 """
 
 import logging
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
@@ -81,7 +82,10 @@ def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
 
 @mark.infrastructure
-def test_should_return_success_if_dataset_exists() -> None:
+@patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
+def test_should_return_success_if_dataset_exists(
+    start_execution_mock: MagicMock,  # pylint:disable=unused-argument
+) -> None:
     # Given a dataset instance
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
