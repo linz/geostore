@@ -185,15 +185,15 @@ def any_item_count() -> int:
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
     "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
     "extent": {
         "spatial": {"bbox": [[-180, -90, 180, 90]]},
         "temporal": {"interval": [[any_past_datetime_string(), None]]},
     },
+    "id": any_dataset_id(),
+    "license": "MIT",
+    "links": [],
+    "stac_version": STAC_VERSION,
 }
 
 
