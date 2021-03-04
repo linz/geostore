@@ -3,7 +3,6 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps, load
-from os import environ
 from os.path import dirname, join
 from typing import Callable, Dict, List
 from urllib.parse import urlparse
@@ -19,6 +18,7 @@ from jsonschema import (  # type: ignore[import]
 from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
+from ..utils import set_up_logging
 
 S3_URL_PREFIX = "s3://"
 
@@ -127,20 +127,8 @@ def s3_url_reader() -> Callable[[str], StreamingBody]:
     return read
 
 
-def set_up_logging() -> logging.Logger:
-    logger = logging.getLogger(__name__)
-
-    log_handler = logging.StreamHandler()
-    log_level = environ.get("LOGLEVEL", logging.NOTSET)
-
-    logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-
-    return logger
-
-
 def main() -> int:
-    logger = set_up_logging()
+    logger = set_up_logging(__name__)
 
     arguments = parse_arguments()
     logger.debug(dumps({"arguments": vars(arguments)}))

@@ -99,14 +99,16 @@ class TestLogging:
                 {"Adding file to manifest": metadata_processing_asset.url}
             )
 
-            body = {}
-            body["dataset_id"] = dataset_id
-            body["metadata_url"] = any_s3_url()
-            body["version_id"] = version_id
-
             with patch.object(self.logger, "debug") as log_mock:
                 # When
-                lambda_handler(body, any_lambda_context())
+                lambda_handler(
+                    {
+                        "dataset_id": dataset_id,
+                        "metadata_url": any_s3_url(),
+                        "version_id": version_id,
+                    },
+                    any_lambda_context(),
+                )
 
                 # Then
                 with subtests.test():
@@ -126,17 +128,19 @@ class TestLogging:
         # Given
 
         create_job_mock.return_value = response = {"JobId": "Some Response"}
-
-        body = {}
-        body["dataset_id"] = any_dataset_id()
-        body["metadata_url"] = any_s3_url()
-        body["version_id"] = any_dataset_version_id()
         expected_response_log = json.dumps({"s3 batch response": response})
 
-        with patch.object(self.logger, "debug") as log_mock:
+        with patch.object(self.logger, "debug") as logger_mock:
 
             # When
-            lambda_handler(body, any_lambda_context())
+            lambda_handler(
+                {
+                    "dataset_id": any_dataset_id(),
+                    "metadata_url": any_s3_url(),
+                    "version_id": any_dataset_version_id(),
+                },
+                any_lambda_context(),
+            )
 
             # Then
-            log_mock.assert_any_call(expected_response_log)
+            logger_mock.assert_any_call(expected_response_log)

@@ -247,8 +247,8 @@ class ProcessingAsset:
     def __init__(
         self,
         asset_id: str,
+        url: str,
         multihash: Optional[str] = None,
-        url: Optional[str] = None,
     ):
 
         prefix = "METADATA" if multihash is None else "DATA"

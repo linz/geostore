@@ -1,15 +1,13 @@
 """Dataset versions handler function."""
 import json
-import logging
 import uuid
-from os import environ
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..model import DatasetModel
-from ..utils import DATASET_TYPES, ENV, JsonObject, error_response, success_response
+from ..utils import DATASET_TYPES, ENV, JsonObject, error_response, set_up_logging, success_response
 
 stepfunctions_client = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
@@ -18,7 +16,7 @@ DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
 
 
 def create_dataset_version(payload: JsonObject) -> JsonObject:
-    logger = set_up_logging()
+    logger = set_up_logging(__name__)
 
     logger.debug(json.dumps({"payload": payload}))
 
@@ -93,15 +91,3 @@ def get_param(parameter: str) -> str:
         raise
 
     return parameter
-
-
-def set_up_logging() -> logging.Logger:
-    logger = logging.getLogger(__name__)
-
-    log_handler = logging.StreamHandler()
-    log_level = environ.get("LOGLEVEL", logging.NOTSET)
-
-    logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-
-    return logger
