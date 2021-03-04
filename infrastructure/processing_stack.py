@@ -4,8 +4,12 @@ Data Lake processing stack.
 from typing import Any
 
 from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
+from aws_cdk.aws_iam import PolicyStatement
+from aws_cdk.aws_s3 import Bucket
+from aws_cdk.aws_ssm import StringParameter
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
+from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.utils import ResourceName
 
 from .constructs.batch_job_queue import BatchJobQueue
@@ -17,11 +21,14 @@ from .constructs.table import Table
 class ProcessingStack(core.Stack):
     """Data Lake processing stack definition."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: core.Construct,
         stack_id: str,
         deploy_env: str,
+        staging_bucket: Bucket,
+        storage_bucket: Bucket,
+        storage_bucket_parameter: StringParameter,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -158,6 +165,79 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         ).lambda_invoke
 
+        s3_batch_copy_role = aws_iam.Role(
+            self,
+            "s3_batch_copy_role",
+            assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
+                "batchoperations.s3.amazonaws.com"
+            ),
+        )
+        s3_batch_copy_role.add_to_policy(
+            aws_iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:GetObjectTagging",
+                ],
+                resources=[
+                    f"{staging_bucket.bucket_arn}/*",
+                ],
+            ),
+        )
+        s3_batch_copy_role.add_to_policy(
+            aws_iam.PolicyStatement(
+                actions=[
+                    "s3:PutObject",
+                    "s3:PutObjectAcl",
+                    "s3:PutObjectTagging",
+                    "s3:GetObject",
+                    "s3:GetObjectVersion",
+                    "s3:GetBucketLocation",
+                ],
+                resources=[
+                    f"{storage_bucket.bucket_arn}/*",
+                ],
+            )
+        )
+
+        s3_batch_copy_role_arn = aws_ssm.StringParameter(
+            self,
+            "s3-batch-copy-role-arn",
+            description=f"S3 Batch Copy Role ARN for {deploy_env}",
+            parameter_name=S3_BATCH_COPY_ROLE_PARAMETER_NAME,
+            string_value=s3_batch_copy_role.role_arn,
+        )
+
+        import_dataset_task = LambdaTask(
+            self,
+            "import_dataset_task",
+            directory="import_dataset",
+            result_path="$.s3_batch_copy",
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
+        )
+
+        assert import_dataset_task.lambda_function.role is not None
+        import_dataset_task.lambda_function.role.add_to_policy(
+            PolicyStatement(
+                resources=[s3_batch_copy_role.role_arn],
+                actions=["iam:PassRole"],
+            ),
+        )
+        import_dataset_task.lambda_function.role.add_to_policy(
+            PolicyStatement(
+                resources=["*"],
+                actions=["s3:CreateJob"],
+            ),
+        )
+        s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
+
+        storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        storage_bucket_parameter.grant_read(import_dataset_task.lambda_function)
+
+        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
+        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
+
         success_task = aws_stepfunctions.Succeed(self, "success")
 
         ############################################################################################
@@ -187,7 +267,9 @@ class ProcessingStack(core.Stack):
                             aws_stepfunctions.Condition.boolean_equals(
                                 "$.validation.success", True
                             ),
-                            success_task,  # type: ignore[arg-type]
+                            import_dataset_task.lambda_invoke.next(
+                                success_task  # type: ignore[arg-type]
+                            ),
                         )
                         .otherwise(validation_failure_lambda_invoke)
                     ),
@@ -196,16 +278,16 @@ class ProcessingStack(core.Stack):
             )
         )
 
-        state_machine = aws_stepfunctions.StateMachine(
+        self.state_machine = aws_stepfunctions.StateMachine(
             self,
             f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,  # type: ignore[arg-type]
         )
 
-        aws_ssm.StringParameter(
+        self.state_machine_parameter = aws_ssm.StringParameter(
             self,
-            "StepFunctionStateMachineARN",
+            "Step Function State Machine Parameter",
             description=f"Step Function State Machine ARN for {deploy_env}",
             parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
-            string_value=state_machine.state_machine_arn,
+            string_value=self.state_machine.state_machine_arn,
         )

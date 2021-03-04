@@ -3,9 +3,10 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_s3, core
+from aws_cdk import aws_dynamodb, aws_s3, aws_ssm, core
 from aws_cdk.core import Tags
 
+from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
 from backend.model import DATASETS_OWNING_GROUP_INDEX_NAME, DATASETS_TITLE_INDEX_NAME
 from backend.utils import ResourceName
 
@@ -37,6 +38,14 @@ class StorageStack(core.Stack):
             removal_policy=resource_removal_policy,
         )
         Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
+
+        self.storage_bucket_parameter = aws_ssm.StringParameter(
+            self,
+            "Storage Bucket ARN Parameter",
+            description=f"Storage Bucket ARN for {deploy_env}",
+            parameter_name=STORAGE_BUCKET_PARAMETER_NAME,
+            string_value=self.storage_bucket.bucket_arn,
+        )
 
         ############################################################################################
         # ### APPLICATION DB #######################################################################

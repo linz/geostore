@@ -104,4 +104,4 @@ class ProcessingAssetsModel(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     url = UnicodeAttribute()
-    multihash = UnicodeAttribute()
+    multihash = UnicodeAttribute(null=True)

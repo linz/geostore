@@ -55,3 +55,8 @@ This document is meant to give general hints for code reviewers. It should not b
    - `should succeed when [state]` has the same issue, even though there are typically only a few application-specific (for example, HTTP 200 response) or language-specific (for example, returning without throwing an exception) ways the code could reasonably be said to "succeed". This also often ends up hiding the fact that more than one thing indicates success, and each of them should probably be tested in isolation (for example, the precise examples above, each of which are side effects of the same action).
 
   Rationale: Precise names help with verifying that the test does what it says it should do, makes it easier to search through the tests for similar ones to use as a template for a new one, and makes it faster to understand what's gone wrong when an old test fails in CI.
+
+### AWS Lambda
+
+- To speed up our lambdas, boto3 clients and other large pieces of setup should be initialised outside the main lambda handler. See [Best practices for working with AWS Lambda functions](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html) for more tips.
+- Lambda runtime has been configured to 60 seconds. Higher than the minimum runtime of 3 seconds and lower than maximum of 15 minutes. This can be increased if a Lambda can be demonstrated to require more runtime than 60 seconds.

@@ -3,8 +3,10 @@ Data Lake Storage Bucket tests.
 """
 
 from mypy_boto3_s3 import S3Client
+from mypy_boto3_ssm import SSMClient
 from pytest import mark
 
+from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
 from backend.utils import ResourceName
 
 
@@ -30,3 +32,12 @@ def test_storage_bucket_public_access_block(s3_client: S3Client) -> None:
     assert response["PublicAccessBlockConfiguration"]["IgnorePublicAcls"] is True
     assert response["PublicAccessBlockConfiguration"]["BlockPublicPolicy"] is True
     assert response["PublicAccessBlockConfiguration"]["RestrictPublicBuckets"] is True
+
+
+@mark.infrastructure
+def test_should_create_storage_bucket_arn_parameter(ssm_client: SSMClient) -> None:
+    """Test if Data Lake Storage Bucket ARN Parameter was created"""
+    parameter_response = ssm_client.get_parameter(Name=STORAGE_BUCKET_PARAMETER_NAME)
+    assert parameter_response["Parameter"]["Name"] == STORAGE_BUCKET_PARAMETER_NAME
+    assert "arn" in parameter_response["Parameter"]["Value"]
+    assert "s3" in parameter_response["Parameter"]["Value"]

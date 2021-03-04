@@ -8,6 +8,7 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
+import _pytest
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -53,6 +54,9 @@ def test_should_return_non_zero_exit_code_on_validation_failure(
 @mark.infrastructure
 def test_should_insert_asset_urls_and_checksums_into_database(
     subtests: SubTests,
+    processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
+        object
+    ],  # pylint:disable=unused-argument
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with two assets
@@ -75,20 +79,6 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_items = [
-            ProcessingAssetsModel(
-                hash_key=expected_hash_key,
-                range_key="DATA_ITEM_INDEX#0",
-                url=first_asset_s3_object.url,
-                multihash=first_asset_multihash,
-            ),
-            ProcessingAssetsModel(
-                hash_key=expected_hash_key,
-                range_key="DATA_ITEM_INDEX#1",
-                url=second_asset_s3_object.url,
-                multihash=second_asset_multihash,
-            ),
-        ]
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         metadata_stac_object["item_assets"] = {
@@ -109,6 +99,29 @@ def test_should_insert_asset_urls_and_checksums_into_database(
         ) as metadata_s3_object:
             # When
 
+            expected_asset_items = [
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="DATA_ITEM_INDEX#0",
+                    url=first_asset_s3_object.url,
+                    multihash=first_asset_multihash,
+                ),
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="DATA_ITEM_INDEX#1",
+                    url=second_asset_s3_object.url,
+                    multihash=second_asset_multihash,
+                ),
+            ]
+
+            expected_metadata_items = [
+                ProcessingAssetsModel(
+                    hash_key=expected_hash_key,
+                    range_key="METADATA_ITEM_INDEX#0",
+                    url=metadata_s3_object.url,
+                ),
+            ]
+
             sys.argv = [
                 any_program_name(),
                 f"--metadata-url={metadata_s3_object.url}",
@@ -119,8 +132,17 @@ def test_should_insert_asset_urls_and_checksums_into_database(
             assert main() == 0
 
             # Then
-            actual_items = ProcessingAssetsModel.query(expected_hash_key)
-            for actual_item, expected_item in zip(actual_items, expected_items):
+            actual_items = ProcessingAssetsModel.query(
+                expected_hash_key, ProcessingAssetsModel.sk.startswith("DATA_ITEM_INDEX#")
+            )
+            for actual_item, expected_item in zip(actual_items, expected_asset_items):
+                with subtests.test():
+                    assert actual_item.attribute_values == expected_item.attribute_values
+
+            actual_items = ProcessingAssetsModel.query(
+                expected_hash_key, ProcessingAssetsModel.sk.startswith("METADATA_ITEM_INDEX#")
+            )
+            for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():
                     assert actual_item.attribute_values == expected_item.attribute_values
 
@@ -269,7 +291,10 @@ class TestsWithLogger:
         ):
             STACSchemaValidator(url_reader).validate(root_url, self.logger)
 
-    def test_should_return_assets_from_validated_metadata_files(self) -> None:
+    def test_should_return_assets_from_validated_metadata_files(
+        self,
+        subtests: SubTests,
+    ) -> None:
         base_url = any_s3_url()
         metadata_url = f"{base_url}/{any_safe_filename()}"
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
@@ -291,11 +316,19 @@ class TestsWithLogger:
             {"multihash": first_asset_multihash, "url": first_asset_url},
             {"multihash": second_asset_multihash, "url": second_asset_url},
         ]
+        expected_metadata = [
+            {"url": metadata_url},
+        ]
         url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        assets = STACSchemaValidator(url_reader).validate(metadata_url, self.logger)
+        validator = STACSchemaValidator(url_reader)
 
-        assert _sort_assets(assets) == _sort_assets(expected_assets)
+        validator.validate(metadata_url, self.logger)
+
+        with subtests.test():
+            assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+        with subtests.test():
+            assert validator.dataset_metadata == expected_metadata
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:

@@ -1,6 +1,7 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_lambda, core
+from aws_cdk.core import Duration
 
 from ..common import LOG_LEVEL
 
@@ -33,6 +34,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             handler=f"backend.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             environment=environment,
+            timeout=Duration.seconds(60),
         )
 
         core.Tags.of(self).add("ApplicationLayer", application_layer)

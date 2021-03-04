@@ -19,7 +19,10 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.dataset_versions.create")
 
     @mark.infrastructure
-    def test_should_log_payload(self) -> None:
+    @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
+    def test_should_log_payload(
+        self, start_execution_mock: MagicMock  # pylint:disable=unused-argument
+    ) -> None:
         # given
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
