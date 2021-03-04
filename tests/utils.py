@@ -17,7 +17,7 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.model import DatasetModel
+from backend.model import DatasetModel, ProcessingAssetsModel
 from backend.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
@@ -120,7 +120,11 @@ def any_dataset_id() -> str:
 
 def any_dataset_version_id() -> str:
     """Arbitrary-length string"""
-    return random_string(20)
+    return uuid4().hex
+
+
+def any_asset_id() -> str:
+    return f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
 
 
 def any_valid_dataset_type() -> str:
@@ -228,6 +232,36 @@ class Dataset:
         )
 
     def __enter__(self) -> DatasetModel:
+        self._item.save()
+        return self._item
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        self._item.delete()
+
+
+class ProcessingAsset:
+    def __init__(
+        self,
+        asset_id: str,
+        url: str,
+        multihash: Optional[str] = None,
+    ):
+
+        prefix = "METADATA" if multihash is None else "DATA"
+
+        self._item = ProcessingAssetsModel(
+            pk=asset_id,
+            sk=f"{prefix}_ITEM_INDEX#0",
+            url=url,
+            multihash=multihash,
+        )
+
+    def __enter__(self) -> ProcessingAssetsModel:
         self._item.save()
         return self._item
 

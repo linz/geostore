@@ -3,7 +3,6 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps, load
-from os import environ
 from os.path import dirname, join
 from typing import Callable, Dict, List
 from urllib.parse import urlparse
@@ -19,6 +18,7 @@ from jsonschema import (  # type: ignore[import]
 from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
+from ..utils import set_up_logging
 
 S3_URL_PREFIX = "s3://"
 
@@ -31,6 +31,8 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
     def __init__(self, url_reader: Callable[[str], StreamingBody]):
         self.url_reader = url_reader
         self.traversed_urls: List[str] = []
+        self.dataset_assets: List[Dict[str, str]] = []
+        self.dataset_metadata: List[Dict[str, str]] = []
 
         with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
             collection_schema = load(collection_schema_file)
@@ -50,7 +52,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str, logger: logging.Logger) -> List[Dict[str, str]]:
+    def validate(self, url: str, logger: logging.Logger) -> None:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
@@ -62,7 +64,8 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
 
         url_prefix = get_url_before_filename(url)
 
-        assets = []
+        self.dataset_metadata.append({"url": url})
+
         for asset in url_json.get("item_assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
@@ -71,7 +74,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             logger.debug(dumps({"asset": asset_dict}))
-            assets.append(asset_dict)
+            self.dataset_assets.append(asset_dict)
 
         for link_object in url_json["links"]:
             next_url = link_object["href"]
@@ -80,10 +83,22 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
+                self.validate(next_url, logger)
 
-                assets.extend(self.validate(next_url, logger))
+    def save(self, key: str) -> None:
+        for index, metadata_file in enumerate(self.dataset_metadata):
+            ProcessingAssetsModel(
+                pk=key,
+                sk=f"METADATA_ITEM_INDEX#{index}",
+                **metadata_file,
+            ).save()
 
-        return assets
+        for index, asset in enumerate(self.dataset_assets):
+            ProcessingAssetsModel(
+                pk=key,
+                sk=f"DATA_ITEM_INDEX#{index}",
+                **asset,
+            ).save()
 
 
 def get_url_before_filename(url: str) -> str:
@@ -112,40 +127,23 @@ def s3_url_reader() -> Callable[[str], StreamingBody]:
     return read
 
 
-def set_up_logging() -> logging.Logger:
-    logger = logging.getLogger(__name__)
-
-    log_handler = logging.StreamHandler()
-    log_level = environ.get("LOGLEVEL", logging.NOTSET)
-
-    logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-
-    return logger
-
-
 def main() -> int:
-    logger = set_up_logging()
+    logger = set_up_logging(__name__)
 
     arguments = parse_arguments()
     logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
+    validator = STACSchemaValidator(url_reader)
 
     try:
-        assets = STACSchemaValidator(url_reader).validate(arguments.metadata_url, logger)
+        validator.validate(arguments.metadata_url, logger)
+
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
 
-    asset_pk = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    for index, asset in enumerate(assets):
-        ProcessingAssetsModel(
-            pk=asset_pk,
-            sk=f"DATA_ITEM_INDEX#{index}",
-            url=asset["url"],
-            multihash=asset["multihash"],
-        ).save()
+    validator.save(f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}")
 
     logger.info(dumps({"success": True, "message": ""}))
     return 0

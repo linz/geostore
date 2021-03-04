@@ -104,6 +104,11 @@ optional = true
 version = "<5"
 optional = true
 
+[tool.poetry.dependencies.smart-open]
+version = "*"
+extras = ["s3"]
+optional = true
+
 [tool.poetry.dependencies.strict-rfc3339]
 version = "*"
 optional = true
@@ -122,10 +127,11 @@ pytest-randomly = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
+smart-open = {version = "*", extras = ["s3"]}
 
 [tool.poetry.dev-dependencies.boto3-stubs]
 version = "*"
-extras = ["batch", "dynamodb", "lambda", "s3", "ssm", "stepfunctions"]
+extras = ["batch", "dynamodb", "lambda", "s3", "s3control", "ssm", "stepfunctions", "sts"]
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"
@@ -168,6 +174,12 @@ datasets = [
 dataset_versions = [
     "jsonschema",
     "pynamodb",
+]
+import_dataset = [
+    "boto3",
+    "jsonschema",
+    "pynamodb",
+    "smart-open"
 ]
 
 [tool.pytest.ini_options]

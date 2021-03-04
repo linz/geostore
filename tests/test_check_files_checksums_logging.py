@@ -46,9 +46,9 @@ class TestLogging:
         ]
 
         # When/Then
-        with patch.object(self.logger, "error") as log_mock:
+        with patch.object(self.logger, "error") as logger_mock:
             with subtests.test(msg="Return code"):
                 assert main() == 0
 
             with subtests.test(msg="Log message"):
-                log_mock.assert_any_call(expected_log)
+                logger_mock.assert_any_call(expected_log)
