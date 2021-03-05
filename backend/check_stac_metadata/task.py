@@ -27,15 +27,8 @@ COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema
 CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 
 
-class STACSchemaValidator:  # pylint:disable=too-few-public-methods
-    def __init__(self, url_reader: Callable[[str], StreamingBody], logger: Logger):
-        self.url_reader = url_reader
-        self.logger = logger
-
-        self.traversed_urls: List[str] = []
-        self.dataset_assets: List[Dict[str, str]] = []
-        self.dataset_metadata: List[Dict[str, str]] = []
-
+class STACSchemaValidator(Draft7Validator):
+    def __init__(self) -> None:
         with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
             collection_schema = load(collection_schema_file)
 
@@ -50,9 +43,20 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
         }
 
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
-        self.validator = Draft7Validator(
-            collection_schema, resolver=resolver, format_checker=FormatChecker()
-        )
+
+        super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
+
+
+class STACDatasetValidator:  # pylint:disable=too-few-public-methods
+    def __init__(self, url_reader: Callable[[str], StreamingBody], logger: Logger):
+        self.url_reader = url_reader
+        self.logger = logger
+
+        self.traversed_urls: List[str] = []
+        self.dataset_assets: List[Dict[str, str]] = []
+        self.dataset_metadata: List[Dict[str, str]] = []
+
+        self.validator = STACSchemaValidator()
 
     def validate(self, url: str) -> None:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
@@ -136,7 +140,7 @@ def main() -> int:
     logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
-    validator = STACSchemaValidator(url_reader, logger)
+    validator = STACDatasetValidator(url_reader, logger)
 
     try:
         validator.validate(arguments.metadata_url)

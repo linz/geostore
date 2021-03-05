@@ -13,7 +13,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.check_stac_metadata.task import STACSchemaValidator, main
+from backend.check_stac_metadata.task import STACDatasetValidator, STACSchemaValidator, main
 from backend.model import ProcessingAssetsModel
 from backend.utils import ResourceName
 
@@ -35,7 +35,7 @@ from .utils import (
 )
 
 
-@patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
+@patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
 def test_should_return_non_zero_exit_code_on_validation_failure(
     validate_url_mock: MagicMock,
 ) -> None:
@@ -147,7 +147,7 @@ def test_should_insert_asset_urls_and_checksums_into_database(
                     assert actual_item.attribute_values == expected_item.attribute_values
 
 
-@patch("backend.check_stac_metadata.task.STACSchemaValidator.validate")
+@patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
 def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
     url = any_s3_url()
     sys.argv = [
@@ -163,39 +163,33 @@ def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
     validate_url_mock.assert_called_once_with(url)
 
 
+def test_should_treat_minimal_stac_object_as_valid() -> None:
+    STACSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_OBJECT))
+
+
+def test_should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> None:
+    for key in MINIMAL_VALID_STAC_OBJECT:
+        with subtests.test(msg=key):
+            stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+            stac_object.pop(key)
+
+            with raises(ValidationError):
+                STACSchemaValidator().validate(stac_object)
+
+
+def test_should_detect_invalid_datetime() -> None:
+    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
+    with raises(ValidationError):
+        STACSchemaValidator().validate(stac_object)
+
+
 class TestsWithLogger:
     logger: logging.Logger
 
     @classmethod
     def setup_class(cls) -> None:
         cls.logger = logging.getLogger("backend.check_stac_metadata.task")
-
-    def test_should_treat_minimal_stac_object_as_valid(self) -> None:
-        url = any_s3_url()
-        url_reader = MockJSONURLReader({url: deepcopy(MINIMAL_VALID_STAC_OBJECT)})
-        STACSchemaValidator(url_reader, self.logger).validate(url)
-
-    def test_should_treat_any_missing_top_level_key_as_invalid(
-        self,
-        subtests: SubTests,
-    ) -> None:
-        url = any_s3_url()
-        for key in MINIMAL_VALID_STAC_OBJECT:
-            with subtests.test(msg=key):
-                stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-                stac_object.pop(key)
-
-                url_reader = MockJSONURLReader({url: stac_object})
-                with raises(ValidationError):
-                    STACSchemaValidator(url_reader, self.logger).validate(url)
-
-    def test_should_detect_invalid_datetime(self) -> None:
-        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
-        url = any_s3_url()
-        url_reader = MockJSONURLReader({url: stac_object})
-        with raises(ValidationError):
-            STACSchemaValidator(url_reader, self.logger).validate(url)
 
     def test_should_validate_metadata_files_recursively(self) -> None:
         base_url = any_s3_url()
@@ -208,7 +202,7 @@ class TestsWithLogger:
             {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
         )
 
-        STACSchemaValidator(url_reader, self.logger).validate(parent_url)
+        STACDatasetValidator(url_reader, self.logger).validate(parent_url)
 
         assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -244,7 +238,7 @@ class TestsWithLogger:
             call_limit=3,
         )
 
-        STACSchemaValidator(url_reader, self.logger).validate(root_url)
+        STACDatasetValidator(url_reader, self.logger).validate(root_url)
 
         assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
@@ -262,14 +256,14 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
         ):
-            STACSchemaValidator(url_reader, self.logger).validate(root_url)
+            STACDatasetValidator(url_reader, self.logger).validate(root_url)
 
     def test_should_raise_exception_if_non_s3_url_is_passed(self) -> None:
         https_url = any_https_url()
         url_reader = MockJSONURLReader({})
 
         with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-            STACSchemaValidator(url_reader, self.logger).validate(https_url)
+            STACDatasetValidator(url_reader, self.logger).validate(https_url)
 
     def test_should_raise_exception_if_asset_file_is_in_different_directory(self) -> None:
         base_url = any_s3_url()
@@ -287,7 +281,7 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
         ):
-            STACSchemaValidator(url_reader, self.logger).validate(root_url)
+            STACDatasetValidator(url_reader, self.logger).validate(root_url)
 
     def test_should_return_assets_from_validated_metadata_files(
         self,
@@ -319,7 +313,7 @@ class TestsWithLogger:
         ]
         url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        validator = STACSchemaValidator(url_reader, self.logger)
+        validator = STACDatasetValidator(url_reader, self.logger)
 
         validator.validate(metadata_url)
 
