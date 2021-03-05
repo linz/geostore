@@ -23,7 +23,7 @@ from backend.utils import DATASET_TYPES
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
-STAC_VERSION = "1.0.0-beta.2"
+STAC_VERSION = "1.0.0-rc.1"
 
 SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
 EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
@@ -189,15 +189,16 @@ def any_item_count() -> int:
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
     "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
     "extent": {
         "spatial": {"bbox": [[-180, -90, 180, 90]]},
         "temporal": {"interval": [[any_past_datetime_string(), None]]},
     },
+    "id": any_dataset_id(),
+    "license": "MIT",
+    "links": [],
+    "stac_version": STAC_VERSION,
+    "type": "Collection",
 }
 
 
