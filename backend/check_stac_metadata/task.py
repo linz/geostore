@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps, load
+from logging import Logger
 from os.path import dirname, join
 from typing import Callable, Dict, List
 from urllib.parse import urlparse
@@ -52,7 +52,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str, logger: logging.Logger) -> None:
+    def validate(self, url: str, logger: Logger) -> None:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
