@@ -28,6 +28,7 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.import_dataset.task")
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
+    @mark.infrastructure
     def test_should_log_payload(
         self,
         create_job_mock: MagicMock,
