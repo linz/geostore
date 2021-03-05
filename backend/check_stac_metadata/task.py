@@ -28,8 +28,10 @@ CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catal
 
 
 class STACSchemaValidator:  # pylint:disable=too-few-public-methods
-    def __init__(self, url_reader: Callable[[str], StreamingBody]):
+    def __init__(self, url_reader: Callable[[str], StreamingBody], logger: Logger):
         self.url_reader = url_reader
+        self.logger = logger
+
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
         self.dataset_metadata: List[Dict[str, str]] = []
@@ -52,7 +54,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
             collection_schema, resolver=resolver, format_checker=FormatChecker()
         )
 
-    def validate(self, url: str, logger: Logger) -> None:
+    def validate(self, url: str) -> None:
         assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
 
         self.traversed_urls.append(url)
@@ -73,7 +75,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 url_prefix == asset_url_prefix
             ), f"“{url}” links to asset file in different directory: “{asset_url}”"
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
-            logger.debug(dumps({"asset": asset_dict}))
+            self.logger.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 
         for link_object in url_json["links"]:
@@ -83,7 +85,7 @@ class STACSchemaValidator:  # pylint:disable=too-few-public-methods
                 assert (
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
-                self.validate(next_url, logger)
+                self.validate(next_url)
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
@@ -134,10 +136,10 @@ def main() -> int:
     logger.debug(dumps({"arguments": vars(arguments)}))
 
     url_reader = s3_url_reader()
-    validator = STACSchemaValidator(url_reader)
+    validator = STACSchemaValidator(url_reader, logger)
 
     try:
-        validator.validate(arguments.metadata_url, logger)
+        validator.validate(arguments.metadata_url)
 
     except (AssertionError, ValidationError) as error:
         logger.error(dumps({"success": False, "message": str(error)}))

@@ -101,6 +101,6 @@ class TestLogging:
         expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
 
         with patch.object(self.logger, "debug") as logger_mock:
-            STACSchemaValidator(url_reader).validate(metadata_url, self.logger)
+            STACSchemaValidator(url_reader, self.logger).validate(metadata_url)
 
             logger_mock.assert_any_call(expected_message)
