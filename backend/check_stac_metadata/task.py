@@ -47,7 +47,7 @@ class STACSchemaValidator(Draft7Validator):
         super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
 
 
-class STACDatasetValidator:  # pylint:disable=too-few-public-methods
+class STACDatasetValidator:
     def __init__(self, url_reader: Callable[[str], StreamingBody], logger: Logger):
         self.url_reader = url_reader
         self.logger = logger
