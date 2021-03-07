@@ -10,7 +10,7 @@ from aws_cdk.aws_ssm import StringParameter
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask

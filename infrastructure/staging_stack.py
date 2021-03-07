@@ -3,7 +3,8 @@ from typing import Any
 from aws_cdk import aws_s3, core
 from aws_cdk.core import Tags
 
-from backend.utils import ENV, ResourceName
+from backend.environment import ENV
+from backend.resources import ResourceName
 
 STAGING_BUCKET_PARAMETER = f"/{ENV}/staging-bucket-arn"
 

@@ -7,7 +7,7 @@ from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
-from backend.utils import ResourceName
+from .resources import ResourceName
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed

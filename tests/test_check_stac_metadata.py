@@ -14,8 +14,8 @@ from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_stac_metadata.task import STACDatasetValidator, STACSchemaValidator, main
-from backend.model import ProcessingAssetsModel
-from backend.utils import ResourceName
+from backend.processing_assets_model import ProcessingAssetsModel
+from backend.resources import ResourceName
 
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,

@@ -19,7 +19,7 @@ from backend.check_files_checksums.task import (
     main,
     validate_url_multihash,
 )
-from backend.model import ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetsModel
 
 from .utils import (
     EMPTY_FILE_MULTIHASH,

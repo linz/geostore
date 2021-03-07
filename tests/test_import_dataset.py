@@ -13,7 +13,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark
 
 from backend.import_dataset.task import lambda_handler
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,

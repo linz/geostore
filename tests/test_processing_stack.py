@@ -18,7 +18,7 @@ from pytest import mark
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 from .utils import (
     MINIMAL_VALID_STAC_OBJECT,

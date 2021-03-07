@@ -18,7 +18,7 @@ from mypy_boto3_sts import STSClient
 
 from backend.dataset_model import DatasetModel
 from backend.processing_assets_model import ProcessingAssetsModel
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

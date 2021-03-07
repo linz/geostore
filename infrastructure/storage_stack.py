@@ -8,7 +8,7 @@ from aws_cdk.core import Tags
 
 from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 from .constructs.table import Table
 

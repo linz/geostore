@@ -8,7 +8,7 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_files_checksums.task import ARRAY_INDEX_VARIABLE_NAME, main
-from backend.model import ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetsModel
 
 from .utils import any_dataset_id, any_dataset_version_id, any_program_name
 
