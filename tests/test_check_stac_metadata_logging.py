@@ -47,7 +47,7 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.model.ProcessingAssetsModel"
+            "backend.processing_assets_model.ProcessingAssetsModel"
         ):
             main()
 

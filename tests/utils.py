@@ -17,7 +17,8 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.model import DatasetModel, ProcessingAssetsModel
+from backend.dataset_model import DatasetModel
+from backend.processing_assets_model import ProcessingAssetsModel
 from backend.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)

@@ -1,6 +1,6 @@
 """List all datasets function."""
 
-from ..model import DatasetModel
+from ..dataset_model import DatasetModel
 from ..utils import JsonObject, success_response
 
 

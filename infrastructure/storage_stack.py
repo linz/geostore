@@ -6,8 +6,8 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm, core
 from aws_cdk.core import Tags
 
+from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
-from backend.model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.utils import ResourceName
 
 from .constructs.table import Table

@@ -157,7 +157,7 @@ def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    with patch("backend.model.ProcessingAssetsModel"):
+    with patch("backend.processing_assets_model.ProcessingAssetsModel"):
         assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)

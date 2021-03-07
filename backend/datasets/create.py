@@ -2,7 +2,7 @@
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..model import DatasetModel
+from ..dataset_model import DatasetModel
 from ..utils import DATASET_TYPES, JsonObject, error_response, success_response
 
 

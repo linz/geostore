@@ -7,7 +7,7 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
-from ..model import ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetsModel
 from ..utils import JsonObject, get_param, set_up_logging
 
 STS_CLIENT = boto3.client("sts")
