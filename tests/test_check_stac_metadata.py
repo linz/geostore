@@ -13,11 +13,23 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.check_stac_metadata.task import STACDatasetValidator, STACSchemaValidator, main
+from backend.check_stac_metadata.task import (
+    JSON_SCHEMA_VALIDATION_NAME,
+    STACDatasetValidator,
+    STACSchemaValidator,
+    main,
+)
 from backend.processing_assets_model import ProcessingAssetsModel
 from backend.resources import ResourceName
+from backend.validation_results_model import ValidationResultsModel
 
-from .aws_utils import MINIMAL_VALID_STAC_OBJECT, MockJSONURLReader, S3Object, any_s3_url
+from .aws_utils import (
+    MINIMAL_VALID_STAC_OBJECT,
+    MockJSONURLReader,
+    MockValidationResultFactory,
+    S3Object,
+    any_s3_url,
+)
 from .general_generators import (
     any_error_message,
     any_file_contents,
@@ -47,6 +59,73 @@ def should_return_non_zero_exit_code_on_validation_failure(
     ]
 
     assert main() == 1
+
+
+@mark.infrastructure
+def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> None:
+    base_url = f"s3://{ResourceName.DATASET_STAGING_BUCKET_NAME.value}/"
+    root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    valid_child_key = any_safe_filename()
+    invalid_child_key = any_safe_filename()
+    root_stac_object["links"] = [
+        {"href": f"{base_url}{valid_child_key}", "rel": "child"},
+        {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
+    ]
+    invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    invalid_stac_object.pop("id")
+
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    with S3Object(
+        file_object=BytesIO(initial_bytes=dumps(root_stac_object).encode()),
+        bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+        key=any_safe_filename(),
+    ) as root_s3_object, S3Object(
+        file_object=BytesIO(initial_bytes=dumps(deepcopy(MINIMAL_VALID_STAC_OBJECT)).encode()),
+        bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+        key=valid_child_key,
+    ) as valid_child_s3_object, S3Object(
+        file_object=BytesIO(initial_bytes=dumps(invalid_stac_object).encode()),
+        bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+        key=invalid_child_key,
+    ) as invalid_child_s3_object, subtests.test(
+        msg="Exit code"
+    ):
+        sys.argv = [
+            any_program_name(),
+            f"--metadata-url={root_s3_object.url}",
+            f"--dataset-id={dataset_id}",
+            f"--version-id={version_id}",
+        ]
+
+        with subtests.test(msg="Exit code"):
+            assert main() == 1
+
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    with subtests.test(msg="Root validation results"):
+        root_result = ValidationResultsModel.get(
+            hash_key=hash_key,
+            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{root_s3_object.url}",
+            consistent_read=True,
+        )
+        assert root_result.success
+
+    with subtests.test(msg="Valid child validation results"):
+        valid_child_result = ValidationResultsModel.get(
+            hash_key=hash_key,
+            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{valid_child_s3_object.url}",
+            consistent_read=True,
+        )
+        assert valid_child_result.success
+
+    with subtests.test(msg="Invalid child validation results"):
+        invalid_child_result = ValidationResultsModel.get(
+            hash_key=hash_key,
+            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{invalid_child_s3_object.url}",
+            consistent_read=True,
+        )
+        assert not invalid_child_result.success
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
@@ -201,7 +280,9 @@ class TestsWithLogger:
             {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
         )
 
-        STACDatasetValidator(url_reader, self.logger).validate(parent_url)
+        STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            parent_url
+        )
 
         assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -237,7 +318,9 @@ class TestsWithLogger:
             call_limit=3,
         )
 
-        STACDatasetValidator(url_reader, self.logger).validate(root_url)
+        STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            root_url
+        )
 
         assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
@@ -255,14 +338,18 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
         ):
-            STACDatasetValidator(url_reader, self.logger).validate(root_url)
+            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+                root_url
+            )
 
     def should_raise_exception_if_non_s3_url_is_passed(self) -> None:
         https_url = any_https_url()
         url_reader = MockJSONURLReader({})
 
         with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-            STACDatasetValidator(url_reader, self.logger).validate(https_url)
+            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+                https_url
+            )
 
     def should_raise_exception_if_asset_file_is_in_different_directory(self) -> None:
         base_url = any_s3_url()
@@ -280,7 +367,9 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
         ):
-            STACDatasetValidator(url_reader, self.logger).validate(root_url)
+            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+                root_url
+            )
 
     def should_return_assets_from_validated_metadata_files(
         self,
@@ -312,7 +401,7 @@ class TestsWithLogger:
         ]
         url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        validator = STACDatasetValidator(url_reader, self.logger)
+        validator = STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory())
 
         validator.validate(metadata_url)
 
