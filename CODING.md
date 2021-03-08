@@ -60,3 +60,9 @@ This document is meant to give general hints for code reviewers. It should not b
 
 - To speed up our lambdas, boto3 clients and other large pieces of setup should be initialised outside the main lambda handler. See [Best practices for working with AWS Lambda functions](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html) for more tips.
 - Lambda runtime has been configured to 60 seconds. Higher than the minimum runtime of 3 seconds and lower than maximum of 15 minutes. This can be increased if a Lambda can be demonstrated to require more runtime than 60 seconds.
+
+### Code reuse
+
+- Group code by relatedness, not by reuse. Basically, putting a bunch of stuff in a single file should be justified by more than "they are all being used in more than one place". Putting all the utility code in one place creates clutter, makes it harder to find reusable pieces, and makes it impossible to create minimal sets of code to deploy to different services.
+
+   Counter-example: conftest.py is a pytest-specific file for fixtures. We don't want to change our configuration simply to allow splitting this up.
