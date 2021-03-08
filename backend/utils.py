@@ -29,12 +29,12 @@ def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject
 
 
 class ResourceName(Enum):
-    DATASETS_TABLE_NAME = f"{ENV}-datasets"
     DATASETS_ENDPOINT_FUNCTION_NAME = f"{ENV}-datasets-endpoint"
+    DATASETS_TABLE_NAME = f"{ENV}-datasets"
+    DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset_versions-endpoint"
     PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
     STORAGE_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake"
-    DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
 
 
 def set_up_logging(name: str) -> logging.Logger:
