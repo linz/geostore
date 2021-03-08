@@ -4,6 +4,7 @@ Data Lake AWS resources definitions.
 from typing import Any
 
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda, aws_ssm, aws_stepfunctions, core
+from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.core import Duration, Tags
 
 
@@ -46,6 +47,7 @@ class APIStack(core.Stack):
                     ),
                 ),
             )
+
             endpoint_function.add_environment("DEPLOY_ENV", deploy_env)
             endpoint_function.grant_invoke(users_role)  # type: ignore[arg-type]
 
@@ -60,3 +62,13 @@ class APIStack(core.Stack):
             if endpoint == "dataset_versions":
                 state_machine_parameter.grant_read(endpoint_function)
                 state_machine.grant_start_execution(endpoint_function)
+
+            if endpoint == "import_status":
+                state_machine.grant_read(endpoint_function)
+                assert endpoint_function.role is not None
+                endpoint_function.role.add_to_policy(
+                    PolicyStatement(
+                        resources=["*"],
+                        actions=["s3:DescribeJob"],
+                    ),
+                )

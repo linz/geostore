@@ -4,7 +4,8 @@ import json
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..utils import JsonObject, error_response, set_up_logging, success_response
+from ..log import set_up_logging
+from ..api_responses import success_response, error_response, JsonObject
 
 STEPFUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -16,18 +17,19 @@ def get_import_status(payload: JsonObject) -> JsonObject:
 
     logger.debug(json.dumps({"payload": payload}))
 
-    body_schema = {
-        "type": "object",
-        "properties": {
-            "execution_arn": {"type": "string"},
-        },
-        "required": ["execution_arn"],
-    }
-
     # validate input
     req_body = payload["body"]
     try:
-        validate(req_body, body_schema)
+        validate(
+            req_body,
+            {
+                "type": "object",
+                "properties": {
+                    "execution_arn": {"type": "string"},
+                },
+                "required": ["execution_arn"],
+            },
+        )
     except ValidationError as err:
         logger.warning(json.dumps({"error": err}, default=str))
         return error_response(400, err.message)

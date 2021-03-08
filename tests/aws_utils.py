@@ -84,6 +84,10 @@ def any_lambda_context() -> bytes:
 # S3
 
 
+def any_valid_arn() -> str:
+    return f"arn:aws:states:ap-southeast-2:{string.digits}:execution:yy:xx"
+
+
 def any_s3_url() -> str:
     bucket_name = any_s3_bucket_name()
     key = any_safe_file_path()

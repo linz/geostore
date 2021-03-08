@@ -15,6 +15,7 @@ from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from mypy_boto3_sts import STSClient
 from pytest import mark
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
@@ -69,6 +70,7 @@ def should_successfully_run_dataset_version_creation_process(
         object
     ],  # pylint:disable=unused-argument
     storage_bucket_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
     key_prefix = any_safe_file_path()
@@ -165,3 +167,16 @@ def should_successfully_run_dataset_version_creation_process(
                 time.sleep(5)
 
             assert copy_job["Job"]["Status"] == "Complete", copy_job
+
+            with subtests.test(msg="Import Status Endpoint"):
+                status_resp = lambda_client.invoke(
+                    FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
+                    Payload=json.dumps(
+                        {"httpMethod": "GET", "body": {"execution_arn": execution["executionArn"]}}
+                    ).encode(),
+                    InvocationType="RequestResponse",
+                )
+                status_json_resp = json.load(status_resp["Payload"])
+                assert status_json_resp["statusCode"] == 200, status_json_resp
+                assert status_json_resp["body"]["validation_status"] == "SUCCEEDED"
+                assert status_json_resp["body"]["upload_status"] == "Complete"

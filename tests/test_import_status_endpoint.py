@@ -1,15 +1,14 @@
 """
 Dataset Versions endpoint Lambda function tests.
 """
-
 import logging
 from unittest.mock import MagicMock, patch
 
-from pytest import mark
-
 from backend.import_status import entrypoint
 
-from .utils import any_lambda_context, any_s3_url
+from .general_generators import any_valid_arn
+from .aws_utils import any_lambda_context
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,10 +34,7 @@ def test_should_return_required_property_error_when_missing_body() -> None:
 
 def test_should_return_required_property_error_when_missing_mandatory_execution_arn() -> None:
     # Given a missing "execution_arn" attribute in the body
-    body = {"execution_arn": any_s3_url()}
-
-    # When attempting to create the instance
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": {}}, any_lambda_context())
 
     # Then the API should return an error message
     assert response == {
@@ -47,18 +43,40 @@ def test_should_return_required_property_error_when_missing_mandatory_execution_
     }
 
 
-@mark.infrastructure
-@patch("backend.dataset_versions.create.stepfunctions_client.describe_execution")
-def test_should_return_success_if_dataset_exists(
-    describe_execution_mock: MagicMock,  # pylint:disable=unused-argument
+@patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
+def test_should_report_upload_as_pending_when_validation_underway(
+    describe_execution_mock: MagicMock,
 ) -> None:
+    describe_execution_mock.return_value = {"status": "RUNNING"}
 
-    describe_execution_mock.return_value = {"status": "FAILED"}
-    body = {"execution_arn": any_s3_url()}
+    req_body = {"execution_arn": any_valid_arn()}
 
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
+    # When attempting to create the instance
+    response = entrypoint.lambda_handler(
+        {"httpMethod": "GET", "body": req_body}, any_lambda_context()
+    )
 
-    logger.info("Response: %s", response)
+    assert response["statusCode"] == 200, response
+    assert response["body"]["validation_status"] == "RUNNING"
+    assert response["body"]["upload_status"] == "Pending"
 
-    # Then we should get the dataset in return
-    assert response["statusCode"] == 200
+
+@patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
+@patch("backend.import_status.get.S3CONTROL_CLIENT.describe_job")
+def test_should_report_upload_as_pending_when_validation_test(
+    describe_execution_mock: MagicMock,
+    # describe_s3_job_mock: MagicMock,
+) -> None:
+    describe_execution_mock.return_value = {"status": "SUCCEEDED"}
+
+    req_body = {"execution_arn": any_valid_arn()}
+
+    # When attempting to create the instance
+    response = entrypoint.lambda_handler(
+        {"httpMethod": "GET", "body": req_body}, any_lambda_context()
+    )
+
+    assert response["statusCode"] == 200, response
+    assert response["body"]["validation_status"] == "RUNNING"
+    # assert describe_s3_job_mock.assert_has_calls([call()])
+    assert response["body"]["upload_status"] == "Pending"
