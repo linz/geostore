@@ -124,10 +124,6 @@ def any_dataset_version_id() -> str:
     return uuid4().hex
 
 
-def any_asset_id() -> str:
-    return f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
-
-
 def any_valid_dataset_type() -> str:
     return choice(DATASET_TYPES)
 
