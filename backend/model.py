@@ -12,9 +12,6 @@ from pynamodb.models import Model
 
 from .utils import ResourceName
 
-DATASETS_TITLE_INDEX_NAME = "datasets_title"
-DATASETS_OWNING_GROUP_INDEX_NAME = "datasets_owning_group"
-
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsTitleIdx(
@@ -25,7 +22,7 @@ class DatasetsTitleIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = DATASETS_TITLE_INDEX_NAME
+        index_name = "datasets_title"
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -43,7 +40,7 @@ class DatasetsOwningGroupIdx(
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
 
-        index_name = DATASETS_OWNING_GROUP_INDEX_NAME
+        index_name = "datasets_owning_group"
         read_capacity_units = 1
         write_capacity_units = 1
         projection = AllProjection()
@@ -104,4 +101,4 @@ class ProcessingAssetsModel(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     url = UnicodeAttribute()
-    multihash = UnicodeAttribute()
+    multihash = UnicodeAttribute(null=True)

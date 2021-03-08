@@ -39,12 +39,22 @@ def main() -> None:
         deploy_env=ENV,
     )
 
+    staging = StagingStack(
+        app,
+        "staging",
+        stack_name=f"{ENV}-geospatial-data-lake-staging",
+        env={"region": region, "account": account},
+    )
+
     processing = ProcessingStack(
         app,
         "processing",
         stack_name=f"{ENV}-geospatial-data-lake-processing",
         env={"region": region, "account": account},
         deploy_env=ENV,
+        staging_bucket=staging.staging_bucket,
+        storage_bucket=storage.storage_bucket,
+        storage_bucket_parameter=storage.storage_bucket_parameter,
     )
 
     APIStack(
@@ -55,13 +65,8 @@ def main() -> None:
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
         users_role=users.users_role,
-    ).add_dependency(processing)
-
-    StagingStack(
-        app,
-        "staging",
-        stack_name=f"{ENV}-geospatial-data-lake-staging",
-        env={"region": region, "account": account},
+        state_machine=processing.state_machine,
+        state_machine_parameter=processing.state_machine_parameter,
     )
 
     # tag all resources in stack

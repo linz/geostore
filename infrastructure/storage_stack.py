@@ -3,10 +3,11 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_s3, core
+from aws_cdk import aws_dynamodb, aws_s3, aws_ssm, core
 from aws_cdk.core import Tags
 
-from backend.model import DATASETS_OWNING_GROUP_INDEX_NAME, DATASETS_TITLE_INDEX_NAME
+from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
+from backend.model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.utils import ResourceName
 
 from .constructs.table import Table
@@ -38,6 +39,14 @@ class StorageStack(core.Stack):
         )
         Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 
+        self.storage_bucket_parameter = aws_ssm.StringParameter(
+            self,
+            "Storage Bucket ARN Parameter",
+            description=f"Storage Bucket ARN for {deploy_env}",
+            parameter_name=STORAGE_BUCKET_PARAMETER_NAME,
+            string_value=self.storage_bucket.bucket_arn,
+        )
+
         ############################################################################################
         # ### APPLICATION DB #######################################################################
         ############################################################################################
@@ -49,12 +58,12 @@ class StorageStack(core.Stack):
         )
 
         self.datasets_table.add_global_secondary_index(
-            index_name=DATASETS_TITLE_INDEX_NAME,
+            index_name=DatasetsTitleIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
         )
         self.datasets_table.add_global_secondary_index(
-            index_name=DATASETS_OWNING_GROUP_INDEX_NAME,
+            index_name=DatasetsOwningGroupIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(
                 name="owning_group", type=aws_dynamodb.AttributeType.STRING

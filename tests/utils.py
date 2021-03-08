@@ -17,13 +17,13 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.model import DatasetModel
+from backend.model import DatasetModel, ProcessingAssetsModel
 from backend.utils import DATASET_TYPES
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 DELETE_OBJECTS_MAX_KEYS = 1000
 
-STAC_VERSION = "1.0.0-beta.2"
+STAC_VERSION = "1.0.0-rc.1"
 
 SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
 EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
@@ -120,7 +120,11 @@ def any_dataset_id() -> str:
 
 def any_dataset_version_id() -> str:
     """Arbitrary-length string"""
-    return random_string(20)
+    return uuid4().hex
+
+
+def any_asset_id() -> str:
+    return f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
 
 
 def any_valid_dataset_type() -> str:
@@ -185,15 +189,16 @@ def any_item_count() -> int:
 
 
 MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "stac_version": STAC_VERSION,
-    "id": any_dataset_id(),
     "description": any_dataset_description(),
-    "links": [],
-    "license": "MIT",
     "extent": {
         "spatial": {"bbox": [[-180, -90, 180, 90]]},
         "temporal": {"interval": [[any_past_datetime_string(), None]]},
     },
+    "id": any_dataset_id(),
+    "license": "MIT",
+    "links": [],
+    "stac_version": STAC_VERSION,
+    "type": "Collection",
 }
 
 
@@ -227,6 +232,36 @@ class Dataset:
         )
 
     def __enter__(self) -> DatasetModel:
+        self._item.save()
+        return self._item
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        self._item.delete()
+
+
+class ProcessingAsset:
+    def __init__(
+        self,
+        asset_id: str,
+        url: str,
+        multihash: Optional[str] = None,
+    ):
+
+        prefix = "METADATA" if multihash is None else "DATA"
+
+        self._item = ProcessingAssetsModel(
+            pk=asset_id,
+            sk=f"{prefix}_ITEM_INDEX#0",
+            url=url,
+            multihash=multihash,
+        )
+
+    def __enter__(self) -> ProcessingAssetsModel:
         self._item.save()
         return self._item
 

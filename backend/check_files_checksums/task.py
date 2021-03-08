@@ -12,6 +12,7 @@ from botocore.response import StreamingBody  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
 from ..model import ProcessingAssetsModel
+from ..utils import set_up_logging
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -56,18 +57,6 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def set_up_logging() -> logging.Logger:
-    logger = logging.getLogger(__name__)
-
-    log_handler = logging.StreamHandler()
-    log_level = environ.get("LOGLEVEL", logging.NOTSET)
-
-    logger.addHandler(log_handler)
-    logger.setLevel(log_level)
-
-    return logger
-
-
 def get_job_offset() -> int:
     return int(environ.get(ARRAY_INDEX_VARIABLE_NAME, 0))
 
@@ -83,7 +72,7 @@ def failure(content: Mapping[str, Any], logger: logging.Logger) -> int:
 
 
 def main() -> int:
-    logger = set_up_logging()
+    logger = set_up_logging(__name__)
 
     arguments = parse_arguments()
     s3_client = boto3.client("s3")
