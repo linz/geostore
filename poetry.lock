@@ -1031,14 +1031,14 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 name = "boto3"
-version = "1.17.20"
+version = "1.17.21"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = ">=1.20.20,<1.21.0"
+botocore = ">=1.20.21,<1.21.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
@@ -2505,8 +2505,8 @@ black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 boto3 = [
-    {file = "boto3-1.17.20-py2.py3-none-any.whl", hash = "sha256:c0d51f344b71656c2d395d2168600d91bea252a64fb5d503a955ea96426cde8b"},
-    {file = "boto3-1.17.20.tar.gz", hash = "sha256:2219f1ebe88d266afa5516f993983eba8742b957fa4fd6854f3c73aa3030e931"},
+    {file = "boto3-1.17.21-py2.py3-none-any.whl", hash = "sha256:8624a959c9122d3d5cd8c84231c1cd0cfe5cfbfc93a7b51eb380eb3f9ce0bac6"},
+    {file = "boto3-1.17.21.tar.gz", hash = "sha256:b52180720eb7a67bb8d2260aa3abaa30f6d7dd061663a83ad6e4dcd1263ab36a"},
 ]
 boto3-stubs = [
     {file = "boto3-stubs-1.17.21.0.tar.gz", hash = "sha256:bf99425d068b1bb761fe7ea90a7bbea631d1c4c90d8b7a43d8c97d55479ade24"},
