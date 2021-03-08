@@ -142,3 +142,22 @@ aws lambda invoke \
 
    {"statusCode": 204, "body": {}}
    ```
+
+## Dataset Version Endpoint Usage Examples
+
+- Set Dataset Space Endpoint Lambda function name
+  
+   ```bash
+   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
+   ```
+- Example of Dataset Version creation request
+
+   ```console
+   $ aws lambda invoke \
+      --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+      --invocation-type RequestResponse \
+      --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER", "metadata-url": "s3://example-s3-url"}}' \
+      /dev/stdout
+
+   {"statusCode": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
+   ```
