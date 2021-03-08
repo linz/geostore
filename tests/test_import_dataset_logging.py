@@ -10,14 +10,8 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.import_dataset.task import lambda_handler
 
-from .utils import (
-    ProcessingAsset,
-    any_dataset_id,
-    any_dataset_version_id,
-    any_hex_multihash,
-    any_lambda_context,
-    any_s3_url,
-)
+from .aws_utils import ProcessingAsset, any_lambda_context, any_s3_url
+from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 
 class TestLogging:

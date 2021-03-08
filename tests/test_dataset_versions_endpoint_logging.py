@@ -8,7 +8,8 @@ from pytest import mark
 
 from backend.dataset_versions.create import create_dataset_version
 
-from .utils import Dataset, any_dataset_id, any_s3_url, any_valid_dataset_type
+from .aws_utils import Dataset, any_s3_url
+from .stac_generators import any_dataset_id, any_valid_dataset_type
 
 
 class TestLogging:

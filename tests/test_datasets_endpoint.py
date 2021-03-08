@@ -14,12 +14,11 @@ from backend.dataset import DATASET_TYPES
 from backend.datasets import entrypoint
 from backend.resources import ResourceName
 
-from .utils import (
-    Dataset,
+from .aws_utils import Dataset, any_lambda_context
+from .stac_generators import (
     any_dataset_id,
     any_dataset_owning_group,
     any_dataset_title,
-    any_lambda_context,
     any_valid_dataset_type,
 )
 

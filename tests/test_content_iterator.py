@@ -8,16 +8,9 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
 
-from .utils import (
-    any_dataset_id,
-    any_dataset_version_id,
-    any_dictionary_key,
-    any_item_count,
-    any_item_index,
-    any_lambda_context,
-    any_s3_url,
-    any_valid_dataset_type,
-)
+from .aws_utils import any_item_count, any_item_index, any_lambda_context, any_s3_url
+from .general_generators import any_dictionary_key
+from .stac_generators import any_dataset_id, any_dataset_version_id, any_valid_dataset_type
 
 INITIAL_EVENT: Dict[str, Any] = {
     "dataset_id": any_dataset_id(),
