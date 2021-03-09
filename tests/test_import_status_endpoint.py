@@ -1,6 +1,7 @@
 """
 Dataset Versions endpoint Lambda function tests.
 """
+import json
 import logging
 from unittest.mock import MagicMock, patch
 
@@ -44,39 +45,47 @@ def test_should_return_required_property_error_when_missing_mandatory_execution_
 
 
 @patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
-def test_should_report_upload_as_pending_when_validation_underway(
+def test_should_report_upload_status_as_pending_when_validation_underway(
     describe_execution_mock: MagicMock,
 ) -> None:
     describe_execution_mock.return_value = {"status": "RUNNING"}
 
-    req_body = {"execution_arn": any_valid_arn()}
-
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": req_body}, any_lambda_context()
+        {"httpMethod": "GET", "body": {"execution_arn": any_valid_arn()}}, any_lambda_context()
     )
 
     assert response["statusCode"] == 200, response
-    assert response["body"]["validation_status"] == "RUNNING"
-    assert response["body"]["upload_status"] == "Pending"
+    assert response["body"]["validation"]["status"] == "RUNNING"
+    assert response["body"]["upload"]["status"] == "Pending"
 
 
 @patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
 @patch("backend.import_status.get.S3CONTROL_CLIENT.describe_job")
-def test_should_report_upload_as_pending_when_validation_test(
+def test_should_report_upload_failures(
+    describe_s3_job_mock: MagicMock,
     describe_execution_mock: MagicMock,
-    # describe_s3_job_mock: MagicMock,
 ) -> None:
-    describe_execution_mock.return_value = {"status": "SUCCEEDED"}
+    describe_execution_mock.return_value = {
+        "status": "SUCCEEDED",
+        "output": json.dumps({"s3_batch_copy": {"job_id": "test"}}),
+    }
 
-    req_body = {"execution_arn": any_valid_arn()}
+    describe_s3_job_mock.return_value = {
+        "Job": {
+            "Status": "Completed",
+            "FailureReasons": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+        }
+    }
 
-    # When attempting to create the instance
-    response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": req_body}, any_lambda_context()
-    )
+    with patch("backend.import_status.get.STS_CLIENT.get_caller_identity"):
 
-    assert response["statusCode"] == 200, response
-    assert response["body"]["validation_status"] == "RUNNING"
-    # assert describe_s3_job_mock.assert_has_calls([call()])
-    assert response["body"]["upload_status"] == "Pending"
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": {"execution_arn": any_valid_arn()}}, any_lambda_context()
+        )
+
+        assert response["statusCode"] == 200, response
+        assert response["body"]["validation"]["status"] == "SUCCEEDED"
+        assert response["body"]["upload"]["status"] == "Completed"
+        assert response["body"]["upload"]["errors"][0]["FailureCode"] == "TEST_CODE"
+        assert response["body"]["upload"]["errors"][0]["FailureReason"] == "TEST_REASON"
