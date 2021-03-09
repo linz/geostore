@@ -178,5 +178,5 @@ def should_successfully_run_dataset_version_creation_process(
                 )
                 status_json_resp = json.load(status_resp["Payload"])
                 assert status_json_resp["statusCode"] == 200, status_json_resp
-                assert status_json_resp["body"]["validation_status"] == "SUCCEEDED"
-                assert status_json_resp["body"]["upload_status"] == "Complete"
+                assert status_json_resp["body"]["validation"]["status"] == "SUCCEEDED"
+                assert status_json_resp["body"]["upload"]["status"] == "Complete"
