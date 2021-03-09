@@ -7,7 +7,7 @@ from mypy_boto3_ssm import SSMClient
 from pytest import mark
 
 from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
 
 @mark.infrastructure

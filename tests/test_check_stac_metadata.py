@@ -14,23 +14,22 @@ from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_stac_metadata.task import STACDatasetValidator, STACSchemaValidator, main
-from backend.model import ProcessingAssetsModel
-from backend.utils import ResourceName
+from backend.processing_assets_model import ProcessingAssetsModel
+from backend.resources import ResourceName
 
-from .utils import (
-    MINIMAL_VALID_STAC_OBJECT,
-    MockJSONURLReader,
-    S3Object,
-    any_dataset_id,
-    any_dataset_version_id,
+from .aws_utils import MINIMAL_VALID_STAC_OBJECT, MockJSONURLReader, S3Object, any_s3_url
+from .general_generators import (
     any_error_message,
     any_file_contents,
-    any_hex_multihash,
     any_https_url,
     any_program_name,
-    any_s3_url,
     any_safe_filename,
-    any_stac_asset_name,
+)
+from .stac_generators import (
+    any_asset_name,
+    any_dataset_id,
+    any_dataset_version_id,
+    any_hex_multihash,
     any_stac_relation,
 )
 
@@ -82,11 +81,11 @@ def test_should_insert_asset_urls_and_checksums_into_database(
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         metadata_stac_object["item_assets"] = {
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": first_asset_s3_object.url,
                 "checksum:multihash": first_asset_multihash,
             },
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": second_asset_s3_object.url,
                 "checksum:multihash": second_asset_multihash,
             },
@@ -157,7 +156,7 @@ def test_should_validate_given_url(validate_url_mock: MagicMock) -> None:
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    with patch("backend.model.ProcessingAssetsModel"):
+    with patch("backend.processing_assets_model.ProcessingAssetsModel"):
         assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
@@ -272,7 +271,7 @@ class TestsWithLogger:
 
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         stac_object["item_assets"] = {
-            any_stac_asset_name(): {"href": other_url, "checksum:multihash": any_hex_multihash()}
+            any_asset_name(): {"href": other_url, "checksum:multihash": any_hex_multihash()}
         }
 
         url_reader = MockJSONURLReader({root_url: stac_object})
@@ -295,11 +294,11 @@ class TestsWithLogger:
         second_asset_url = f"{base_url}/{any_safe_filename()}"
         second_asset_multihash = any_hex_multihash()
         stac_object["item_assets"] = {
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": first_asset_url,
                 "checksum:multihash": first_asset_multihash,
             },
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": second_asset_url,
                 "checksum:multihash": second_asset_multihash,
             },

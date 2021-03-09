@@ -13,19 +13,20 @@ from mypy_boto3_sts import STSClient
 from pytest import mark
 
 from backend.import_dataset.task import lambda_handler
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
-from .utils import (
+from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,
     ProcessingAsset,
     S3Object,
-    any_dataset_id,
-    any_dataset_version_id,
-    any_file_contents,
     any_lambda_context,
     any_s3_url,
-    any_safe_filename,
-    any_stac_asset_name,
+)
+from .general_generators import any_file_contents, any_safe_filename
+from .stac_generators import (
+    any_asset_name,
+    any_dataset_id,
+    any_dataset_version_id,
     any_valid_dataset_type,
 )
 
@@ -84,7 +85,7 @@ def test_should_batch_copy_files_to_storage(
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         metadata_stac_object["assets"] = {
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": asset_s3_object.url,
                 "checksum:multihash": first_asset_multihash,
             },

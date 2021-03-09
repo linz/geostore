@@ -18,18 +18,18 @@ from pytest import mark
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
-from backend.utils import ResourceName
+from backend.resources import ResourceName
 
-from .utils import (
-    MINIMAL_VALID_STAC_OBJECT,
-    Dataset,
-    S3Object,
+from .aws_utils import MINIMAL_VALID_STAC_OBJECT, Dataset, S3Object
+from .general_generators import (
     any_boolean,
-    any_dataset_id,
     any_file_contents,
     any_safe_file_path,
     any_safe_filename,
-    any_stac_asset_name,
+)
+from .stac_generators import (
+    any_asset_name,
+    any_dataset_id,
     any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
 )
@@ -94,7 +94,7 @@ def test_should_successfully_run_dataset_version_creation_process(
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as mandatory_asset_s3_object, optional_asset as optional_asset_s3_object:
         metadata["item_assets"] = {
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": mandatory_asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
                     sha256(mandatory_asset_contents).hexdigest()
@@ -102,7 +102,7 @@ def test_should_successfully_run_dataset_version_creation_process(
             },
         }
         if optional_asset_s3_object is not None:
-            metadata["item_assets"][any_stac_asset_name()] = {
+            metadata["item_assets"][any_asset_name()] = {
                 "href": optional_asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
                     sha256(optional_asset_contents).hexdigest()

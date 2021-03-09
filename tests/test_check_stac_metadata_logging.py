@@ -9,16 +9,13 @@ from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.check_stac_metadata.task import STACDatasetValidator, main
 
-from .utils import (
-    MINIMAL_VALID_STAC_OBJECT,
-    MockJSONURLReader,
+from .aws_utils import MINIMAL_VALID_STAC_OBJECT, MockJSONURLReader, any_s3_url
+from .general_generators import any_program_name, any_safe_filename
+from .stac_generators import (
+    any_asset_name,
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
-    any_program_name,
-    any_s3_url,
-    any_safe_filename,
-    any_stac_asset_name,
 )
 
 
@@ -47,7 +44,7 @@ class TestLogging:
         ]
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.model.ProcessingAssetsModel"
+            "backend.processing_assets_model.ProcessingAssetsModel"
         ):
             main()
 
@@ -91,7 +88,7 @@ class TestLogging:
         asset_url = f"{base_url}/{any_safe_filename()}"
         asset_multihash = any_hex_multihash()
         stac_object["item_assets"] = {
-            any_stac_asset_name(): {
+            any_asset_name(): {
                 "href": asset_url,
                 "checksum:multihash": asset_multihash,
             },

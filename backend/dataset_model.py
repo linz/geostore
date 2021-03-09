@@ -1,8 +1,5 @@
-"""Dataset object DynamoDB model."""
-
 import uuid
 from datetime import datetime, timezone
-from os import environ
 from typing import Any, Dict, Optional
 
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
@@ -10,7 +7,7 @@ from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
-from .utils import ResourceName
+from .resources import ResourceName
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
@@ -90,15 +87,3 @@ class DatasetModel(Model):
     def dataset_type(self) -> str:
         """Dataset type value."""
         return self.type.split("#")[1]
-
-
-class ProcessingAssetsModel(Model):
-    class Meta:  # pylint:disable=too-few-public-methods
-        environment_name = environ.get("DEPLOY_ENV", "test")
-        table_name = f"{environment_name}-processing-assets"
-        region = "ap-southeast-2"  # TODO: don't hardcode region
-
-    pk = UnicodeAttribute(hash_key=True)
-    sk = UnicodeAttribute(range_key=True)
-    url = UnicodeAttribute()
-    multihash = UnicodeAttribute(null=True)

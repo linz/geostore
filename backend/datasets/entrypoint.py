@@ -5,7 +5,7 @@ from typing import Callable, MutableMapping
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..utils import JsonObject, error_response
+from ..api_responses import JsonObject, error_response
 from .create import create_dataset
 from .delete import delete_dataset
 from .get import handle_get

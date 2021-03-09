@@ -9,7 +9,8 @@ from pytest import mark
 
 from backend.dataset_versions import entrypoint
 
-from .utils import Dataset, any_dataset_id, any_lambda_context, any_s3_url, any_valid_dataset_type
+from .aws_utils import Dataset, any_lambda_context, any_s3_url
+from .stac_generators import any_dataset_id, any_valid_dataset_type
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -19,16 +19,14 @@ from backend.check_files_checksums.task import (
     main,
     validate_url_multihash,
 )
-from backend.model import ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetsModel
 
-from .utils import (
-    EMPTY_FILE_MULTIHASH,
-    any_batch_job_array_index,
+from .aws_utils import EMPTY_FILE_MULTIHASH, any_batch_job_array_index, any_s3_url
+from .general_generators import any_program_name
+from .stac_generators import (
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
-    any_program_name,
-    any_s3_url,
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
