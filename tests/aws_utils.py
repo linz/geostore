@@ -52,6 +52,10 @@ MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
 DELETE_OBJECTS_MAX_KEYS = 1000
 
 
+def any_arn_formatted_string() -> str:
+    return f"arn:aws:states:{random_string(5)}:{string.digits}:execution:yy:xx"
+
+
 # Batch
 
 
@@ -82,10 +86,6 @@ def any_lambda_context() -> bytes:
 
 
 # S3
-
-
-def any_valid_arn() -> str:
-    return f"arn:aws:states:ap-southeast-2:{string.digits}:execution:yy:xx"
 
 
 def any_s3_url() -> str:

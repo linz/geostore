@@ -4,13 +4,10 @@ Dataset Versions endpoint Lambda function tests.
 import logging
 from unittest.mock import MagicMock, patch
 
-from pytest_subtests import SubTests  # type: ignore[import]
-
 from backend.import_status import entrypoint
 from backend.import_status.get import get_s3_batch_copy_status
 
-from .aws_utils import any_lambda_context
-from .general_generators import any_valid_arn
+from .aws_utils import any_arn_formatted_string, any_lambda_context
 
 
 def test_should_return_required_property_error_when_missing_http_method() -> None:
@@ -42,26 +39,27 @@ def test_should_return_required_property_error_when_missing_mandatory_execution_
     }
 
 
-@patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
+@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
 def test_should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock: MagicMock,
-    subtests: SubTests,
 ) -> None:
     describe_execution_mock.return_value = {"status": "RUNNING"}
 
+    expected_response = {
+        "statusCode": 200,
+        "body": {
+            "validation": {"status": "RUNNING"},
+            "upload": {"status": "Pending", "errors": []},
+        },
+    }
+
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": {"execution_arn": any_valid_arn()}}, any_lambda_context()
+        {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+        any_lambda_context(),
     )
 
-    with subtests.test():
-        assert response["statusCode"] == 200, response
-    with subtests.test():
-        assert response["body"]["validation"]["status"] == "RUNNING"
-    with subtests.test():
-        assert response["body"]["upload"]["status"] == "Pending"
-    with subtests.test():
-        assert len(response["body"]["upload"]["errors"]) == 0
+    assert response == expected_response
 
 
 class TestsWithLogger:
@@ -75,7 +73,6 @@ class TestsWithLogger:
     def test_should_report_upload_failures(
         self,
         describe_s3_job_mock: MagicMock,
-        subtests: SubTests,
     ) -> None:
         describe_s3_job_mock.return_value = {
             "Job": {
@@ -83,17 +80,16 @@ class TestsWithLogger:
                 "FailureReasons": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             }
         }
+
+        expected_response = {
+            "status": "Pending",
+            "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_ERASON"}],
+        }
+
         with patch("backend.import_status.get.STS_CLIENT.get_caller_identity"):
             s3_batch_response = get_s3_batch_copy_status(
                 "test",
                 self.logger,
             )
 
-            with subtests.test():
-                assert s3_batch_response["status"] == "Completed"
-            with subtests.test():
-                assert len(s3_batch_response["errors"]) == 1
-            with subtests.test():
-                assert s3_batch_response["errors"][0]["FailureCode"] == "TEST_CODE"
-            with subtests.test():
-                assert s3_batch_response["errors"][0]["FailureReason"] == "TEST_REASON"
+            assert s3_batch_response == expected_response

@@ -1,7 +1,7 @@
 """
 Dataset-versions endpoint Lambda function.
 """
-from typing import Callable, MutableMapping
+from typing import Callable, Mapping
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
@@ -17,7 +17,7 @@ REQUEST_SCHEMA = {
     "required": ["httpMethod", "body"],
 }
 
-REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
+REQUEST_HANDLERS: Mapping[str, Callable[[JsonObject], JsonObject]] = {
     "GET": get_import_status,
 }
 
@@ -28,8 +28,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     # request validation
     try:
         validate(event, REQUEST_SCHEMA)
-        method = event["httpMethod"]
     except ValidationError as err:
         return error_response(400, err.message)
 
+    method = event["httpMethod"]
     return REQUEST_HANDLERS[method](event)

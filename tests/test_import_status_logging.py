@@ -7,7 +7,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.import_status.get import get_import_status, get_s3_batch_copy_status
 
-from .general_generators import any_valid_arn
+from .aws_utils import any_arn_formatted_string
 
 
 class TestLogging:
@@ -23,7 +23,7 @@ class TestLogging:
         # Given
         payload = {
             "httpMethod": "GET",
-            "body": {"execution_arn": any_valid_arn()},
+            "body": {"execution_arn": any_arn_formatted_string()},
         }
 
         expected_payload_log = dumps({"payload": payload})
@@ -59,7 +59,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
+    @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
     def test_should_log_stepfunctions_status_response(
         self,
         describe_execution_mock: MagicMock,
@@ -77,7 +77,7 @@ class TestLogging:
             get_import_status(
                 {
                     "httpMethod": "GET",
-                    "body": {"execution_arn": any_valid_arn()},
+                    "body": {"execution_arn": any_arn_formatted_string()},
                 }
             )
 
@@ -97,10 +97,7 @@ class TestLogging:
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"
         ):
-            get_s3_batch_copy_status(
-                "test",
-                self.logger,
-            )
+            get_s3_batch_copy_status("test", self.logger)
 
             # Then
             logger_mock.assert_any_call(expected_response_log)
