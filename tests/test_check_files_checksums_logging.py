@@ -22,7 +22,7 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.check_files_checksums.task")
 
     @mark.infrastructure
-    def test_should_log_missing_item(self, subtests: SubTests) -> None:
+    def should_log_missing_item(self, subtests: SubTests) -> None:
         # Given
         dataset_id = any_dataset_id()
         version_id = any_dataset_version_id()

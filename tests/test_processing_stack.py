@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 @mark.infrastructure
-def test_should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> None:
+def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
     parameter_response = ssm_client.get_parameter(Name=DATASET_VERSION_CREATION_STEP_FUNCTION)
     assert parameter_response["Parameter"]["Name"] == DATASET_VERSION_CREATION_STEP_FUNCTION
@@ -48,7 +48,7 @@ def test_should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) 
 
 
 @mark.infrastructure
-def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
+def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
     parameter_response = ssm_client.get_parameter(Name=S3_BATCH_COPY_ROLE_PARAMETER_NAME)
     assert parameter_response["Parameter"]["Name"] == S3_BATCH_COPY_ROLE_PARAMETER_NAME
@@ -58,7 +58,7 @@ def test_should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMCli
 
 @mark.timeout(1200)
 @mark.infrastructure
-def test_should_successfully_run_dataset_version_creation_process(
+def should_successfully_run_dataset_version_creation_process(
     # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,

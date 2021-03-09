@@ -21,7 +21,7 @@ class TestLogging:
 
     @mark.infrastructure
     @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
-    def test_should_log_payload(
+    def should_log_payload(
         self, start_execution_mock: MagicMock  # pylint:disable=unused-argument
     ) -> None:
         # given
@@ -46,7 +46,7 @@ class TestLogging:
 
     @mark.infrastructure
     @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
-    def test_should_log_step_function_state_machine_response(
+    def should_log_step_function_state_machine_response(
         self, start_execution_mock: MagicMock
     ) -> None:
         # given
@@ -73,7 +73,7 @@ class TestLogging:
                 logger_mock.assert_any_call(expected_execution_log)
 
     @patch("backend.dataset_versions.create.validate")
-    def test_should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
+    def should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
         # given
         dataset_type = any_valid_dataset_type()
         metadata_url = any_s3_url()
@@ -95,7 +95,7 @@ class TestLogging:
             logger_mock.assert_any_call(expected_log)
 
     @patch("backend.dataset_versions.create.DatasetModel.get")
-    def test_should_log_warning_if_dataset_does_not_exist(
+    def should_log_warning_if_dataset_does_not_exist(
         self, validate_dataset_mock: MagicMock
     ) -> None:
         # given

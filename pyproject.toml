@@ -186,3 +186,4 @@ import_dataset = [
 markers = [
     "infrastructure: requires a deployed infrastructure",
 ]
+python_functions = "should_*"

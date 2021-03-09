@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def test_should_fail_if_request_not_containing_method() -> None:
+def should_fail_if_request_not_containing_method() -> None:
     response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
 
     assert response == {
@@ -35,7 +35,7 @@ def test_should_fail_if_request_not_containing_method() -> None:
     }
 
 
-def test_should_fail_if_request_not_containing_body() -> None:
+def should_fail_if_request_not_containing_body() -> None:
     response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
 
     assert response == {
@@ -45,7 +45,7 @@ def test_should_fail_if_request_not_containing_body() -> None:
 
 
 @mark.infrastructure
-def test_should_create_dataset(
+def should_create_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_type = any_valid_dataset_type()
@@ -64,7 +64,7 @@ def test_should_create_dataset(
     assert response["body"]["owning_group"] == dataset_owning_group
 
 
-def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> None:
+def should_fail_if_post_request_not_containing_mandatory_attribute() -> None:
     # Given a missing "type" attribute in the body
     body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
 
@@ -78,7 +78,7 @@ def test_should_fail_if_post_request_not_containing_mandatory_attribute() -> Non
     }
 
 
-def test_should_fail_if_post_request_containing_incorrect_dataset_type() -> None:
+def should_fail_if_post_request_containing_incorrect_dataset_type() -> None:
     dataset_type = f"{''.join(DATASET_TYPES)}x"  # Guaranteed not in `DATASET_TYPES`
     body = {
         "type": dataset_type,
@@ -96,7 +96,7 @@ def test_should_fail_if_post_request_containing_incorrect_dataset_type() -> None
 
 
 @mark.infrastructure
-def test_should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
+def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
     dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset ABC"
 
@@ -121,7 +121,7 @@ def test_should_fail_if_post_request_containing_duplicate_dataset_title() -> Non
 
 
 @mark.infrastructure
-def test_should_return_single_dataset(
+def should_return_single_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance
@@ -142,7 +142,7 @@ def test_should_return_single_dataset(
 
 
 @mark.infrastructure
-def test_should_return_all_datasets(
+def should_return_all_datasets(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given two datasets
@@ -160,7 +160,7 @@ def test_should_return_all_datasets(
 
 
 @mark.infrastructure
-def test_should_return_single_dataset_filtered_by_type_and_title(
+def should_return_single_dataset_filtered_by_type_and_title(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given matching and non-matching dataset instances
@@ -186,7 +186,7 @@ def test_should_return_single_dataset_filtered_by_type_and_title(
 
 
 @mark.infrastructure
-def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
+def should_return_multiple_datasets_filtered_by_type_and_owning_group(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # Given matching and non-matching dataset instances
@@ -220,7 +220,7 @@ def test_should_return_multiple_datasets_filtered_by_type_and_owning_group(
 
 
 @mark.infrastructure
-def test_should_fail_if_get_request_containing_tile_and_owning_group_filter() -> None:
+def should_fail_if_get_request_containing_tile_and_owning_group_filter() -> None:
     body = {
         "type": any_valid_dataset_type(),
         "title": any_dataset_title(),
@@ -235,7 +235,7 @@ def test_should_fail_if_get_request_containing_tile_and_owning_group_filter() ->
 
 
 @mark.infrastructure
-def test_should_fail_if_get_request_requests_not_existing_dataset(
+def should_fail_if_get_request_requests_not_existing_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
@@ -254,7 +254,7 @@ def test_should_fail_if_get_request_requests_not_existing_dataset(
 
 
 @mark.infrastructure
-def test_should_update_dataset(
+def should_update_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = "111abc"
@@ -279,7 +279,7 @@ def test_should_update_dataset(
 
 
 @mark.infrastructure
-def test_should_fail_if_updating_with_already_existing_dataset_title(
+def should_fail_if_updating_with_already_existing_dataset_title(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_type = any_valid_dataset_type()
@@ -308,7 +308,7 @@ def test_should_fail_if_updating_with_already_existing_dataset_title(
 
 
 @mark.infrastructure
-def test_should_fail_if_updating_not_existing_dataset(
+def should_fail_if_updating_not_existing_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
@@ -333,7 +333,7 @@ def test_should_fail_if_updating_not_existing_dataset(
 
 
 @mark.infrastructure
-def test_should_delete_dataset(
+def should_delete_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
@@ -350,7 +350,7 @@ def test_should_delete_dataset(
 
 
 @mark.infrastructure
-def test_should_fail_if_deleting_not_existing_dataset(
+def should_fail_if_deleting_not_existing_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     dataset_id = any_dataset_id()
@@ -376,7 +376,7 @@ def test_should_fail_if_deleting_not_existing_dataset(
 
 
 @mark.infrastructure
-def test_should_launch_datasets_endpoint_lambda_function(
+def should_launch_datasets_endpoint_lambda_function(
     lambda_client: LambdaClient,
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:

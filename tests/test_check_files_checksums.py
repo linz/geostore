@@ -32,27 +32,27 @@ from .stac_generators import (
 )
 
 
-def test_should_return_offset_from_array_index_variable() -> None:
+def should_return_offset_from_array_index_variable() -> None:
     index = any_batch_job_array_index()
     environ[ARRAY_INDEX_VARIABLE_NAME] = str(index)
 
     assert get_job_offset() == index
 
 
-def test_should_return_default_offset_to_zero() -> None:
+def should_return_default_offset_to_zero() -> None:
     environ.pop(ARRAY_INDEX_VARIABLE_NAME, default=None)
 
     assert get_job_offset() == 0
 
 
-def test_should_return_when_empty_file_checksum_matches(s3_client: S3Client) -> None:
+def should_return_when_empty_file_checksum_matches(s3_client: S3Client) -> None:
     s3_stubber = Stubber(s3_client)
     s3_stubber.add_response("get_object", {"Body": StreamingBody(BytesIO(), 0)})
     with s3_stubber:
         validate_url_multihash(any_s3_url(), EMPTY_FILE_MULTIHASH, s3_client)
 
 
-def test_should_raise_exception_when_checksum_does_not_match(s3_client: S3Client) -> None:
+def should_raise_exception_when_checksum_does_not_match(s3_client: S3Client) -> None:
     s3_stubber = Stubber(s3_client)
     s3_stubber.add_response("get_object", {"Body": StreamingBody(BytesIO(), 0)})
     checksum = "0" * 64
@@ -67,7 +67,7 @@ def test_should_raise_exception_when_checksum_does_not_match(s3_client: S3Client
 @patch("boto3.client")
 @patch("backend.check_files_checksums.task.validate_url_multihash")
 @patch("backend.check_files_checksums.task.ProcessingAssetsModel")
-def test_should_validate_given_index(
+def should_validate_given_index(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
     s3_client_mock: MagicMock,
@@ -120,7 +120,7 @@ def test_should_validate_given_index(
 
 @patch("backend.check_files_checksums.task.validate_url_multihash")
 @patch("backend.check_files_checksums.task.ProcessingAssetsModel")
-def test_should_log_error_when_validation_fails(
+def should_log_error_when_validation_fails(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
     subtests: SubTests,

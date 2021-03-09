@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def test_should_return_required_property_error_when_missing_http_method() -> None:
+def should_return_required_property_error_when_missing_http_method() -> None:
     response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
 
     assert response == {
@@ -25,7 +25,7 @@ def test_should_return_required_property_error_when_missing_http_method() -> Non
     }
 
 
-def test_should_return_required_property_error_when_missing_body() -> None:
+def should_return_required_property_error_when_missing_body() -> None:
     response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
 
     assert response == {
@@ -34,7 +34,7 @@ def test_should_return_required_property_error_when_missing_body() -> None:
     }
 
 
-def test_should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:
+def should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:
     # Given a missing "type" attribute in the body
     body = {"id": any_dataset_id(), "type": any_valid_dataset_type()}
 
@@ -48,7 +48,7 @@ def test_should_return_required_property_error_when_missing_mandatory_metadata_u
     }
 
 
-def test_should_return_required_property_error_when_missing_mandatory_type_property() -> None:
+def should_return_required_property_error_when_missing_mandatory_type_property() -> None:
     # Given a missing "type" attribute in the body
     body = {"id": any_dataset_id(), "metadata-url": any_s3_url()}
 
@@ -63,7 +63,7 @@ def test_should_return_required_property_error_when_missing_mandatory_type_prope
 
 
 @mark.infrastructure
-def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
+def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     body = {"id": any_dataset_id(), "metadata-url": any_s3_url(), "type": any_valid_dataset_type()}
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
@@ -77,7 +77,7 @@ def test_should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
 @mark.infrastructure
 @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
-def test_should_return_success_if_dataset_exists(
+def should_return_success_if_dataset_exists(
     start_execution_mock: MagicMock,  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance

@@ -23,7 +23,7 @@ class TestLogging:
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure
-    def test_should_log_payload(
+    def should_log_payload(
         self,
         create_job_mock: MagicMock,
         storage_bucket_teardown: _pytest.fixtures.FixtureDef[
@@ -50,7 +50,7 @@ class TestLogging:
             logger_mock.assert_any_call(expected_payload_log)
 
     @patch("backend.import_dataset.task.validate")
-    def test_should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
+    def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
         error_message = "Some error message"
@@ -69,7 +69,7 @@ class TestLogging:
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure
-    def test_should_log_assets_added_to_manifest(
+    def should_log_assets_added_to_manifest(
         self,
         create_job_mock: MagicMock,
         subtests: SubTests,
@@ -114,7 +114,7 @@ class TestLogging:
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @mark.infrastructure
-    def test_should_log_s3_batch_response(
+    def should_log_s3_batch_response(
         self,
         create_job_mock: MagicMock,
         storage_bucket_teardown: _pytest.fixtures.FixtureDef[
