@@ -37,7 +37,7 @@ def get_import_status(payload: JsonObject) -> JsonObject:
         executionArn=payload["body"]["execution_arn"]
     )
     assert "status" in step_function_resp, step_function_resp
-    logger.debug(json.dumps({"step function response": step_function_resp}))
+    logger.debug(json.dumps({"step function response": step_function_resp}, default=str))
 
     upload_response: JsonObject = {"status": "Pending", "errors": []}
 
@@ -65,7 +65,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) 
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    logger.debug(json.dumps({"s3 batch response": s3_batch_copy_resp}))
+    logger.debug(json.dumps({"s3 batch response": s3_batch_copy_resp}, default=str))
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
 
