@@ -32,7 +32,7 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
 }
 
 
-def test_should_raise_exception_if_event_is_missing_state_machine_properties(
+def should_raise_exception_if_event_is_missing_state_machine_properties(
     subtests: SubTests,
 ) -> None:
     for property_name in ["dataset_id", "metadata_url", "type", "version_id"]:
@@ -44,7 +44,7 @@ def test_should_raise_exception_if_event_is_missing_state_machine_properties(
             lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_event_has_unknown_top_level_property() -> None:
+def should_raise_exception_if_event_has_unknown_top_level_property() -> None:
     event = deepcopy(INITIAL_EVENT)
     event[any_dictionary_key()] = 1
 
@@ -52,7 +52,7 @@ def test_should_raise_exception_if_event_has_unknown_top_level_property() -> Non
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_content_is_missing_any_property(subtests: SubTests) -> None:
+def should_raise_exception_if_content_is_missing_any_property(subtests: SubTests) -> None:
     for property_name in ["first_item", "iteration_size", "next_item"]:
         event = deepcopy(SUBSEQUENT_EVENT)
         del event["content"][property_name]
@@ -62,7 +62,7 @@ def test_should_raise_exception_if_content_is_missing_any_property(subtests: Sub
             lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_content_has_unknown_property() -> None:
+def should_raise_exception_if_content_has_unknown_property() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"][any_dictionary_key()] = 1
 
@@ -70,7 +70,7 @@ def test_should_raise_exception_if_content_has_unknown_property() -> None:
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_next_item_is_negative() -> None:
+def should_raise_exception_if_next_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = -1
 
@@ -78,7 +78,7 @@ def test_should_raise_exception_if_next_item_is_negative() -> None:
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_next_item_is_zero() -> None:
+def should_raise_exception_if_next_item_is_zero() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = 0
 
@@ -86,7 +86,7 @@ def test_should_raise_exception_if_next_item_is_zero() -> None:
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_iteration_size_is_not_positive() -> None:
+def should_raise_exception_if_iteration_size_is_not_positive() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["iteration_size"] = 0
 
@@ -94,7 +94,7 @@ def test_should_raise_exception_if_iteration_size_is_not_positive() -> None:
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_iteration_size_is_more_than_production_iteration_size() -> None:
+def should_raise_exception_if_iteration_size_is_more_than_production_iteration_size() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["iteration_size"] = MAX_ITERATION_SIZE + 1
 
@@ -102,7 +102,7 @@ def test_should_raise_exception_if_iteration_size_is_more_than_production_iterat
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_first_item_is_negative() -> None:
+def should_raise_exception_if_first_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["first_item"] = "-1"
 
@@ -110,7 +110,7 @@ def test_should_raise_exception_if_first_item_is_negative() -> None:
         lambda_handler(event, any_lambda_context())
 
 
-def test_should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_size() -> None:
+def should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_size() -> None:
     """Assumes iteration size is not 1"""
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["first_item"] = str(MAX_ITERATION_SIZE - 1)
@@ -120,7 +120,7 @@ def test_should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_siz
 
 
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_zero_as_first_item_if_no_content(
+def should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     event = deepcopy(INITIAL_EVENT)
@@ -132,7 +132,7 @@ def test_should_return_zero_as_first_item_if_no_content(
 
 
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
+def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     next_item_index = any_item_index()
     event["content"]["next_item"] = next_item_index
@@ -144,7 +144,7 @@ def test_should_return_next_item_as_first_item(processing_assets_model_mock: Mag
 
 
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
+def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE - 1
@@ -164,7 +164,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_is_less_than_
 
 
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
+def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE
@@ -184,7 +184,7 @@ def test_should_return_minus_one_next_item_if_remaining_item_count_matches_itera
 
 
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
-def test_should_return_content_when_remaining_item_count_is_more_than_iteration_size(
+def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE + 1

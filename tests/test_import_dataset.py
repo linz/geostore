@@ -31,7 +31,7 @@ from .stac_generators import (
 )
 
 
-def test_should_return_required_property_error_when_missing_metadata_url() -> None:
+def should_return_required_property_error_when_missing_metadata_url() -> None:
     # When
 
     response = lambda_handler(
@@ -42,7 +42,7 @@ def test_should_return_required_property_error_when_missing_metadata_url() -> No
     assert response == {"error message": "'metadata_url' is a required property"}
 
 
-def test_should_return_required_property_error_when_missing_dataset_id() -> None:
+def should_return_required_property_error_when_missing_dataset_id() -> None:
     # When
     response = lambda_handler(
         {"metadata_url": any_s3_url(), "version_id": any_dataset_version_id()}, any_lambda_context()
@@ -51,7 +51,7 @@ def test_should_return_required_property_error_when_missing_dataset_id() -> None
     assert response == {"error message": "'dataset_id' is a required property"}
 
 
-def test_should_return_required_property_error_when_missing_version_id() -> None:
+def should_return_required_property_error_when_missing_version_id() -> None:
     # When
 
     response = lambda_handler(
@@ -63,7 +63,7 @@ def test_should_return_required_property_error_when_missing_version_id() -> None
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
-def test_should_batch_copy_files_to_storage(
+def should_batch_copy_files_to_storage(
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,

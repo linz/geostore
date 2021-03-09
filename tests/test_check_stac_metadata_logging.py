@@ -27,7 +27,7 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.check_stac_metadata.task")
 
     @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-    def test_should_log_arguments(self, validate_url_mock: MagicMock) -> None:
+    def should_log_arguments(self, validate_url_mock: MagicMock) -> None:
         validate_url_mock.return_value = set()
         url = any_s3_url()
         dataset_id = any_dataset_id()
@@ -50,7 +50,7 @@ class TestLogging:
 
             logger_mock.assert_any_call(expected_log)
 
-    def test_should_log_on_validation_success(self) -> None:
+    def should_log_on_validation_success(self) -> None:
         sys.argv = [
             any_program_name(),
             f"--metadata-url={any_s3_url()}",
@@ -66,7 +66,7 @@ class TestLogging:
             logger_mock.assert_any_call('{"success": true, "message": ""}')
 
     @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-    def test_should_log_on_validation_failure(self, validate_url_mock: MagicMock) -> None:
+    def should_log_on_validation_failure(self, validate_url_mock: MagicMock) -> None:
         error_message = "Some error message"
         validate_url_mock.side_effect = choice([ValidationError, AssertionError])(error_message)
         sys.argv = [
@@ -81,7 +81,7 @@ class TestLogging:
 
             logger_mock.assert_any_call(f'{{"success": false, "message": "{error_message}"}}')
 
-    def test_should_log_assets(self) -> None:
+    def should_log_assets(self) -> None:
         base_url = any_s3_url()
         metadata_url = f"{base_url}/{any_safe_filename()}"
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
