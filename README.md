@@ -1,6 +1,6 @@
-[![GitHub Actions Status](https://github.com/linz/geospatial-data-lake/workflows/Build/badge.svg)](https://github.com/linz/geospatial-data-lake/actions) ![](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
-
 # Geospatial Data Lake
+
+[![Deploy](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml) [![CodeQL Analysis](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml) ![](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
 Central storage, management and access for important geospatial datasets
 
