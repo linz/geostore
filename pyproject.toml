@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 line-length = 100
 
 [tool.coverage.report]
-fail_under = 82
+fail_under = 98
 
 [tool.coverage.run]
 source = [
