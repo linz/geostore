@@ -1,18 +1,16 @@
 """
 Dataset Versions endpoint Lambda function tests.
 """
-import json
 import logging
 from unittest.mock import MagicMock, patch
 
+from pytest_subtests import SubTests  # type: ignore[import]
+
 from backend.import_status import entrypoint
+from backend.import_status.get import get_s3_batch_copy_status
 
-from .general_generators import any_valid_arn
 from .aws_utils import any_lambda_context
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from .general_generators import any_valid_arn
 
 
 def test_should_return_required_property_error_when_missing_http_method() -> None:
@@ -45,8 +43,9 @@ def test_should_return_required_property_error_when_missing_mandatory_execution_
 
 
 @patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
-def test_should_report_upload_status_as_pending_when_validation_underway(
+def test_should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock: MagicMock,
+    subtests: SubTests,
 ) -> None:
     describe_execution_mock.return_value = {"status": "RUNNING"}
 
@@ -55,37 +54,46 @@ def test_should_report_upload_status_as_pending_when_validation_underway(
         {"httpMethod": "GET", "body": {"execution_arn": any_valid_arn()}}, any_lambda_context()
     )
 
-    assert response["statusCode"] == 200, response
-    assert response["body"]["validation"]["status"] == "RUNNING"
-    assert response["body"]["upload"]["status"] == "Pending"
-
-
-@patch("backend.import_status.get.STEPFUNCTIONS_CLIENT.describe_execution")
-@patch("backend.import_status.get.S3CONTROL_CLIENT.describe_job")
-def test_should_report_upload_failures(
-    describe_s3_job_mock: MagicMock,
-    describe_execution_mock: MagicMock,
-) -> None:
-    describe_execution_mock.return_value = {
-        "status": "SUCCEEDED",
-        "output": json.dumps({"s3_batch_copy": {"job_id": "test"}}),
-    }
-
-    describe_s3_job_mock.return_value = {
-        "Job": {
-            "Status": "Completed",
-            "FailureReasons": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
-        }
-    }
-
-    with patch("backend.import_status.get.STS_CLIENT.get_caller_identity"):
-
-        response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": {"execution_arn": any_valid_arn()}}, any_lambda_context()
-        )
-
+    with subtests.test():
         assert response["statusCode"] == 200, response
-        assert response["body"]["validation"]["status"] == "SUCCEEDED"
-        assert response["body"]["upload"]["status"] == "Completed"
-        assert response["body"]["upload"]["errors"][0]["FailureCode"] == "TEST_CODE"
-        assert response["body"]["upload"]["errors"][0]["FailureReason"] == "TEST_REASON"
+    with subtests.test():
+        assert response["body"]["validation"]["status"] == "RUNNING"
+    with subtests.test():
+        assert response["body"]["upload"]["status"] == "Pending"
+    with subtests.test():
+        assert len(response["body"]["upload"]["errors"]) == 0
+
+
+class TestsWithLogger:
+    logger: logging.Logger
+
+    @classmethod
+    def setup_class(cls) -> None:
+        cls.logger = logging.getLogger("backend.import_status.get")
+
+    @patch("backend.import_status.get.S3CONTROL_CLIENT.describe_job")
+    def test_should_report_upload_failures(
+        self,
+        describe_s3_job_mock: MagicMock,
+        subtests: SubTests,
+    ) -> None:
+        describe_s3_job_mock.return_value = {
+            "Job": {
+                "Status": "Completed",
+                "FailureReasons": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+            }
+        }
+        with patch("backend.import_status.get.STS_CLIENT.get_caller_identity"):
+            s3_batch_response = get_s3_batch_copy_status(
+                "test",
+                self.logger,
+            )
+
+            with subtests.test():
+                assert s3_batch_response["status"] == "Completed"
+            with subtests.test():
+                assert len(s3_batch_response["errors"]) == 1
+            with subtests.test():
+                assert s3_batch_response["errors"][0]["FailureCode"] == "TEST_CODE"
+            with subtests.test():
+                assert s3_batch_response["errors"][0]["FailureReason"] == "TEST_REASON"

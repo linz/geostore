@@ -75,7 +75,6 @@ def any_dictionary_key() -> str:
 def any_boolean() -> bool:
     return bool(getrandbits(1))
 
+
 def any_valid_arn() -> str:
     return f"arn:aws:states:ap-southeast-2:{string.digits}:execution:yy:xx"
-
-
