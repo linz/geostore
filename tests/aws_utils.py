@@ -6,6 +6,7 @@ from random import randrange
 from types import TracebackType
 from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Type
 from unittest.mock import Mock
+from uuid import uuid4
 
 import boto3
 from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
@@ -96,6 +97,10 @@ def any_s3_url() -> str:
 
 def any_s3_bucket_name() -> str:
     return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
+
+
+def any_job_id() -> str:
+    return uuid4().hex
 
 
 # Context managers
