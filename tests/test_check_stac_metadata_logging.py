@@ -7,7 +7,8 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
-from backend.check_stac_metadata.task import STACDatasetValidator, main, parse_arguments
+from backend.check_stac_metadata.task import main
+from backend.check_stac_metadata.utils import STACDatasetValidator, parse_arguments
 
 from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,

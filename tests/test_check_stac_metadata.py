@@ -13,11 +13,11 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.check_stac_metadata.task import (
+from backend.check_stac_metadata.task import main
+from backend.check_stac_metadata.utils import (
     JSON_SCHEMA_VALIDATION_NAME,
     STACDatasetValidator,
     STACSchemaValidator,
-    main,
 )
 from backend.processing_assets_model import ProcessingAssetsModel
 from backend.resources import ResourceName
