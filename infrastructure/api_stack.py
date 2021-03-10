@@ -31,20 +31,16 @@ class APIStack(core.Stack):
 
         datasets_endpoint_lambda = LambdaEndpoint(
             self,
-            f"{deploy_env}-datasets-endpoint-function",
-            application_layer="api",
+            "datasets",
             deploy_env=deploy_env,
             users_role=users_role,
-            endpoint_name="datasets",
         ).lambda_function
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
             self,
-            f"{deploy_env}-dataset_versions-endpoint-function",
-            application_layer="api",
+            "dataset_versions",
             deploy_env=deploy_env,
             users_role=users_role,
-            endpoint_name="dataset_versions",
         ).lambda_function
 
         state_machine_parameter.grant_read(dataset_versions_endpoint_lambda)
@@ -56,11 +52,9 @@ class APIStack(core.Stack):
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,
-            f"{deploy_env}-import_status-endpoint-function",
-            application_layer="api",
+            "import_status",
             deploy_env=deploy_env,
             users_role=users_role,
-            endpoint_name="import_status",
         ).lambda_function
 
         state_machine.grant_read(import_status_endpoint_lambda)
