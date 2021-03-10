@@ -233,3 +233,7 @@ class MockJSONURLReader(Mock):
         dump(self.url_to_json[url], result)
         result.seek(0)
         return result
+
+
+class MockValidationResultFactory(Mock):
+    pass

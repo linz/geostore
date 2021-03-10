@@ -45,6 +45,13 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         )
 
+        validation_results_table = Table(
+            self,
+            ResourceName.VALIDATION_RESULTS_TABLE_NAME.value,
+            deploy_env=deploy_env,
+            application_layer=application_layer,
+        )
+
         ############################################################################################
         # BATCH JOB DEPENDENCIES
         batch_job_queue = BatchJobQueue(
@@ -82,13 +89,14 @@ class ProcessingStack(core.Stack):
                 "Ref::metadata_url",
             ],
         )
-        processing_assets_table.grant_read_write_data(
-            check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
-        )
-        processing_assets_table.grant(
-            check_stac_metadata_job_task.job_role,  # type: ignore[arg-type]
-            "dynamodb:DescribeTable",
-        )
+        for table in [processing_assets_table, validation_results_table]:
+            table.grant_read_write_data(
+                check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
+            )
+            table.grant(
+                check_stac_metadata_job_task.job_role,  # type: ignore[arg-type]
+                "dynamodb:DescribeTable",
+            )
 
         content_iterator_task = LambdaTask(
             self,
