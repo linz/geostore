@@ -7,9 +7,14 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
-from backend.check_stac_metadata.task import STACDatasetValidator, main
+from backend.check_stac_metadata.task import STACDatasetValidator, main, parse_arguments
 
-from .aws_utils import MINIMAL_VALID_STAC_OBJECT, MockJSONURLReader, any_s3_url
+from .aws_utils import (
+    MINIMAL_VALID_STAC_OBJECT,
+    MockJSONURLReader,
+    MockValidationResultFactory,
+    any_s3_url,
+)
 from .general_generators import any_program_name, any_safe_filename
 from .stac_generators import (
     any_asset_name,
@@ -43,10 +48,8 @@ class TestLogging:
             f"--version-id={version_id}",
         ]
 
-        with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.processing_assets_model.ProcessingAssetsModel"
-        ):
-            main()
+        with patch.object(self.logger, "debug") as logger_mock:
+            parse_arguments(self.logger)
 
             logger_mock.assert_any_call(expected_log)
 
@@ -98,6 +101,8 @@ class TestLogging:
         expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
 
         with patch.object(self.logger, "debug") as logger_mock:
-            STACDatasetValidator(url_reader, self.logger).validate(metadata_url)
+            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+                metadata_url
+            )
 
             logger_mock.assert_any_call(expected_message)

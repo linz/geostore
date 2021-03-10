@@ -19,12 +19,15 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetsModel
+from ..validation_results_model import ValidationResultsModel
 
 S3_URL_PREFIX = "s3://"
 
 SCRIPT_DIR = dirname(__file__)
 COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
 CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
+
+JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
 
 
 class STACSchemaValidator(Draft7Validator):
@@ -47,10 +50,26 @@ class STACSchemaValidator(Draft7Validator):
         super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
 
 
+class ValidationResultFactory:  # pylint:disable=too-few-public-methods
+    def __init__(self, hash_key: str):
+        self.hash_key = hash_key
+
+    def save(self, url: str, success: bool) -> None:
+        ValidationResultsModel(
+            pk=self.hash_key, sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}", success=success
+        ).save()
+
+
 class STACDatasetValidator:
-    def __init__(self, url_reader: Callable[[str], StreamingBody], logger: Logger):
+    def __init__(
+        self,
+        url_reader: Callable[[str], StreamingBody],
+        logger: Logger,
+        validation_result_factory: ValidationResultFactory,
+    ):
         self.url_reader = url_reader
         self.logger = logger
+        self.validation_result_factory = validation_result_factory
 
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
@@ -66,7 +85,12 @@ class STACDatasetValidator:
         url_stream = self.url_reader(url)
         url_json = load(url_stream)
 
-        self.validator.validate(url_json)
+        try:
+            self.validator.validate(url_json)
+        except ValidationError:
+            self.validation_result_factory.save(url, False)
+            raise
+        self.validation_result_factory.save(url, True)
 
         url_prefix = get_url_before_filename(url)
 
@@ -111,12 +135,13 @@ def get_url_before_filename(url: str) -> str:
     return url.rsplit("/", maxsplit=1)[0]
 
 
-def parse_arguments() -> Namespace:
+def parse_arguments(logger: Logger) -> Namespace:
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--metadata-url", required=True)
     argument_parser.add_argument("--dataset-id", required=True)
     argument_parser.add_argument("--version-id", required=True)
     arguments = argument_parser.parse_args()
+    logger.debug(dumps({"arguments": vars(arguments)}))
     return arguments
 
 
@@ -136,11 +161,12 @@ def s3_url_reader() -> Callable[[str], StreamingBody]:
 def main() -> int:
     logger = set_up_logging(__name__)
 
-    arguments = parse_arguments()
-    logger.debug(dumps({"arguments": vars(arguments)}))
+    arguments = parse_arguments(logger)
 
     url_reader = s3_url_reader()
-    validator = STACDatasetValidator(url_reader, logger)
+    hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
+    validation_result_factory = ValidationResultFactory(hash_key)
+    validator = STACDatasetValidator(url_reader, logger, validation_result_factory)
 
     try:
         validator.validate(arguments.metadata_url)
@@ -149,7 +175,7 @@ def main() -> int:
         logger.error(dumps({"success": False, "message": str(error)}))
         return 1
 
-    validator.save(f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}")
+    validator.save(hash_key)
 
     logger.info(dumps({"success": True, "message": ""}))
     return 0
