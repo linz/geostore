@@ -1,10 +1,9 @@
 from http.client import responses as http_responses
-from typing import Any, Callable, List, Mapping, MutableMapping, Union
+from typing import Callable, Mapping, Union
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-JsonList = List[Any]
-JsonObject = MutableMapping[str, Any]
+from .types import JsonList, JsonObject
 
 
 def error_response(code: int, message: str) -> JsonObject:

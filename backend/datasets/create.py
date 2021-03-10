@@ -2,9 +2,10 @@
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..api_responses import JsonObject, error_response, success_response
+from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
 from ..dataset_model import DatasetModel
+from ..types import JsonObject
 
 
 def create_dataset(payload: JsonObject) -> JsonObject:
