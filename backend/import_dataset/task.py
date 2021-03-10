@@ -1,5 +1,4 @@
 import json
-from os import environ
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -8,6 +7,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
 from ..api_responses import JsonObject
+from ..environment import ENV
 from ..log import set_up_logging
 from ..parameter_store import get_param
 from ..processing_assets_model import ProcessingAssetsModel
@@ -17,7 +17,6 @@ S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
 SSM_CLIENT = boto3.client("ssm")
 
-ENV = environ.get("DEPLOY_ENV", "test")
 STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
 S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
 
