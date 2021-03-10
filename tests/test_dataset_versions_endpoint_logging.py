@@ -20,7 +20,7 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.dataset_versions.create")
 
     @mark.infrastructure
-    @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
+    @patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
     def should_log_payload(
         self, start_execution_mock: MagicMock  # pylint:disable=unused-argument
     ) -> None:
@@ -45,7 +45,7 @@ class TestLogging:
                 logger_mock.assert_any_call(expected_payload_log)
 
     @mark.infrastructure
-    @patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
+    @patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
     def should_log_step_function_state_machine_response(
         self, start_execution_mock: MagicMock
     ) -> None:

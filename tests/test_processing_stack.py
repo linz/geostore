@@ -15,6 +15,7 @@ from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from mypy_boto3_sts import STSClient
 from pytest import mark
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
@@ -69,6 +70,7 @@ def should_successfully_run_dataset_version_creation_process(
         object
     ],  # pylint:disable=unused-argument
     storage_bucket_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
+    subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
     key_prefix = any_safe_file_path()
@@ -135,33 +137,57 @@ def should_successfully_run_dataset_version_creation_process(
                 )
                 json_resp = json.load(resp["Payload"])
 
-                assert json_resp.get("statusCode") == 201, json_resp
+                with subtests.test(msg="Dataset Versions endpoint returns success"):
+                    assert json_resp.get("statusCode") == 201, json_resp
 
-                # When
+                with subtests.test(msg="Should complete Step Function successfully"):
 
-            logger.info("Executed State Machine: %s", json_resp)
+                    logger.info("Executed State Machine: %s", json_resp)
 
-            # Then poll for State Machine State
-            while (
-                execution := step_functions_client.describe_execution(
-                    executionArn=json_resp["body"]["execution_arn"]
-                )
-            )["status"] == "RUNNING":
-                logger.info("Polling for State Machine state %s", "." * 6)
-                time.sleep(5)
+                    # Then poll for State Machine State
+                    while (
+                        execution := step_functions_client.describe_execution(
+                            executionArn=json_resp["body"]["execution_arn"]
+                        )
+                    )["status"] == "RUNNING":
+                        logger.info("Polling for State Machine state %s", "." * 6)
+                        time.sleep(5)
 
-            assert execution["status"] == "SUCCEEDED", execution
+                    assert execution["status"] == "SUCCEEDED", execution
 
-            s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
-            final_states = ["Complete", "Failed", "Cancelled"]
+                with subtests.test(msg="Should complete S3 batch copy operation successfully"):
 
-            # poll for S3 Batch Copy completion
-            while (
-                copy_job := s3_control_client.describe_job(
-                    AccountId=sts_client.get_caller_identity()["Account"],
-                    JobId=s3_batch_copy_arn,
-                )
-            )["Job"]["Status"] not in final_states:
-                time.sleep(5)
+                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                    final_states = ["Complete", "Failed", "Cancelled"]
 
-            assert copy_job["Job"]["Status"] == "Complete", copy_job
+                    # poll for S3 Batch Copy completion
+                    while (
+                        copy_job := s3_control_client.describe_job(
+                            AccountId=sts_client.get_caller_identity()["Account"],
+                            JobId=s3_batch_copy_arn,
+                        )
+                    )["Job"]["Status"] not in final_states:
+                        time.sleep(5)
+
+                    assert copy_job["Job"]["Status"] == "Complete", copy_job
+
+                with subtests.test(msg="Should report import status after success"):
+                    expected_response = {
+                        "statusCode": 200,
+                        "body": {
+                            "validation": {"status": "SUCCEEDED"},
+                            "upload": {"status": "Complete", "errors": []},
+                        },
+                    }
+                    status_resp = lambda_client.invoke(
+                        FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
+                        Payload=json.dumps(
+                            {
+                                "httpMethod": "GET",
+                                "body": {"execution_arn": execution["executionArn"]},
+                            }
+                        ).encode(),
+                        InvocationType="RequestResponse",
+                    )
+                    status_json_resp = json.load(status_resp["Payload"])
+                    assert status_json_resp == expected_response

@@ -181,6 +181,10 @@ import_dataset = [
     "pynamodb",
     "smart-open"
 ]
+import_status = [
+    "boto3",
+    "jsonschema",
+]
 
 [tool.pytest.ini_options]
 markers = [

@@ -58,7 +58,7 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
 
 @mark.infrastructure
-@patch("backend.dataset_versions.create.stepfunctions_client.start_execution")
+@patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
 def should_return_success_if_dataset_exists(
     start_execution_mock: MagicMock,  # pylint:disable=unused-argument
 ) -> None:

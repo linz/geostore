@@ -161,3 +161,22 @@ aws lambda invoke \
 
    {"statusCode": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
    ```
+
+## Import Status Endpoint Usage Examples
+
+- Set Import Status Endpoint Lambda function name
+  
+   ```bash
+   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
+   ```
+- Example of get Import Status request
+
+   ```console
+   $ aws lambda invoke \
+      --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
+      --invocation-type RequestResponse \
+      --payload '{"httpMethod": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
+      /dev/stdout
+
+   {"statusCode": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "upload":{"status": "Pending", "errors":[]}}}
+   ```
