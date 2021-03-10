@@ -12,11 +12,11 @@ from mypy_boto3_s3 import S3Client
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.check_files_checksums.task import (
+from backend.check_files_checksums.task import main
+from backend.check_files_checksums.utils import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
     get_job_offset,
-    main,
     validate_url_multihash,
 )
 from backend.processing_assets_model import ProcessingAssetsModel
