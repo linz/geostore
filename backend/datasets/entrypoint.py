@@ -3,7 +3,8 @@ Dataset endpoint Lambda function.
 """
 from typing import Callable, MutableMapping
 
-from ..api_responses import JsonObject, handle_request
+from ..api_responses import handle_request
+from ..types import JsonObject
 from .create import create_dataset
 from .delete import delete_dataset
 from .get import handle_get

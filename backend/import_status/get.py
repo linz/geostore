@@ -5,8 +5,9 @@ import logging
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..api_responses import JsonObject, error_response, success_response
+from ..api_responses import error_response, success_response
 from ..log import set_up_logging
+from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")

@@ -1,8 +1,7 @@
-from typing import Any, MutableMapping
-
 from jsonschema import validate  # type: ignore[import]
 
 from ..processing_assets_model import ProcessingAssetsModel
+from ..types import JsonObject
 
 # From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
 # TODO: Set MAX_ITERATION_SIZE to 10_000 once we figure out [how to set a numeric
@@ -38,8 +37,6 @@ EVENT_SCHEMA = {
     "required": ["dataset_id", "metadata_url", "type", "version_id"],
     "additionalProperties": False,
 }
-
-JsonObject = MutableMapping[str, Any]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

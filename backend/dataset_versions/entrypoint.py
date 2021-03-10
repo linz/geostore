@@ -3,7 +3,8 @@ Dataset-versions endpoint Lambda function.
 """
 from typing import Callable, MutableMapping
 
-from ..api_responses import JsonObject, handle_request
+from ..api_responses import handle_request
+from ..types import JsonObject
 from .create import create_dataset_version
 
 REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
