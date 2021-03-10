@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps
@@ -11,6 +10,10 @@ from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetsModel
 from .utils import ChecksumMismatchError, get_job_offset, validate_url_multihash
 
+LOGGER = set_up_logging(__name__)
+
+S3_CLIENT = boto3.client("s3")
+
 
 def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
@@ -20,21 +23,18 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def success(logger: logging.Logger) -> int:
-    logger.info(dumps({"success": True, "message": ""}))
+def success() -> int:
+    LOGGER.info(dumps({"success": True, "message": ""}))
     return 0
 
 
-def failure(content: Mapping[str, Any], logger: logging.Logger) -> int:
-    logger.error(dumps({"success": False, **content}))
+def failure(content: Mapping[str, Any]) -> int:
+    LOGGER.error(dumps({"success": False, **content}))
     return 0
 
 
 def main() -> int:
-    logger = set_up_logging(__name__)
-
     arguments = parse_arguments()
-    s3_client = boto3.client("s3")
 
     index = arguments.first_item + get_job_offset()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
@@ -48,19 +48,18 @@ def main() -> int:
                 "error": {"message": error.msg, "cause": error.cause},
                 "parameters": {"hash_key": hash_key, "range_key": range_key},
             },
-            logger,
         )
 
     try:
-        validate_url_multihash(item.url, item.multihash, s3_client)
+        validate_url_multihash(item.url, item.multihash, S3_CLIENT)
     except ChecksumMismatchError as error:
         content = {
             "message": f"Checksum mismatch: expected {item.multihash[4:]},"
             f" got {error.actual_hex_digest}"
         }
-        return failure(content, logger)
+        return failure(content)
 
-    return success(logger)
+    return success()
 
 
 if __name__ == "__main__":

@@ -2,9 +2,8 @@ import logging
 import sys
 from io import BytesIO
 from os import environ
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
-import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
 from botocore.stub import Stubber  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
@@ -64,13 +63,11 @@ def should_raise_exception_when_checksum_does_not_match(s3_client: S3Client) -> 
         )
 
 
-@patch("boto3.client")
 @patch("backend.check_files_checksums.task.validate_url_multihash")
 @patch("backend.check_files_checksums.task.ProcessingAssetsModel")
 def should_validate_given_index(
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
-    s3_client_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -103,10 +100,7 @@ def should_validate_given_index(
         f"--version-id={version_id}",
         "--first-item=0",
     ]
-    s3_client = boto3.client("s3")
-    with patch.object(logger, "info") as info_log_mock, Stubber(s3_client) as stubber:
-        s3_client_mock.return_value = stubber
-
+    with patch.object(logger, "info") as info_log_mock:
         # Then
         with subtests.test(msg="Return code"):
             assert main() == 0
@@ -115,7 +109,7 @@ def should_validate_given_index(
             info_log_mock.assert_any_call('{"success": true, "message": ""}')
 
     with subtests.test(msg="Validate checksums"):
-        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash, stubber)])
+        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash, ANY)])
 
 
 @patch("backend.check_files_checksums.task.validate_url_multihash")
