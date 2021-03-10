@@ -12,7 +12,7 @@ from ..dataset_model import DatasetModel
 from ..environment import ENV
 from ..log import set_up_logging
 
-stepfunctions_client = boto3.client("stepfunctions")
+STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 ssm_client = boto3.client("ssm")
 
 DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
@@ -66,7 +66,7 @@ def create_dataset_version(payload: JsonObject) -> JsonObject:
     }
     state_machine_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION)
 
-    step_functions_response = stepfunctions_client.start_execution(
+    step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,
         name=dataset_version_id,
         input=json.dumps(step_functions_input),

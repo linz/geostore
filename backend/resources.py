@@ -8,6 +8,7 @@ class ResourceName(Enum):
     DATASETS_TABLE_NAME = f"{ENV}-datasets"
     DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset_versions-endpoint"
+    IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import_status-endpoint"
     PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
     STORAGE_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake"
     VALIDATION_RESULTS_TABLE_NAME = f"{ENV}-validation-results"
