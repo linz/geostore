@@ -16,24 +16,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def should_return_required_property_error_when_missing_http_method() -> None:
-    response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
-
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'httpMethod' is a required property"},
-    }
-
-
-def should_return_required_property_error_when_missing_body() -> None:
-    response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
-
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'body' is a required property"},
-    }
-
-
 def should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:
     # Given a missing "type" attribute in the body
     body = {"id": any_dataset_id(), "type": any_valid_dataset_type()}
