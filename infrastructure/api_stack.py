@@ -3,9 +3,10 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_iam, aws_lambda, aws_ssm, aws_stepfunctions, core
+from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions, core
 from aws_cdk.aws_iam import PolicyStatement
-from aws_cdk.core import Duration, Tags
+
+from infrastructure.constructs.lambda_endpoint import LambdaEndpoint
 
 
 class APIStack(core.Stack):
@@ -28,47 +29,45 @@ class APIStack(core.Stack):
         # ### API ENDPOINTS ########################################################################
         ############################################################################################
 
-        endpoints = ("datasets", "dataset_versions", "import_status")
+        datasets_endpoint_lambda = LambdaEndpoint(
+            self,
+            f"{deploy_env}-datasets-endpoint-function",
+            application_layer="api",
+            deploy_env=deploy_env,
+            users_role=users_role,
+            endpoint_name="datasets",
+        ).lambda_function
 
-        for endpoint in endpoints:
-            endpoint_function = aws_lambda.Function(
-                self,
-                f"{deploy_env}-{endpoint}-endpoint-function",
-                function_name=f"{deploy_env}-{endpoint}-endpoint",
-                handler=f"backend.{endpoint}.entrypoint.lambda_handler",
-                runtime=aws_lambda.Runtime.PYTHON_3_8,
-                timeout=Duration.seconds(60),
-                code=aws_lambda.Code.from_asset(
-                    path=".",
-                    bundling=core.BundlingOptions(
-                        # pylint:disable=no-member
-                        image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                        command=["backend/bundle.bash", f"{endpoint}"],
-                    ),
-                ),
-            )
+        dataset_versions_endpoint_lambda = LambdaEndpoint(
+            self,
+            f"{deploy_env}-dataset_versions-endpoint-function",
+            application_layer="api",
+            deploy_env=deploy_env,
+            users_role=users_role,
+            endpoint_name="dataset_versions",
+        ).lambda_function
 
-            endpoint_function.add_environment("DEPLOY_ENV", deploy_env)
-            endpoint_function.grant_invoke(users_role)  # type: ignore[arg-type]
+        state_machine_parameter.grant_read(dataset_versions_endpoint_lambda)
+        state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
-            datasets_table.grant_read_write_data(endpoint_function)
-            datasets_table.grant(
-                endpoint_function, "dynamodb:DescribeTable"
-            )  # required by pynamodb
+        for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
+            datasets_table.grant_read_write_data(function)
+            datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
 
-            Tags.of(endpoint_function).add("ApplicationLayer", "api")
+        import_status_endpoint_lambda = LambdaEndpoint(
+            self,
+            f"{deploy_env}-import_status-endpoint-function",
+            application_layer="api",
+            deploy_env=deploy_env,
+            users_role=users_role,
+            endpoint_name="import_status",
+        ).lambda_function
 
-            # dataset_versions specific permissions
-            if endpoint == "dataset_versions":
-                state_machine_parameter.grant_read(endpoint_function)
-                state_machine.grant_start_execution(endpoint_function)
-
-            if endpoint == "import_status":
-                state_machine.grant_read(endpoint_function)
-                assert endpoint_function.role is not None
-                endpoint_function.role.add_to_policy(
-                    PolicyStatement(
-                        resources=["*"],
-                        actions=["s3:DescribeJob"],
-                    ),
-                )
+        state_machine.grant_read(import_status_endpoint_lambda)
+        assert import_status_endpoint_lambda.role is not None
+        import_status_endpoint_lambda.role.add_to_policy(
+            PolicyStatement(
+                resources=["*"],
+                actions=["s3:DescribeJob"],
+            ),
+        )
