@@ -26,24 +26,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def should_fail_if_request_not_containing_method() -> None:
-    response = entrypoint.lambda_handler({"body": {}}, any_lambda_context())
-
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'httpMethod' is a required property"},
-    }
-
-
-def should_fail_if_request_not_containing_body() -> None:
-    response = entrypoint.lambda_handler({"httpMethod": "POST"}, any_lambda_context())
-
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'body' is a required property"},
-    }
-
-
 @mark.infrastructure
 def should_create_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
