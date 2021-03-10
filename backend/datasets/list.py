@@ -1,7 +1,8 @@
 """List all datasets function."""
 
-from ..api_responses import JsonObject, success_response
+from ..api_responses import success_response
 from ..dataset_model import DatasetModel
+from ..types import JsonObject
 
 
 def list_datasets() -> JsonObject:

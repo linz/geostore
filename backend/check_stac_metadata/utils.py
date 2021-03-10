@@ -14,29 +14,37 @@ from jsonschema import (  # type: ignore[import]
 from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..processing_assets_model import ProcessingAssetsModel
+from ..types import JsonObject
 from ..validation_results_model import ValidationResultsModel
 
 S3_URL_PREFIX = "s3://"
 SCRIPT_DIR = dirname(__file__)
-COLLECTION_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
-CATALOG_SCHEMA_PATH = join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
+
+
+def get_schema_dict(path: str) -> JsonObject:
+    with open(path) as file_pointer:
+        schema_dict: JsonObject = load(file_pointer)
+        return schema_dict
 
 
 class STACSchemaValidator(Draft7Validator):
     def __init__(self) -> None:
-        with open(COLLECTION_SCHEMA_PATH) as collection_schema_file:
-            collection_schema = load(collection_schema_file)
+        schema_store = {}
+        collection_schema = get_schema_dict(
+            join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
+        )
 
-        with open(CATALOG_SCHEMA_PATH) as catalog_schema_file:
-            catalog_schema = load(catalog_schema_file)
-
-        # Normalize URLs the same way as jsonschema does
         uri_dictionary = URIDict()
-        schema_store = {
-            uri_dictionary.normalize(collection_schema["$id"]): collection_schema,
-            uri_dictionary.normalize(catalog_schema["$id"]): catalog_schema,
-        }
+        for schema in [
+            get_schema_dict(join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")),
+            get_schema_dict(
+                join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog-core.json")
+            ),
+            collection_schema,
+        ]:
+            # Normalize URLs the same way as jsonschema does
+            schema_store[uri_dictionary.normalize(schema["$id"])] = schema
 
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
 
