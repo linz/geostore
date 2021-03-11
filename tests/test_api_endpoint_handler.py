@@ -3,7 +3,8 @@ from unittest.mock import MagicMock
 
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.api_responses import JsonObject, handle_request
+from backend.api_responses import handle_request
+from backend.types import JsonObject
 
 
 def should_return_required_property_error_when_missing_http_method() -> None:

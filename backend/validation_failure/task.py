@@ -1,6 +1,4 @@
-from typing import Any, MutableMapping
-
-JsonObject = MutableMapping[str, Any]
+from ..types import JsonObject
 
 
 def lambda_handler(_event: JsonObject, _context: bytes) -> JsonObject:
