@@ -11,4 +11,5 @@ class ResourceName(Enum):
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import_status-endpoint"
     PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
     STORAGE_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake"
+    USERS_ROLE_NAME = f"{ENV}-data-lake-users"
     VALIDATION_RESULTS_TABLE_NAME = f"{ENV}-validation-results"

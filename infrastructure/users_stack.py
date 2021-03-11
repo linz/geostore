@@ -4,6 +4,8 @@ from typing import Any
 from aws_cdk import aws_iam, core
 from aws_cdk.core import Duration, Tags
 
+from backend.resources import ResourceName
+
 
 class UsersStack(core.Stack):
     def __init__(self, scope: core.Construct, stack_id: str, **kwargs: Any) -> None:
@@ -21,6 +23,7 @@ class UsersStack(core.Stack):
         self.users_role = aws_iam.Role(
             self,
             "users-role",
+            role_name=ResourceName.USERS_ROLE_NAME.value,
             assumed_by=principals,  # type: ignore[arg-type]
             max_session_duration=Duration.hours(12),
         )
