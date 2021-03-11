@@ -21,4 +21,7 @@ updates:
 - package-ecosystem: pip
   directory: /
   schedule:
-    interval: daily
+    interval: weekly
+    day: friday
+    time: 15:00
+    timezone: Pacific/Auckland
