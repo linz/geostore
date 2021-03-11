@@ -2061,6 +2061,17 @@ python-versions = ">=3.5"
 pytest = "*"
 
 [[package]]
+name = "pytest-socket"
+version = "0.3.5"
+description = "Pytest Plugin to disable socket calls during tests"
+category = "dev"
+optional = false
+python-versions = ">=3.5,<4.0"
+
+[package.dependencies]
+pytest = ">=3.6.3"
+
+[[package]]
 name = "pytest-subtests"
 version = "0.4.0"
 description = "unittest subTest() support and subtests fixture"
@@ -2358,7 +2369,7 @@ import_status = ["boto3", "jsonschema"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "55e5fd2ad98513f2046c70dd69a5c36f7c76d8730c5a2a9a0e918463bd04460e"
+content-hash = "07b85af23609673ce3dc82e68ff9518b263897374ce465ba35fd3937557a4131"
 
 [metadata.files]
 appdirs = [
@@ -2965,6 +2976,10 @@ pytest = [
 pytest-randomly = [
     {file = "pytest-randomly-3.5.0.tar.gz", hash = "sha256:440cec143fd9b0adeb072006c71e0294402a2bc2ccd08079c2341087ba4cf2d1"},
     {file = "pytest_randomly-3.5.0-py3-none-any.whl", hash = "sha256:9db10d160237f3f8ee60cef72e4cb9ea88d2893c9dd5c8aa334b060cdeb67c3a"},
+]
+pytest-socket = [
+    {file = "pytest-socket-0.3.5.tar.gz", hash = "sha256:b30470fe8a0ecdbfdbfc35c1e4ac9c823f0348181570792e71ac234e07c6340f"},
+    {file = "pytest_socket-0.3.5-py3-none-any.whl", hash = "sha256:405af0fcc934a82d3a4a3f45c7b059f8a353a30b4324bcd81834393bf47aae9f"},
 ]
 pytest-subtests = [
     {file = "pytest-subtests-0.4.0.tar.gz", hash = "sha256:8d9e2c1d1dce11f7b7d2c9d09202ebfc7757b7ff0cac9b72ad328edfe7ee037b"},

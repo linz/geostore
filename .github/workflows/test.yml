@@ -130,9 +130,17 @@ jobs:
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
         poetry run cdk deploy --all --require-approval never
 
-    - name: Run tests
+    - name: Run non-infrastructure tests offline
       run: >
         poetry run coverage run --module pytest
+        --disable-socket -m 'not infrastructure'
+        --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
+        tests
+
+    - name: Run infrastructure tests online
+      run: >
+        poetry run coverage run --append --module pytest
+        -m infrastructure
         --randomly-dont-reset-seed "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
         tests
 
