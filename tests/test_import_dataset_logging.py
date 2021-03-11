@@ -3,7 +3,6 @@ import logging
 from json import dumps
 from unittest.mock import MagicMock, patch
 
-import _pytest
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -11,6 +10,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.import_dataset.task import lambda_handler
 
 from .aws_utils import ProcessingAsset, any_lambda_context, any_s3_url
+from .general_generators import any_etag
 from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 
@@ -22,13 +22,12 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.import_dataset.task")
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
+    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_payload(
         self,
-        create_job_mock: MagicMock,
-        storage_bucket_teardown: _pytest.fixtures.FixtureDef[
-            object
-        ],  # pylint:disable=unused-argument
+        head_object_mock: MagicMock,
+        create_job_mock: MagicMock,  # pylint:disable=unused-argument
     ) -> None:
         # Given
 
@@ -37,11 +36,12 @@ class TestLogging:
             "metadata_url": any_s3_url(),
             "version_id": any_dataset_version_id(),
         }
+        head_object_mock.return_value = {"ETag": any_etag()}
         expected_payload_log = dumps({"payload": body})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
-        ):
+        ), patch("backend.import_dataset.task.smart_open"):
 
             # When
             lambda_handler(body, any_lambda_context())
@@ -68,19 +68,19 @@ class TestLogging:
             logger_mock.assert_any_call(expected_log)
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
+    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_assets_added_to_manifest(
         self,
-        create_job_mock: MagicMock,
+        head_object_mock: MagicMock,
+        create_job_mock: MagicMock,  # pylint:disable=unused-argument
         subtests: SubTests,
-        storage_bucket_teardown: _pytest.fixtures.FixtureDef[
-            object
-        ],  # pylint:disable=unused-argument
     ) -> None:
         # Given
         dataset_id = any_dataset_id()
         version_id = any_dataset_version_id()
         asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
+        head_object_mock.return_value = {"ETag": any_etag()}
 
         with ProcessingAsset(
             asset_id=asset_id, multihash=None, url=any_s3_url()
@@ -95,7 +95,9 @@ class TestLogging:
                 {"Adding file to manifest": metadata_processing_asset.url}
             )
 
-            with patch.object(self.logger, "debug") as logger_mock:
+            with patch.object(self.logger, "debug") as logger_mock, patch(
+                "backend.import_dataset.task.smart_open"
+            ):
                 # When
                 lambda_handler(
                     {
@@ -113,20 +115,20 @@ class TestLogging:
                     logger_mock.assert_any_call(expected_metadata_log)
 
     @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
+    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_s3_batch_response(
-        self,
-        create_job_mock: MagicMock,
-        storage_bucket_teardown: _pytest.fixtures.FixtureDef[
-            object
-        ],  # pylint:disable=unused-argument
+        self, head_object_mock: MagicMock, create_job_mock: MagicMock
     ) -> None:
         # Given
 
         create_job_mock.return_value = response = {"JobId": "Some Response"}
         expected_response_log = json.dumps({"s3 batch response": response})
+        head_object_mock.return_value = {"ETag": any_etag()}
 
-        with patch.object(self.logger, "debug") as logger_mock:
+        with patch.object(self.logger, "debug") as logger_mock, patch(
+            "backend.import_dataset.task.smart_open"
+        ):
 
             # When
             lambda_handler(

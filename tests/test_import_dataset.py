@@ -6,7 +6,6 @@ from io import BytesIO
 from json import dumps
 from urllib.parse import urlparse
 
-import _pytest
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_sts import STSClient
@@ -21,6 +20,9 @@ from .aws_utils import (
     S3Object,
     any_lambda_context,
     any_s3_url,
+    delete_s3_key,
+    delete_s3_prefix,
+    s3_object_arn_to_key,
 )
 from .general_generators import any_file_contents, any_safe_filename
 from .stac_generators import (
@@ -67,7 +69,6 @@ def should_batch_copy_files_to_storage(
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,
-    storage_bucket_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with an asset
@@ -134,8 +135,19 @@ def should_batch_copy_files_to_storage(
                 assert copy_job["Job"]["Status"] == "Complete", copy_job
 
                 # Then
-                for key in [metadata_processing_asset.url, processing_asset.url]:
-                    s3_client.head_object(
-                        Bucket=ResourceName.STORAGE_BUCKET_NAME.value,
-                        Key=f"{dataset_id}/{version_id}/{urlparse(key).path[1:]}",
+                for url in [metadata_processing_asset.url, processing_asset.url]:
+                    delete_s3_key(
+                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        f"{dataset_id}/{version_id}/{urlparse(url).path[1:]}",
+                        s3_client,
                     )
+
+    delete_s3_key(
+        ResourceName.STORAGE_BUCKET_NAME.value,
+        s3_object_arn_to_key(copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]),
+        s3_client,
+    )
+
+    delete_s3_prefix(
+        ResourceName.STORAGE_BUCKET_NAME.value, copy_job["Job"]["Report"]["Prefix"], s3_client
+    )
