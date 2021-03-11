@@ -30,6 +30,7 @@ from .aws_utils import (
     S3Object,
     any_s3_url,
 )
+from .file_utils import json_dict_to_file_object
 from .general_generators import (
     any_error_message,
     any_file_contents,
@@ -78,15 +79,15 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     version_id = any_dataset_version_id()
 
     with S3Object(
-        file_object=BytesIO(initial_bytes=dumps(root_stac_object).encode()),
+        file_object=json_dict_to_file_object(root_stac_object),
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as root_s3_object, S3Object(
-        file_object=BytesIO(initial_bytes=dumps(deepcopy(MINIMAL_VALID_STAC_OBJECT)).encode()),
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=valid_child_key,
     ) as valid_child_s3_object, S3Object(
-        file_object=BytesIO(initial_bytes=dumps(invalid_stac_object).encode()),
+        file_object=json_dict_to_file_object(invalid_stac_object),
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=invalid_child_key,
     ) as invalid_child_s3_object:
