@@ -132,17 +132,13 @@ jobs:
 
     - name: Run non-infrastructure tests offline
       run: >
-        poetry run coverage run --module pytest
-        --disable-socket -m 'not infrastructure'
-        "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
-        tests
+        poetry run
+        pytest --disable-socket -m 'not infrastructure' "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
 
     - name: Run infrastructure tests online
       run: >
-        poetry run coverage run --append --module pytest
-        -m infrastructure
-        "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
-        tests
+        poetry run
+        pytest --cov-append -m infrastructure "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
 
     - name: Verify test coverage
       run: |

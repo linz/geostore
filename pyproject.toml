@@ -123,10 +123,12 @@ mypy = "*"
 pre-commit = "*"
 pylint = "*"
 pytest = "*"
+pytest-cov = "*"
 pytest-randomly = "*"
 pytest-socket = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
+pytest-xdist = {version = "*", extras = ["psutil"]}
 shellcheck-py = "*"
 smart-open = {version = "*", extras = ["s3"]}
 
@@ -188,7 +190,7 @@ import_status = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--randomly-dont-reset-seed"
+addopts = "--cov=backend --cov-report= --numprocesses=auto --randomly-dont-reset-seed"
 markers = [
     "infrastructure: requires a deployed infrastructure",
 ]
