@@ -122,7 +122,7 @@ def should_return_single_dataset(
     subtests: SubTests,
 ) -> None:
     # Given a dataset instance
-    dataset_id = "111abc"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {"id": dataset_id, "type": dataset_type}
@@ -280,7 +280,7 @@ def should_update_dataset(
     datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
     subtests: SubTests,
 ) -> None:
-    dataset_id = "111abc"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
     new_dataset_title = "New Dataset ABC"
 
