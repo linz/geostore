@@ -279,7 +279,7 @@ class TestsWithLogger:
             {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
         )
 
-        STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+        STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
             parent_url
         )
 
@@ -317,7 +317,7 @@ class TestsWithLogger:
             call_limit=3,
         )
 
-        STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+        STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
             root_url
         )
 
@@ -337,7 +337,7 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
         ):
-            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
                 root_url
             )
 
@@ -346,7 +346,7 @@ class TestsWithLogger:
         url_reader = MockJSONURLReader({})
 
         with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
                 https_url
             )
 
@@ -366,7 +366,7 @@ class TestsWithLogger:
             AssertionError,
             match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
         ):
-            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
                 root_url
             )
 
@@ -400,7 +400,7 @@ class TestsWithLogger:
         ]
         url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        validator = STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory())
+        validator = STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger)
 
         validator.validate(metadata_url)
 
