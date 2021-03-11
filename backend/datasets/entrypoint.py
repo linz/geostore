@@ -12,8 +12,6 @@ from .update import update_dataset
 
 # TODO: implement GET response paging
 # TODO: allow Dataset delete only if no Dataset Version exists
-
-
 REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
     "DELETE": delete_dataset,
     "GET": handle_get,
