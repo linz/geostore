@@ -30,11 +30,11 @@ def get_schema_dict(path: str) -> JsonObject:
 
 class STACSchemaValidator(Draft7Validator):
     def __init__(self) -> None:
-        schema_store = {}
         collection_schema = get_schema_dict(
             join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
         )
 
+        schema_store = {}
         uri_dictionary = URIDict()
         for schema in [
             get_schema_dict(join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")),
