@@ -65,12 +65,12 @@ class STACDatasetValidator:
     def __init__(
         self,
         url_reader: Callable[[str], StreamingBody],
-        logger: Logger,
         validation_result_factory: ValidationResultFactory,
+        logger: Logger,
     ):
         self.url_reader = url_reader
-        self.logger = logger
         self.validation_result_factory = validation_result_factory
+        self.logger = logger
 
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []

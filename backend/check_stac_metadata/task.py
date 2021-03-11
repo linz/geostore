@@ -32,7 +32,7 @@ def main() -> int:
     url_reader = s3_url_reader()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
     validation_result_factory = ValidationResultFactory(hash_key)
-    validator = STACDatasetValidator(url_reader, LOGGER, validation_result_factory)
+    validator = STACDatasetValidator(url_reader, validation_result_factory, LOGGER)
 
     try:
         validator.validate(arguments.metadata_url)
