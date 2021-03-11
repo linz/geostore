@@ -158,14 +158,10 @@ def should_return_all_datasets(
         with subtests.test(msg="status code"):
             assert response["statusCode"] == 200
 
-        with subtests.test(msg="body length"):
-            assert len(response["body"]) == 2
-
-        with subtests.test(msg="ID"):
-            assert response["body"][0]["id"] in (
-                first_dataset.dataset_id,
-                second_dataset.dataset_id,
-            )
+        actual_dataset_ids = [entry["id"] for entry in response["body"]]
+        for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
+            with subtests.test(msg=f"ID {dataset_id}"):
+                assert dataset_id in actual_dataset_ids
 
 
 @mark.infrastructure
