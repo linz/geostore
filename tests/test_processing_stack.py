@@ -5,7 +5,6 @@ from copy import deepcopy
 from hashlib import sha256
 from io import BytesIO
 
-import _pytest
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
@@ -67,9 +66,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,
-    processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
-        object
-    ],  # pylint:disable=unused-argument
     subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
