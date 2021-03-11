@@ -17,30 +17,22 @@ from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultsModel
 
-S3_URL_PREFIX = "s3://"
-SCRIPT_DIR = dirname(__file__)
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
-
-
-def get_schema_dict(path: str) -> JsonObject:
-    with open(path) as file_pointer:
-        schema_dict: JsonObject = load(file_pointer)
-        return schema_dict
 
 
 class STACSchemaValidator(Draft7Validator):
     def __init__(self) -> None:
-        schema_store = {}
-        collection_schema = get_schema_dict(
-            join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
+        self.script_dir = dirname(__file__)
+
+        collection_schema = self.get_schema_dict(
+            "stac-spec/collection-spec/json-schema/collection.json"
         )
 
+        schema_store = {}
         uri_dictionary = URIDict()
         for schema in [
-            get_schema_dict(join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")),
-            get_schema_dict(
-                join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog-core.json")
-            ),
+            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog.json"),
+            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog-core.json"),
             collection_schema,
         ]:
             # Normalize URLs the same way as jsonschema does
@@ -49,6 +41,11 @@ class STACSchemaValidator(Draft7Validator):
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
 
         super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
+
+    def get_schema_dict(self, path: str) -> JsonObject:
+        with open(join(self.script_dir, path)) as file_pointer:
+            schema_dict: JsonObject = load(file_pointer)
+            return schema_dict
 
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
@@ -65,12 +62,12 @@ class STACDatasetValidator:
     def __init__(
         self,
         url_reader: Callable[[str], StreamingBody],
-        logger: Logger,
         validation_result_factory: ValidationResultFactory,
+        logger: Logger,
     ):
         self.url_reader = url_reader
-        self.logger = logger
         self.validation_result_factory = validation_result_factory
+        self.logger = logger
 
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
@@ -79,7 +76,8 @@ class STACDatasetValidator:
         self.validator = STACSchemaValidator()
 
     def validate(self, url: str) -> None:
-        assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
+        s3_url_prefix = "s3://"
+        assert url[:5] == s3_url_prefix, f"URL doesn't start with “{s3_url_prefix}”: “{url}”"
 
         self.traversed_urls.append(url)
 
