@@ -5,7 +5,6 @@ from contextlib import nullcontext
 from copy import deepcopy
 from hashlib import sha256
 from io import BytesIO
-from json import dumps
 from typing import ContextManager, Optional
 
 import _pytest
@@ -22,6 +21,7 @@ from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.resources import ResourceName
 
 from .aws_utils import MINIMAL_VALID_STAC_OBJECT, Dataset, S3Object
+from .file_utils import json_dict_to_file_object
 from .general_generators import (
     any_boolean,
     any_file_contents,
@@ -112,7 +112,7 @@ def should_successfully_run_dataset_version_creation_process(
             }
 
         with S3Object(
-            file_object=BytesIO(initial_bytes=dumps(metadata).encode()),
+            file_object=json_dict_to_file_object(metadata),
             bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
             key=("{}/{}.json".format(key_prefix, any_safe_filename())),
         ) as s3_metadata_file:

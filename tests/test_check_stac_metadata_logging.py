@@ -102,7 +102,7 @@ class TestLogging:
         expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
 
         with patch.object(self.logger, "debug") as logger_mock:
-            STACDatasetValidator(url_reader, self.logger, MockValidationResultFactory()).validate(
+            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
                 metadata_url
             )
 

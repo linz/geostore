@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 from json import dumps
-from typing import Callable
 from urllib.parse import urlparse
 
 import boto3
@@ -15,24 +14,20 @@ LOGGER = set_up_logging(__name__)
 S3_CLIENT = boto3.client("s3")
 
 
-def s3_url_reader() -> Callable[[str], StreamingBody]:
-    def read(href: str) -> StreamingBody:
-        parse_result = urlparse(href, allow_fragments=False)
-        bucket_name = parse_result.netloc
-        key = parse_result.path[1:]
-        response = S3_CLIENT.get_object(Bucket=bucket_name, Key=key)
-        return response["Body"]
-
-    return read
+def s3_url_reader(url: str) -> StreamingBody:
+    parse_result = urlparse(url, allow_fragments=False)
+    bucket_name = parse_result.netloc
+    key = parse_result.path[1:]
+    response = S3_CLIENT.get_object(Bucket=bucket_name, Key=key)
+    return response["Body"]
 
 
 def main() -> int:
     arguments = parse_arguments(LOGGER)
 
-    url_reader = s3_url_reader()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
     validation_result_factory = ValidationResultFactory(hash_key)
-    validator = STACDatasetValidator(url_reader, LOGGER, validation_result_factory)
+    validator = STACDatasetValidator(s3_url_reader, validation_result_factory, LOGGER)
 
     try:
         validator.validate(arguments.metadata_url)
