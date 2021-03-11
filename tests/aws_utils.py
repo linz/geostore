@@ -11,6 +11,7 @@ from uuid import uuid4
 import boto3
 from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
+from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
@@ -197,28 +198,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
-        version_list = self._get_object_versions()
-        self._delete_object_versions(version_list)
-
-    def _delete_object_versions(self, version_list: List[ObjectIdentifierTypeDef]) -> None:
-        for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
-            response = self._s3_client.delete_objects(
-                Bucket=self.bucket_name,
-                Delete=DeleteTypeDef(Objects=version_list[index : index + DELETE_OBJECTS_MAX_KEYS]),
-            )
-            print(response)
-
-    def _get_object_versions(self) -> List[ObjectIdentifierTypeDef]:
-        version_list: List[ObjectIdentifierTypeDef] = []
-        object_versions_paginator = self._s3_client.get_paginator("list_object_versions")
-        for object_versions_page in object_versions_paginator.paginate(Bucket=self.bucket_name):
-            for marker in object_versions_page.get("DeleteMarkers", []):
-                if marker["Key"] == self.key:
-                    version_list.append({"Key": self.key, "VersionId": marker["VersionId"]})
-            for version in object_versions_page.get("Versions", []):
-                if version["Key"] == self.key:
-                    version_list.append({"Key": self.key, "VersionId": version["VersionId"]})
-        return version_list
+        delete_s3_key(self.bucket_name, self.key, self._s3_client)
 
 
 # Special-purpose mocks
@@ -246,3 +226,64 @@ class MockJSONURLReader(Mock):
 
 class MockValidationResultFactory(Mock):
     pass
+
+
+# Utility functions
+
+
+def delete_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
+    version_list = get_s3_key_versions(bucket_name, key, s3_client)
+    delete_s3_versions(bucket_name, version_list, s3_client)
+
+
+def delete_s3_prefix(bucket_name: str, prefix: str, s3_client: S3Client) -> None:
+    version_list = get_s3_prefix_versions(bucket_name, prefix, s3_client)
+    delete_s3_versions(bucket_name, version_list, s3_client)
+
+
+def delete_s3_versions(
+    bucket_name: str, version_list: List[ObjectIdentifierTypeDef], s3_client: S3Client
+) -> None:
+    for index in range(0, len(version_list), DELETE_OBJECTS_MAX_KEYS):
+        response = s3_client.delete_objects(
+            Bucket=bucket_name,
+            Delete=DeleteTypeDef(Objects=version_list[index : index + DELETE_OBJECTS_MAX_KEYS]),
+        )
+        print(response)
+
+
+def get_s3_key_versions(
+    bucket_name: str, key: str, s3_client: S3Client
+) -> List[ObjectIdentifierTypeDef]:
+    version_list: List[ObjectIdentifierTypeDef] = []
+    object_versions_paginator = s3_client.get_paginator("list_object_versions")
+    for object_versions_page in object_versions_paginator.paginate(Bucket=bucket_name, Prefix=key):
+        for marker in object_versions_page.get("DeleteMarkers", []):
+            if marker["Key"] == key:
+                version_list.append({"Key": marker["Key"], "VersionId": marker["VersionId"]})
+        for version in object_versions_page.get("Versions", []):
+            if version["Key"] == key:
+                version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
+    assert version_list, version_list
+    return version_list
+
+
+def get_s3_prefix_versions(
+    bucket_name: str, prefix: str, s3_client: S3Client
+) -> List[ObjectIdentifierTypeDef]:
+    version_list: List[ObjectIdentifierTypeDef] = []
+    object_versions_paginator = s3_client.get_paginator("list_object_versions")
+    for object_versions_page in object_versions_paginator.paginate(
+        Bucket=bucket_name, Prefix=prefix
+    ):
+        for marker in object_versions_page.get("DeleteMarkers", []):
+            version_list.append({"Key": marker["Key"], "VersionId": marker["VersionId"]})
+        for version in object_versions_page.get("Versions", []):
+            version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
+    assert version_list, version_list
+    return version_list
+
+
+def s3_object_arn_to_key(arn: str) -> str:
+    bucket_and_key = arn.split(sep=":", maxsplit=5)[-1]
+    return bucket_and_key.split(sep="/", maxsplit=1)[-1]

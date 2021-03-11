@@ -74,3 +74,8 @@ def any_dictionary_key() -> str:
 
 def any_boolean() -> bool:
     return bool(getrandbits(1))
+
+
+def any_etag() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
