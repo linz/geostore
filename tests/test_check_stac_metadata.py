@@ -90,9 +90,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         file_object=json_dict_to_file_object(invalid_stac_object),
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=invalid_child_key,
-    ) as invalid_child_s3_object, subtests.test(
-        msg="Exit code"
-    ):
+    ) as invalid_child_s3_object:
         sys.argv = [
             any_program_name(),
             f"--metadata-url={root_s3_object.url}",
