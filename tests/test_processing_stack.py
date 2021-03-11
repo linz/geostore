@@ -65,7 +65,6 @@ def should_successfully_run_dataset_version_creation_process(
     lambda_client: LambdaClient,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
     processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
         object
     ],  # pylint:disable=unused-argument
