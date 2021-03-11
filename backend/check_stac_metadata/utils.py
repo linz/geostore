@@ -17,7 +17,6 @@ from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultsModel
 
-S3_URL_PREFIX = "s3://"
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
 
 
@@ -77,7 +76,8 @@ class STACDatasetValidator:
         self.validator = STACSchemaValidator()
 
     def validate(self, url: str) -> None:
-        assert url[:5] == S3_URL_PREFIX, f"URL doesn't start with “{S3_URL_PREFIX}”: “{url}”"
+        s3_url_prefix = "s3://"
+        assert url[:5] == s3_url_prefix, f"URL doesn't start with “{s3_url_prefix}”: “{url}”"
 
         self.traversed_urls.append(url)
 
