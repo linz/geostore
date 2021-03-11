@@ -18,29 +18,22 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResultsModel
 
 S3_URL_PREFIX = "s3://"
-SCRIPT_DIR = dirname(__file__)
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
-
-
-def get_schema_dict(path: str) -> JsonObject:
-    with open(path) as file_pointer:
-        schema_dict: JsonObject = load(file_pointer)
-        return schema_dict
 
 
 class STACSchemaValidator(Draft7Validator):
     def __init__(self) -> None:
-        collection_schema = get_schema_dict(
-            join(SCRIPT_DIR, "stac-spec/collection-spec/json-schema/collection.json")
+        self.script_dir = dirname(__file__)
+
+        collection_schema = self.get_schema_dict(
+            "stac-spec/collection-spec/json-schema/collection.json"
         )
 
         schema_store = {}
         uri_dictionary = URIDict()
         for schema in [
-            get_schema_dict(join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog.json")),
-            get_schema_dict(
-                join(SCRIPT_DIR, "stac-spec/catalog-spec/json-schema/catalog-core.json")
-            ),
+            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog.json"),
+            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog-core.json"),
             collection_schema,
         ]:
             # Normalize URLs the same way as jsonschema does
@@ -49,6 +42,11 @@ class STACSchemaValidator(Draft7Validator):
         resolver = RefResolver.from_schema(collection_schema, store=schema_store)
 
         super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
+
+    def get_schema_dict(self, path: str) -> JsonObject:
+        with open(join(self.script_dir, path)) as file_pointer:
+            schema_dict: JsonObject = load(file_pointer)
+            return schema_dict
 
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
