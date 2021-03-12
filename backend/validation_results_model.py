@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import JSONAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
@@ -24,7 +24,7 @@ class ValidationOutcomeIdx(
         projection = AllProjection()
 
     pk = UnicodeAttribute(hash_key=True)
-    status = UnicodeAttribute(range_key=True)
+    result = UnicodeAttribute(range_key=True)
 
 
 class ValidationResultsModel(Model):
@@ -34,7 +34,7 @@ class ValidationResultsModel(Model):
 
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
-    status = UnicodeAttribute()
-    info = UnicodeAttribute(null=True)
+    result = UnicodeAttribute()
+    details = JSONAttribute(null=True)
 
     validation_outcome_index = ValidationOutcomeIdx()

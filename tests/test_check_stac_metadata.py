@@ -108,7 +108,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{root_s3_object.url}",
             consistent_read=True,
         )
-        assert root_result.status == ValidationResult.PASSED.value
+        assert root_result.result == ValidationResult.PASSED.value
 
     with subtests.test(msg="Valid child validation results"):
         valid_child_result = ValidationResultsModel.get(
@@ -116,7 +116,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{valid_child_s3_object.url}",
             consistent_read=True,
         )
-        assert valid_child_result.status == ValidationResult.PASSED.value
+        assert valid_child_result.result == ValidationResult.PASSED.value
 
     with subtests.test(msg="Invalid child validation results"):
         invalid_child_result = ValidationResultsModel.get(
@@ -124,7 +124,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{invalid_child_s3_object.url}",
             consistent_read=True,
         )
-        assert invalid_child_result.status == ValidationResult.FAILED.value
+        assert invalid_child_result.result == ValidationResult.FAILED.value
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())

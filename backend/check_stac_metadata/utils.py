@@ -52,12 +52,14 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(self, hash_key: str):
         self.hash_key = hash_key
 
-    def save(self, url: str, status: ValidationResult, info: Optional[str] = None) -> None:
+    def save(
+        self, url: str, status: ValidationResult, details: Optional[JsonObject] = None
+    ) -> None:
         ValidationResultsModel(
             pk=self.hash_key,
             sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}",
-            status=status.value,
-            info=info,
+            result=status.value,
+            details=details,
         ).save()
 
 
@@ -90,7 +92,9 @@ class STACDatasetValidator:
         try:
             self.validator.validate(url_json)
         except ValidationError as error:
-            self.validation_result_factory.save(url, ValidationResult.FAILED, info=str(error))
+            self.validation_result_factory.save(
+                url, ValidationResult.FAILED, details={"error_message": str(error)}
+            )
             raise
         self.validation_result_factory.save(url, ValidationResult.PASSED)
 
