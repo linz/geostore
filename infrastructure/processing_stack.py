@@ -3,7 +3,7 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions, core
+from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions, core
 from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_s3 import Bucket
 from aws_cdk.aws_ssm import StringParameter
@@ -11,6 +11,7 @@ from aws_cdk.aws_ssm import StringParameter
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.resources import ResourceName
+from backend.validation_results_model import ValidationOutcomeIdx
 
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
@@ -50,6 +51,11 @@ class ProcessingStack(core.Stack):
             ResourceName.VALIDATION_RESULTS_TABLE_NAME.value,
             deploy_env=deploy_env,
             application_layer=application_layer,
+        )
+        validation_results_table.add_global_secondary_index(
+            index_name=ValidationOutcomeIdx.Meta.index_name,
+            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="status", type=aws_dynamodb.AttributeType.STRING),
         )
 
         ############################################################################################
