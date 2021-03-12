@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pynamodb.attributes import JSONAttribute, UnicodeAttribute
+from pynamodb.attributes import MapAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
@@ -35,6 +35,7 @@ class ValidationResultsModel(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     result = UnicodeAttribute()
-    details = JSONAttribute(null=True)
+    # TODO: Remove inherit-non-class when https://github.com/pynamodb/PynamoDB/issues/682 is fixed
+    details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
 
     validation_outcome_index = ValidationOutcomeIdx()
