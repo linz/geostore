@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from json import dumps, load
 from logging import Logger
 from os.path import dirname, join
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import (  # type: ignore[import]
@@ -15,7 +15,7 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
-from ..validation_results_model import ValidationResultsModel
+from ..validation_results_model import ValidationResult, ValidationResultsModel
 
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
 
@@ -52,9 +52,14 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(self, hash_key: str):
         self.hash_key = hash_key
 
-    def save(self, url: str, success: bool) -> None:
+    def save(
+        self, url: str, result: ValidationResult, details: Optional[JsonObject] = None
+    ) -> None:
         ValidationResultsModel(
-            pk=self.hash_key, sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}", success=success
+            pk=self.hash_key,
+            sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}",
+            result=result.value,
+            details=details,
         ).save()
 
 
@@ -86,10 +91,12 @@ class STACDatasetValidator:
 
         try:
             self.validator.validate(url_json)
-        except ValidationError:
-            self.validation_result_factory.save(url, False)
+        except ValidationError as error:
+            self.validation_result_factory.save(
+                url, ValidationResult.FAILED, details={"error_message": str(error)}
+            )
             raise
-        self.validation_result_factory.save(url, True)
+        self.validation_result_factory.save(url, ValidationResult.PASSED)
 
         url_prefix = get_url_before_filename(url)
 
