@@ -1,6 +1,7 @@
 """Import Status handler function."""
 import json
 import logging
+from typing import List
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -8,6 +9,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from ..api_responses import error_response, success_response
 from ..log import set_up_logging
 from ..types import JsonObject
+from ..validation_results_model import ValidationResultsModel
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -40,6 +42,14 @@ def get_import_status(event: JsonObject) -> JsonObject:
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))
 
+    step_function_validation_errors = get_step_function_validation_results(
+        step_function_resp["input"]
+    )
+
+    validation_response: JsonObject = {
+        "status": step_function_resp["status"],
+        "errors": step_function_validation_errors,
+    }
     upload_response: JsonObject = {"status": "Pending", "errors": []}
 
     # only check status of upload if step function has completed
@@ -57,11 +67,24 @@ def get_import_status(event: JsonObject) -> JsonObject:
         )
 
     response_body = {
-        "validation": {"status": step_function_resp["status"]},
+        "validation": validation_response,
         "upload": upload_response,
     }
 
     return success_response(200, response_body)
+
+
+def get_step_function_validation_results(step_function_input: str) -> List[str]:
+    input_json = json.loads(step_function_input)
+    hash_key = f"DATASET#{input_json['dataset_id']}#VERSION#{input_json['version_id']}"
+
+    errors = []
+    for error in ValidationResultsModel.validation_outcome_index.query(
+        hash_key, ValidationResultsModel.status == "Failed"
+    ):
+        errors.append(error.info)
+
+    return errors
 
 
 def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) -> JsonObject:
