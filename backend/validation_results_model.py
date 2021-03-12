@@ -1,8 +1,15 @@
+from enum import Enum
+
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
 from .resources import ResourceName
+
+
+class ValidationResult(Enum):
+    FAILED = "Failed"
+    PASSED = "Passed"
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed

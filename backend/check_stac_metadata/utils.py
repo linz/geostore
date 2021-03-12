@@ -15,7 +15,7 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
-from ..validation_results_model import ValidationResultsModel
+from ..validation_results_model import ValidationResult, ValidationResultsModel
 
 JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
 
@@ -52,11 +52,11 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(self, hash_key: str):
         self.hash_key = hash_key
 
-    def save(self, url: str, status: str, info: Optional[str] = None) -> None:
+    def save(self, url: str, status: ValidationResult, info: Optional[str] = None) -> None:
         ValidationResultsModel(
             pk=self.hash_key,
             sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}",
-            status=status,
+            status=status.value,
             info=info,
         ).save()
 
@@ -90,9 +90,9 @@ class STACDatasetValidator:
         try:
             self.validator.validate(url_json)
         except ValidationError as error:
-            self.validation_result_factory.save(url, "False", info=error)
+            self.validation_result_factory.save(url, ValidationResult.FAILED, info=str(error))
             raise
-        self.validation_result_factory.save(url, "True")
+        self.validation_result_factory.save(url, ValidationResult.PASSED)
 
         url_prefix = get_url_before_filename(url)
 
