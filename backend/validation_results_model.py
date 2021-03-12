@@ -35,7 +35,7 @@ class ValidationResultsModel(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     result = UnicodeAttribute()
-    # TODO: Remove inherit-non-class when https://github.com/pynamodb/PynamoDB/issues/682 is fixed
+    # TODO: Remove type-arg when https://github.com/pynamodb/PynamoDB/issues/682 is fixed
     details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
 
     validation_outcome_index = ValidationOutcomeIdx()
