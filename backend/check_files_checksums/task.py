@@ -2,12 +2,12 @@
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps
-from typing import Any, Mapping
 
 import boto3
 
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetsModel
+from ..types import JsonObject
 from .utils import ChecksumMismatchError, get_job_offset, validate_url_multihash
 
 LOGGER = set_up_logging(__name__)
@@ -23,7 +23,7 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def failure(content: Mapping[str, Any]) -> int:
+def failure(content: JsonObject) -> int:
     LOGGER.error(dumps({"success": False, **content}))
     return 0
 
