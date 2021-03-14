@@ -406,7 +406,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
 
     # Then the files should not be copied
     for key in [s3_metadata_file.key, asset_s3_object.key]:
-        with raises(AssertionError):
+        with subtests.test(msg=key), raises(AssertionError):
             delete_s3_key(
                 ResourceName.STORAGE_BUCKET_NAME.value,
                 f"{dataset_id}/{response_payload['body']['dataset_version']}/{key}",
