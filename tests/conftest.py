@@ -3,7 +3,6 @@ Pytest configuration file.
 """
 
 import logging
-from typing import Generator
 
 import boto3
 import pytest
@@ -15,10 +14,6 @@ from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from mypy_boto3_sts import STSClient
-
-from backend.dataset_model import DatasetModel
-from backend.processing_assets_model import ProcessingAssetsModel
-from backend.resources import ResourceName
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -62,31 +57,3 @@ def sts_client() -> STSClient:
 @pytest.fixture()
 def step_functions_client() -> SFNClient:
     return boto3.client("stepfunctions")
-
-
-@pytest.fixture()
-def datasets_db_teardown() -> Generator[None, None, None]:
-    yield
-    logger.debug("Removing all dataset instances after test")
-
-    for item in DatasetModel.scan():
-        item.delete()
-
-
-@pytest.fixture()
-def processing_assets_db_teardown() -> Generator[None, None, None]:
-    yield
-    logger.debug("Removing all asset instances after test")
-
-    for item in ProcessingAssetsModel.scan():
-        item.delete()
-
-
-@pytest.fixture()
-def storage_bucket_teardown() -> Generator[None, None, None]:
-    yield
-    logger.debug("Removing all items from storage bucket")
-
-    bucket = boto3.resource("s3").Bucket(ResourceName.STORAGE_BUCKET_NAME.value)
-    bucket.objects.all().delete()
-    bucket.object_versions.all().delete()

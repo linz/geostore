@@ -6,7 +6,6 @@ import json
 import logging
 import re
 
-import _pytest
 from mypy_boto3_lambda import LambdaClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -28,10 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @mark.infrastructure
-def should_create_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
+def should_create_dataset(subtests: SubTests) -> None:
     dataset_type = any_valid_dataset_type()
     dataset_title = any_dataset_title()
     dataset_owning_group = any_dataset_owning_group()
@@ -117,12 +113,9 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
 
 
 @mark.infrastructure
-def should_return_single_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
+def should_return_single_dataset(subtests: SubTests) -> None:
     # Given a dataset instance
-    dataset_id = "111abc"
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
     body = {"id": dataset_id, "type": dataset_type}
@@ -142,10 +135,7 @@ def should_return_single_dataset(
 
 
 @mark.infrastructure
-def should_return_all_datasets(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
+def should_return_all_datasets(subtests: SubTests) -> None:
     # Given two datasets
     with Dataset() as first_dataset, Dataset() as second_dataset:
         # When requesting all datasets
@@ -158,24 +148,17 @@ def should_return_all_datasets(
         with subtests.test(msg="status code"):
             assert response["statusCode"] == 200
 
-        with subtests.test(msg="body length"):
-            assert len(response["body"]) == 2
-
-        with subtests.test(msg="ID"):
-            assert response["body"][0]["id"] in (
-                first_dataset.dataset_id,
-                second_dataset.dataset_id,
-            )
+        actual_dataset_ids = [entry["id"] for entry in response["body"]]
+        for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
+            with subtests.test(msg=f"ID {dataset_id}"):
+                assert dataset_id in actual_dataset_ids
 
 
 @mark.infrastructure
-def should_return_single_dataset_filtered_by_type_and_title(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
+def should_return_single_dataset_filtered_by_type_and_title(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
     dataset_type = "IMAGE"
-    dataset_title = "Dataset ABC"
+    dataset_title = any_dataset_title()
 
     body = {"type": dataset_type, "title": dataset_title}
 
@@ -200,13 +183,10 @@ def should_return_single_dataset_filtered_by_type_and_title(
 
 
 @mark.infrastructure
-def should_return_multiple_datasets_filtered_by_type_and_owning_group(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
+def should_return_multiple_datasets_filtered_by_type_and_owning_group(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
     dataset_type = "RASTER"
-    dataset_owning_group = "A_ABC_XYZ"
+    dataset_owning_group = any_dataset_owning_group()
 
     body = {"type": dataset_type, "owning_group": dataset_owning_group}
 
@@ -235,11 +215,9 @@ def should_return_multiple_datasets_filtered_by_type_and_owning_group(
     with subtests.test(msg="body length"):
         assert len(response["body"]) == 2
 
-    with subtests.test(msg="type"):
-        assert response["body"][0]["type"] == dataset_type
-
+    actual_owning_groups = [entry["owning_group"] for entry in response["body"]]
     with subtests.test(msg="owning group"):
-        assert response["body"][0]["owning_group"] == dataset_owning_group
+        assert dataset_owning_group in actual_owning_groups
 
 
 @mark.infrastructure
@@ -261,9 +239,7 @@ def should_fail_if_get_request_containing_tile_and_owning_group_filter(subtests:
 
 
 @mark.infrastructure
-def should_fail_if_get_request_requests_not_existing_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
@@ -280,13 +256,10 @@ def should_fail_if_get_request_requests_not_existing_dataset(
 
 
 @mark.infrastructure
-def should_update_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-    subtests: SubTests,
-) -> None:
-    dataset_id = "111abc"
+def should_update_dataset(subtests: SubTests) -> None:
+    dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
-    new_dataset_title = "New Dataset ABC"
+    new_dataset_title = any_dataset_title()
 
     body = {
         "id": dataset_id,
@@ -309,11 +282,9 @@ def should_update_dataset(
 
 
 @mark.infrastructure
-def should_fail_if_updating_with_already_existing_dataset_title(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_fail_if_updating_with_already_existing_dataset_title() -> None:
     dataset_type = any_valid_dataset_type()
-    dataset_title = "Dataset XYZ"
+    dataset_title = any_dataset_title()
 
     body = {
         "id": any_dataset_id(),
@@ -338,9 +309,7 @@ def should_fail_if_updating_with_already_existing_dataset_title(
 
 
 @mark.infrastructure
-def should_fail_if_updating_not_existing_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_fail_if_updating_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
@@ -363,9 +332,7 @@ def should_fail_if_updating_not_existing_dataset(
 
 
 @mark.infrastructure
-def should_delete_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_delete_dataset() -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
@@ -380,9 +347,7 @@ def should_delete_dataset(
 
 
 @mark.infrastructure
-def should_fail_if_deleting_not_existing_dataset(
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
     dataset_type = any_valid_dataset_type()
 
@@ -406,10 +371,7 @@ def should_fail_if_deleting_not_existing_dataset(
 
 
 @mark.infrastructure
-def should_launch_datasets_endpoint_lambda_function(
-    lambda_client: LambdaClient,
-    datasets_db_teardown: _pytest.fixtures.FixtureDef[object],  # pylint:disable=unused-argument
-) -> None:
+def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient) -> None:
     """
     Test if datasets endpoint lambda can be successfully launched and has required permission to
     create dataset in DB.

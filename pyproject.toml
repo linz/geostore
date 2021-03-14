@@ -188,6 +188,7 @@ import_status = [
 ]
 
 [tool.pytest.ini_options]
+addopts = "--randomly-dont-reset-seed"
 markers = [
     "infrastructure: requires a deployed infrastructure",
 ]

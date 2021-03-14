@@ -8,7 +8,6 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
-import _pytest
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -129,12 +128,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
-def should_insert_asset_urls_and_checksums_into_database(
-    subtests: SubTests,
-    processing_assets_db_teardown: _pytest.fixtures.FixtureDef[
-        object
-    ],  # pylint:disable=unused-argument
-) -> None:
+def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with two assets
     first_asset_content = any_file_contents()
