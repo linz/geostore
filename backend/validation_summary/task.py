@@ -9,8 +9,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             event,
             {
                 "type": "object",
-                "properties": {"dataset_id": {"type": "string"}},
-                "required": ["dataset_id"],
+                "properties": {"dataset_id": {"type": "string"}, "version_id": {"type": "string"}},
+                "required": ["dataset_id", "version_id"],
             },
         )
     except ValidationError as error:
