@@ -13,11 +13,10 @@ from jsonschema import (  # type: ignore[import]
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
 
+from ..check import Check
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultsModel
-
-JSON_SCHEMA_VALIDATION_NAME = "JSON schema validation"
 
 
 class STACSchemaValidator(Draft7Validator):
@@ -57,7 +56,7 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     ) -> None:
         ValidationResultsModel(
             pk=self.hash_key,
-            sk=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{url}",
+            sk=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{url}",
             result=result.value,
             details=details,
         ).save()

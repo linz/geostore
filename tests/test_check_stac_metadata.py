@@ -12,12 +12,9 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.check import Check
 from backend.check_stac_metadata.task import main
-from backend.check_stac_metadata.utils import (
-    JSON_SCHEMA_VALIDATION_NAME,
-    STACDatasetValidator,
-    STACSchemaValidator,
-)
+from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
 from backend.processing_assets_model import ProcessingAssetsModel
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
@@ -104,7 +101,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Root validation results"):
         root_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{root_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{root_s3_object.url}",
             consistent_read=True,
         )
         assert root_result.result == ValidationResult.PASSED.value
@@ -112,7 +109,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Valid child validation results"):
         valid_child_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{valid_child_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{valid_child_s3_object.url}",
             consistent_read=True,
         )
         assert valid_child_result.result == ValidationResult.PASSED.value
@@ -120,7 +117,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Invalid child validation results"):
         invalid_child_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{invalid_child_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{invalid_child_s3_object.url}",
             consistent_read=True,
         )
         assert invalid_child_result.result == ValidationResult.FAILED.value
