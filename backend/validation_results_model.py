@@ -1,10 +1,13 @@
 from enum import Enum
+from typing import Optional
 
 from pynamodb.attributes import MapAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
 
+from .check import Check
 from .resources import ResourceName
+from .types import JsonObject
 
 
 class ValidationResult(Enum):
@@ -39,3 +42,18 @@ class ValidationResultsModel(Model):
     details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
 
     validation_outcome_index = ValidationOutcomeIdx()
+
+
+class ValidationResultFactory:  # pylint:disable=too-few-public-methods
+    def __init__(self, hash_key: str):
+        self.hash_key = hash_key
+
+    def save(
+        self, url: str, result: ValidationResult, details: Optional[JsonObject] = None
+    ) -> None:
+        ValidationResultsModel(
+            pk=self.hash_key,
+            sk=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{url}",
+            result=result.value,
+            details=details,
+        ).save()

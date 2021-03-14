@@ -8,7 +8,8 @@ from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
 from ..log import set_up_logging
-from .utils import STACDatasetValidator, ValidationResultFactory, parse_arguments
+from ..validation_results_model import ValidationResultFactory
+from .utils import STACDatasetValidator, parse_arguments
 
 LOGGER = set_up_logging(__name__)
 S3_CLIENT = boto3.client("s3")
