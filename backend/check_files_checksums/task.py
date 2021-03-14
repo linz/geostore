@@ -23,9 +23,8 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def failure(content: JsonObject) -> int:
+def log_failure(content: JsonObject) -> None:
     LOGGER.error(dumps({"success": False, **content}))
-    return 0
 
 
 def main() -> int:
@@ -38,12 +37,13 @@ def main() -> int:
     try:
         item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
     except ProcessingAssetsModel.DoesNotExist as error:
-        return failure(
+        log_failure(
             {
                 "error": {"message": error.msg, "cause": error.cause},
                 "parameters": {"hash_key": hash_key, "range_key": range_key},
             },
         )
+        return 1
 
     try:
         validate_url_multihash(item.url, item.multihash, S3_CLIENT)
@@ -52,9 +52,10 @@ def main() -> int:
             "message": f"Checksum mismatch: expected {item.multihash[4:]},"
             f" got {error.actual_hex_digest}"
         }
-        return failure(content)
+        log_failure(content)
+    else:
+        LOGGER.info(dumps({"success": True, "message": ""}))
 
-    LOGGER.info(dumps({"success": True, "message": ""}))
     return 0
 
 

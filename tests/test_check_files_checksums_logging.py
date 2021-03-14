@@ -50,7 +50,7 @@ class TestLogging:
         # When/Then
         with patch.object(self.logger, "error") as logger_mock:
             with subtests.test(msg="Return code"):
-                assert main() == 0
+                assert main() == 1
 
             with subtests.test(msg="Log message"):
                 logger_mock.assert_any_call(expected_log)
