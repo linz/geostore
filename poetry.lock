@@ -2365,11 +2365,12 @@ dataset_versions = ["jsonschema", "pynamodb"]
 datasets = ["jsonschema", "pynamodb"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
+validation_summary = ["jsonschema", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "303252e20b8ccd230bd6110bedfc9a0a48ccf7431c4d94341ff75df557251f39"
+content-hash = "f23f5018063c33fcec2469664436923a1d82a8e2123f063e0554a6c5041d30dc"
 
 [metadata.files]
 appdirs = [

@@ -187,6 +187,10 @@ import_status = [
     "jsonschema",
     "pynamodb"
 ]
+validation_summary = [
+    "jsonschema",
+    "pynamodb",
+]
 
 [tool.pytest.ini_options]
 addopts = "--randomly-dont-reset-seed"
