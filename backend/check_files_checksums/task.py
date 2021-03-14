@@ -56,6 +56,9 @@ def main() -> int:
             f" got {error.actual_hex_digest}"
         }
         log_failure(content)
+        validation_result_factory.save(
+            item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
+        )
     else:
         LOGGER.info(dumps({"success": True, "message": ""}))
         validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
