@@ -5,9 +5,11 @@ from json import dumps
 
 import boto3
 
+from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
+from ..validation_results_model import ValidationResult, ValidationResultFactory
 from .utils import ChecksumMismatchError, get_job_offset, validate_url_multihash
 
 LOGGER = set_up_logging(__name__)
@@ -45,6 +47,7 @@ def main() -> int:
         )
         return 1
 
+    validation_result_factory = ValidationResultFactory(hash_key)
     try:
         validate_url_multihash(item.url, item.multihash, S3_CLIENT)
     except ChecksumMismatchError as error:
@@ -55,6 +58,7 @@ def main() -> int:
         log_failure(content)
     else:
         LOGGER.info(dumps({"success": True, "message": ""}))
+        validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     return 0
 

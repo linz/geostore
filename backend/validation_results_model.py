@@ -49,11 +49,11 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
         self.hash_key = hash_key
 
     def save(
-        self, url: str, result: ValidationResult, details: Optional[JsonObject] = None
+        self, url: str, check: Check, result: ValidationResult, details: Optional[JsonObject] = None
     ) -> None:
         ValidationResultsModel(
             pk=self.hash_key,
-            sk=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{url}",
+            sk=f"CHECK#{check.value}#URL#{url}",
             result=result.value,
             details=details,
         ).save()

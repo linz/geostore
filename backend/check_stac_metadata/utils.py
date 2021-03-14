@@ -13,6 +13,7 @@ from jsonschema import (  # type: ignore[import]
 )
 from jsonschema._utils import URIDict  # type: ignore[import]
 
+from ..check import Check
 from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
@@ -76,10 +77,13 @@ class STACDatasetValidator:
             self.validator.validate(url_json)
         except ValidationError as error:
             self.validation_result_factory.save(
-                url, ValidationResult.FAILED, details={"error_message": str(error)}
+                url,
+                Check.JSON_SCHEMA,
+                ValidationResult.FAILED,
+                details={"error_message": str(error)},
             )
             raise
-        self.validation_result_factory.save(url, ValidationResult.PASSED)
+        self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
 
         url_prefix = get_url_before_filename(url)
 
