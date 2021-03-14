@@ -23,11 +23,6 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def success() -> int:
-    LOGGER.info(dumps({"success": True, "message": ""}))
-    return 0
-
-
 def failure(content: Mapping[str, Any]) -> int:
     LOGGER.error(dumps({"success": False, **content}))
     return 0
@@ -59,7 +54,8 @@ def main() -> int:
         }
         return failure(content)
 
-    return success()
+    LOGGER.info(dumps({"success": True, "message": ""}))
+    return 0
 
 
 if __name__ == "__main__":
