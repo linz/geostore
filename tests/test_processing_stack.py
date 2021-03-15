@@ -16,8 +16,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
+from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
 from .aws_utils import MINIMAL_VALID_STAC_OBJECT, Dataset, S3Object
@@ -42,8 +41,13 @@ logger = logging.getLogger(__name__)
 @mark.infrastructure
 def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=DATASET_VERSION_CREATION_STEP_FUNCTION)
-    assert parameter_response["Parameter"]["Name"] == DATASET_VERSION_CREATION_STEP_FUNCTION
+    parameter_response = ssm_client.get_parameter(
+        Name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
+    )
+    assert (
+        parameter_response["Parameter"]["Name"]
+        == ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
+    )
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "stateMachine" in parameter_response["Parameter"]["Value"]
 
@@ -51,8 +55,8 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
 @mark.infrastructure
 def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=S3_BATCH_COPY_ROLE_PARAMETER_NAME)
-    assert parameter_response["Parameter"]["Name"] == S3_BATCH_COPY_ROLE_PARAMETER_NAME
+    parameter_response = ssm_client.get_parameter(Name=ParameterName.S3_BATCH_COPY_ROLE.value)
+    assert parameter_response["Parameter"]["Name"] == ParameterName.S3_BATCH_COPY_ROLE.value
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 
@@ -84,7 +88,7 @@ def should_successfully_run_dataset_version_creation_process(
         optional_asset_contents = any_file_contents()
         optional_asset = S3Object(
             file_object=BytesIO(initial_bytes=optional_asset_contents),
-            bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+            bucket_name=get_param(ParameterName.DATASET_STAGING_BUCKET_NAME.value),
             key=f"{key_prefix}/{any_safe_filename()}.txt",
         )
     else:
@@ -92,7 +96,7 @@ def should_successfully_run_dataset_version_creation_process(
 
     with S3Object(
         file_object=BytesIO(initial_bytes=mandatory_asset_contents),
-        bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+        bucket_name=get_param(ParameterName.DATASET_STAGING_BUCKET_NAME.value),
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as mandatory_asset_s3_object, optional_asset as optional_asset_s3_object:
         metadata["item_assets"] = {
@@ -113,7 +117,7 @@ def should_successfully_run_dataset_version_creation_process(
 
         with S3Object(
             file_object=json_dict_to_file_object(metadata),
-            bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+            bucket_name=get_param(ParameterName.DATASET_STAGING_BUCKET_NAME.value),
             key=("{}/{}.json".format(key_prefix, any_safe_filename())),
         ) as s3_metadata_file:
             dataset_id = any_dataset_id()

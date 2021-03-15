@@ -13,7 +13,6 @@ class Table(aws_dynamodb.Table):
         super().__init__(
             scope,
             construct_id,
-            table_name=construct_id,
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,

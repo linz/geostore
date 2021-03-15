@@ -4,12 +4,15 @@ from .environment import ENV
 
 
 class ResourceName(Enum):
+    """Humanly accessed resources with fixed names."""
+
     DATASETS_ENDPOINT_FUNCTION_NAME = f"{ENV}-datasets-endpoint"
-    DATASETS_TABLE_NAME = f"{ENV}-datasets"
-    DATASET_STAGING_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake-staging"
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset_versions-endpoint"
-    IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import_status-endpoint"
-    PROCESSING_ASSETS_TABLE_NAME = f"{ENV}-processing-assets"
-    STORAGE_BUCKET_NAME = f"{ENV}-linz-geospatial-data-lake"
+    IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = (
+        f"{ENV}-import_status-endpoint"  # FIXME: rename to start with "DATASET_"
+    )
     USERS_ROLE_NAME = f"{ENV}-data-lake-users"
-    VALIDATION_RESULTS_TABLE_NAME = f"{ENV}-validation-results"
+
+    # FIXME: move to separate class (these resources are not humanly accessed) ?
+    DATASETS_TABLE_TITLE_INDEX_NAME = f"{ENV}_datasets_title"
+    DATASETS_TABLE_OWNING_GROUP_INDEX_NAME = f"{ENV}_datasets_owning_group"

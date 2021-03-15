@@ -17,8 +17,8 @@ from mypy_boto3_stepfunctions import SFNClient
 from mypy_boto3_sts import STSClient
 
 from backend.dataset_model import DatasetModel
+from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetsModel
-from backend.resources import ResourceName
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -87,6 +87,8 @@ def storage_bucket_teardown() -> Generator[None, None, None]:
     yield
     logger.debug("Removing all items from storage bucket")
 
-    bucket = boto3.resource("s3").Bucket(ResourceName.STORAGE_BUCKET_NAME.value)
+    bucket = boto3.resource("s3").Bucket(
+        get_param(ParameterName.STORAGE_BUCKET_NAME.value)
+    )
     bucket.objects.all().delete()
     bucket.object_versions.all().delete()

@@ -13,6 +13,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark
 
 from backend.import_dataset.task import lambda_handler
+from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
 from .aws_utils import (
@@ -79,7 +80,7 @@ def should_batch_copy_files_to_storage(
 
     with S3Object(
         BytesIO(initial_bytes=first_asset_content),
-        ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+        get_param(ParameterName.DATASET_STAGING_BUCKET_NAME.value),
         any_safe_filename(),
     ) as asset_s3_object:
 
@@ -94,7 +95,7 @@ def should_batch_copy_files_to_storage(
 
         with S3Object(
             BytesIO(initial_bytes=metadata_content),
-            ResourceName.DATASET_STAGING_BUCKET_NAME.value,
+            get_param(ParameterName.DATASET_STAGING_BUCKET_NAME.value),
             any_safe_filename(),
         ) as metadata_s3_object:
 
@@ -136,6 +137,6 @@ def should_batch_copy_files_to_storage(
                 # Then
                 for key in [metadata_processing_asset.url, processing_asset.url]:
                     s3_client.head_object(
-                        Bucket=ResourceName.STORAGE_BUCKET_NAME.value,
+                        Bucket=get_param(ParameterName.STORAGE_BUCKET_NAME.value),
                         Key=f"{dataset_id}/{version_id}/{urlparse(key).path[1:]}",
                     )

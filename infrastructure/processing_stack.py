@@ -8,9 +8,7 @@ from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_s3 import Bucket
 from aws_cdk.aws_ssm import StringParameter
 
-from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
-from backend.resources import ResourceName
+from backend.parameter_store import ParameterName
 
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
@@ -28,7 +26,7 @@ class ProcessingStack(core.Stack):
         deploy_env: str,
         staging_bucket: Bucket,
         storage_bucket: Bucket,
-        storage_bucket_parameter: StringParameter,
+        storage_bucket_arn_parameter: StringParameter,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -38,18 +36,32 @@ class ProcessingStack(core.Stack):
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
-        processing_assets_table = Table(
+        self.processing_assets_table = Table(
             self,
-            ResourceName.PROCESSING_ASSETS_TABLE_NAME.value,
+            "processing-assets-table",
             deploy_env=deploy_env,
             application_layer=application_layer,
         )
-
-        validation_results_table = Table(
+        self.processing_assets_table_name_parameter = aws_ssm.StringParameter(
             self,
-            ResourceName.VALIDATION_RESULTS_TABLE_NAME.value,
+            "Processing Assets Table Name Parameter",
+            description=f"Processing Assets Table name for {deploy_env}",
+            parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME.value,
+            string_value=self.processing_assets_table.table_name,
+        )
+
+        self.validation_results_table = Table(
+            self,
+            "validation-results-table",
             deploy_env=deploy_env,
             application_layer=application_layer,
+        )
+        self.validation_results_table_name_parameter = aws_ssm.StringParameter(
+            self,
+            "Validation Results Table Name Parameter",
+            description=f"Validation Results Table name for {deploy_env}",
+            parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME.value,
+            string_value=self.validation_results_table.table_name,
         )
 
         ############################################################################################
@@ -58,7 +70,7 @@ class ProcessingStack(core.Stack):
             self,
             "batch_job_queue",
             deploy_env=deploy_env,
-            processing_assets_table=processing_assets_table,
+            processing_assets_table=self.processing_assets_table,
         ).job_queue
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -89,7 +101,7 @@ class ProcessingStack(core.Stack):
                 "Ref::metadata_url",
             ],
         )
-        for table in [processing_assets_table, validation_results_table]:
+        for table in [self.processing_assets_table, self.validation_results_table]:
             table.grant_read_write_data(
                 check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
             )
@@ -152,8 +164,8 @@ class ProcessingStack(core.Stack):
             check_files_checksums_array_task.job_role,
         ]
         for reader in processing_assets_table_readers:
-            processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
-            processing_assets_table.grant(
+            self.processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
+            self.processing_assets_table.grant(
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
@@ -212,7 +224,7 @@ class ProcessingStack(core.Stack):
             self,
             "s3-batch-copy-role-arn",
             description=f"S3 Batch Copy Role ARN for {deploy_env}",
-            parameter_name=S3_BATCH_COPY_ROLE_PARAMETER_NAME,
+            parameter_name=ParameterName.S3_BATCH_COPY_ROLE.value,
             string_value=s3_batch_copy_role.role_arn,
         )
 
@@ -241,10 +253,12 @@ class ProcessingStack(core.Stack):
         s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
-        storage_bucket_parameter.grant_read(import_dataset_task.lambda_function)
+        storage_bucket_arn_parameter.grant_read(import_dataset_task.lambda_function)
 
-        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
-        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
+        self.processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
+        self.processing_assets_table.grant(
+            import_dataset_task.lambda_function, "dynamodb:DescribeTable"
+        )
 
         success_task = aws_stepfunctions.Succeed(self, "success")
 
@@ -296,6 +310,6 @@ class ProcessingStack(core.Stack):
             self,
             "Step Function State Machine Parameter",
             description=f"Step Function State Machine ARN for {deploy_env}",
-            parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
+            parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
         )

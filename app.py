@@ -44,6 +44,7 @@ def main() -> None:
         "staging",
         stack_name=f"{ENV}-geospatial-data-lake-staging",
         env={"region": region, "account": account},
+        deploy_env=ENV,
     )
 
     processing = ProcessingStack(
@@ -54,7 +55,7 @@ def main() -> None:
         deploy_env=ENV,
         staging_bucket=staging.staging_bucket,
         storage_bucket=storage.storage_bucket,
-        storage_bucket_parameter=storage.storage_bucket_parameter,
+        storage_bucket_arn_parameter=storage.storage_bucket_arn_parameter,
     )
 
     APIStack(
