@@ -6,7 +6,7 @@ from json import dumps
 import boto3
 
 from ..log import set_up_logging
-from ..processing_assets_model import ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 from .utils import ChecksumMismatchError, get_job_offset, validate_url_multihash
 
@@ -33,7 +33,7 @@ def main() -> int:
 
     index = arguments.first_item + get_job_offset()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    range_key = f"DATA_ITEM_INDEX#{index}"
+    range_key = f"{ProcessingAssetType.DATA.value}#{index}"
 
     try:
         item = ProcessingAssetsModel.get(hash_key, range_key=range_key)

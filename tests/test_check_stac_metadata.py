@@ -15,7 +15,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.check import Check
 from backend.check_stac_metadata.task import main
 from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
-from backend.processing_assets_model import ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
@@ -170,13 +170,13 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_asset_items = [
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#0",
+                    range_key=f"{ProcessingAssetType.DATA.value}#0",
                     url=first_asset_s3_object.url,
                     multihash=first_asset_multihash,
                 ),
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#1",
+                    range_key=f"{ProcessingAssetType.DATA.value}#1",
                     url=second_asset_s3_object.url,
                     multihash=second_asset_multihash,
                 ),
@@ -185,7 +185,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_metadata_items = [
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="METADATA_ITEM_INDEX#0",
+                    range_key=f"{ProcessingAssetType.METADATA.value}#0",
                     url=metadata_s3_object.url,
                 ),
             ]
@@ -201,14 +201,16 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 
             # Then
             actual_items = ProcessingAssetsModel.query(
-                expected_hash_key, ProcessingAssetsModel.sk.startswith("DATA_ITEM_INDEX#")
+                expected_hash_key,
+                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.DATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_asset_items):
                 with subtests.test():
                     assert actual_item.attribute_values == expected_item.attribute_values
 
             actual_items = ProcessingAssetsModel.query(
-                expected_hash_key, ProcessingAssetsModel.sk.startswith("METADATA_ITEM_INDEX#")
+                expected_hash_key,
+                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.METADATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():
