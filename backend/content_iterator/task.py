@@ -1,6 +1,6 @@
 from jsonschema import validate  # type: ignore[import]
 
-from ..processing_assets_model import ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 
 # From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
@@ -51,7 +51,12 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_id = event["dataset_id"]
     version_id = event["version_id"]
 
-    asset_count = ProcessingAssetsModel.count(hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}")
+    asset_count = ProcessingAssetsModel.count(
+        hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
+        range_key_condition=ProcessingAssetsModel.sk.startswith(
+            f"{ProcessingAssetType.DATA.value}#"
+        ),
+    )
 
     remaining_assets = asset_count - first_item_index
     if remaining_assets > MAX_ITERATION_SIZE:
