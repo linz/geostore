@@ -12,13 +12,10 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.check import Check
 from backend.check_stac_metadata.task import main
-from backend.check_stac_metadata.utils import (
-    JSON_SCHEMA_VALIDATION_NAME,
-    STACDatasetValidator,
-    STACSchemaValidator,
-)
-from backend.processing_assets_model import ProcessingAssetsModel
+from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
+from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
@@ -104,7 +101,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Root validation results"):
         root_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{root_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{root_s3_object.url}",
             consistent_read=True,
         )
         assert root_result.result == ValidationResult.PASSED.value
@@ -112,7 +109,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Valid child validation results"):
         valid_child_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{valid_child_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{valid_child_s3_object.url}",
             consistent_read=True,
         )
         assert valid_child_result.result == ValidationResult.PASSED.value
@@ -120,7 +117,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with subtests.test(msg="Invalid child validation results"):
         invalid_child_result = ValidationResultsModel.get(
             hash_key=hash_key,
-            range_key=f"CHECK#{JSON_SCHEMA_VALIDATION_NAME}#URL#{invalid_child_s3_object.url}",
+            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{invalid_child_s3_object.url}",
             consistent_read=True,
         )
         assert invalid_child_result.result == ValidationResult.FAILED.value
@@ -173,13 +170,13 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_asset_items = [
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#0",
+                    range_key=f"{ProcessingAssetType.DATA.value}#0",
                     url=first_asset_s3_object.url,
                     multihash=first_asset_multihash,
                 ),
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="DATA_ITEM_INDEX#1",
+                    range_key=f"{ProcessingAssetType.DATA.value}#1",
                     url=second_asset_s3_object.url,
                     multihash=second_asset_multihash,
                 ),
@@ -188,7 +185,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_metadata_items = [
                 ProcessingAssetsModel(
                     hash_key=expected_hash_key,
-                    range_key="METADATA_ITEM_INDEX#0",
+                    range_key=f"{ProcessingAssetType.METADATA.value}#0",
                     url=metadata_s3_object.url,
                 ),
             ]
@@ -204,14 +201,16 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 
             # Then
             actual_items = ProcessingAssetsModel.query(
-                expected_hash_key, ProcessingAssetsModel.sk.startswith("DATA_ITEM_INDEX#")
+                expected_hash_key,
+                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.DATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_asset_items):
                 with subtests.test():
                     assert actual_item.attribute_values == expected_item.attribute_values
 
             actual_items = ProcessingAssetsModel.query(
-                expected_hash_key, ProcessingAssetsModel.sk.startswith("METADATA_ITEM_INDEX#")
+                expected_hash_key,
+                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.METADATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():

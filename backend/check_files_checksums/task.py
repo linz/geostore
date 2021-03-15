@@ -2,12 +2,12 @@
 import sys
 from argparse import ArgumentParser, Namespace
 from json import dumps
-from typing import Any, Mapping
 
 import boto3
 
 from ..log import set_up_logging
-from ..processing_assets_model import ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from ..types import JsonObject
 from .utils import ChecksumMismatchError, get_job_offset, validate_url_multihash
 
 LOGGER = set_up_logging(__name__)
@@ -23,12 +23,7 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def success() -> int:
-    LOGGER.info(dumps({"success": True, "message": ""}))
-    return 0
-
-
-def failure(content: Mapping[str, Any]) -> int:
+def failure(content: JsonObject) -> int:
     LOGGER.error(dumps({"success": False, **content}))
     return 0
 
@@ -38,7 +33,7 @@ def main() -> int:
 
     index = arguments.first_item + get_job_offset()
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
-    range_key = f"DATA_ITEM_INDEX#{index}"
+    range_key = f"{ProcessingAssetType.DATA.value}#{index}"
 
     try:
         item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
@@ -59,7 +54,8 @@ def main() -> int:
         }
         return failure(content)
 
-    return success()
+    LOGGER.info(dumps({"success": True, "message": ""}))
+    return 0
 
 
 if __name__ == "__main__":
