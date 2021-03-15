@@ -131,7 +131,10 @@ def should_report_s3_batch_upload_failures(
             },
         },
     }
-    with patch("backend.import_status.get.STS_CLIENT.get_caller_identity") as sts_mock:
+    with patch("backend.import_status.get.STS_CLIENT.get_caller_identity") as sts_mock, patch(
+        "backend.import_status.get.get_step_function_validation_results"
+    ) as validation_mock:
+        validation_mock.return_value = []
         sts_mock.return_value = {"Account": "1234567890"}
 
         # When

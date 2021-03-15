@@ -35,7 +35,10 @@ class TestLogging:
             ),
         }
 
-        with patch.object(self.logger, "debug") as logger_mock:
+        with patch.object(self.logger, "debug") as logger_mock, patch(
+            "backend.import_status.get.get_step_function_validation_results"
+        ) as validation_mock:
+            validation_mock.return_value = []
 
             # When
             get_import_status(event)
@@ -80,7 +83,10 @@ class TestLogging:
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"
-        ):
+        ), patch(
+            "backend.import_status.get.get_step_function_validation_results"
+        ) as validation_mock:
+            validation_mock.return_value = []
             # When
             get_import_status(
                 {
