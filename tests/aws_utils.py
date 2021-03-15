@@ -183,14 +183,14 @@ class ValidationResult:
     def __init__(
         self,
         asset_id: str,
-        success: str,
-        info: Optional[str] = None,
+        result: str,
+        details: Optional[str] = None,
     ):
         self._item = ValidationResultsModel(
             pk=asset_id,
             sk="CHECK#example#URL#test",
-            status=success,
-            info=info,
+            result=result,
+            details=details,
         )
 
     def __enter__(self) -> ValidationResultsModel:

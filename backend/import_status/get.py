@@ -80,9 +80,9 @@ def get_step_function_validation_results(step_function_input: str) -> List[str]:
 
     errors = []
     for error in ValidationResultsModel.validation_outcome_index.query(
-        hash_key, ValidationResultsModel.status == "Failed"
+        hash_key=hash_key, range_key_condition=ValidationResultsModel.result == "Failed"
     ):
-        errors.append(error.info)
+        errors.append(json.dumps(error.details))
 
     return errors
 

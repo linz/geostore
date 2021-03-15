@@ -63,7 +63,7 @@ def should_retrieve_validation_failures() -> None:
     version_id = any_dataset_version_id()
     asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
-    with ValidationResult(asset_id=asset_id, success="Failed", info=expected_response[0]):
+    with ValidationResult(asset_id=asset_id, result="Failed", details=expected_response[0]):
 
         output = json.dumps({"dataset_id": dataset_id, "version_id": version_id})
 
