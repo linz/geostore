@@ -1,10 +1,17 @@
+from json import dumps
+
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from ..log import set_up_logging
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultsModel
 
+LOGGER = set_up_logging(__name__)
+
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
+    LOGGER.debug(dumps({"event": event}))
+
     try:
         validate(
             event,
