@@ -30,16 +30,16 @@ class TestLogging:
         metadata_url = any_s3_url()
         with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
 
-            payload = {
+            event = {
                 "httpMethod": "POST",
                 "body": {"metadata-url": metadata_url, "id": dataset_id, "type": dataset_type},
             }
 
-            expected_payload_log = dumps({"payload": payload})
+            expected_payload_log = dumps({"event": event})
 
             with patch.object(self.logger, "debug") as logger_mock:
                 # when
-                create_dataset_version(payload)
+                create_dataset_version(event)
 
                 # then
                 logger_mock.assert_any_call(expected_payload_log)

@@ -15,13 +15,13 @@ STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
 
-def get_import_status(payload: JsonObject) -> JsonObject:
+def get_import_status(event: JsonObject) -> JsonObject:
 
-    LOGGER.debug(json.dumps({"payload": payload}))
+    LOGGER.debug(json.dumps({"event": event}))
 
     try:
         validate(
-            payload["body"],
+            event["body"],
             {
                 "type": "object",
                 "properties": {
@@ -35,7 +35,7 @@ def get_import_status(payload: JsonObject) -> JsonObject:
         return error_response(400, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
-        executionArn=payload["body"]["execution_arn"]
+        executionArn=event["body"]["execution_arn"]
     )
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))

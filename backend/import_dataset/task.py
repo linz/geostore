@@ -21,17 +21,17 @@ STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
 S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
 
 
-def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
+def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     # pylint: disable=too-many-locals
 
     logger = set_up_logging(__name__)
-    logger.debug(json.dumps({"payload": payload}))
+    logger.debug(json.dumps({"event": event}))
 
     # validate input
     try:
         validate(
-            payload,
+            event,
             {
                 "type": "object",
                 "properties": {
@@ -46,9 +46,9 @@ def lambda_handler(payload: JsonObject, _context: bytes) -> JsonObject:
         logger.warning(json.dumps({"error": error}, default=str))
         return {"error message": error.message}
 
-    dataset_id = payload["dataset_id"]
-    dataset_version_id = payload["version_id"]
-    metadata_url = payload["metadata_url"]
+    dataset_id = event["dataset_id"]
+    dataset_version_id = event["version_id"]
+    metadata_url = event["metadata_url"]
 
     storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, SSM_CLIENT, logger)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]

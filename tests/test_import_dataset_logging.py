@@ -31,20 +31,20 @@ class TestLogging:
     ) -> None:
         # Given
 
-        body = {
+        event = {
             "dataset_id": any_dataset_id(),
             "metadata_url": any_s3_url(),
             "version_id": any_dataset_version_id(),
         }
         head_object_mock.return_value = {"ETag": any_etag()}
-        expected_payload_log = dumps({"payload": body})
+        expected_payload_log = dumps({"event": event})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
         ), patch("backend.import_dataset.task.smart_open"):
 
             # When
-            lambda_handler(body, any_lambda_context())
+            lambda_handler(event, any_lambda_context())
 
             # Then
             logger_mock.assert_any_call(expected_payload_log)
