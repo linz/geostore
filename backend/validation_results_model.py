@@ -23,8 +23,8 @@ class ValidationOutcomeIdx(
         write_capacity_units = 1
         projection = AllProjection()
 
-    pk = UnicodeAttribute(hash_key=True)
-    result = UnicodeAttribute(range_key=True)
+    pk = UnicodeAttribute(hash_key=True, attr_name="pk")
+    result = UnicodeAttribute(range_key=True, attr_name="result")
 
 
 class ValidationResultsModel(Model):
