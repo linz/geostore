@@ -19,10 +19,10 @@ ssm_client = boto3.client("ssm")
 DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
 
 
-def create_dataset_version(payload: JsonObject) -> JsonObject:
+def create_dataset_version(event: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(json.dumps({"payload": payload}))
+    logger.debug(json.dumps({"event": event}))
 
     body_schema = {
         "type": "object",
@@ -38,7 +38,7 @@ def create_dataset_version(payload: JsonObject) -> JsonObject:
     }
 
     # validate input
-    req_body = payload["body"]
+    req_body = event["body"]
     try:
         validate(req_body, body_schema)
     except ValidationError as err:

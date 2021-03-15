@@ -20,19 +20,19 @@ class TestLogging:
     @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
-        payload = {
+        event = {
             "httpMethod": "GET",
             "body": {"execution_arn": any_arn_formatted_string()},
         }
 
-        expected_payload_log = dumps({"payload": payload})
+        expected_payload_log = dumps({"event": event})
 
         describe_step_function_mock.return_value = {"status": "RUNNING"}
 
         with patch.object(self.logger, "debug") as logger_mock:
 
             # When
-            get_import_status(payload)
+            get_import_status(event)
 
             # Then
             logger_mock.assert_any_call(expected_payload_log)
