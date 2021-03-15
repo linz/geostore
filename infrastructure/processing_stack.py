@@ -52,10 +52,18 @@ class ProcessingStack(core.Stack):
             deploy_env=deploy_env,
             application_layer=application_layer,
         )
+
+        assert ValidationOutcomeIdx.result.attr_name
+        assert ValidationOutcomeIdx.pk.attr_name
+
         validation_results_table.add_global_secondary_index(
             index_name=ValidationOutcomeIdx.Meta.index_name,
-            partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
-            sort_key=aws_dynamodb.Attribute(name="status", type=aws_dynamodb.AttributeType.STRING),
+            partition_key=aws_dynamodb.Attribute(
+                name=ValidationOutcomeIdx.pk.attr_name, type=aws_dynamodb.AttributeType.STRING
+            ),
+            sort_key=aws_dynamodb.Attribute(
+                name=ValidationOutcomeIdx.result.attr_name, type=aws_dynamodb.AttributeType.STRING
+            ),
         )
 
         ############################################################################################
