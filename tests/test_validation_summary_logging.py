@@ -1,6 +1,6 @@
 from json import dumps
 from logging import Logger, getLogger
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from backend.validation_summary import task
 
@@ -23,6 +23,34 @@ class TestLogging:
         with patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}"), patch.object(
             self.logger, "debug"
         ) as logger_mock:
+            # When
+            task.lambda_handler(event, any_lambda_context())
+
+            # Then
+            logger_mock.assert_any_call(expected_log)
+
+    @patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}")
+    def should_log_failure_result(self, validation_results_model_mock: MagicMock) -> None:
+        # Given
+        event = {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+        expected_log = dumps({"success": False})
+        validation_results_model_mock.validation_outcome_index.count.return_value = 1
+
+        with patch.object(self.logger, "debug") as logger_mock:
+            # When
+            task.lambda_handler(event, any_lambda_context())
+
+            # Then
+            logger_mock.assert_any_call(expected_log)
+
+    @patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}")
+    def should_log_success_result(self, validation_results_model_mock: MagicMock) -> None:
+        # Given
+        event = {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+        expected_log = dumps({"success": True})
+        validation_results_model_mock.validation_outcome_index.count.return_value = 0
+
+        with patch.object(self.logger, "debug") as logger_mock:
             # When
             task.lambda_handler(event, any_lambda_context())
 
