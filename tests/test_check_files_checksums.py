@@ -18,7 +18,7 @@ from backend.check_files_checksums.utils import (
     get_job_offset,
     validate_url_multihash,
 )
-from backend.processing_assets_model import ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 
 from .aws_utils import EMPTY_FILE_MULTIHASH, any_batch_job_array_index, any_s3_url
 from .general_generators import any_program_name
@@ -81,10 +81,10 @@ def should_validate_given_index(
 
     def get_mock(hash_key: str, range_key: str) -> ProcessingAssetsModel:
         assert hash_key == f"DATASET#{dataset_id}#VERSION#{version_id}"
-        assert range_key == f"DATA_ITEM_INDEX#{array_index}"
+        assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
         return ProcessingAssetsModel(
             hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
-            range_key="DATA_ITEM_INDEX#1",
+            range_key="{ProcessingAssetType.DATA.value}#1",
             url=url,
             multihash=hex_multihash,
         )
@@ -125,7 +125,7 @@ def should_log_error_when_validation_fails(
     expected_hex_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
     processing_assets_model_mock.get.return_value = ProcessingAssetsModel(
         hash_key=f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}",
-        range_key="DATA_ITEM_INDEX#0",
+        range_key=f"{ProcessingAssetType.DATA.value}#0",
         url=any_s3_url(),
         multihash=expected_hex_multihash,
     )

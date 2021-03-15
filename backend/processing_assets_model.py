@@ -1,9 +1,15 @@
 """Dataset object DynamoDB model."""
+from enum import Enum
 
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
 
 from .resources import ResourceName
+
+
+class ProcessingAssetType(Enum):
+    DATA = "DATA_ITEM_INDEX"
+    METADATA = "METADATA_ITEM_INDEX"
 
 
 class ProcessingAssetsModel(Model):
