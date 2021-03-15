@@ -3,14 +3,20 @@ from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
-from pytest import raises
+from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
+from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 
 from .aws_utils import any_item_count, any_item_index, any_lambda_context, any_s3_url
 from .general_generators import any_dictionary_key
-from .stac_generators import any_dataset_id, any_dataset_version_id, any_valid_dataset_type
+from .stac_generators import (
+    any_dataset_id,
+    any_dataset_version_id,
+    any_hex_multihash,
+    any_valid_dataset_type,
+)
 
 INITIAL_EVENT: Dict[str, Any] = {
     "dataset_id": any_dataset_id(),
@@ -201,3 +207,27 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     response = lambda_handler(event, any_lambda_context())
 
     assert response == expected_response, response
+
+
+@mark.infrastructure
+def should_count_only_asset_files() -> None:
+    # Given a single metadata and asset entry in the database
+    event = deepcopy(INITIAL_EVENT)
+    hash_key = f"DATASET#{event['dataset_id']}#VERSION#{event['version_id']}"
+    ProcessingAssetsModel(
+        hash_key=hash_key,
+        range_key=f"{ProcessingAssetType.METADATA.value}#0",
+        url=any_s3_url(),
+    ).save()
+    ProcessingAssetsModel(
+        hash_key=hash_key,
+        range_key=f"{ProcessingAssetType.DATA.value}#0",
+        url=any_s3_url(),
+        multihash=any_hex_multihash(),
+    ).save()
+
+    # When running the Lambda handler
+    response = lambda_handler(event, any_lambda_context())
+
+    # Then the iteration size should be one
+    assert response["iteration_size"] == 1
