@@ -55,7 +55,7 @@ class ProcessingStack(core.Stack):
         validation_results_table.add_global_secondary_index(
             index_name=ValidationOutcomeIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
-            sort_key=aws_dynamodb.Attribute(name="status", type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(name="result", type=aws_dynamodb.AttributeType.STRING),
         )
 
         ############################################################################################
