@@ -82,7 +82,7 @@ def get_step_function_validation_results(step_function_input: str) -> List[str]:
     for error in ValidationResultsModel.validation_outcome_index.query(
         hash_key=hash_key, range_key_condition=ValidationResultsModel.result == "Failed"
     ):
-        errors.append(json.dumps(error.details))
+        errors.append(json.dumps(error.details.attribute_values))
 
     return errors
 
