@@ -57,10 +57,14 @@ def get_import_status(event: JsonObject) -> JsonObject:
             step_functions_output["s3_batch_copy"]["job_id"], LOGGER
         )
 
+    step_func_input = json.loads(step_function_resp["input"])
+
     response_body = {
         "validation": {
             "status": step_function_resp["status"],
-            "errors": get_step_function_validation_results(step_function_resp["input"]),
+            "errors": get_step_function_validation_results(
+                step_func_input["dataset_id"], step_func_input["version_id"]
+            ),
         },
         "upload": upload_response,
     }
@@ -68,23 +72,20 @@ def get_import_status(event: JsonObject) -> JsonObject:
     return success_response(200, response_body)
 
 
-def get_step_function_validation_results(step_function_input: str) -> JsonList:
-    input_json = json.loads(step_function_input)
-    hash_key = f"DATASET#{input_json['dataset_id']}#VERSION#{input_json['version_id']}"
+def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
     errors = []
     for validation_item in ValidationResultsModel.validation_outcome_index.query(
         hash_key=hash_key,
         range_key_condition=ValidationResultsModel.result == ValidationResult.FAILED.value,
     ):
-        sk_list = validation_item.sk.split("#")
-        assert len(sk_list) == 4, sk_list
-
+        _, check_type, _, url = validation_item.sk.split("#", maxsplit=4)
         errors.append(
             {
-                "check_type": sk_list[1],
+                "check": check_type,
                 "result": validation_item.result,
-                "file_url": sk_list[3],
+                "url": url,
                 "details": validation_item.details.attribute_values,
             }
         )

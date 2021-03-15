@@ -187,12 +187,12 @@ class ValidationItem:
         result: ValidationResult,
         details: JsonObject,
         url: str,
-        check_type: str,
+        check: str,
     ):
 
         self._item = ValidationResultsModel(
             pk=asset_id,
-            sk=f"CHECK#{check_type}#URL#{url}",
+            sk=f"CHECK#{check}#URL#{url}",
             result=result.value,
             details=details,
         )

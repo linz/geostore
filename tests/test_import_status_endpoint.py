@@ -51,11 +51,13 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         },
     }
 
-    # When attempting to create the instance
-    response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
-        any_lambda_context(),
-    )
+    with patch("backend.import_status.get.get_step_function_validation_results") as validation_mock:
+        validation_mock.return_value = []
+        # When attempting to create the instance
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+            any_lambda_context(),
+        )
 
     # Then
     assert response == expected_response
@@ -69,15 +71,15 @@ def should_retrieve_validation_failures() -> None:
     version_id = any_dataset_version_id()
     asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
-    file_url = any_s3_url()
+    url = any_s3_url()
     error_details = {"error_message": "test"}
-    check_type = "example"
+    check = "example"
 
     expected_response = [
         {
-            "check_type": check_type,
+            "check": check,
             "result": ValidationResult.FAILED.value,
-            "file_url": file_url,
+            "url": url,
             "details": error_details,
         }
     ]
@@ -86,14 +88,12 @@ def should_retrieve_validation_failures() -> None:
         asset_id=asset_id,
         result=ValidationResult.FAILED,
         details=error_details,
-        url=file_url,
-        check_type=check_type,
+        url=url,
+        check=check,
     ):
 
         # When
-        response = get_step_function_validation_results(
-            json.dumps({"dataset_id": dataset_id, "version_id": version_id})
-        )
+        response = get_step_function_validation_results(dataset_id, version_id)
 
         # Then
         assert response == expected_response
