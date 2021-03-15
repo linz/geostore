@@ -8,8 +8,15 @@ from pytest import mark
 
 from backend.import_status import entrypoint
 from backend.import_status.get import get_step_function_validation_results
+from backend.validation_results_model import ValidationResult
 
-from .aws_utils import ValidationResult, any_arn_formatted_string, any_job_id, any_lambda_context
+from .aws_utils import (
+    ValidationItem,
+    any_arn_formatted_string,
+    any_job_id,
+    any_lambda_context,
+    any_s3_url,
+)
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
@@ -58,17 +65,35 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 def should_retrieve_validation_failures() -> None:
     # Given
 
-    expected_response = ["Some Error"]
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
-    with ValidationResult(asset_id=asset_id, result="Failed", details=expected_response[0]):
+    file_url = any_s3_url()
+    error_details = {"error_message": "test"}
+    check_type = "example"
 
-        output = json.dumps({"dataset_id": dataset_id, "version_id": version_id})
+    expected_response = [
+        {
+            "check_type": check_type,
+            "result": ValidationResult.FAILED.value,
+            "file_url": file_url,
+            "details": error_details,
+        }
+    ]
+
+    with ValidationItem(
+        asset_id=asset_id,
+        result=ValidationResult.FAILED,
+        details=error_details,
+        url=file_url,
+        check_type=check_type,
+    ):
 
         # When
-        response = get_step_function_validation_results(output)
+        response = get_step_function_validation_results(
+            json.dumps({"dataset_id": dataset_id, "version_id": version_id})
+        )
 
         # Then
         assert response == expected_response

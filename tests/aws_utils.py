@@ -17,7 +17,8 @@ from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.dataset_model import DatasetModel
 from backend.processing_assets_model import ProcessingAssetsModel
-from backend.validation_results_model import ValidationResultsModel
+from backend.types import JsonObject
+from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
 from .general_generators import (
     _random_string_choices,
@@ -179,17 +180,20 @@ class ProcessingAsset:
         self._item.delete()
 
 
-class ValidationResult:
-    def __init__(
+class ValidationItem:
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         asset_id: str,
-        result: str,
-        details: Optional[str] = None,
+        result: ValidationResult,
+        details: JsonObject,
+        url: str,
+        check_type: str,
     ):
+
         self._item = ValidationResultsModel(
             pk=asset_id,
-            sk="CHECK#example#URL#test",
-            result=result,
+            sk=f"CHECK#{check_type}#URL#{url}",
+            result=result.value,
             details=details,
         )
 
