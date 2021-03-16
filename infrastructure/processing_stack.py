@@ -171,13 +171,28 @@ class ProcessingStack(core.Stack):
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
-        validation_summary_lambda_invoke = LambdaTask(
+        validation_results_table_writers = [
+            check_files_checksums_single_task.job_role,
+            check_files_checksums_array_task.job_role,
+        ]
+        for reader in validation_results_table_writers:
+            self.validation_results_table.grant_read_write_data(reader)  # type: ignore[arg-type]
+            self.validation_results_table.grant(
+                reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+            )
+
+        validation_summary_task = LambdaTask(
             self,
             "validation_summary_task",
             directory="validation_summary",
             result_path="$.validation",
             application_layer=application_layer,
-        ).lambda_invoke
+            extra_environment={"DEPLOY_ENV": deploy_env},
+        )
+        self.validation_results_table.grant_read_data(validation_summary_task.lambda_function)
+        self.validation_results_table.grant(
+            validation_summary_task.lambda_function, "dynamodb:DescribeTable"
+        )
 
         validation_failure_lambda_invoke = LambdaTask(
             self,
@@ -281,7 +296,7 @@ class ProcessingStack(core.Stack):
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.number_equals("$.content.next_item", -1),
-                    validation_summary_lambda_invoke.next(
+                    validation_summary_task.lambda_invoke.next(
                         aws_stepfunctions.Choice(  # type: ignore[arg-type]
                             self, "validation_successful"
                         )
