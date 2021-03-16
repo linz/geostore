@@ -17,6 +17,7 @@ class APIStack(core.Stack):
         scope: core.Construct,
         stack_id: str,
         datasets_table: aws_dynamodb.Table,
+        validation_results_table: aws_dynamodb.Table,
         users_role: aws_iam.Role,
         deploy_env: str,
         state_machine: aws_stepfunctions.StateMachine,
@@ -56,6 +57,11 @@ class APIStack(core.Stack):
             deploy_env=deploy_env,
             users_role=users_role,
         ).lambda_function
+
+        validation_results_table.grant_read_data(import_status_endpoint_lambda)
+        validation_results_table.grant(
+            import_status_endpoint_lambda, "dynamodb:DescribeTable"
+        )  # required by pynamodb
 
         state_machine.grant_read(import_status_endpoint_lambda)
         assert import_status_endpoint_lambda.role is not None

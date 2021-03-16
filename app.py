@@ -64,6 +64,7 @@ def main() -> None:
         env={"region": region, "account": account},
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
+        validation_results_table=processing.validation_results_table,
         users_role=users.users_role,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,

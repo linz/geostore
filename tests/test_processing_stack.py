@@ -186,7 +186,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     expected_response = {
                         "statusCode": 200,
                         "body": {
-                            "validation": {"status": "SUCCEEDED"},
+                            "validation": {"status": "SUCCEEDED", "errors": []},
                             "upload": {"status": "Complete", "errors": []},
                         },
                     }
@@ -318,7 +318,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     expected_response = {
                         "statusCode": 200,
                         "body": {
-                            "validation": {"status": "SUCCEEDED"},
+                            "validation": {"status": "SUCCEEDED", "errors": []},
                             "upload": {"status": "Complete", "errors": []},
                         },
                     }

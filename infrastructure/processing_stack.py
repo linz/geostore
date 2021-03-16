@@ -46,7 +46,7 @@ class ProcessingStack(core.Stack):
             application_layer=application_layer,
         )
 
-        validation_results_table = Table(
+        self.validation_results_table = Table(
             self,
             ResourceName.VALIDATION_RESULTS_TABLE_NAME.value,
             deploy_env=deploy_env,
@@ -56,7 +56,7 @@ class ProcessingStack(core.Stack):
         assert ValidationOutcomeIdx.result.attr_name
         assert ValidationOutcomeIdx.pk.attr_name
 
-        validation_results_table.add_global_secondary_index(
+        self.validation_results_table.add_global_secondary_index(
             index_name=ValidationOutcomeIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(
                 name=ValidationOutcomeIdx.pk.attr_name, type=aws_dynamodb.AttributeType.STRING
@@ -103,7 +103,7 @@ class ProcessingStack(core.Stack):
                 "Ref::metadata_url",
             ],
         )
-        for table in [processing_assets_table, validation_results_table]:
+        for table in [processing_assets_table, self.validation_results_table]:
             table.grant_read_write_data(
                 check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
             )
