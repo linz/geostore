@@ -91,7 +91,7 @@ class TestLogging:
         stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
         asset_url = f"{base_url}/{any_safe_filename()}"
         asset_multihash = any_hex_multihash()
-        stac_object["item_assets"] = {
+        stac_object["assets"] = {
             any_asset_name(): {
                 "href": asset_url,
                 "checksum:multihash": asset_multihash,

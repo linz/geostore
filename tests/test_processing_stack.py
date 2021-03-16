@@ -84,7 +84,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as second_asset_s3_object:
-        metadata["item_assets"] = {
+        metadata["assets"] = {
             any_asset_name(): {
                 "href": first_asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
@@ -226,7 +226,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         bucket_name=ResourceName.DATASET_STAGING_BUCKET_NAME.value,
         key=f"{key_prefix}/{any_safe_filename()}.txt",
     ) as asset_s3_object:
-        metadata["item_assets"] = {
+        metadata["assets"] = {
             any_asset_name(): {
                 "href": asset_s3_object.url,
                 "checksum:multihash": sha256_hex_digest_to_multihash(
@@ -357,7 +357,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
     ) as asset_s3_object:
         metadata = {
             **deepcopy(MINIMAL_VALID_STAC_OBJECT),
-            "item_assets": {
+            "assets": {
                 any_asset_name(): {
                     "href": asset_s3_object.url,
                     "checksum:multihash": any_hex_multihash(),
