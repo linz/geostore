@@ -7,7 +7,8 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
 from ..log import set_up_logging
-from ..types import JsonObject
+from ..types import JsonList, JsonObject
+from ..validation_results_model import ValidationResult, ValidationResultsModel
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -56,12 +57,40 @@ def get_import_status(event: JsonObject) -> JsonObject:
             step_functions_output["s3_batch_copy"]["job_id"], LOGGER
         )
 
+    step_func_input = json.loads(step_function_resp["input"])
+
     response_body = {
-        "validation": {"status": step_function_resp["status"]},
+        "validation": {
+            "status": step_function_resp["status"],
+            "errors": get_step_function_validation_results(
+                step_func_input["dataset_id"], step_func_input["version_id"]
+            ),
+        },
         "upload": upload_response,
     }
 
     return success_response(200, response_body)
+
+
+def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+
+    errors = []
+    for validation_item in ValidationResultsModel.validation_outcome_index.query(
+        hash_key=hash_key,
+        range_key_condition=ValidationResultsModel.result == ValidationResult.FAILED.value,
+    ):
+        _, check_type, _, url = validation_item.sk.split("#", maxsplit=4)
+        errors.append(
+            {
+                "check": check_type,
+                "result": validation_item.result,
+                "url": url,
+                "details": validation_item.details.attribute_values,
+            }
+        )
+
+    return errors
 
 
 def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) -> JsonObject:

@@ -8,6 +8,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from backend.import_status.get import get_import_status, get_s3_batch_copy_status
 
 from .aws_utils import any_arn_formatted_string
+from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 class TestLogging:
@@ -27,9 +28,17 @@ class TestLogging:
 
         expected_payload_log = dumps({"event": event})
 
-        describe_step_function_mock.return_value = {"status": "RUNNING"}
+        describe_step_function_mock.return_value = {
+            "status": "RUNNING",
+            "input": json.dumps(
+                {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+            ),
+        }
 
-        with patch.object(self.logger, "debug") as logger_mock:
+        with patch.object(self.logger, "debug") as logger_mock, patch(
+            "backend.import_status.get.get_step_function_validation_results"
+        ) as validation_mock:
+            validation_mock.return_value = []
 
             # When
             get_import_status(event)
@@ -65,13 +74,19 @@ class TestLogging:
     ) -> None:
         # Given
         describe_execution_mock.return_value = describe_execution_response = {
-            "status": "Some Response"
+            "status": "Some Response",
+            "input": json.dumps(
+                {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+            ),
         }
         expected_response_log = json.dumps({"step function response": describe_execution_response})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"
-        ):
+        ), patch(
+            "backend.import_status.get.get_step_function_validation_results"
+        ) as validation_mock:
+            validation_mock.return_value = []
             # When
             get_import_status(
                 {

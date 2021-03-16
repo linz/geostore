@@ -185,6 +185,7 @@ import_dataset = [
 import_status = [
     "boto3",
     "jsonschema",
+    "pynamodb"
 ]
 
 [tool.pytest.ini_options]
