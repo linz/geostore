@@ -1,15 +1,16 @@
 import textwrap
 
-from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam, core
+from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam
+from aws_cdk.core import Construct, Fn
 
 APPLICATION_NAME_TAG_NAME = "ApplicationName"
 APPLICATION_NAME = "geospatial-data-lake"
 
 
-class BatchJobQueue(core.Construct):
+class BatchJobQueue(Construct):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         deploy_env: str,
@@ -64,7 +65,7 @@ class BatchJobQueue(core.Construct):
             """
         )
         launch_template_data = aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
-            user_data=core.Fn.base64(batch_launch_template_data.strip())
+            user_data=Fn.base64(batch_launch_template_data.strip())
         )
         cloudformation_launch_template = aws_ec2.CfnLaunchTemplate(
             self,

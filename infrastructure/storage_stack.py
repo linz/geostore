@@ -3,8 +3,8 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_s3, aws_ssm, core
-from aws_cdk.core import Tags
+from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
+from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
 from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
@@ -13,17 +13,15 @@ from backend.resources import ResourceName
 from .constructs.table import Table
 
 
-class StorageStack(core.Stack):
-    def __init__(
-        self, scope: core.Construct, stack_id: str, deploy_env: str, **kwargs: Any
-    ) -> None:
+class StorageStack(Stack):
+    def __init__(self, scope: Construct, stack_id: str, deploy_env: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         # set resources depending on deployment type
         if deploy_env == "prod":
-            resource_removal_policy = core.RemovalPolicy.RETAIN
+            resource_removal_policy = RemovalPolicy.RETAIN
         else:
-            resource_removal_policy = core.RemovalPolicy.DESTROY
+            resource_removal_policy = RemovalPolicy.DESTROY
 
         ############################################################################################
         # ### STORAGE S3 BUCKET ####################################################################
