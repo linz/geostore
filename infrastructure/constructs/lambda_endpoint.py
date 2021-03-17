@@ -25,7 +25,7 @@ class LambdaEndpoint(core.Construct):
                 bundling=core.BundlingOptions(
                     # pylint:disable=no-member
                     image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                    command=["backend/bundle.bash", f"{construct_id}"],
+                    command=["backend/bundle.bash", construct_id],
                 ),
             ),
         )
