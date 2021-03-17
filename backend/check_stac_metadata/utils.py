@@ -33,6 +33,12 @@ class STACSchemaValidator(Draft7Validator):
             self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog.json"),
             self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog-core.json"),
             collection_schema,
+            self.get_schema_dict("stac-spec/item-spec/json-schema/basics.json"),
+            self.get_schema_dict("stac-spec/item-spec/json-schema/datetime.json"),
+            self.get_schema_dict("stac-spec/item-spec/json-schema/instrument.json"),
+            self.get_schema_dict("stac-spec/item-spec/json-schema/item.json"),
+            self.get_schema_dict("stac-spec/item-spec/json-schema/licensing.json"),
+            self.get_schema_dict("stac-spec/item-spec/json-schema/provider.json"),
         ]:
             # Normalize URLs the same way as jsonschema does
             schema_store[uri_dictionary.normalize(schema["$id"])] = schema
@@ -89,7 +95,7 @@ class STACDatasetValidator:
 
         self.dataset_metadata.append({"url": url})
 
-        for asset in url_json.get("item_assets", {}).values():
+        for asset in url_json.get("assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
             assert (
