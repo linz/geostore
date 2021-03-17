@@ -3,10 +3,8 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions, core
-from aws_cdk.aws_iam import PolicyStatement
-from aws_cdk.aws_s3 import Bucket
-from aws_cdk.aws_ssm import StringParameter
+from aws_cdk import aws_dynamodb, aws_iam, aws_s3, aws_ssm, aws_stepfunctions
+from aws_cdk.core import Construct, Stack
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
@@ -19,17 +17,17 @@ from .constructs.lambda_task import LambdaTask
 from .constructs.table import Table
 
 
-class ProcessingStack(core.Stack):
+class ProcessingStack(Stack):
     """Data Lake processing stack definition."""
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        scope: core.Construct,
+        scope: Construct,
         stack_id: str,
         deploy_env: str,
-        staging_bucket: Bucket,
-        storage_bucket: Bucket,
-        storage_bucket_parameter: StringParameter,
+        staging_bucket: aws_s3.Bucket,
+        storage_bucket: aws_s3.Bucket,
+        storage_bucket_parameter: aws_ssm.StringParameter,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -256,13 +254,13 @@ class ProcessingStack(core.Stack):
 
         assert import_dataset_task.lambda_function.role is not None
         import_dataset_task.lambda_function.role.add_to_policy(
-            PolicyStatement(
+            aws_iam.PolicyStatement(
                 resources=[s3_batch_copy_role.role_arn],
                 actions=["iam:PassRole"],
             ),
         )
         import_dataset_task.lambda_function.role.add_to_policy(
-            PolicyStatement(
+            aws_iam.PolicyStatement(
                 resources=["*"],
                 actions=["s3:CreateJob"],
             ),

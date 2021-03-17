@@ -1,7 +1,7 @@
 from typing import Mapping, Optional
 
-from aws_cdk import aws_lambda, core
-from aws_cdk.core import Duration
+from aws_cdk import aws_lambda
+from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
 
 from ..common import LOG_LEVEL
 
@@ -9,14 +9,14 @@ from ..common import LOG_LEVEL
 class BundledLambdaFunction(aws_lambda.Function):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         directory: str,
         application_layer: str,
         extra_environment: Optional[Mapping[str, str]] = None,
     ):
-        bundling_options = core.BundlingOptions(
+        bundling_options = BundlingOptions(
             # pylint:disable=no-member
             image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
             command=["backend/bundle.bash", directory],
@@ -37,4 +37,4 @@ class BundledLambdaFunction(aws_lambda.Function):
             timeout=Duration.seconds(60),
         )
 
-        core.Tags.of(self).add("ApplicationLayer", application_layer)
+        Tags.of(self).add("ApplicationLayer", application_layer)

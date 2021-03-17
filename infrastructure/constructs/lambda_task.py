@@ -1,14 +1,15 @@
 from typing import Mapping, Optional
 
-from aws_cdk import aws_stepfunctions_tasks, core
+from aws_cdk import aws_stepfunctions_tasks
+from aws_cdk.core import Construct
 
 from .bundled_lambda_function import BundledLambdaFunction
 
 
-class LambdaTask(core.Construct):
+class LambdaTask(Construct):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         directory: str,

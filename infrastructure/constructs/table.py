@@ -1,14 +1,15 @@
-from aws_cdk import aws_dynamodb, core
+from aws_cdk import aws_dynamodb
+from aws_cdk.core import Construct, RemovalPolicy, Tags
 
 
 class Table(aws_dynamodb.Table):
     def __init__(
-        self, scope: core.Construct, construct_id: str, *, deploy_env: str, application_layer: str
+        self, scope: Construct, construct_id: str, *, deploy_env: str, application_layer: str
     ):
         if deploy_env == "prod":
-            resource_removal_policy = core.RemovalPolicy.RETAIN
+            resource_removal_policy = RemovalPolicy.RETAIN
         else:
-            resource_removal_policy = core.RemovalPolicy.DESTROY
+            resource_removal_policy = RemovalPolicy.DESTROY
 
         super().__init__(
             scope,
@@ -20,4 +21,4 @@ class Table(aws_dynamodb.Table):
             removal_policy=resource_removal_policy,
         )
 
-        core.Tags.of(self).add("ApplicationLayer", application_layer)  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", application_layer)  # type: ignore[arg-type]

@@ -3,18 +3,18 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions, core
-from aws_cdk.aws_iam import PolicyStatement
+from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions
+from aws_cdk.core import Construct, Stack
 
 from infrastructure.constructs.lambda_endpoint import LambdaEndpoint
 
 
-class APIStack(core.Stack):
+class APIStack(Stack):
     """Data Lake stack definition."""
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        scope: core.Construct,
+        scope: Construct,
         stack_id: str,
         datasets_table: aws_dynamodb.Table,
         validation_results_table: aws_dynamodb.Table,
@@ -66,7 +66,7 @@ class APIStack(core.Stack):
         state_machine.grant_read(import_status_endpoint_lambda)
         assert import_status_endpoint_lambda.role is not None
         import_status_endpoint_lambda.role.add_to_policy(
-            PolicyStatement(
+            aws_iam.PolicyStatement(
                 resources=["*"],
                 actions=["s3:DescribeJob"],
             ),
