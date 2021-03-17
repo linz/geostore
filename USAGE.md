@@ -5,7 +5,7 @@ The purpose of GDL is to store geospatial datasets. This document should provide
 The keywords "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended",  "may", and "optional" in this document are to be interpreted as described in [RFC 2119](https://tools.ietf.org/html/rfc2119).
 
 ## Prerequisites
-Currently, Data Lake allows read/write access for all users from all AWS accounts (users home accounts) specified in `DATALAKE_USERS_AWS_ACCOUNTS_IDS` during deployment time (see [README](README.md#aws-infrastructure-deployment-cdk-stack)). Please contact the Data Lake product team to add your AWS account to this list.
+Currently, Data Lake allows read/write access for all users authenticated via `DATALAKE_SAML_IDENTITY_PROVIDER_ARN` during deployment time (see [README](README.md#aws-infrastructure-deployment-cdk-stack)).
 
 The product team will provide you the following information to enable to you to start using the Data Lake:
 
@@ -94,7 +94,7 @@ aws lambda invoke \
 ### Dataset Space Endpoint Usage Examples
 
 - Set Dataset Space Endpont Lambda function name
-  
+
    ```bash
    export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
    ```
@@ -106,11 +106,11 @@ aws lambda invoke \
        --invocation-type RequestResponse \
        --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020", "owning_group": "A_XYZ_XYZ"}}' \
        /dev/stdout
-  
+
    {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of all Datasets listing request
-  
+
    ```console
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
@@ -121,7 +121,7 @@ aws lambda invoke \
    {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
 - Example of single Dataset listing request
-  
+
    ```console
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
@@ -132,7 +132,7 @@ aws lambda invoke \
    {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of Dataset delete request
-  
+
    ```console
    $ aws lambda invoke \
        --function-name datasets-endpoint \
@@ -146,7 +146,7 @@ aws lambda invoke \
 ## Dataset Version Endpoint Usage Examples
 
 - Set Dataset Space Endpoint Lambda function name
-  
+
    ```bash
    export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
    ```
@@ -165,7 +165,7 @@ aws lambda invoke \
 ## Import Status Endpoint Usage Examples
 
 - Set Import Status Endpoint Lambda function name
-  
+
    ```bash
    export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
    ```

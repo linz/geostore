@@ -94,7 +94,7 @@ Re-run `. .venv/bin/activate` in each shell.
 
 ## VPC pre-requisite
 
-A VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are managed internally by the 
+A VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are managed internally by the
 IT team. If you are deploying this application outside LINZ, you will need to create a VPC with the following tags:
 
 - "ApplicationName": "geospatial-data-lake"
@@ -111,16 +111,14 @@ You can achieve this by adding the networking_stack (datalake/networking_stack.p
     aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
     ```
 1. Environment variables
-   * **`DEPLOY_ENV`:** set deployment environment. 
-     For your personal development stack: set DEPLOY_ENV to your username. 
-     
+   * **`DEPLOY_ENV`:** set deployment environment.
+     For your personal development stack: set DEPLOY_ENV to your username.
+
      ```bash
      export DEPLOY_ENV="$USER"
      ```
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
-   * **`DATALAKE_USERS_AWS_ACCOUNTS_IDS`:** allow read/write access to Lambda functions API to all users
-    belonging to specified comma separated list of AWS accounts IDs. Default: AWS account where Data
-    Lake stack is deployed.
+   * **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
 1. Bootstrap CDK (only once per profile)
 
     ```bash
