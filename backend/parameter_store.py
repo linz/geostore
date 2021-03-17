@@ -1,6 +1,9 @@
 import json
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING
+
+from .environment import ENV
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -10,8 +13,14 @@ else:
     SSMClient = object
 
 
-def get_param(parameter: str, ssm_client: SSMClient, logger: logging.Logger) -> str:
-    parameter_response = ssm_client.get_parameter(Name=parameter)
+class ParameterName(Enum):
+    DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
+    S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
+    STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
+
+
+def get_param(parameter: ParameterName, ssm_client: SSMClient, logger: logging.Logger) -> str:
+    parameter_response = ssm_client.get_parameter(Name=parameter.value)
 
     try:
         return parameter_response["Parameter"]["Value"]

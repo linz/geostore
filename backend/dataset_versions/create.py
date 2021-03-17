@@ -9,15 +9,12 @@ from pynamodb.exceptions import DoesNotExist
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
 from ..dataset_model import DatasetModel
-from ..environment import ENV
 from ..log import set_up_logging
-from ..parameter_store import get_param
+from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 SSM_CLIENT = boto3.client("ssm")
-
-DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
 
 
 def create_dataset_version(event: JsonObject) -> JsonObject:
@@ -66,7 +63,9 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
-    state_machine_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION, SSM_CLIENT, logger)
+    state_machine_arn = get_param(
+        ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION, SSM_CLIENT, logger
+    )
 
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,

@@ -6,8 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack
 
-from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
+from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
 
@@ -239,7 +238,7 @@ class ProcessingStack(Stack):
             self,
             "s3-batch-copy-role-arn",
             description=f"S3 Batch Copy Role ARN for {deploy_env}",
-            parameter_name=S3_BATCH_COPY_ROLE_PARAMETER_NAME,
+            parameter_name=ParameterName.S3_BATCH_COPY_ROLE_PARAMETER_NAME.value,
             string_value=s3_batch_copy_role.role_arn,
         )
 
@@ -323,6 +322,6 @@ class ProcessingStack(Stack):
             self,
             "Step Function State Machine Parameter",
             description=f"Step Function State Machine ARN for {deploy_env}",
-            parameter_name=DATASET_VERSION_CREATION_STEP_FUNCTION,
+            parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION.value,
             string_value=self.state_machine.state_machine_arn,
         )

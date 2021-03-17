@@ -14,9 +14,8 @@ from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
-from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
 from backend.import_status.get import ValidationOutcome
+from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
 from .aws_utils import (
@@ -44,8 +43,13 @@ LOGGER = logging.getLogger(__name__)
 @mark.infrastructure
 def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=DATASET_VERSION_CREATION_STEP_FUNCTION)
-    assert parameter_response["Parameter"]["Name"] == DATASET_VERSION_CREATION_STEP_FUNCTION
+    parameter_response = ssm_client.get_parameter(
+        Name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION.value
+    )
+    assert (
+        parameter_response["Parameter"]["Name"]
+        == ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION.value
+    )
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "stateMachine" in parameter_response["Parameter"]["Value"]
 
@@ -53,8 +57,13 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
 @mark.infrastructure
 def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=S3_BATCH_COPY_ROLE_PARAMETER_NAME)
-    assert parameter_response["Parameter"]["Name"] == S3_BATCH_COPY_ROLE_PARAMETER_NAME
+    parameter_response = ssm_client.get_parameter(
+        Name=ParameterName.S3_BATCH_COPY_ROLE_PARAMETER_NAME.value
+    )
+    assert (
+        parameter_response["Parameter"]["Name"]
+        == ParameterName.S3_BATCH_COPY_ROLE_PARAMETER_NAME.value
+    )
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 
