@@ -92,13 +92,13 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     if "title" in req_body:
         datasets = DatasetModel.datasets_tile_idx.query(
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetModel.title == f"{req_body['title']}",
+            range_key_condition=DatasetModel.title == req_body["title"],
         )
 
     if "owning_group" in req_body:
         datasets = DatasetModel.datasets_owning_group_idx.query(
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetModel.owning_group == f"{req_body['owning_group']}",
+            range_key_condition=DatasetModel.owning_group == req_body["owning_group"],
         )
 
     # return response
