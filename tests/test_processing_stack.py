@@ -16,6 +16,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.dataset_versions.create import DATASET_VERSION_CREATION_STEP_FUNCTION
 from backend.import_dataset.task import S3_BATCH_COPY_ROLE_PARAMETER_NAME
+from backend.import_status.get import ValidationOutcome
 from backend.resources import ResourceName
 
 from .aws_utils import (
@@ -187,7 +188,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     expected_response = {
                         "statusCode": 200,
                         "body": {
-                            "validation": {"status": "SUCCEEDED", "errors": []},
+                            "step function": {"status": "SUCCEEDED"},
+                            "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
                             "upload": {"status": "Complete", "errors": []},
                         },
                     }
@@ -319,7 +321,8 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     expected_response = {
                         "statusCode": 200,
                         "body": {
-                            "validation": {"status": "SUCCEEDED", "errors": []},
+                            "step function": {"status": "SUCCEEDED"},
+                            "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
                             "upload": {"status": "Complete", "errors": []},
                         },
                     }

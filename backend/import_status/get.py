@@ -1,6 +1,7 @@
 """Import Status handler function."""
 import json
 import logging
+from enum import Enum
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -14,6 +15,12 @@ STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
+
+
+class ValidationOutcome(Enum):
+    PASSED = "Passed"
+    PENDING = "Pending"
+    FAILED = "Failed"
 
 
 def get_import_status(event: JsonObject) -> JsonObject:
@@ -43,9 +50,11 @@ def get_import_status(event: JsonObject) -> JsonObject:
     step_func_input = json.loads(step_function_resp["input"])
     step_functions_output = json.loads(step_function_resp.get("output", "{}"))
 
-    validation_status = {True: "Passed", False: "Failed", None: "Pending"}.get(
-        step_functions_output.get("validation", {}).get("success")
-    )
+    validation_status = {
+        True: ValidationOutcome.PASSED,
+        False: ValidationOutcome.FAILED,
+        None: ValidationOutcome.PENDING,
+    }.get(step_functions_output.get("validation", {}).get("success"))
 
     s3_job_id = step_functions_output.get("s3_batch_copy", {}).get("job_id")
     if s3_job_id:
