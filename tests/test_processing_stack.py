@@ -38,7 +38,7 @@ from .stac_generators import (
 )
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 @mark.infrastructure
@@ -131,7 +131,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
-                    logger.info("Executed State Machine: %s", json_resp)
+                    LOGGER.info("Executed State Machine: %s", json_resp)
 
                     # Then poll for State Machine State
                     while (
@@ -139,7 +139,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             executionArn=json_resp["body"]["execution_arn"]
                         )
                     )["status"] == "RUNNING":
-                        logger.info("Polling for State Machine state %s", "." * 6)
+                        LOGGER.info("Polling for State Machine state %s", "." * 6)
                         time.sleep(5)
 
                     assert execution["status"] == "SUCCEEDED", execution
@@ -268,7 +268,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
-                    logger.info("Executed State Machine: %s", json_resp)
+                    LOGGER.info("Executed State Machine: %s", json_resp)
 
                     # Then poll for State Machine State
                     while (
@@ -276,7 +276,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                             executionArn=json_resp["body"]["execution_arn"]
                         )
                     )["status"] == "RUNNING":
-                        logger.info("Polling for State Machine state %s", "." * 6)
+                        LOGGER.info("Polling for State Machine state %s", "." * 6)
                         time.sleep(5)
 
                     assert execution["status"] == "SUCCEEDED", execution
@@ -402,7 +402,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                         executionArn=state_machine_arn
                     )
                 )["status"] == "RUNNING":
-                    logger.info("Polling for State Machine %s state", state_machine_arn)
+                    LOGGER.info("Polling for State Machine %s state", state_machine_arn)
                     time.sleep(5)
 
                 assert execution["status"] == "SUCCEEDED", execution

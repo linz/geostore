@@ -14,7 +14,7 @@ from ..log import set_up_logging
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
-ssm_client = boto3.client("ssm")
+SSM_CLIENT = boto3.client("ssm")
 
 DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
 
@@ -86,7 +86,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
 
 
 def get_param(parameter: str) -> str:
-    parameter_response = ssm_client.get_parameter(Name=parameter)
+    parameter_response = SSM_CLIENT.get_parameter(Name=parameter)
 
     try:
         parameter = parameter_response["Parameter"]["Value"]
