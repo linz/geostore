@@ -14,9 +14,11 @@ else:
 
 
 class ParameterName(Enum):
-    DATASET_VERSION_CREATION_STEP_FUNCTION = f"/{ENV}/step-func-statemachine-arn"
-    S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
-    STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
+    DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = (
+        f"/{ENV}/dataset-version-creation-step-function-arn"
+    )
+    S3_BATCH_COPY_ROLE_ARN = f"/{ENV}/s3-batch-copy-role-arn"
+    STORAGE_BUCKET_ARN = f"/{ENV}/storage-bucket-arn"
 
 
 def get_param(parameter: ParameterName, ssm_client: SSMClient, logger: logging.Logger) -> str:

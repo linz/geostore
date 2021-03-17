@@ -64,7 +64,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         "metadata_url": req_body["metadata-url"],
     }
     state_machine_arn = get_param(
-        ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION, SSM_CLIENT, logger
+        ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN, SSM_CLIENT, logger
     )
 
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(

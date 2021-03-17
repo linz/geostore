@@ -46,7 +46,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = event["version_id"]
     metadata_url = event["metadata_url"]
 
-    storage_bucket_arn = get_param(ParameterName.STORAGE_BUCKET_PARAMETER_NAME, SSM_CLIENT, logger)
+    storage_bucket_arn = get_param(ParameterName.STORAGE_BUCKET_ARN, SSM_CLIENT, logger)
     storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
 
     staging_bucket_name = urlparse(metadata_url).netloc
@@ -68,9 +68,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     assert "ETag" in manifest_s3_object, manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
-    s3_batch_copy_role_arn = get_param(
-        ParameterName.S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT, logger
-    )
+    s3_batch_copy_role_arn = get_param(ParameterName.S3_BATCH_COPY_ROLE_ARN, SSM_CLIENT, logger)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(

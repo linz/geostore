@@ -238,7 +238,7 @@ class ProcessingStack(Stack):
             self,
             "s3-batch-copy-role-arn",
             description=f"S3 Batch Copy Role ARN for {deploy_env}",
-            parameter_name=ParameterName.S3_BATCH_COPY_ROLE_PARAMETER_NAME.value,
+            parameter_name=ParameterName.S3_BATCH_COPY_ROLE_ARN.value,
             string_value=s3_batch_copy_role.role_arn,
         )
 
@@ -322,6 +322,6 @@ class ProcessingStack(Stack):
             self,
             "Step Function State Machine Parameter",
             description=f"Step Function State Machine ARN for {deploy_env}",
-            parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION.value,
+            parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
         )

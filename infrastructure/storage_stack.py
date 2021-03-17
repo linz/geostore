@@ -41,7 +41,7 @@ class StorageStack(Stack):
             self,
             "Storage Bucket ARN Parameter",
             description=f"Storage Bucket ARN for {deploy_env}",
-            parameter_name=ParameterName.STORAGE_BUCKET_PARAMETER_NAME.value,
+            parameter_name=ParameterName.STORAGE_BUCKET_ARN.value,
             string_value=self.storage_bucket.bucket_arn,
         )
 

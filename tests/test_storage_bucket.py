@@ -37,11 +37,7 @@ def should_create_storage_bucket_public_access_block(s3_client: S3Client) -> Non
 @mark.infrastructure
 def should_create_storage_bucket_arn_parameter(ssm_client: SSMClient) -> None:
     """Test if Data Lake Storage Bucket ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(
-        Name=ParameterName.STORAGE_BUCKET_PARAMETER_NAME.value
-    )
-    assert (
-        parameter_response["Parameter"]["Name"] == ParameterName.STORAGE_BUCKET_PARAMETER_NAME.value
-    )
+    parameter_response = ssm_client.get_parameter(Name=ParameterName.STORAGE_BUCKET_ARN.value)
+    assert parameter_response["Parameter"]["Name"] == ParameterName.STORAGE_BUCKET_ARN.value
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "s3" in parameter_response["Parameter"]["Value"]
