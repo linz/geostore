@@ -11,6 +11,7 @@ from ..dataset import DATASET_TYPES
 from ..dataset_model import DatasetModel
 from ..environment import ENV
 from ..log import set_up_logging
+from ..parameter_store import get_param
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
@@ -65,7 +66,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
-    state_machine_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION)
+    state_machine_arn = get_param(DATASET_VERSION_CREATION_STEP_FUNCTION, SSM_CLIENT, logger)
 
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,
@@ -83,15 +84,3 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
             "execution_arn": step_functions_response["executionArn"],
         },
     )
-
-
-def get_param(parameter: str) -> str:
-    parameter_response = SSM_CLIENT.get_parameter(Name=parameter)
-
-    try:
-        parameter = parameter_response["Parameter"]["Value"]
-    except KeyError:
-        print(parameter_response)
-        raise
-
-    return parameter
