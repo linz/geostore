@@ -8,7 +8,9 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
+from botocore.stub import Stubber  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
+from mypy_boto3_s3 import S3Client
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -56,6 +58,35 @@ def should_return_non_zero_exit_code_on_validation_failure(
     ]
 
     assert main() == 1
+
+
+def should_save_staging_access_validation_results(subtests: SubTests, s3_client: S3Client) -> None:
+
+    s3_stubber = Stubber(s3_client)
+    s3_stubber.add_client_error("some error")
+
+    s3_url = any_s3_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    sys.argv = [
+        any_program_name(),
+        f"--metadata-url={s3_url}",
+        f"--dataset-id={dataset_id}",
+        f"--version-id={version_id}",
+    ]
+
+    with subtests.test(msg="Exit code"), s3_stubber:
+        assert main() == 1
+
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    with subtests.test(msg="Root validation results"):
+        root_result = ValidationResultsModel.get(
+            hash_key=hash_key,
+            range_key=f"CHECK#{Check.STAGING_ACCESS.value}#URL#{s3_url}",
+            consistent_read=True,
+        )
+        assert root_result.result == ValidationResult.FAILED.value
 
 
 @mark.infrastructure
