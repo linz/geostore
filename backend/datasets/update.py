@@ -40,7 +40,7 @@ def update_dataset(payload: JsonObject) -> JsonObject:
     # check for duplicate type/title
     if DatasetModel.datasets_tile_idx.count(
         hash_key=f"TYPE#{req_body['type']}",
-        range_key_condition=(DatasetModel.title == f"{req_body['title']}"),
+        range_key_condition=(DatasetModel.title == req_body["title"]),
     ):
         return error_response(
             409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"

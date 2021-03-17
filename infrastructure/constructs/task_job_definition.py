@@ -1,10 +1,11 @@
-from aws_cdk import aws_batch, aws_ecs, aws_iam, core
+from aws_cdk import aws_batch, aws_ecs, aws_iam
+from aws_cdk.core import Construct
 
 
 class TaskJobDefinition(aws_batch.JobDefinition):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         deploy_env: str,

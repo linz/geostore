@@ -1,7 +1,7 @@
 from typing import Any
 
-from aws_cdk import aws_s3, core
-from aws_cdk.core import Tags
+from aws_cdk import aws_s3
+from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
 from backend.environment import ENV
 from backend.resources import ResourceName
@@ -9,8 +9,8 @@ from backend.resources import ResourceName
 STAGING_BUCKET_PARAMETER = f"/{ENV}/staging-bucket-arn"
 
 
-class StagingStack(core.Stack):
-    def __init__(self, scope: core.Construct, stack_id: str, **kwargs: Any) -> None:
+class StagingStack(Stack):
+    def __init__(self, scope: Construct, stack_id: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
@@ -23,6 +23,6 @@ class StagingStack(core.Stack):
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
-            removal_policy=core.RemovalPolicy.DESTROY,
+            removal_policy=RemovalPolicy.DESTROY,
         )
         Tags.of(self.staging_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]

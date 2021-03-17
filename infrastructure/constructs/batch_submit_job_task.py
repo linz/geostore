@@ -1,15 +1,16 @@
 from typing import List, Mapping, Optional
 
-from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks, core
+from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks
+from aws_cdk.core import Construct
 
 from ..common import LOG_LEVEL
 from .task_job_definition import TaskJobDefinition
 
 
-class BatchSubmitJobTask(core.Construct):
+class BatchSubmitJobTask(Construct):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         deploy_env: str,

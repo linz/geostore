@@ -1,11 +1,11 @@
-from aws_cdk import aws_iam, aws_lambda, core
-from aws_cdk.core import Duration, Tags
+from aws_cdk import aws_iam, aws_lambda
+from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
 
 
-class LambdaEndpoint(core.Construct):
+class LambdaEndpoint(Construct):
     def __init__(
         self,
-        scope: core.Construct,
+        scope: Construct,
         construct_id: str,
         *,
         deploy_env: str,
@@ -22,10 +22,10 @@ class LambdaEndpoint(core.Construct):
             timeout=Duration.seconds(60),
             code=aws_lambda.Code.from_asset(
                 path=".",
-                bundling=core.BundlingOptions(
+                bundling=BundlingOptions(
                     # pylint:disable=no-member
                     image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                    command=["backend/bundle.bash", f"{construct_id}"],
+                    command=["backend/bundle.bash", construct_id],
                 ),
             ),
         )
