@@ -29,7 +29,6 @@ class StorageStack(Stack):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
@@ -39,10 +38,10 @@ class StorageStack(Stack):
 
         self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
-            "Storage Bucket ARN Parameter",
-            description=f"Storage Bucket ARN for {deploy_env}",
-            parameter_name=ParameterName.STORAGE_BUCKET_ARN.value,
-            string_value=self.storage_bucket.bucket_arn,
+            "Storage Bucket Name Parameter",
+            description=f"Storage Bucket name for {deploy_env}",
+            parameter_name=ParameterName.STORAGE_BUCKET_NAME.value,
+            string_value=self.storage_bucket.bucket_name,
         )
 
         ############################################################################################
