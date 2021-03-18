@@ -60,6 +60,7 @@ def should_return_non_zero_exit_code_on_validation_failure(
     assert main() == 1
 
 
+@mark.infrastructure
 def should_save_staging_access_validation_results(subtests: SubTests, s3_client: S3Client) -> None:
 
     s3_stubber = Stubber(s3_client)
