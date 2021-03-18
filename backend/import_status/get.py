@@ -23,6 +23,13 @@ class ValidationOutcome(Enum):
     FAILED = "Failed"
 
 
+SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
+    True: ValidationOutcome.PASSED,
+    False: ValidationOutcome.FAILED,
+    None: ValidationOutcome.PENDING,
+}
+
+
 def get_import_status(event: JsonObject) -> JsonObject:
     LOGGER.debug(json.dumps({"event": event}))
 
@@ -47,16 +54,14 @@ def get_import_status(event: JsonObject) -> JsonObject:
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))
 
-    step_func_input = json.loads(step_function_resp["input"])
-    step_functions_output = json.loads(step_function_resp.get("output", "{}"))
+    step_function_input = json.loads(step_function_resp["input"])
+    step_function_output = json.loads(step_function_resp.get("output", "{}"))
 
-    validation_status = {
-        True: ValidationOutcome.PASSED,
-        False: ValidationOutcome.FAILED,
-        None: ValidationOutcome.PENDING,
-    }.get(step_functions_output.get("validation", {}).get("success"))
+    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING.get(
+        step_function_output.get("validation", {}).get("success")
+    )
 
-    s3_job_id = step_functions_output.get("s3_batch_copy", {}).get("job_id")
+    s3_job_id = step_function_output.get("s3_batch_copy", {}).get("job_id")
     if s3_job_id:
         upload_response = get_s3_batch_copy_status(s3_job_id, LOGGER)
     else:
@@ -67,7 +72,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         "validation": {
             "status": validation_status,
             "errors": get_step_function_validation_results(
-                step_func_input["dataset_id"], step_func_input["version_id"]
+                step_function_input["dataset_id"], step_function_input["version_id"]
             ),
         },
         "upload": upload_response,
