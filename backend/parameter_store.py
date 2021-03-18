@@ -1,16 +1,14 @@
 import json
-import logging
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Sequence
+from typing import Sequence
+
+import boto3
 
 from .environment import ENV
+from .log import set_up_logging
 
-if TYPE_CHECKING:
-    # When type checking we want to use the third party package's stub
-    from mypy_boto3_ssm import SSMClient
-else:
-    # In production we want to avoid depending on a package which has no runtime impact
-    SSMClient = object
+LOGGER = set_up_logging(__name__)
+SSM_CLIENT = boto3.client("ssm")
 
 
 class ParameterName(Enum):
@@ -26,11 +24,11 @@ class ParameterName(Enum):
     STORAGE_BUCKET_ARN = auto()
 
 
-def get_param(parameter: ParameterName, ssm_client: SSMClient, logger: logging.Logger) -> str:
-    parameter_response = ssm_client.get_parameter(Name=parameter.value)
+def get_param(parameter: ParameterName) -> str:
+    parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
 
     try:
         return parameter_response["Parameter"]["Value"]
     except KeyError as error:
-        logger.error(json.dumps({"error": error}, default=str))
+        LOGGER.error(json.dumps({"error": error}, default=str))
         raise

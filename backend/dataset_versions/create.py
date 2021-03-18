@@ -14,7 +14,6 @@ from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
-SSM_CLIENT = boto3.client("ssm")
 
 
 def create_dataset_version(event: JsonObject) -> JsonObject:
@@ -63,9 +62,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
-    state_machine_arn = get_param(
-        ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN, SSM_CLIENT, logger
-    )
+    state_machine_arn = get_param(ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN)
 
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,
