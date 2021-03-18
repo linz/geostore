@@ -21,6 +21,7 @@ class ParameterName(Enum):
 
     DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
     S3_BATCH_COPY_ROLE_ARN = auto()
+    STAGING_BUCKET_NAME = auto()
     STORAGE_BUCKET_ARN = auto()
 
 
