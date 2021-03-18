@@ -31,7 +31,7 @@ class TestLogging:
         expected_log = dumps(
             {
                 "success": False,
-                "error": {"message": ProcessingAssetsModel.DoesNotExist.msg, "cause": None},
+                "error": {"message": ProcessingAssetsModel.DoesNotExist.msg},
                 "parameters": {
                     "hash_key": f"DATASET#{dataset_id}#VERSION#{version_id}",
                     "range_key": f"{ProcessingAssetType.DATA.value}#{index}",

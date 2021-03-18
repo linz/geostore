@@ -6,6 +6,7 @@ from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import Model
+from pynamodb.settings import OperationSettings
 
 from .resources import ResourceName
 
@@ -67,13 +68,17 @@ class DatasetModel(Model):
     datasets_tile_idx = DatasetsTitleIdx()
     datasets_owning_group_idx = DatasetsOwningGroupIdx()
 
-    def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
+    def save(
+        self,
+        condition: Optional[Condition] = None,
+        settings: OperationSettings = OperationSettings.default,
+    ) -> Dict[str, Any]:
         self.updated_at = datetime.now(timezone.utc)
-        return super().save()
+        return super().save(condition, settings)
 
-    def serialize(self) -> Dict[str, Any]:
-        as_dict = self._serialize()  # type: ignore[attr-defined] # pylint:disable=protected-access
-        result: Dict[str, Any] = {key: value["S"] for key, value in as_dict["attributes"].items()}
+    def as_dict(self) -> Dict[str, Any]:
+        serialized = self.serialize()
+        result: Dict[str, Any] = {key: value["S"] for key, value in serialized.items()}
         result["id"] = self.dataset_id
         result["type"] = self.dataset_type
         return result
@@ -81,9 +86,9 @@ class DatasetModel(Model):
     @property
     def dataset_id(self) -> str:
         """Dataset ID value."""
-        return self.id.split("#")[1]
+        return str(self.id).split("#")[1]
 
     @property
     def dataset_type(self) -> str:
         """Dataset type value."""
-        return self.type.split("#")[1]
+        return str(self.type).split("#")[1]

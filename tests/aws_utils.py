@@ -161,8 +161,8 @@ class ProcessingAsset:
         prefix = "METADATA" if multihash is None else "DATA"
 
         self._item = ProcessingAssetsModel(
-            pk=asset_id,
-            sk=f"{prefix}_ITEM_INDEX#0",
+            hash_key=asset_id,
+            range_key=f"{prefix}_ITEM_INDEX#0",
             url=url,
             multihash=multihash,
         )

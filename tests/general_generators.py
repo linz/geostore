@@ -26,7 +26,7 @@ def _random_string_choices(characters: str, length: int) -> str:
 
 
 def any_past_datetime() -> datetime:
-    return REFERENCE_DATETIME - timedelta(seconds=randrange(60_000_000_000))  # Back to year 98
+    return REFERENCE_DATETIME - timedelta(seconds=randrange(30_000_000_000))  # Back to year 1049
 
 
 def any_past_datetime_string() -> str:

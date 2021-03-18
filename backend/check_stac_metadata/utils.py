@@ -117,16 +117,17 @@ class STACDatasetValidator:
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
             ProcessingAssetsModel(
-                pk=key,
-                sk=f"{ProcessingAssetType.METADATA.value}#{index}",
-                **metadata_file,
+                hash_key=key,
+                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
+                url=metadata_file["url"],
             ).save()
 
         for index, asset in enumerate(self.dataset_assets):
             ProcessingAssetsModel(
-                pk=key,
-                sk=f"{ProcessingAssetType.DATA.value}#{index}",
-                **asset,
+                hash_key=key,
+                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
+                url=asset["url"],
+                multihash=asset["multihash"],
             ).save()
 
 

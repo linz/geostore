@@ -58,7 +58,7 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
         )
 
     # return response
-    resp_body = dataset.serialize()
+    resp_body = dataset.as_dict()
 
     return success_response(200, resp_body)
 
@@ -104,7 +104,7 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     # return response
     resp_body = []
     for dataset in datasets:
-        resp_item = dataset.serialize()
+        resp_item = dataset.as_dict()
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)
