@@ -3,10 +3,7 @@ from typing import Any
 from aws_cdk import aws_s3
 from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
-from backend.environment import ENV
 from backend.resources import ResourceName
-
-STAGING_BUCKET_PARAMETER = f"/{ENV}/staging-bucket-arn"
 
 
 class StagingStack(Stack):
