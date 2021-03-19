@@ -1,9 +1,18 @@
+from json import dumps
+from logging import Logger
 from os import environ
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
+import boto3
+from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
+
+from backend.check import Check
+from backend.processing_assets_model import ProcessingAssetsModel
+from backend.types import JsonObject
+from backend.validation_results_model import ValidationResult, ValidationResultFactory
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -16,6 +25,8 @@ ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 
 CHUNK_SIZE = 1024
 
+S3_CLIENT = boto3.client("s3")
+
 
 class ChecksumMismatchError(Exception):
     def __init__(self, actual_hex_digest: str):
@@ -24,11 +35,55 @@ class ChecksumMismatchError(Exception):
         self.actual_hex_digest = actual_hex_digest
 
 
-def validate_url_multihash(url: str, hex_multihash: str, s3_client: S3Client) -> None:
-    parsed_url = urlparse(url)
-    bucket = parsed_url.netloc
-    key = parsed_url.path.lstrip("/")
-    url_stream: StreamingBody = s3_client.get_object(Bucket=bucket, Key=key)["Body"]
+class STACChecksumValidator:
+    def __init__(
+        self,
+        validation_result_factory: ValidationResultFactory,
+        logger: Logger,
+    ):
+        self.validation_result_factory = validation_result_factory
+        self.logger = logger
+
+    def log_failure(self, content: JsonObject) -> None:
+        self.logger.error(dumps({"success": False, **content}))
+
+    def get_object(self, url: str, s3_client: S3Client) -> StreamingBody:
+        parsed_url = urlparse(url)
+        bucket = parsed_url.netloc
+        key = parsed_url.path.lstrip("/")
+        try:
+            return s3_client.get_object(Bucket=bucket, Key=key)["Body"]
+        except ClientError as error:
+            self.validation_result_factory.save(
+                url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(error)},
+            )
+            raise
+
+    def validate(self, item: ProcessingAssetsModel) -> None:
+
+        url_stream = self.get_object(item.url, S3_CLIENT)
+
+        try:
+            validate_url_multihash(url_stream, item.multihash)
+        except ChecksumMismatchError as error:
+            content = {
+                "message": f"Checksum mismatch: expected {item.multihash[4:]},"
+                f" got {error.actual_hex_digest}"
+            }
+            self.log_failure(content)
+            self.validation_result_factory.save(
+                item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
+            )
+        else:
+            self.logger.info(dumps({"success": True, "message": ""}))
+            self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
+
+
+def validate_url_multihash(url_stream: StreamingBody, hex_multihash: str) -> None:
+
     checksum_function_code = int(hex_multihash[:2], 16)
     checksum_function = FUNCS[checksum_function_code]
 
