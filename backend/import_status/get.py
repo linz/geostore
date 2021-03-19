@@ -1,6 +1,7 @@
 """Import Status handler function."""
 import json
 import logging
+from enum import Enum
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -16,8 +17,20 @@ STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
 
-def get_import_status(event: JsonObject) -> JsonObject:
+class ValidationOutcome(Enum):
+    PASSED = "Passed"
+    PENDING = "Pending"
+    FAILED = "Failed"
 
+
+SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
+    True: ValidationOutcome.PASSED.value,
+    False: ValidationOutcome.FAILED.value,
+    None: ValidationOutcome.PENDING.value,
+}
+
+
+def get_import_status(event: JsonObject) -> JsonObject:
     LOGGER.debug(json.dumps({"event": event}))
 
     try:
@@ -41,29 +54,25 @@ def get_import_status(event: JsonObject) -> JsonObject:
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))
 
-    upload_response: JsonObject = {"status": "Pending", "errors": []}
+    step_function_input = json.loads(step_function_resp["input"])
+    step_function_output = json.loads(step_function_resp.get("output", "{}"))
 
-    # only check status of upload if step function has completed
-    if step_function_resp["status"] == "SUCCEEDED":
-        assert "output" in step_function_resp, step_function_resp
-        step_functions_output = json.loads(step_function_resp["output"])
+    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING.get(
+        step_function_output.get("validation", {}).get("success")
+    )
 
-        assert (
-            "s3_batch_copy" in step_functions_output
-            and "job_id" in step_functions_output["s3_batch_copy"]
-        ), step_function_resp
-
-        upload_response = get_s3_batch_copy_status(
-            step_functions_output["s3_batch_copy"]["job_id"], LOGGER
-        )
-
-    step_func_input = json.loads(step_function_resp["input"])
+    s3_job_id = step_function_output.get("s3_batch_copy", {}).get("job_id")
+    if s3_job_id:
+        upload_response = get_s3_batch_copy_status(s3_job_id, LOGGER)
+    else:
+        upload_response = {"status": "Pending", "errors": []}
 
     response_body = {
+        "step function": {"status": step_function_resp["status"]},
         "validation": {
-            "status": step_function_resp["status"],
+            "status": validation_status,
             "errors": get_step_function_validation_results(
-                step_func_input["dataset_id"], step_func_input["version_id"]
+                step_function_input["dataset_id"], step_function_input["version_id"]
             ),
         },
         "upload": upload_response,
