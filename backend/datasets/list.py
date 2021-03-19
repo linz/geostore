@@ -17,7 +17,7 @@ def list_datasets() -> JsonObject:
     # return response
     resp_body = []
     for dataset in datasets:
-        resp_item = dataset.serialize()
+        resp_item = dataset.as_dict()
         resp_body.append(resp_item)
 
     return success_response(200, resp_body)
