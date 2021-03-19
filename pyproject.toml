@@ -53,7 +53,7 @@ boto3 = {version = "*", optional = true}
 cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
 multihash = {version = "*", optional = true}
-pynamodb = {version = "<5", optional = true}
+pynamodb = {version = "*", optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 

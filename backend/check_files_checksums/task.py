@@ -38,10 +38,10 @@ def main() -> int:
 
     try:
         item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
-    except ProcessingAssetsModel.DoesNotExist as error:
+    except ProcessingAssetsModel.DoesNotExist:
         log_failure(
             {
-                "error": {"message": error.msg, "cause": error.cause},
+                "error": {"message": "Item does not exist"},
                 "parameters": {"hash_key": hash_key, "range_key": range_key},
             },
         )

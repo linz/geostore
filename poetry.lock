@@ -2001,16 +2001,14 @@ docs = ["sphinx (==3.5.1)", "python-docs-theme (==2020.12)"]
 
 [[package]]
 name = "pynamodb"
-version = "4.3.3"
+version = "5.0.3"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = true
-python-versions = "*"
+python-versions = ">=3.6"
 
 [package.dependencies]
 botocore = ">=1.12.54"
-python-dateutil = ">=2.1,<3.0.0"
-six = "*"
 
 [package.extras]
 signals = ["blinker (>=1.3,<2.0)"]
@@ -2373,7 +2371,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "f23f5018063c33fcec2469664436923a1d82a8e2123f063e0554a6c5041d30dc"
+content-hash = "5a7b33a77b1d27f523bea3c51a38acc234fc94859145bd5e9672b724eb83aedd"
 
 [metadata.files]
 appdirs = [
@@ -2963,8 +2961,8 @@ pylint = [
     {file = "pylint-2.7.2.tar.gz", hash = "sha256:0e21d3b80b96740909d77206d741aa3ce0b06b41be375d92e1f3244a274c1f8a"},
 ]
 pynamodb = [
-    {file = "pynamodb-4.3.3-py2.py3-none-any.whl", hash = "sha256:739b3a02bb81f2739e8e7c0bb5174ec053a727c50295f6b20dfbab8cb953216a"},
-    {file = "pynamodb-4.3.3.tar.gz", hash = "sha256:ced47c200073dbbfafb10b26931b9c9bf3c6b898f41dffa3676f5c2e2eddc2f0"},
+    {file = "pynamodb-5.0.3-py3-none-any.whl", hash = "sha256:bc813a7a9cc4242a7b26ccdd474d9eb63d12e9f0a0ae2a504dbd6648029a9ba5"},
+    {file = "pynamodb-5.0.3.tar.gz", hash = "sha256:01741df673abb518d5cf9f00223a227f5d0ab9e0a6b19e444ceb38d497019f31"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},

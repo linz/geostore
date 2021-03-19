@@ -50,6 +50,6 @@ def create_dataset(payload: JsonObject) -> JsonObject:
     dataset.refresh(consistent_read=True)
 
     # return response
-    resp_body = dataset.serialize()
+    resp_body = dataset.as_dict()
 
     return success_response(201, resp_body)
