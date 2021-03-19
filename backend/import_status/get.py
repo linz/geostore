@@ -24,9 +24,9 @@ class ValidationOutcome(Enum):
 
 
 SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
-    True: ValidationOutcome.PASSED,
-    False: ValidationOutcome.FAILED,
-    None: ValidationOutcome.PENDING,
+    True: ValidationOutcome.PASSED.value,
+    False: ValidationOutcome.FAILED.value,
+    None: ValidationOutcome.PENDING.value,
 }
 
 
