@@ -1071,18 +1071,18 @@ publication = ">=0.0.3"
 
 [[package]]
 name = "awscli"
-version = "1.19.27"
+version = "1.19.32"
 description = "Universal Command Line Environment for AWS."
 category = "main"
 optional = true
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = "1.20.27"
+botocore = "1.20.32"
 colorama = ">=0.2.5,<0.4.4"
 docutils = ">=0.10,<0.16"
 PyYAML = ">=3.10,<5.5"
-rsa = {version = ">=3.1.2,<4.8", markers = "python_version >= \"3.6\""}
+rsa = ">=3.1.2,<=4.5.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
@@ -1410,7 +1410,7 @@ xray = ["mypy-boto3-xray (==1.17.31.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.20.27"
+version = "1.20.32"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -1420,6 +1420,9 @@ python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 jmespath = ">=0.7.1,<1.0.0"
 python-dateutil = ">=2.1,<3.0.0"
 urllib3 = ">=1.25.4,<1.27"
+
+[package.extras]
+crt = ["awscrt (==0.10.8)"]
 
 [[package]]
 name = "cattrs"
@@ -2146,11 +2149,11 @@ python-versions = "*"
 
 [[package]]
 name = "rsa"
-version = "4.7.2"
+version = "4.5"
 description = "Pure-Python RSA implementation"
 category = "main"
 optional = true
-python-versions = ">=3.5, <4"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
 [package.dependencies]
 pyasn1 = ">=0.1.3"
@@ -2612,8 +2615,8 @@ attrs = [
     {file = "aws_cdk.region_info-1.92.0-py3-none-any.whl", hash = "sha256:955de3a7efdecf5112a8bd21c43f322da85c136a75f29b4a761c06af0a30445f"},
 ]
 awscli = [
-    {file = "awscli-1.19.27-py2.py3-none-any.whl", hash = "sha256:11b1488ebaa3e7740686838b16aba141edbfe96fbf36359755bed948b6d72d69"},
-    {file = "awscli-1.19.27.tar.gz", hash = "sha256:c52730ae341aa8faacb2e15352b4eb2d54485279c5a753a41c08c00353297095"},
+    {file = "awscli-1.19.32-py2.py3-none-any.whl", hash = "sha256:f22d8a856707a0d1cc4193cb26d98c5d171228525dd527dd959783c020ac13f6"},
+    {file = "awscli-1.19.32.tar.gz", hash = "sha256:760796a154a8b1b3ae008890edf3b961610ef6f9ea19978316be86b575372591"},
 ]
 backcall = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
@@ -2631,8 +2634,8 @@ boto3-stubs = [
     {file = "boto3_stubs-1.17.31.0-py3-none-any.whl", hash = "sha256:3db39d41c69866c71bcf806fb5a9c734208ca5f5995a51744579749a1c531fa7"},
 ]
 botocore = [
-    {file = "botocore-1.20.27-py2.py3-none-any.whl", hash = "sha256:57e45c9d443163da7312cae61bcc60382e6d0b3aecda68e850d6438162fe7b5b"},
-    {file = "botocore-1.20.27.tar.gz", hash = "sha256:4477803f07649f4d80b17d054820e7a09bb2cb0792d0decc2812108bc3759c4a"},
+    {file = "botocore-1.20.32-py2.py3-none-any.whl", hash = "sha256:fc162b69adc54c9ef037fec31f93d46df0bf8a9c3d201ecb16d0a9ec5f2936ec"},
+    {file = "botocore-1.20.32.tar.gz", hash = "sha256:1cef96e716f7481bfb3b8d3c3d45e640d588aa5af613cd6d7f33d784aa2e8d12"},
 ]
 cattrs = [
     {file = "cattrs-1.3.0-py3-none-any.whl", hash = "sha256:f92ca39ccb7373289f9cccf71b86849a29a2d75370bc983e7bf579ce95bfccd8"},
@@ -3075,8 +3078,8 @@ rfc3987 = [
     {file = "rfc3987-1.3.8.tar.gz", hash = "sha256:d3c4d257a560d544e9826b38bc81db676890c79ab9d7ac92b39c7a253d5ca733"},
 ]
 rsa = [
-    {file = "rsa-4.7.2-py3-none-any.whl", hash = "sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2"},
-    {file = "rsa-4.7.2.tar.gz", hash = "sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9"},
+    {file = "rsa-4.5-py2.py3-none-any.whl", hash = "sha256:35c5b5f6675ac02120036d97cf96f1fde4d49670543db2822ba5015e21a18032"},
+    {file = "rsa-4.5.tar.gz", hash = "sha256:4d409f5a7d78530a4a2062574c7bd80311bc3af29b364e293aa9b03eea77714f"},
 ]
 "ruamel.yaml" = [
     {file = "ruamel.yaml-0.16.13-py2.py3-none-any.whl", hash = "sha256:64b06e7873eb8e1125525ecef7345447d786368cadca92a7cd9b59eae62e95a3"},
