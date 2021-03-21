@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import sys
 from argparse import ArgumentParser, Namespace
-from json import dumps
 
 from ..log import set_up_logging
-from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType
 from ..validation_results_model import ValidationResultFactory
-from .utils import STACChecksumValidator, get_job_offset
+from .utils import ChecksumValidator, get_job_offset
 
 LOGGER = set_up_logging(__name__)
 
@@ -26,25 +25,10 @@ def main() -> int:
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
     range_key = f"{ProcessingAssetType.DATA.value}#{index}"
 
-    try:
-        item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
-    except ProcessingAssetsModel.DoesNotExist as error:
-        LOGGER.error(
-            dumps(
-                {
-                    "success": False,
-                    "error": {"message": "Item does not exist"},
-                    "parameters": {"hash_key": hash_key, "range_key": range_key},
-                }
-            )
-        )
-        return 1
-
     validation_result_factory = ValidationResultFactory(hash_key)
+    checksum_validator = ChecksumValidator(validation_result_factory, LOGGER)
 
-    checksum_validator = STACChecksumValidator(validation_result_factory, LOGGER)
-
-    checksum_validator.validate(item)
+    checksum_validator.validate(hash_key, range_key)
 
     return 0
 

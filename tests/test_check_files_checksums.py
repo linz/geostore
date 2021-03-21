@@ -3,12 +3,10 @@ import sys
 from io import BytesIO
 from json import dumps
 from os import environ
-from unittest.mock import ANY, MagicMock, call, patch
+from unittest.mock import MagicMock, call, patch
 
 from botocore.response import StreamingBody  # type: ignore[import]
-from botocore.stub import Stubber  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
-from mypy_boto3_s3 import S3Client
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -17,13 +15,18 @@ from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
+    ChecksumValidator,
     get_job_offset,
-    validate_url_multihash,
 )
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from backend.validation_results_model import ValidationResult
 
-from .aws_utils import EMPTY_FILE_MULTIHASH, any_batch_job_array_index, any_s3_url
+from .aws_utils import (
+    EMPTY_FILE_MULTIHASH,
+    MockValidationResultFactory,
+    any_batch_job_array_index,
+    any_s3_url,
+)
 from .general_generators import any_program_name
 from .stac_generators import (
     any_dataset_id,
@@ -47,27 +50,8 @@ def should_return_default_offset_to_zero() -> None:
     assert get_job_offset() == 0
 
 
-def should_return_when_empty_file_checksum_matches(s3_client: S3Client) -> None:
-    s3_stubber = Stubber(s3_client)
-    s3_stubber.add_response("get_object", {"Body": StreamingBody(BytesIO(), 0)})
-    with s3_stubber:
-        validate_url_multihash(any_s3_url(), EMPTY_FILE_MULTIHASH, s3_client)
-
-
-def should_raise_exception_when_checksum_does_not_match(s3_client: S3Client) -> None:
-    s3_stubber = Stubber(s3_client)
-    s3_stubber.add_response("get_object", {"Body": StreamingBody(BytesIO(), 0)})
-    checksum = "0" * 64
-    checksum_byte_count = 32
-
-    with s3_stubber, raises(ChecksumMismatchError):
-        validate_url_multihash(
-            any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}", s3_client
-        )
-
-
-@patch("backend.check_files_checksums.task.validate_url_multihash")
-@patch("backend.check_files_checksums.task.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.utils.ChecksumValidator.check_url_multihash")
+@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
@@ -116,14 +100,14 @@ def should_validate_given_index(
             info_log_mock.assert_any_call('{"success": true, "message": ""}')
 
     with subtests.test(msg="Validate checksums"):
-        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash, ANY)])
+        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
 
     with subtests.test(msg="Validation result"):
         validation_results_factory_mock.assert_has_calls(expected_calls)
 
 
-@patch("backend.check_files_checksums.task.validate_url_multihash")
-@patch("backend.check_files_checksums.task.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.utils.ChecksumValidator.check_url_multihash")
+@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
@@ -175,3 +159,32 @@ def should_log_error_when_validation_fails(
                 call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
             ]
         )
+
+
+class TestsWithLogger:
+    logger: logging.Logger
+
+    @classmethod
+    def setup_class(cls) -> None:
+        cls.logger = logging.getLogger("backend.check_files_checksums.task")
+
+    @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
+    def should_return_when_empty_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
+        get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
+        ChecksumValidator(MockValidationResultFactory(), self.logger).check_url_multihash(
+            any_s3_url(), EMPTY_FILE_MULTIHASH
+        )
+
+    @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
+    def should_raise_exception_when_checksum_does_not_match(
+        self, get_object_mock: MagicMock
+    ) -> None:
+        get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
+
+        checksum = "0" * 64
+        checksum_byte_count = 32
+
+        with raises(ChecksumMismatchError):
+            ChecksumValidator(MockValidationResultFactory(), self.logger).check_url_multihash(
+                any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}"
+            )
