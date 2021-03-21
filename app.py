@@ -42,6 +42,7 @@ def main() -> None:
     staging = StagingStack(
         app,
         "staging",
+        deploy_env=ENV,
         stack_name=f"{ENV}-geospatial-data-lake-staging",
         env={"region": region, "account": account},
     )
