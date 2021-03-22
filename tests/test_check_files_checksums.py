@@ -51,13 +51,13 @@ def should_return_default_offset_to_zero() -> None:
     assert get_job_offset() == 0
 
 
-@patch("backend.check_files_checksums.utils.ChecksumValidator.check_url_multihash")
+@patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    check_url_multihash_mock: MagicMock,
+    validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -101,19 +101,19 @@ def should_validate_given_index(
             info_log_mock.assert_any_call('{"success": true, "message": ""}')
 
     with subtests.test(msg="Validate checksums"):
-        check_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
+        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
 
     with subtests.test(msg="Validation result"):
         validation_results_factory_mock.assert_has_calls(expected_calls)
 
 
-@patch("backend.check_files_checksums.utils.ChecksumValidator.check_url_multihash")
+@patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    check_url_multihash_mock: MagicMock,
+    validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -134,7 +134,7 @@ def should_log_error_when_validation_fails(
         "message": f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
     }
     expected_log = dumps({"success": False, **expected_details})
-    check_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
+    validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("backend.check_files_checksums.task")
     # When
     environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
@@ -229,7 +229,7 @@ class TestsWithLogger:
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_return_when_empty_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
         get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
-        ChecksumValidator(MockValidationResultFactory(), self.logger).check_url_multihash(
+        ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
             any_s3_url(), EMPTY_FILE_MULTIHASH
         )
 
@@ -243,6 +243,6 @@ class TestsWithLogger:
         checksum_byte_count = 32
 
         with raises(ChecksumMismatchError):
-            ChecksumValidator(MockValidationResultFactory(), self.logger).check_url_multihash(
+            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
                 any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}"
             )

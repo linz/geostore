@@ -60,7 +60,7 @@ class ChecksumValidator:
             raise
 
         try:
-            self.check_url_multihash(item.url, item.multihash)
+            self.validate_url_multihash(item.url, item.multihash)
         except ChecksumMismatchError as error:
             content = {
                 "message": f"Checksum mismatch: expected {item.multihash[4:]},"
@@ -74,7 +74,7 @@ class ChecksumValidator:
             self.logger.info(dumps({"success": True, "message": ""}))
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
-    def check_url_multihash(self, url: str, hex_multihash: str) -> None:
+    def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
         parsed_url = urlparse(url)
         bucket = parsed_url.netloc
         key = parsed_url.path.lstrip("/")
