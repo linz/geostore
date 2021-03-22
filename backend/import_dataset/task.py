@@ -45,8 +45,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = event["version_id"]
     metadata_url = event["metadata_url"]
 
-    storage_bucket_arn = get_param(ParameterName.STORAGE_BUCKET_ARN)
-    storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
+    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+    storage_bucket_arn = f"arn:aws:s3:::{storage_bucket_name}"
 
     staging_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
