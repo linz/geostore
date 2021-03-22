@@ -5,6 +5,7 @@ from json import dumps
 from os import environ
 from unittest.mock import MagicMock, call, patch
 
+from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
 from pytest import raises
@@ -56,7 +57,7 @@ def should_return_default_offset_to_zero() -> None:
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    validate_url_multihash_mock: MagicMock,
+    check_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -100,7 +101,7 @@ def should_validate_given_index(
             info_log_mock.assert_any_call('{"success": true, "message": ""}')
 
     with subtests.test(msg="Validate checksums"):
-        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
+        check_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
 
     with subtests.test(msg="Validation result"):
         validation_results_factory_mock.assert_has_calls(expected_calls)
@@ -112,7 +113,7 @@ def should_validate_given_index(
 def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    validate_url_multihash_mock: MagicMock,
+    check_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -133,7 +134,7 @@ def should_log_error_when_validation_fails(
         "message": f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
     }
     expected_log = dumps({"success": False, **expected_details})
-    validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
+    check_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("backend.check_files_checksums.task")
     # When
     environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
@@ -159,6 +160,63 @@ def should_log_error_when_validation_fails(
                 call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
             ]
         )
+
+
+@patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
+@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.task.ValidationResultFactory")
+def should_save_staging_access_validation_results(
+    validation_results_factory_mock: MagicMock,
+    processing_assets_model_mock: MagicMock,
+    get_object_mock: MagicMock,
+) -> None:
+    expected_error = ClientError(
+        {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
+    )
+    get_object_mock.side_effect = expected_error
+
+    s3_url = any_s3_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+
+    array_index = "1"
+
+    # When
+    environ[ARRAY_INDEX_VARIABLE_NAME] = array_index
+    sys.argv = [
+        any_program_name(),
+        f"--dataset-id={dataset_id}",
+        f"--version-id={version_id}",
+        "--first-item=0",
+    ]
+
+    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModel:
+        assert given_hash_key == hash_key
+        assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
+        return ProcessingAssetsModel(
+            hash_key=given_hash_key,
+            range_key="{ProcessingAssetType.DATA.value}#1",
+            url=s3_url,
+            multihash=any_hex_multihash(),
+        )
+
+    processing_assets_model_mock.get.side_effect = get_mock
+
+    with raises(ClientError):
+        main()
+
+    validation_results_factory_mock.assert_has_calls(
+        [
+            call(hash_key),
+            call().save(
+                s3_url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(expected_error)},
+            ),
+        ]
+    )
 
 
 class TestsWithLogger:

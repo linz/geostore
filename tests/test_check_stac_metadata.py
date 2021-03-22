@@ -8,9 +8,8 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
-from botocore.stub import Stubber  # type: ignore[import]
+from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
-from mypy_boto3_s3 import S3Client
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -61,10 +60,18 @@ def should_return_non_zero_exit_code_on_validation_failure(
 
 
 @mark.infrastructure
-def should_save_staging_access_validation_results(subtests: SubTests, s3_client: S3Client) -> None:
+@patch("backend.check_stac_metadata.task.S3_CLIENT.get_object")
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_save_staging_access_validation_results(
+    validation_results_factory_mock: MagicMock,
+    get_object_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
 
-    s3_stubber = Stubber(s3_client)
-    s3_stubber.add_client_error("some error")
+    expected_error = ClientError(
+        {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
+    )
+    get_object_mock.side_effect = expected_error
 
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
@@ -77,17 +84,22 @@ def should_save_staging_access_validation_results(subtests: SubTests, s3_client:
         f"--version-id={version_id}",
     ]
 
-    with subtests.test(msg="Exit code"), s3_stubber:
+    with subtests.test(msg="Exit code"):
         assert main() == 1
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="Root validation results"):
-        root_result = ValidationResultsModel.get(
-            hash_key=hash_key,
-            range_key=f"CHECK#{Check.STAGING_ACCESS.value}#URL#{s3_url}",
-            consistent_read=True,
+        validation_results_factory_mock.assert_has_calls(
+            [
+                call(hash_key),
+                call().save(
+                    s3_url,
+                    Check.STAGING_ACCESS,
+                    ValidationResult.FAILED,
+                    details={"message": str(expected_error)},
+                ),
+            ]
         )
-        assert root_result.result == ValidationResult.FAILED.value
 
 
 @mark.infrastructure
