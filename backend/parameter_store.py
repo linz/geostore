@@ -1,5 +1,5 @@
-import json
 from enum import Enum, auto
+from json import dumps
 from typing import Sequence
 
 import boto3
@@ -26,10 +26,14 @@ class ParameterName(Enum):
 
 
 def get_param(parameter: ParameterName) -> str:
-    parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
+    try:
+        parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
+    except SSM_CLIENT.exceptions.ParameterNotFound:
+        LOGGER.error(dumps({"error": f"Parameter not found: “{parameter.value}”"}))
+        raise
 
     try:
         return parameter_response["Parameter"]["Value"]
     except KeyError as error:
-        LOGGER.error(json.dumps({"error": error}, default=str))
+        LOGGER.error(dumps({"error": error}, default=str))
         raise
