@@ -40,9 +40,9 @@ from .stac_generators import (
 
 def should_return_offset_from_array_index_variable() -> None:
     index = any_batch_job_array_index()
-    environ[ARRAY_INDEX_VARIABLE_NAME] = str(index)
+    with patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: str(index)}):
 
-    assert get_job_offset() == index
+        assert get_job_offset() == index
 
 
 def should_return_default_offset_to_zero() -> None:
@@ -85,14 +85,15 @@ def should_validate_given_index(
     expected_calls = [call(hash_key), call().save(url, Check.CHECKSUM, ValidationResult.PASSED)]
 
     # When
-    environ[ARRAY_INDEX_VARIABLE_NAME] = array_index
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
         "--first-item=0",
     ]
-    with patch.object(logger, "info") as info_log_mock:
+    with patch.object(logger, "info") as info_log_mock, patch.dict(
+        environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}
+    ):
         # Then
         with subtests.test(msg="Return code"):
             assert main() == 0
@@ -137,7 +138,6 @@ def should_log_error_when_validation_fails(
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("backend.check_files_checksums.task")
     # When
-    environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
@@ -146,7 +146,9 @@ def should_log_error_when_validation_fails(
     ]
 
     # Then
-    with patch.object(logger, "error") as error_log_mock:
+    with patch.object(logger, "error") as error_log_mock, patch.dict(
+        environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
+    ):
         with subtests.test(msg="Return code"):
             assert main() == 0
 
@@ -183,7 +185,6 @@ def should_save_staging_access_validation_results(
     array_index = "1"
 
     # When
-    environ[ARRAY_INDEX_VARIABLE_NAME] = array_index
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
@@ -203,7 +204,7 @@ def should_save_staging_access_validation_results(
 
     processing_assets_model_mock.get.side_effect = get_mock
 
-    with raises(ClientError):
+    with raises(ClientError), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
         main()
 
     validation_results_factory_mock.assert_has_calls(

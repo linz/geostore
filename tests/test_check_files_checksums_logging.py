@@ -40,7 +40,6 @@ class TestLogging:
             }
         )
 
-        environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
         sys.argv = [
             any_program_name(),
             f"--dataset-id={dataset_id}",
@@ -49,8 +48,9 @@ class TestLogging:
         ]
 
         # When/Then
-        with patch.object(self.logger, "error") as logger_mock:
-            with subtests.test(msg="Return code"), raises(DoesNotExist):
-                main()
+        with patch.object(self.logger, "error") as logger_mock, subtests.test(
+            msg="Return code"
+        ), raises(DoesNotExist), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}):
+            main()
             with subtests.test(msg="Log message"):
                 logger_mock.assert_any_call(expected_log)
