@@ -6,19 +6,14 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
-from ..environment import ENV
 from ..log import set_up_logging
-from ..parameter_store import get_param
+from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
-SSM_CLIENT = boto3.client("ssm")
-
-STORAGE_BUCKET_PARAMETER_NAME = f"/{ENV}/storage-bucket-arn"
-S3_BATCH_COPY_ROLE_PARAMETER_NAME = f"/{ENV}/s3-batch-copy-role-arn"
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -50,8 +45,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_version_id = event["version_id"]
     metadata_url = event["metadata_url"]
 
-    storage_bucket_arn = get_param(STORAGE_BUCKET_PARAMETER_NAME, SSM_CLIENT, logger)
-    storage_bucket_name = storage_bucket_arn.rsplit(":", maxsplit=1)[-1]
+    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+    storage_bucket_arn = f"arn:aws:s3:::{storage_bucket_name}"
 
     staging_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
@@ -72,7 +67,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     assert "ETag" in manifest_s3_object, manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
-    s3_batch_copy_role_arn = get_param(S3_BATCH_COPY_ROLE_PARAMETER_NAME, SSM_CLIENT, logger)
+    s3_batch_copy_role_arn = get_param(ParameterName.S3_BATCH_COPY_ROLE_ARN)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(

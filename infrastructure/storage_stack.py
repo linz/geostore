@@ -7,7 +7,7 @@ from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
 from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
-from backend.import_dataset.task import STORAGE_BUCKET_PARAMETER_NAME
+from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
 from .constructs.table import Table
@@ -29,7 +29,6 @@ class StorageStack(Stack):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
@@ -39,10 +38,10 @@ class StorageStack(Stack):
 
         self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
-            "Storage Bucket ARN Parameter",
-            description=f"Storage Bucket ARN for {deploy_env}",
-            parameter_name=STORAGE_BUCKET_PARAMETER_NAME,
-            string_value=self.storage_bucket.bucket_arn,
+            "Storage Bucket Name Parameter",
+            description=f"Storage Bucket name for {deploy_env}",
+            parameter_name=ParameterName.STORAGE_BUCKET_NAME.value,
+            string_value=self.storage_bucket.bucket_name,
         )
 
         ############################################################################################
