@@ -13,7 +13,6 @@ from pytest import mark
 
 from backend.import_dataset.task import lambda_handler
 from backend.parameter_store import ParameterName, get_param
-from backend.resources import ResourceName
 
 from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,
@@ -80,6 +79,7 @@ def should_batch_copy_files_to_storage(
     version_id = any_dataset_version_id()
 
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
+    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     with S3Object(
         BytesIO(initial_bytes=first_asset_content),
         staging_bucket_name,
@@ -139,17 +139,15 @@ def should_batch_copy_files_to_storage(
                 # Then
                 for url in [metadata_processing_asset.url, processing_asset.url]:
                     delete_s3_key(
-                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        storage_bucket_name,
                         f"{dataset_id}/{version_id}/{urlparse(url).path[1:]}",
                         s3_client,
                     )
 
     delete_s3_key(
-        ResourceName.STORAGE_BUCKET_NAME.value,
+        storage_bucket_name,
         s3_object_arn_to_key(copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]),
         s3_client,
     )
 
-    delete_s3_prefix(
-        ResourceName.STORAGE_BUCKET_NAME.value, copy_job["Job"]["Report"]["Prefix"], s3_client
-    )
+    delete_s3_prefix(storage_bucket_name, copy_job["Job"]["Report"]["Prefix"], s3_client)

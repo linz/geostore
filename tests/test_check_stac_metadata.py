@@ -17,7 +17,6 @@ from backend.check_stac_metadata.task import main
 from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
-from backend.resources import ResourceName
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
 from .aws_utils import (
@@ -142,13 +141,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
 
+    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=storage_bucket_name,
         key=any_safe_filename(),
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=storage_bucket_name,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
@@ -167,7 +167,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
             file_object=BytesIO(initial_bytes=metadata_content),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=storage_bucket_name,
             key=any_safe_filename(),
         ) as metadata_s3_object:
             # When

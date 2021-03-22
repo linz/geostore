@@ -65,10 +65,12 @@ def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) 
 
 class TestWithStagingBucket:
     staging_bucket_name: str
+    storage_bucket_name: str
 
     @classmethod
     def setup_class(cls) -> None:
         cls.staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
+        cls.storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
 
     @mark.timeout(1200)
     @mark.infrastructure
@@ -183,13 +185,13 @@ class TestWithStagingBucket:
                             second_asset_s3_object.key,
                         ]:
                             delete_s3_key(
-                                ResourceName.STORAGE_BUCKET_NAME.value,
+                                self.storage_bucket_name,
                                 f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}",
                                 s3_client,
                             )
 
                         delete_s3_key(
-                            ResourceName.STORAGE_BUCKET_NAME.value,
+                            self.storage_bucket_name,
                             s3_object_arn_to_key(
                                 copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
                             ),
@@ -197,7 +199,7 @@ class TestWithStagingBucket:
                         )
 
                         delete_s3_prefix(
-                            ResourceName.STORAGE_BUCKET_NAME.value,
+                            self.storage_bucket_name,
                             copy_job["Job"]["Report"]["Prefix"],
                             s3_client,
                         )
@@ -320,13 +322,13 @@ class TestWithStagingBucket:
                         # Cleanup
                         for key in [s3_metadata_file.key, asset_s3_object.key]:
                             delete_s3_key(
-                                ResourceName.STORAGE_BUCKET_NAME.value,
+                                self.storage_bucket_name,
                                 f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}",
                                 s3_client,
                             )
 
                         delete_s3_key(
-                            ResourceName.STORAGE_BUCKET_NAME.value,
+                            self.storage_bucket_name,
                             s3_object_arn_to_key(
                                 copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
                             ),
@@ -334,7 +336,7 @@ class TestWithStagingBucket:
                         )
 
                         delete_s3_prefix(
-                            ResourceName.STORAGE_BUCKET_NAME.value,
+                            self.storage_bucket_name,
                             copy_job["Job"]["Report"]["Prefix"],
                             s3_client,
                         )
@@ -433,7 +435,7 @@ class TestWithStagingBucket:
         for key in [s3_metadata_file.key, asset_s3_object.key]:
             with subtests.test(msg=key), raises(AssertionError):
                 delete_s3_key(
-                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    self.storage_bucket_name,
                     f"{dataset_id}/{response_payload['body']['dataset_version']}/{key}",
                     s3_client,
                 )
