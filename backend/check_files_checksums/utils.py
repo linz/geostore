@@ -8,10 +8,10 @@ import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
-from backend.check import Check
-from backend.processing_assets_model import ProcessingAssetsModel
-from backend.types import JsonObject
-from backend.validation_results_model import ValidationResult, ValidationResultFactory
+from ..check import Check
+from ..processing_assets_model import ProcessingAssetsModel
+from ..types import JsonObject
+from ..validation_results_model import ValidationResult, ValidationResultFactory
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
