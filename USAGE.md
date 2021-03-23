@@ -31,7 +31,11 @@ Example bucket policy:
             "Principal": {
                 "AWS": "arn:aws:iam::<DATALAKE_AWS_ACCOUNT_ID>:root"
             },
-            "Action": "s3:GetObject",
+            "Action": [
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:GetObjectTagging"
+            ],
             "Resource": "arn:aws:s3:::<YOUR_STAGING_BUCKET>/<YOUR_DATASET>/*"
         }
     ]

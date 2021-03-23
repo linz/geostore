@@ -39,7 +39,7 @@ def main() -> None:
         deploy_env=ENV,
     )
 
-    staging = StagingStack(
+    StagingStack(
         app,
         "staging",
         deploy_env=ENV,
@@ -53,7 +53,6 @@ def main() -> None:
         stack_name=f"{ENV}-geospatial-data-lake-processing",
         env={"region": region, "account": account},
         deploy_env=ENV,
-        staging_bucket=staging.staging_bucket,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
     )
