@@ -90,7 +90,7 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
 
     # dataset query by filter
     if "title" in req_body:
-        datasets = DatasetModel.datasets_tile_idx.query(
+        datasets = DatasetModel.datasets_title_idx.query(
             hash_key=f"TYPE#{req_body['type']}",
             range_key_condition=DatasetModel.title == req_body["title"],
         )

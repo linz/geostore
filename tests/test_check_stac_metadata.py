@@ -8,6 +8,7 @@ from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
+from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -56,6 +57,49 @@ def should_return_non_zero_exit_code_on_validation_failure(
     ]
 
     assert main() == 1
+
+
+@mark.infrastructure
+@patch("backend.check_stac_metadata.task.S3_CLIENT.get_object")
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_save_staging_access_validation_results(
+    validation_results_factory_mock: MagicMock,
+    get_object_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
+
+    expected_error = ClientError(
+        {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
+    )
+    get_object_mock.side_effect = expected_error
+
+    s3_url = any_s3_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    sys.argv = [
+        any_program_name(),
+        f"--metadata-url={s3_url}",
+        f"--dataset-id={dataset_id}",
+        f"--version-id={version_id}",
+    ]
+
+    with subtests.test(msg="Exit code"):
+        assert main() == 1
+
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    with subtests.test(msg="Root validation results"):
+        validation_results_factory_mock.assert_has_calls(
+            [
+                call(hash_key),
+                call().save(
+                    s3_url,
+                    Check.STAGING_ACCESS,
+                    ValidationResult.FAILED,
+                    details={"message": str(expected_error)},
+                ),
+            ]
+        )
 
 
 @mark.infrastructure

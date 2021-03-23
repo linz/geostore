@@ -32,7 +32,7 @@ def create_dataset(payload: JsonObject) -> JsonObject:
         return error_response(400, err.message)
 
     # check for duplicate type/title
-    if DatasetModel.datasets_tile_idx.count(
+    if DatasetModel.datasets_title_idx.count(
         hash_key=f"TYPE#{req_body['type']}",
         range_key_condition=(DatasetModel.title == req_body["title"]),
     ):
