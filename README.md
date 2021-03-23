@@ -2,11 +2,25 @@
 
 [![Deploy](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml) [![CodeQL Analysis](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml) ![](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
-Central storage, management and access for important geospatial datasets
+LINZ central storage, management and access solution for important geospatial datasets.
+Developed by [Land Information New Zealand](https://github.com/linz).
 
-Developed by [Land Information New Zealand](https://github.com/linz)
 
-## Development setup
+# Prerequisites
+## Data Lake VPC
+
+A Data Lake VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
+managed internally by the IT team. If you are deploying this application outside LINZ, you will need
+to create a VPC with the following tags:
+
+- "ApplicationName": "geospatial-data-lake"
+- "ApplicationLayer": "networking"
+
+You can achieve this by adding the `networking_stack` (`datalake/networking_stack.py)` into `app.py`
+before deployment as a dependency of `processing_stack` (`datalake/processing_stack.py`).
+
+
+# Development setup
 
 One-time setup, assuming you are in the project directory:
 
@@ -92,17 +106,8 @@ Re-run `./reset-dev-env.bash` when packages change.
 
 Re-run `. .venv/bin/activate` in each shell.
 
-## VPC pre-requisite
 
-A VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are managed internally by the 
-IT team. If you are deploying this application outside LINZ, you will need to create a VPC with the following tags:
-
-- "ApplicationName": "geospatial-data-lake"
-- "ApplicationLayer": "networking"
-
-You can achieve this by adding the networking_stack (datalake/networking_stack.py) into `app.py` when deploying. Be sure to add this networking_stack as a dependency to processing_stack.
-
-## AWS Infrastructure Deployment (CDK Stack)
+# AWS Infrastructure deployment
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
@@ -111,16 +116,14 @@ You can achieve this by adding the networking_stack (datalake/networking_stack.p
     aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
     ```
 1. Environment variables
-   * **`DEPLOY_ENV`:** set deployment environment. 
-     For your personal development stack: set DEPLOY_ENV to your username. 
-     
+   * **`DEPLOY_ENV`:** set deployment environment.
+     For your personal development stack: set DEPLOY_ENV to your username.
+
      ```bash
      export DEPLOY_ENV="$USER"
      ```
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
-   * **`DATALAKE_USERS_AWS_ACCOUNTS_IDS`:** allow read/write access to Lambda functions API to all users
-    belonging to specified comma separated list of AWS accounts IDs. Default: AWS account where Data
-    Lake stack is deployed.
+   * **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
 1. Bootstrap CDK (only once per profile)
 
     ```bash
@@ -133,9 +136,12 @@ You can achieve this by adding the networking_stack (datalake/networking_stack.p
     ```
    Once comfortable with CDK you can add `--require-approval=never` above to deploy non-interactively.
 
-If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>` arguments above.
+If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>`
+arguments above.
 
-## Development
+
+# Development
+## Adding or updating Python dependencies
 
 To add a development-only package: `poetry add --dev PACKAGE='*'`
 
@@ -145,12 +151,6 @@ To add a production package:
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
    - When adding a new "extra", make sure to install it in `reset-dev-env.bash`.
-
-### Upgrading CI runner
-
-[`jobs.<job_id>.runs-on`](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on) in .github sets the runner type per job. We should make sure all of these use the latest specific ("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes only when we're ready for it.
-
-### Development patterns
 
 - Make sure to update packages separately from adding packages. Basically, follow this process before running `poetry add`, and do the equivalent when updating Node.js packages or changing Docker base images:
 
@@ -173,8 +173,20 @@ To add a production package:
 
    Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
-### Debugging
+## Running tests
+
+To launch full test suite: `pytest tests/`
+
+## Debugging
 
 To start debugging at a specific line, insert `import ipdb; ipdb.set_trace()`.
 
-To debug a test run, add `--capture=no` to the `pytest` arguments. You can also automatically start debugging at a test failure point with `--pdb --pdbcls=IPython.terminal.debugger:Pdb`.
+To debug a test run, add `--capture=no` to the `pytest` arguments. You can also automatically start
+debugging at a test failure point with `--pdb --pdbcls=IPython.terminal.debugger:Pdb`.
+
+## Upgrading CI runner
+
+[`jobs.<job_id>.runs-on`](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on)
+in .github sets the runner type per job. We should make sure all of these use the latest specific
+("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes
+only when we're ready for it.

@@ -65,7 +65,7 @@ class DatasetModel(Model):
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()
 
-    datasets_tile_idx = DatasetsTitleIdx()
+    datasets_title_idx = DatasetsTitleIdx()
     datasets_owning_group_idx = DatasetsOwningGroupIdx()
 
     def save(

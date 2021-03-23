@@ -11,21 +11,25 @@ class UsersStack(Stack):
     def __init__(self, scope: Construct, stack_id: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
-        account_ids = (
-            aws_iam.AccountPrincipal(account_id=account_id)
-            for account_id in os.environ.get(
-                "DATALAKE_USERS_AWS_ACCOUNTS_IDS", aws_iam.AccountRootPrincipal().account_id
-            ).split(",")
-        )
+        saml_provider_arn = os.environ.get("DATALAKE_SAML_IDENTITY_PROVIDER_ARN")
 
-        principals = aws_iam.CompositePrincipal(*account_ids)
+        if saml_provider_arn:
+            principal = aws_iam.FederatedPrincipal(
+                federated=saml_provider_arn,
+                assume_role_action="sts:AssumeRoleWithSAML",
+                conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
+            )
+
+        else:
+            principal = aws_iam.AccountPrincipal(  # type: ignore[assignment]
+                account_id=aws_iam.AccountRootPrincipal().account_id
+            )
 
         self.users_role = aws_iam.Role(
             self,
             "users-role",
             role_name=ResourceName.USERS_ROLE_NAME.value,
-            assumed_by=principals,  # type: ignore[arg-type]
+            assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=Duration.hours(12),
         )
-
         Tags.of(self.users_role).add("ApplicationLayer", "users")  # type: ignore[arg-type]
