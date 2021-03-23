@@ -4,7 +4,8 @@ from json import dumps
 from os import environ
 from unittest.mock import patch
 
-from pytest import mark
+from pynamodb.exceptions import DoesNotExist
+from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_files_checksums.task import main
@@ -39,7 +40,6 @@ class TestLogging:
             }
         )
 
-        environ[ARRAY_INDEX_VARIABLE_NAME] = "0"
         sys.argv = [
             any_program_name(),
             f"--dataset-id={dataset_id}",
@@ -48,9 +48,9 @@ class TestLogging:
         ]
 
         # When/Then
-        with patch.object(self.logger, "error") as logger_mock:
-            with subtests.test(msg="Return code"):
-                assert main() == 1
-
+        with patch.object(self.logger, "error") as logger_mock, subtests.test(
+            msg="Return code"
+        ), raises(DoesNotExist), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}):
+            main()
             with subtests.test(msg="Log message"):
                 logger_mock.assert_any_call(expected_log)
