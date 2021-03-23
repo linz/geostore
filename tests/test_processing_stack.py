@@ -381,55 +381,56 @@ class TestWithStagingBucket:
             file_object=BytesIO(),
             bucket_name=self.staging_bucket_name,
             key=f"{key_prefix}/{any_safe_filename()}.txt",
-        ) as asset_s3_object:
-            with S3Object(
-                file_object=json_dict_to_file_object(
+        ) as asset_s3_object, S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    "assets": {
+                        any_asset_name(): {
+                            "href": asset_s3_object.url,
+                            "checksum:multihash": any_hex_multihash(),
+                        },
+                    },
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=f"{key_prefix}/{any_safe_filename()}.json",
+        ) as s3_metadata_file, Dataset(
+            dataset_id=dataset_id, dataset_type=dataset_type
+        ):
+
+            # When creating a dataset version
+            dataset_version_creation_response = lambda_client.invoke(
+                FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                Payload=json.dumps(
                     {
-                        **deepcopy(MINIMAL_VALID_STAC_OBJECT),
-                        "assets": {
-                            any_asset_name(): {
-                                "href": asset_s3_object.url,
-                                "checksum:multihash": any_hex_multihash(),
-                            },
+                        "httpMethod": "POST",
+                        "body": {
+                            "id": dataset_id,
+                            "metadata-url": s3_metadata_file.url,
+                            "type": dataset_type,
                         },
                     }
-                ),
-                bucket_name=self.staging_bucket_name,
-                key=f"{key_prefix}/{any_safe_filename()}.json",
-            ) as s3_metadata_file, Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
+                ).encode(),
+                InvocationType="RequestResponse",
+            )
 
-                # When creating a dataset version
-                dataset_version_creation_response = lambda_client.invoke(
-                    FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-                    Payload=json.dumps(
-                        {
-                            "httpMethod": "POST",
-                            "body": {
-                                "id": dataset_id,
-                                "metadata-url": s3_metadata_file.url,
-                                "type": dataset_type,
-                            },
-                        }
-                    ).encode(),
-                    InvocationType="RequestResponse",
-                )
+            response_payload = json.load(dataset_version_creation_response["Payload"])
+            with subtests.test(msg="Dataset Versions endpoint status code"):
+                assert response_payload.get("statusCode") == 201, response_payload
 
-                response_payload = json.load(dataset_version_creation_response["Payload"])
-                with subtests.test(msg="Dataset Versions endpoint status code"):
-                    assert response_payload.get("statusCode") == 201, response_payload
+            with subtests.test(msg="Step function result"):
+                # Then poll for State Machine State
+                state_machine_arn = response_payload["body"]["execution_arn"]
+                while (
+                    execution := step_functions_client.describe_execution(
+                        executionArn=state_machine_arn
+                    )
+                )["status"] == "RUNNING":
+                    LOGGER.info("Polling for State Machine %s state", state_machine_arn)
+                    time.sleep(5)
 
-                with subtests.test(msg="Step function result"):
-                    # Then poll for State Machine State
-                    state_machine_arn = response_payload["body"]["execution_arn"]
-                    while (
-                        execution := step_functions_client.describe_execution(
-                            executionArn=state_machine_arn
-                        )
-                    )["status"] == "RUNNING":
-                        LOGGER.info("Polling for State Machine %s state", state_machine_arn)
-                        time.sleep(5)
-
-                    assert execution["status"] == "SUCCEEDED", execution
+                assert execution["status"] == "SUCCEEDED", execution
 
         # Then the files should not be copied
         for key in [s3_metadata_file.key, asset_s3_object.key]:
