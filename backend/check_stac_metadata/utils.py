@@ -2,8 +2,9 @@ from argparse import ArgumentParser, Namespace
 from json import dumps, load
 from logging import Logger
 from os.path import dirname, join
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
+from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import (  # type: ignore[import]
     Draft7Validator,
@@ -70,14 +71,25 @@ class STACDatasetValidator:
 
         self.validator = STACSchemaValidator()
 
+    def get_object(self, url: str) -> Any:
+        try:
+            url_stream = self.url_reader(url)
+        except ClientError as error:
+            self.validation_result_factory.save(
+                url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(error)},
+            )
+            raise
+        return load(url_stream)
+
     def validate(self, url: str) -> None:
         s3_url_prefix = "s3://"
         assert url[:5] == s3_url_prefix, f"URL doesn't start with “{s3_url_prefix}”: “{url}”"
 
         self.traversed_urls.append(url)
-
-        url_stream = self.url_reader(url)
-        url_json = load(url_stream)
+        url_json = self.get_object(url)
 
         try:
             self.validator.validate(url_json)
@@ -86,7 +98,7 @@ class STACDatasetValidator:
                 url,
                 Check.JSON_SCHEMA,
                 ValidationResult.FAILED,
-                details={"error_message": str(error)},
+                details={"message": str(error)},
             )
             raise
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)

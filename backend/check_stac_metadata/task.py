@@ -4,6 +4,7 @@ from json import dumps
 from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
@@ -33,7 +34,7 @@ def main() -> int:
     try:
         validator.validate(arguments.metadata_url)
 
-    except (AssertionError, ValidationError) as error:
+    except (AssertionError, ValidationError, ClientError) as error:
         LOGGER.error(dumps({"success": False, "message": str(error)}))
         return 1
 
