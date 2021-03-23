@@ -79,6 +79,7 @@ def should_batch_copy_files_to_storage(
 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
+    asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
@@ -101,48 +102,44 @@ def should_batch_copy_files_to_storage(
             BytesIO(initial_bytes=metadata_content),
             staging_bucket_name,
             any_safe_filename(),
-        ) as metadata_s3_object:
+        ) as metadata_s3_object, ProcessingAsset(
+            asset_id=asset_id, multihash=None, url=metadata_s3_object.url
+        ) as metadata_processing_asset, ProcessingAsset(
+            asset_id=asset_id,
+            multihash=first_asset_multihash,
+            url=asset_s3_object.url,
+        ) as processing_asset:
 
-            asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
+            # When
 
-            with ProcessingAsset(
-                asset_id=asset_id, multihash=None, url=metadata_s3_object.url
-            ) as metadata_processing_asset, ProcessingAsset(
-                asset_id=asset_id,
-                multihash=first_asset_multihash,
-                url=asset_s3_object.url,
-            ) as processing_asset:
+            response = lambda_handler(
+                {
+                    "dataset_id": dataset_id,
+                    "version_id": version_id,
+                    "metadata_url": metadata_s3_object.url,
+                    "type": any_valid_dataset_type(),
+                },
+                any_lambda_context(),
+            )
 
-                # When
-
-                response = lambda_handler(
-                    {
-                        "dataset_id": dataset_id,
-                        "version_id": version_id,
-                        "metadata_url": metadata_s3_object.url,
-                        "type": any_valid_dataset_type(),
-                    },
-                    any_lambda_context(),
+            # poll for S3 Batch Copy completion
+            while (
+                copy_job := s3_control_client.describe_job(
+                    AccountId=sts_client.get_caller_identity()["Account"],
+                    JobId=response["job_id"],
                 )
+            )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+                time.sleep(5)
 
-                # poll for S3 Batch Copy completion
-                while (
-                    copy_job := s3_control_client.describe_job(
-                        AccountId=sts_client.get_caller_identity()["Account"],
-                        JobId=response["job_id"],
-                    )
-                )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                    time.sleep(5)
+            assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
 
-                assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
-
-                # Then
-                for url in [metadata_processing_asset.url, processing_asset.url]:
-                    delete_s3_key(
-                        storage_bucket_name,
-                        f"{dataset_id}/{version_id}/{urlparse(url).path[1:]}",
-                        s3_client,
-                    )
+            # Then
+            for url in [metadata_processing_asset.url, processing_asset.url]:
+                delete_s3_key(
+                    storage_bucket_name,
+                    f"{dataset_id}/{version_id}/{urlparse(url).path[1:]}",
+                    s3_client,
+                )
 
     delete_s3_key(
         storage_bucket_name,
