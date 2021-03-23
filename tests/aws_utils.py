@@ -55,6 +55,8 @@ MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
 
 DELETE_OBJECTS_MAX_KEYS = 1000
 
+S3_BATCH_JOB_FINAL_STATES = ["Complete", "Failed", "Cancelled"]
+
 
 def any_arn_formatted_string() -> str:
     return f"arn:aws:states:{random_string(5)}:{string.digits}:execution:yy:xx"
