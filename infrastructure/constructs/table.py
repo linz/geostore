@@ -19,6 +19,7 @@ class Table(aws_dynamodb.Table):
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
             point_in_time_recovery=True,
             removal_policy=resource_removal_policy,
+            billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
         )
 
         Tags.of(self).add("ApplicationLayer", application_layer)  # type: ignore[arg-type]
