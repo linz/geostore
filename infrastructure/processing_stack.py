@@ -198,20 +198,20 @@ class ProcessingStack(Stack):
             application_layer=application_layer,
         ).lambda_invoke
 
-        s3_batch_copy_role = aws_iam.Role(
+        import_dataset_role = aws_iam.Role(
             self,
-            "s3_batch_copy_role",
+            "import-dataset",
             assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
                 "batchoperations.s3.amazonaws.com"
             ),
         )
-        s3_batch_copy_role.add_to_policy(
+        import_dataset_role.add_to_policy(
             aws_iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
                 resources=["*"],
             ),
         )
-        s3_batch_copy_role.add_to_policy(
+        import_dataset_role.add_to_policy(
             aws_iam.PolicyStatement(
                 actions=[
                     "s3:PutObject",
@@ -225,19 +225,19 @@ class ProcessingStack(Stack):
             )
         )
 
-        s3_batch_copy_role_arn = aws_ssm.StringParameter(
+        import_dataset_role_arn_parameter = aws_ssm.StringParameter(
             self,
-            "s3-batch-copy-role-arn",
-            description=f"S3 Batch Copy Role ARN for {deploy_env}",
-            parameter_name=ParameterName.S3_BATCH_COPY_ROLE_ARN.value,
-            string_value=s3_batch_copy_role.role_arn,
+            "import-dataset-role-arn",
+            description=f"Import dataset role ARN for {deploy_env}",
+            parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
+            string_value=import_dataset_role.role_arn,
         )
 
         import_dataset_task = LambdaTask(
             self,
             "import_dataset_task",
             directory="import_dataset",
-            result_path="$.s3_batch_copy",
+            result_path="$.import_dataset",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
@@ -245,14 +245,14 @@ class ProcessingStack(Stack):
         assert import_dataset_task.lambda_function.role is not None
         import_dataset_task.lambda_function.role.add_to_policy(
             aws_iam.PolicyStatement(
-                resources=[s3_batch_copy_role.role_arn],
+                resources=[import_dataset_role.role_arn],
                 actions=["iam:PassRole"],
             ),
         )
         import_dataset_task.lambda_function.role.add_to_policy(
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
-        s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
+        import_dataset_role_arn_parameter.grant_read(import_dataset_task.lambda_function)
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
         storage_bucket_parameter.grant_read(import_dataset_task.lambda_function)

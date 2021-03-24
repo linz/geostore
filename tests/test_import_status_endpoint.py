@@ -135,7 +135,7 @@ def should_report_s3_batch_upload_failures(
             {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
         ),
         "output": json.dumps(
-            {"validation": {"success": True}, "s3_batch_copy": {"job_id": any_job_id()}}
+            {"validation": {"success": True}, "import_dataset": {"job_id": any_job_id()}}
         ),
     }
 
