@@ -96,7 +96,7 @@ def should_save_non_s3_url_validation_results(
 
 @mark.infrastructure
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
-def should_save_non_multiple_directories_validation_results(
+def should_save_multiple_directories_validation_results(
     validation_results_factory_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
@@ -105,7 +105,7 @@ def should_save_non_multiple_directories_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     base_url = f"s3://{staging_bucket_name}/"
-    invalid_url = f"test/{any_safe_filename()}"
+    invalid_key = f"test/{any_safe_filename()}"
 
     with S3Object(
         file_object=json_dict_to_file_object(
@@ -113,12 +113,9 @@ def should_save_non_multiple_directories_validation_results(
                 **deepcopy(MINIMAL_VALID_STAC_OBJECT),
                 "assets": {
                     any_asset_name(): {
-                        "href": f"{base_url}{invalid_url}",
+                        "href": f"{base_url}{invalid_key}",
                     }
                 },
-                "links": [
-                    {"href": f"{base_url}{invalid_url}", "rel": "child"},
-                ],
             }
         ),
         bucket_name=staging_bucket_name,
@@ -126,7 +123,7 @@ def should_save_non_multiple_directories_validation_results(
     ) as root_s3_object, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
-        key=invalid_url,
+        key=invalid_key,
     ) as invalid_asset:
 
         sys.argv = [
