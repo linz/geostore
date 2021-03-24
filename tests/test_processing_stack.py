@@ -163,7 +163,7 @@ class TestWithStagingBucket:
                         assert execution["status"] == "SUCCEEDED", execution
 
                     with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-
+                        assert "output" in execution, execution
                         s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"][
                             "job_id"
                         ]
@@ -303,7 +303,7 @@ class TestWithStagingBucket:
                         assert execution["status"] == "SUCCEEDED", execution
 
                     with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-
+                        assert "output" in execution, execution
                         s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"][
                             "job_id"
                         ]
