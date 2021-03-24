@@ -76,8 +76,8 @@ def should_batch_copy_files_to_storage(
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with an asset
-    first_asset_content = any_file_contents()
-    first_asset_multihash = sha256(first_asset_content).hexdigest()
+    asset_content = any_file_contents()
+    asset_multihash = sha256(asset_content).hexdigest()
 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
@@ -89,9 +89,7 @@ def should_batch_copy_files_to_storage(
     account = sts_client.get_caller_identity()["Account"]
 
     with S3Object(
-        BytesIO(initial_bytes=first_asset_content),
-        staging_bucket_name,
-        any_safe_filename(),
+        BytesIO(initial_bytes=asset_content), staging_bucket_name, any_safe_filename()
     ) as asset_s3_object, S3Object(
         BytesIO(
             initial_bytes=dumps(
@@ -100,7 +98,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": first_asset_multihash,
+                            "checksum:multihash": asset_multihash,
                         },
                     },
                 }
@@ -111,9 +109,7 @@ def should_batch_copy_files_to_storage(
     ) as metadata_s3_object, ProcessingAsset(
         asset_id=asset_id, multihash=None, url=metadata_s3_object.url
     ) as metadata_processing_asset, ProcessingAsset(
-        asset_id=asset_id,
-        multihash=first_asset_multihash,
-        url=asset_s3_object.url,
+        asset_id=asset_id, multihash=asset_multihash, url=asset_s3_object.url
     ) as processing_asset:
 
         # When
@@ -139,8 +135,9 @@ def should_batch_copy_files_to_storage(
             assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
         finally:
             # Then
+            new_prefix = f"{dataset_id}/{version_id}"
             for original_url in [metadata_processing_asset.url, processing_asset.url]:
-                new_key = f"{dataset_id}/{version_id}/{urlparse(original_url).path[1:]}"
+                new_key = f"{new_prefix}/{urlparse(original_url).path[1:]}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(storage_bucket_name, new_key, s3_client)
 
