@@ -1,25 +1,25 @@
 # Using the Geospatial Data Lake
 
-The purpose of GDL is to store geospatial datasets. This document should provide the technical know-how to create and maintain such datasets.
+The purpose of GDL is to store geospatial datasets. This document should provide the technical
+know-how to create and maintain such datasets.
 
-The keywords "must", "must not", "required", "shall", "shall not", "should", "should not", "recommended",  "may", and "optional" in this document are to be interpreted as described in [RFC 2119](https://tools.ietf.org/html/rfc2119).
+The keywords "must", "must not", "required", "shall", "shall not", "should", "should not",
+"recommended",  "may", and "optional" in this document are to be interpreted as described in [RFC
+2119](https://tools.ietf.org/html/rfc2119).
 
-## Prerequisites
-Currently, Data Lake allows read/write access for all users authenticated via `DATALAKE_SAML_IDENTITY_PROVIDER_ARN` during deployment time (see [README](README.md#aws-infrastructure-deployment-cdk-stack)).
-
-The product team will provide you the following information to enable to you to start using the Data Lake:
-
-Also, following information must be provided by Data Lake instance maintainer in order to star using it:
+# Prerequisites
+## Data Lake account and resource names
+Following information must be provided by Data Lake instance maintainer in order to start using it:
 
 - Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
 - Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
 - Data Lake lambda function endpoint names (`DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME`)
 
-### Data Maintainers
-To import data in to the Data Lake, you will need a 'staging' S3 bucket with your data in it. You will need to give permissions to Data Lake AWS account to read your data.
+## Dataset source S3 bucket
+To import data in to the Data Lake, dataset source S3 bucket must be readable by
+Data Lake.
 
-Example bucket policy:
-
+Example dataset source S3 bucket policy:
 ```
 {
     "Version": "2012-10-17",
@@ -42,28 +42,14 @@ Example bucket policy:
 }
 ```
 
-## Credentials
-
-Temporary access credentials for Data Lake can be requested by running the following commands while authenticated using user's home AWS account credentials:
-
-```bash
-export DATALAKE_AWS_ACCOUNT_ID=<DATALAKE-AWS-ACCOUNT-ID>
-export DATALAKE_USER_ROLE_NAME=<DATALAKE-USER-ROLE-NAME>
-
-credentials="$(aws sts assume-role \
-    --role-arn "arn:aws:iam::${DATALAKE_AWS_ACCOUNT_ID}:role/${DATALAKE_USER_ROLE_NAME}" \
-    --role-session-name datalake-user)"
-
-export AWS_ACCESS_KEY_ID=$(jq -r ".Credentials[\"AccessKeyId\"]" <<< "$credentials")
-export AWS_SECRET_ACCESS_KEY=$(jq -r ".Credentials[\"SecretAccessKey\"]" <<< "$credentials")
-export AWS_SESSION_TOKEN=$(jq -r ".Credentials[\"SessionToken\"]" <<< "$credentials")
-```
-
 ## Dataset format
+A dataset consists of a set of files in Amazon Web Services Simple Storage Service (AWS S3). The
+dataset consists of geospatial metadata files in [SpatioTemporal Asset Catalogs
+(STAC)](https://stacspec.org/) format and data files, which are called "assets" in STAC.
 
-A dataset consists of a set of files in Amazon Web Services Simple Storage Service (AWS S3). The dataset consists of geospatial metadata files in [SpatioTemporal Asset Catalogs (STAC)](https://stacspec.org/) format and data files, which are called "assets" in STAC.
-
-The GDL performs many checks on datasets. If any of the checks fail the dataset will not be imported, so it's important to know what they are. The following list is a reference of all the checks which are currently in place.
+The GDL performs many checks on datasets. If any of the checks fail the dataset will not be
+imported, so it's important to know what they are. The following list is a reference of all the
+checks which are currently in place.
 
 - Every metadata file must follow the [STAC Collection Specification](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md).
 - Every metadata URL (in the [`links` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#link-object)) must be an S3 URL of the form `s3://BUCKET_NAME/KEY`, for example, `s3://my-bucket/some-path/foo.tif`.
@@ -74,17 +60,37 @@ The GDL performs many checks on datasets. If any of the checks fail the dataset 
 - Every metadata and asset URL must be readable by the GDL.
 - A dataset *may* refer to the same asset more than once. All references to the same asset must have the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be considered invalid, even if both checksums are valid. This is to enable a simpler checksum validation.
 
-## Data Lake Endpoints Usage
 
+# Authentication and authorization
+Data Lake allows read/write access for users authorized by SAML identity provider
+(`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`) configured during deployment time (see
+[README](README.md#aws-infrastructure-deployment-cdk-stack)).
+
+Example of AWS service account authentication and authorization in to Data Lake users role via
+Azure:
+
+- Log in to Data Lake AWS account using Data Lake users role
+   ```bash
+   aws-azure-login --profile data-lake-users
+   ```
+
+- Set Data Lake AWS profile for subsequent commands
+   ```bash
+   export AWS_PROFILE data-lake-users
+   ```
+
+
+# Endpoints
 There are several end user interaction points in GDL:
 
 - A [dataset space endpoint](TODO), to create, get, update or delete individual datasets, and to list all datasets
 - A [dataset versions endpoint](TODO), to create new versions of datasets. The S3 files which constitute the dataset are all linked to a specific dataset version.
 - An [import status endpoint](TODO), to get information about the status of dataset version import, including errors and issues
 
-These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
+These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
+the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
 
-### Endpoint Request Format
+## Endpoint Request Format
 
 ```bash
 export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
@@ -96,7 +102,7 @@ aws lambda invoke \
 /dev/stdout
 ```
 
-### Dataset Space Endpoint Usage Examples
+## Dataset Space Endpoint Usage Examples
 
 - Set Dataset Space Endpont Lambda function name
 
