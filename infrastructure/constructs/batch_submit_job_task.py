@@ -25,7 +25,7 @@ class BatchSubmitJobTask(Construct):
 
         self.job_role = aws_iam.Role(
             self,
-            f"{construct_id}_batch_job_role",
+            f"{construct_id}-batch-job-role",
             assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
                 "ecs-tasks.amazonaws.com"
             ),
@@ -34,7 +34,7 @@ class BatchSubmitJobTask(Construct):
 
         self.job_definition = TaskJobDefinition(
             self,
-            f"{construct_id}_task_definition",
+            f"{construct_id}-task-definition",
             deploy_env=deploy_env,
             directory=directory,
             job_role=self.job_role,
@@ -47,8 +47,8 @@ class BatchSubmitJobTask(Construct):
         payload = aws_stepfunctions.TaskInput.from_object(payload_object)
         self.batch_submit_job = aws_stepfunctions_tasks.BatchSubmitJob(
             scope,
-            f"{construct_id}_batch_submit_job",
-            job_name=f"{construct_id}_job",
+            f"{construct_id}-batch-submit-job",
+            job_name=f"{construct_id}-job",
             job_definition=self.job_definition,  # type: ignore[arg-type]
             job_queue=job_queue,  # type: ignore[arg-type]
             array_size=array_size,

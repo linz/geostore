@@ -66,7 +66,7 @@ class ProcessingStack(Stack):
         # BATCH JOB DEPENDENCIES
         batch_job_queue = BatchJobQueue(
             self,
-            "batch_job_queue",
+            "batch-job-queue",
             deploy_env=deploy_env,
             processing_assets_table=processing_assets_table,
         ).job_queue
@@ -79,7 +79,7 @@ class ProcessingStack(Stack):
         # STATE MACHINE TASKS
         check_stac_metadata_job_task = BatchSubmitJobTask(
             self,
-            "check_stac_metadata_task",
+            "check-stac-metadata-task",
             deploy_env=deploy_env,
             directory="check_stac_metadata",
             s3_policy=s3_read_only_access_policy,
@@ -110,7 +110,7 @@ class ProcessingStack(Stack):
 
         content_iterator_task = LambdaTask(
             self,
-            "content_iterator_task",
+            "content-iterator-task",
             directory="content_iterator",
             result_path="$.content",
             application_layer=application_layer,
@@ -135,7 +135,7 @@ class ProcessingStack(Stack):
         ]
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
-            "check_files_checksums_single_task",
+            "check-files-checksums-single-task",
             deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
@@ -146,7 +146,7 @@ class ProcessingStack(Stack):
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_array_task = BatchSubmitJobTask(
             self,
-            "check_files_checksums_array_task",
+            "check-files-checksums-array-task",
             deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
@@ -179,7 +179,7 @@ class ProcessingStack(Stack):
 
         validation_summary_task = LambdaTask(
             self,
-            "validation_summary_task",
+            "validation-summary-task",
             directory="validation_summary",
             result_path="$.validation",
             application_layer=application_layer,
@@ -192,7 +192,7 @@ class ProcessingStack(Stack):
 
         validation_failure_lambda_invoke = LambdaTask(
             self,
-            "validation_failure_task",
+            "validation-failure-task",
             directory="validation_failure",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
             application_layer=application_layer,
@@ -235,7 +235,7 @@ class ProcessingStack(Stack):
 
         import_dataset_task = LambdaTask(
             self,
-            "import_dataset_task",
+            "import-dataset-task",
             directory="import_dataset",
             result_path="$.import_dataset",
             application_layer=application_layer,
