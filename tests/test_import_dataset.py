@@ -83,6 +83,9 @@ def should_batch_copy_files_to_storage(
 
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+
+    account = sts_client.get_caller_identity()["Account"]
+
     with S3Object(
         BytesIO(initial_bytes=first_asset_content),
         staging_bucket_name,
@@ -125,10 +128,7 @@ def should_batch_copy_files_to_storage(
 
         # poll for S3 Batch Copy completion
         while (
-            copy_job := s3_control_client.describe_job(
-                AccountId=sts_client.get_caller_identity()["Account"],
-                JobId=response["job_id"],
-            )
+            copy_job := s3_control_client.describe_job(AccountId=account, JobId=response["job_id"])
         )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
             time.sleep(5)
 
