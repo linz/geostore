@@ -109,9 +109,7 @@ def should_batch_copy_files_to_storage(
     ) as metadata_s3_object, ProcessingAsset(
         asset_id=asset_id, multihash=None, url=metadata_s3_object.url
     ) as metadata_processing_asset, ProcessingAsset(
-        asset_id=asset_id,
-        multihash=asset_multihash,
-        url=asset_s3_object.url,
+        asset_id=asset_id, multihash=asset_multihash, url=asset_s3_object.url
     ) as processing_asset:
 
         # When
