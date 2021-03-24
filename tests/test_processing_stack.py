@@ -20,6 +20,8 @@ from backend.resources import ResourceName
 
 from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,
+    S3_BATCH_JOB_COMPLETED_STATE,
+    S3_BATCH_JOB_FINAL_STATES,
     Dataset,
     S3Object,
     delete_s3_key,
@@ -165,7 +167,6 @@ class TestWithStagingBucket:
                         s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"][
                             "job_id"
                         ]
-                        final_states = ["Complete", "Failed", "Cancelled"]
 
                         # poll for S3 Batch Copy completion
                         while (
@@ -173,10 +174,10 @@ class TestWithStagingBucket:
                                 AccountId=sts_client.get_caller_identity()["Account"],
                                 JobId=s3_batch_copy_arn,
                             )
-                        )["Job"]["Status"] not in final_states:
+                        )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
                             time.sleep(5)
 
-                        assert copy_job["Job"]["Status"] == "Complete", copy_job
+                        assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
 
                         # Cleanup
                         for key in [
@@ -210,7 +211,7 @@ class TestWithStagingBucket:
                         "body": {
                             "step function": {"status": "SUCCEEDED"},
                             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
-                            "upload": {"status": "Complete", "errors": []},
+                            "upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                         },
                     }
                     status_resp = lambda_client.invoke(
@@ -306,7 +307,6 @@ class TestWithStagingBucket:
                         s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"][
                             "job_id"
                         ]
-                        final_states = ["Complete", "Failed", "Cancelled"]
 
                         # poll for S3 Batch Copy completion
                         while (
@@ -314,10 +314,10 @@ class TestWithStagingBucket:
                                 AccountId=sts_client.get_caller_identity()["Account"],
                                 JobId=s3_batch_copy_arn,
                             )
-                        )["Job"]["Status"] not in final_states:
+                        )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
                             time.sleep(5)
 
-                        assert copy_job["Job"]["Status"] == "Complete", copy_job
+                        assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
 
                         # Cleanup
                         for key in [s3_metadata_file.key, asset_s3_object.key]:
@@ -347,7 +347,7 @@ class TestWithStagingBucket:
                         "body": {
                             "step function": {"status": "SUCCEEDED"},
                             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
-                            "upload": {"status": "Complete", "errors": []},
+                            "upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                         },
                     }
                     status_resp = lambda_client.invoke(

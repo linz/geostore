@@ -16,6 +16,8 @@ from backend.parameter_store import ParameterName, get_param
 
 from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,
+    S3_BATCH_JOB_COMPLETED_STATE,
+    S3_BATCH_JOB_FINAL_STATES,
     ProcessingAsset,
     S3Object,
     any_lambda_context,
@@ -123,18 +125,16 @@ def should_batch_copy_files_to_storage(
                     any_lambda_context(),
                 )
 
-                final_states = ["Complete", "Failed", "Cancelled"]
-
                 # poll for S3 Batch Copy completion
                 while (
                     copy_job := s3_control_client.describe_job(
                         AccountId=sts_client.get_caller_identity()["Account"],
                         JobId=response["job_id"],
                     )
-                )["Job"]["Status"] not in final_states:
+                )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
                     time.sleep(5)
 
-                assert copy_job["Job"]["Status"] == "Complete", copy_job
+                assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
 
                 # Then
                 for url in [metadata_processing_asset.url, processing_asset.url]:
