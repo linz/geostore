@@ -59,6 +59,109 @@ def should_return_non_zero_exit_code_on_validation_failure(
     assert main() == 1
 
 
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_save_non_s3_url_validation_results(
+    validation_results_factory_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
+
+    non_s3_url = any_https_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    sys.argv = [
+        any_program_name(),
+        f"--metadata-url={non_s3_url}",
+        f"--dataset-id={dataset_id}",
+        f"--version-id={version_id}",
+    ]
+
+    with subtests.test(msg="Exit code"):
+        assert main() == 1
+
+    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    with subtests.test(msg="S3 url validation results"):
+        validation_results_factory_mock.assert_has_calls(
+            [
+                call(hash_key),
+                call().save(
+                    non_s3_url,
+                    Check.NON_S3_URL,
+                    ValidationResult.FAILED,
+                    details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
+                ),
+            ]
+        )
+
+
+@mark.infrastructure
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_save_non_multiple_directories_validation_results(
+    validation_results_factory_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
+    staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
+
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+    base_url = f"s3://{staging_bucket_name}/"
+    invalid_url = f"test/{any_safe_filename()}"
+
+    with S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                "assets": {
+                    any_asset_name(): {
+                        "href": f"{base_url}{invalid_url}",
+                    }
+                },
+                "links": [
+                    {"href": f"{base_url}{invalid_url}", "rel": "child"},
+                ],
+            }
+        ),
+        bucket_name=staging_bucket_name,
+        key=any_safe_filename(),
+    ) as root_s3_object, S3Object(
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        bucket_name=staging_bucket_name,
+        key=invalid_url,
+    ) as invalid_asset:
+
+        sys.argv = [
+            any_program_name(),
+            f"--metadata-url={root_s3_object.url}",
+            f"--dataset-id={dataset_id}",
+            f"--version-id={version_id}",
+        ]
+
+        with subtests.test(msg="Exit code"):
+            assert main() == 1
+
+        hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+        expected_error = "“{}” links to asset file in different directory: “{}”".format(
+            root_s3_object.url, invalid_asset.url
+        )
+        with subtests.test(msg="S3 url validation results"):
+            validation_results_factory_mock.assert_has_calls(
+                [
+                    call(hash_key),
+                    call().save(
+                        root_s3_object.url,
+                        Check.JSON_SCHEMA,
+                        ValidationResult.PASSED,
+                    ),
+                    call().save(
+                        root_s3_object.url,
+                        Check.MULTIPLE_DIRECTORIES,
+                        ValidationResult.FAILED,
+                        details={"message": expected_error},
+                    ),
+                ]
+            )
+
+
 @mark.infrastructure
 @patch("backend.check_stac_metadata.task.S3_CLIENT.get_object")
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
@@ -388,7 +491,7 @@ class TestsWithLogger:
         url_reader = MockJSONURLReader({})
 
         with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
+            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).run(
                 https_url
             )
 
