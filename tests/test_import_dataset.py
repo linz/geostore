@@ -135,8 +135,9 @@ def should_batch_copy_files_to_storage(
             assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
         finally:
             # Then
+            new_prefix = f"{dataset_id}/{version_id}"
             for original_url in [metadata_processing_asset.url, processing_asset.url]:
-                new_key = f"{dataset_id}/{version_id}/{urlparse(original_url).path[1:]}"
+                new_key = f"{new_prefix}/{urlparse(original_url).path[1:]}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(storage_bucket_name, new_key, s3_client)
 
