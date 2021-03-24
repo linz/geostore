@@ -71,23 +71,21 @@ class STACDatasetValidator:
 
         self.validator = STACSchemaValidator()
 
-    def get_object(self, url: str) -> Any:
-        try:
-            url_stream = self.url_reader(url)
-        except ClientError as error:
-            self.validation_result_factory.save(
-                url,
-                Check.STAGING_ACCESS,
-                ValidationResult.FAILED,
-                details={"message": str(error)},
-            )
-            raise
-        return load(url_stream)
-
-    def validate(self, url: str) -> None:
+    def run(self, metadata_url: str) -> None:
         s3_url_prefix = "s3://"
-        assert url[:5] == s3_url_prefix, f"URL doesn't start with “{s3_url_prefix}”: “{url}”"
 
+        if metadata_url[:5] != s3_url_prefix:
+            error_message = f"URL doesn't start with “{s3_url_prefix}”: “{metadata_url}”"
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.NON_S3_URL,
+                ValidationResult.FAILED,
+                details={"message": error_message},
+            )
+            raise AssertionError(error_message)
+        self.validate(metadata_url)
+
+    def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
         url_json = self.get_object(url)
 
@@ -110,9 +108,17 @@ class STACDatasetValidator:
         for asset in url_json.get("assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
-            assert (
-                url_prefix == asset_url_prefix
-            ), f"“{url}” links to asset file in different directory: “{asset_url}”"
+
+            if url_prefix != asset_url_prefix:
+                error_message = f"“{url}” links to asset file in different directory: “{asset_url}”"
+                self.validation_result_factory.save(
+                    url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={"message": error_message},
+                )
+                raise AssertionError(error_message)
+
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             self.logger.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
@@ -125,6 +131,19 @@ class STACDatasetValidator:
                     url_prefix == next_url_prefix
                 ), f"“{url}” links to metadata file in different directory: “{next_url}”"
                 self.validate(next_url)
+
+    def get_object(self, url: str) -> Any:
+        try:
+            url_stream = self.url_reader(url)
+        except ClientError as error:
+            self.validation_result_factory.save(
+                url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(error)},
+            )
+            raise
+        return load(url_stream)
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
