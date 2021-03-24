@@ -207,14 +207,8 @@ class ProcessingStack(Stack):
         )
         s3_batch_copy_role.add_to_policy(
             aws_iam.PolicyStatement(
-                actions=[
-                    "s3:GetObject",
-                    "s3:GetObjectAcl",
-                    "s3:GetObjectTagging",
-                ],
-                resources=[
-                    "*",
-                ],
+                actions=["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
+                resources=["*"],
             ),
         )
         s3_batch_copy_role.add_to_policy(
@@ -227,9 +221,7 @@ class ProcessingStack(Stack):
                     "s3:GetObjectVersion",
                     "s3:GetBucketLocation",
                 ],
-                resources=[
-                    f"{storage_bucket.bucket_arn}/*",
-                ],
+                resources=[f"{storage_bucket.bucket_arn}/*"],
             )
         )
 
@@ -258,10 +250,7 @@ class ProcessingStack(Stack):
             ),
         )
         import_dataset_task.lambda_function.role.add_to_policy(
-            aws_iam.PolicyStatement(
-                resources=["*"],
-                actions=["s3:CreateJob"],
-            ),
+            aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
         s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
 
