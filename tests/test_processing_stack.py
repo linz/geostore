@@ -129,78 +129,75 @@ class TestWithStagingBucket:
         ):
 
             # When
-            resp = lambda_client.invoke(
-                FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-                Payload=json.dumps(
-                    {
-                        "httpMethod": "POST",
-                        "body": {
-                            "id": dataset_id,
-                            "metadata-url": s3_metadata_file.url,
-                            "type": dataset_type,
-                        },
-                    }
-                ).encode(),
-                InvocationType="RequestResponse",
-            )
-            json_resp = json.load(resp["Payload"])
+            try:
+                resp = lambda_client.invoke(
+                    FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                    Payload=json.dumps(
+                        {
+                            "httpMethod": "POST",
+                            "body": {
+                                "id": dataset_id,
+                                "metadata-url": s3_metadata_file.url,
+                                "type": dataset_type,
+                            },
+                        }
+                    ).encode(),
+                    InvocationType="RequestResponse",
+                )
+                json_resp = json.load(resp["Payload"])
 
-            with subtests.test(msg="Dataset Versions endpoint returns success"):
-                assert json_resp.get("statusCode") == 201, json_resp
+                with subtests.test(msg="Dataset Versions endpoint returns success"):
+                    assert json_resp.get("statusCode") == 201, json_resp
 
-            with subtests.test(msg="Should complete Step Function successfully"):
+                with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", json_resp)
+                    LOGGER.info("Executed State Machine: %s", json_resp)
 
-                # Then poll for State Machine State
-                while (
-                    execution := step_functions_client.describe_execution(
-                        executionArn=json_resp["body"]["execution_arn"]
-                    )
-                )["status"] == "RUNNING":
-                    LOGGER.info("Polling for State Machine state %s", "." * 6)
-                    time.sleep(5)
+                    # Then poll for State Machine State
+                    while (
+                        execution := step_functions_client.describe_execution(
+                            executionArn=json_resp["body"]["execution_arn"]
+                        )
+                    )["status"] == "RUNNING":
+                        LOGGER.info("Polling for State Machine state %s", "." * 6)
+                        time.sleep(5)
 
-                assert execution["status"] == "SUCCEEDED", execution
+                    assert execution["status"] == "SUCCEEDED", execution
 
-            with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-                assert "output" in execution, execution
-                s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                with subtests.test(msg="Should complete S3 batch copy operation successfully"):
+                    assert "output" in execution, execution
+                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
 
-                # poll for S3 Batch Copy completion
-                while (
-                    copy_job := s3_control_client.describe_job(
-                        AccountId=sts_client.get_caller_identity()["Account"],
-                        JobId=s3_batch_copy_arn,
-                    )
-                )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                    time.sleep(5)
+                    # poll for S3 Batch Copy completion
+                    while (
+                        copy_job := s3_control_client.describe_job(
+                            AccountId=sts_client.get_caller_identity()["Account"],
+                            JobId=s3_batch_copy_arn,
+                        )
+                    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+                        time.sleep(5)
 
-                assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
-
+                    assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+            finally:
                 # Cleanup
                 for key in [
                     s3_metadata_file.key,
                     first_asset_s3_object.key,
                     second_asset_s3_object.key,
                 ]:
-                    delete_s3_key(
-                        self.storage_bucket_name,
-                        f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}",
-                        s3_client,
-                    )
+                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}"
+                    with subtests.test(msg=f"Delete {new_key}"):
+                        delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
-                delete_s3_key(
-                    self.storage_bucket_name,
-                    s3_object_arn_to_key(copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]),
-                    s3_client,
+                manifest_key = s3_object_arn_to_key(
+                    copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
                 )
+                with subtests.test(msg=f"Delete {manifest_key}"):
+                    delete_s3_key(self.storage_bucket_name, manifest_key, s3_client)
 
-                delete_s3_prefix(
-                    self.storage_bucket_name,
-                    copy_job["Job"]["Report"]["Prefix"],
-                    s3_client,
-                )
+                copy_job_report_prefix = copy_job["Job"]["Report"]["Prefix"]
+                with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
+                    delete_s3_prefix(self.storage_bucket_name, copy_job_report_prefix, s3_client)
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
@@ -268,74 +265,71 @@ class TestWithStagingBucket:
         ):
 
             # When
-            resp = lambda_client.invoke(
-                FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-                Payload=json.dumps(
-                    {
-                        "httpMethod": "POST",
-                        "body": {
-                            "id": dataset_id,
-                            "metadata-url": s3_metadata_file.url,
-                            "type": dataset_type,
-                        },
-                    }
-                ).encode(),
-                InvocationType="RequestResponse",
-            )
-            json_resp = json.load(resp["Payload"])
+            try:
+                resp = lambda_client.invoke(
+                    FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                    Payload=json.dumps(
+                        {
+                            "httpMethod": "POST",
+                            "body": {
+                                "id": dataset_id,
+                                "metadata-url": s3_metadata_file.url,
+                                "type": dataset_type,
+                            },
+                        }
+                    ).encode(),
+                    InvocationType="RequestResponse",
+                )
+                json_resp = json.load(resp["Payload"])
 
-            with subtests.test(msg="Dataset Versions endpoint returns success"):
-                assert json_resp.get("statusCode") == 201, json_resp
+                with subtests.test(msg="Dataset Versions endpoint returns success"):
+                    assert json_resp.get("statusCode") == 201, json_resp
 
-            with subtests.test(msg="Should complete Step Function successfully"):
+                with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", json_resp)
+                    LOGGER.info("Executed State Machine: %s", json_resp)
 
-                # Then poll for State Machine State
-                while (
-                    execution := step_functions_client.describe_execution(
-                        executionArn=json_resp["body"]["execution_arn"]
-                    )
-                )["status"] == "RUNNING":
-                    LOGGER.info("Polling for State Machine state %s", "." * 6)
-                    time.sleep(5)
+                    # Then poll for State Machine State
+                    while (
+                        execution := step_functions_client.describe_execution(
+                            executionArn=json_resp["body"]["execution_arn"]
+                        )
+                    )["status"] == "RUNNING":
+                        LOGGER.info("Polling for State Machine state %s", "." * 6)
+                        time.sleep(5)
 
-                assert execution["status"] == "SUCCEEDED", execution
+                    assert execution["status"] == "SUCCEEDED", execution
 
-            with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-                assert "output" in execution, execution
-                s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                with subtests.test(msg="Should complete S3 batch copy operation successfully"):
+                    assert "output" in execution, execution
+                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
 
-                # poll for S3 Batch Copy completion
-                while (
-                    copy_job := s3_control_client.describe_job(
-                        AccountId=sts_client.get_caller_identity()["Account"],
-                        JobId=s3_batch_copy_arn,
-                    )
-                )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                    time.sleep(5)
+                    # poll for S3 Batch Copy completion
+                    while (
+                        copy_job := s3_control_client.describe_job(
+                            AccountId=sts_client.get_caller_identity()["Account"],
+                            JobId=s3_batch_copy_arn,
+                        )
+                    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+                        time.sleep(5)
 
-                assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
-
+                    assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+            finally:
                 # Cleanup
                 for key in [s3_metadata_file.key, asset_s3_object.key]:
-                    delete_s3_key(
-                        self.storage_bucket_name,
-                        f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}",
-                        s3_client,
-                    )
+                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}"
+                    with subtests.test(msg=f"Delete {new_key}"):
+                        delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
-                delete_s3_key(
-                    self.storage_bucket_name,
-                    s3_object_arn_to_key(copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]),
-                    s3_client,
+                manifest_key = s3_object_arn_to_key(
+                    copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
                 )
+                with subtests.test(msg=f"Delete {manifest_key}"):
+                    delete_s3_key(self.storage_bucket_name, manifest_key, s3_client)
 
-                delete_s3_prefix(
-                    self.storage_bucket_name,
-                    copy_job["Job"]["Report"]["Prefix"],
-                    s3_client,
-                )
+                copy_job_report_prefix = copy_job["Job"]["Report"]["Prefix"]
+                with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
+                    delete_s3_prefix(self.storage_bucket_name, copy_job_report_prefix, s3_client)
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {

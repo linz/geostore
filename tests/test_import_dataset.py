@@ -10,6 +10,7 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_sts import STSClient
 from pytest import mark
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.import_dataset.task import lambda_handler
 from backend.parameter_store import ParameterName, get_param
@@ -71,6 +72,7 @@ def should_batch_copy_files_to_storage(
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
     sts_client: STSClient,
+    subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with an asset
@@ -115,37 +117,39 @@ def should_batch_copy_files_to_storage(
     ) as processing_asset:
 
         # When
-
-        response = lambda_handler(
-            {
-                "dataset_id": dataset_id,
-                "version_id": version_id,
-                "metadata_url": metadata_s3_object.url,
-                "type": any_valid_dataset_type(),
-            },
-            any_lambda_context(),
-        )
-
-        # poll for S3 Batch Copy completion
-        while (
-            copy_job := s3_control_client.describe_job(AccountId=account, JobId=response["job_id"])
-        )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-            time.sleep(5)
-
-        assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
-
-        # Then
-        for url in [metadata_processing_asset.url, processing_asset.url]:
-            delete_s3_key(
-                storage_bucket_name,
-                f"{dataset_id}/{version_id}/{urlparse(url).path[1:]}",
-                s3_client,
+        try:
+            response = lambda_handler(
+                {
+                    "dataset_id": dataset_id,
+                    "version_id": version_id,
+                    "metadata_url": metadata_s3_object.url,
+                    "type": any_valid_dataset_type(),
+                },
+                any_lambda_context(),
             )
 
-    delete_s3_key(
-        storage_bucket_name,
-        s3_object_arn_to_key(copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]),
-        s3_client,
-    )
+            # poll for S3 Batch Copy completion
+            while (
+                copy_job := s3_control_client.describe_job(
+                    AccountId=account, JobId=response["job_id"]
+                )
+            )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+                time.sleep(5)
 
-    delete_s3_prefix(storage_bucket_name, copy_job["Job"]["Report"]["Prefix"], s3_client)
+            assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+        finally:
+            # Then
+            for original_url in [metadata_processing_asset.url, processing_asset.url]:
+                new_key = f"{dataset_id}/{version_id}/{urlparse(original_url).path[1:]}"
+                with subtests.test(msg=f"Delete {new_key}"):
+                    delete_s3_key(storage_bucket_name, new_key, s3_client)
+
+            manifest_key = s3_object_arn_to_key(
+                copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
+            )
+            with subtests.test(msg=f"Delete {manifest_key}"):
+                delete_s3_key(storage_bucket_name, manifest_key, s3_client)
+
+            copy_job_report_prefix = copy_job["Job"]["Report"]["Prefix"]
+            with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
+                delete_s3_prefix(storage_bucket_name, copy_job_report_prefix, s3_client)
