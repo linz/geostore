@@ -24,7 +24,6 @@ class ProcessingStack(Stack):
         scope: Construct,
         stack_id: str,
         deploy_env: str,
-        staging_bucket: aws_s3.Bucket,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
         **kwargs: Any,
@@ -214,7 +213,7 @@ class ProcessingStack(Stack):
                     "s3:GetObjectTagging",
                 ],
                 resources=[
-                    f"{staging_bucket.bucket_arn}/*",
+                    "*",
                 ],
             ),
         )
