@@ -32,7 +32,7 @@ def main() -> int:
     validator = STACDatasetValidator(s3_url_reader, validation_result_factory, LOGGER)
 
     try:
-        validator.validate(arguments.metadata_url)
+        validator.run(arguments.metadata_url)
 
     except (AssertionError, ValidationError, ClientError) as error:
         LOGGER.error(dumps({"success": False, "message": str(error)}))
