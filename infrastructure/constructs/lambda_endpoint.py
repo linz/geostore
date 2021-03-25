@@ -10,6 +10,7 @@ class LambdaEndpoint(Construct):
         *,
         deploy_env: str,
         users_role: aws_iam.Role,
+        package_name: str,
     ):
         super().__init__(scope, construct_id)
 
@@ -17,7 +18,7 @@ class LambdaEndpoint(Construct):
             self,
             f"{deploy_env}-{construct_id}-endpoint-function",
             function_name=f"{deploy_env}-{construct_id}-endpoint",
-            handler=f"backend.{construct_id}.entrypoint.lambda_handler",
+            handler=f"backend.{package_name}.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             timeout=Duration.seconds(60),
             code=aws_lambda.Code.from_asset(
@@ -25,7 +26,7 @@ class LambdaEndpoint(Construct):
                 bundling=BundlingOptions(
                     # pylint:disable=no-member
                     image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                    command=["backend/bundle.bash", construct_id],
+                    command=["backend/bundle.bash", package_name],
                 ),
             ),
         )
