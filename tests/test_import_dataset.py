@@ -1,7 +1,6 @@
 import time
 from copy import deepcopy
 from datetime import timedelta
-from hashlib import sha256
 from io import BytesIO
 from json import dumps
 from urllib.parse import urlparse
@@ -27,11 +26,12 @@ from .aws_utils import (
     delete_s3_prefix,
     s3_object_arn_to_key,
 )
-from .general_generators import any_file_contents, any_safe_filename
+from .general_generators import any_safe_filename
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
     any_dataset_version_id,
+    any_hex_multihash,
     any_valid_dataset_type,
 )
 
@@ -76,9 +76,6 @@ def should_batch_copy_files_to_storage(
 ) -> None:
     # pylint: disable=too-many-locals
     # Given a metadata file with an asset
-    asset_content = any_file_contents()
-    asset_multihash = sha256(asset_content).hexdigest()
-
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
@@ -88,9 +85,7 @@ def should_batch_copy_files_to_storage(
 
     account = sts_client.get_caller_identity()["Account"]
 
-    with S3Object(
-        BytesIO(initial_bytes=asset_content), staging_bucket_name, any_safe_filename()
-    ) as asset_s3_object, S3Object(
+    with S3Object(BytesIO(), staging_bucket_name, any_safe_filename()) as asset_s3_object, S3Object(
         BytesIO(
             initial_bytes=dumps(
                 {
@@ -98,7 +93,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": asset_multihash,
+                            "checksum:multihash": any_hex_multihash(),
                         },
                     },
                 }
@@ -107,9 +102,9 @@ def should_batch_copy_files_to_storage(
         staging_bucket_name,
         any_safe_filename(),
     ) as metadata_s3_object, ProcessingAsset(
-        asset_id=asset_id, multihash=None, url=metadata_s3_object.url
+        asset_id=asset_id, url=metadata_s3_object.url
     ) as metadata_processing_asset, ProcessingAsset(
-        asset_id=asset_id, multihash=asset_multihash, url=asset_s3_object.url
+        asset_id=asset_id, url=asset_s3_object.url, multihash=any_hex_multihash()
     ) as processing_asset:
 
         # When
