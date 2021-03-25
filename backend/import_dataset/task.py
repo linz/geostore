@@ -67,7 +67,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     assert "ETag" in manifest_s3_object, manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
-    s3_batch_copy_role_arn = get_param(ParameterName.S3_BATCH_COPY_ROLE_ARN)
+    s3_batch_copy_role_arn = get_param(ParameterName.IMPORT_DATASET_ROLE_ARN)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(

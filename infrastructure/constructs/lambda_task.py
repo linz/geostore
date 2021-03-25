@@ -21,7 +21,7 @@ class LambdaTask(Construct):
 
         self.lambda_function = BundledLambdaFunction(
             self,
-            f"{construct_id}_bundled_lambda_function",
+            f"{construct_id}-bundled-lambda-function",
             directory=directory,
             application_layer=application_layer,
             extra_environment=extra_environment,
@@ -29,7 +29,7 @@ class LambdaTask(Construct):
 
         self.lambda_invoke = aws_stepfunctions_tasks.LambdaInvoke(
             scope,
-            f"{construct_id}_lambda_invoke",
+            f"{construct_id}-lambda-invoke",
             lambda_function=self.lambda_function,
             result_path=result_path,
             payload_response_only=True,

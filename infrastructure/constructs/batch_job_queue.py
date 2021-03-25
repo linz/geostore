@@ -118,7 +118,7 @@ class BatchJobQueue(Construct):
 
         self.job_queue = aws_batch.JobQueue(
             scope,
-            f"{construct_id} job queue",
+            f"{construct_id}-job-queue",
             compute_environments=[
                 aws_batch.JobQueueComputeEnvironment(
                     compute_environment=compute_environment, order=10  # type: ignore[arg-type]

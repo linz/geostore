@@ -59,8 +59,8 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
 @mark.infrastructure
 def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=ParameterName.S3_BATCH_COPY_ROLE_ARN.value)
-    assert parameter_response["Parameter"]["Name"] == ParameterName.S3_BATCH_COPY_ROLE_ARN.value
+    parameter_response = ssm_client.get_parameter(Name=ParameterName.IMPORT_DATASET_ROLE_ARN.value)
+    assert parameter_response["Parameter"]["Name"] == ParameterName.IMPORT_DATASET_ROLE_ARN.value
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 
@@ -166,7 +166,7 @@ class TestWithStagingBucket:
 
                 with subtests.test(msg="Should complete S3 batch copy operation successfully"):
                     assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
 
                     # poll for S3 Batch Copy completion
                     while (
@@ -302,7 +302,7 @@ class TestWithStagingBucket:
 
                 with subtests.test(msg="Should complete S3 batch copy operation successfully"):
                     assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
 
                     # poll for S3 Batch Copy completion
                     while (
