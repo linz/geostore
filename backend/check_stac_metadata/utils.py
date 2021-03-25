@@ -87,10 +87,10 @@ class STACDatasetValidator:
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
-        url_json = self.get_object(url)
+        object_json = self.get_object(url)
 
         try:
-            self.validator.validate(url_json)
+            self.validator.validate(object_json)
         except ValidationError as error:
             self.validation_result_factory.save(
                 url,
@@ -105,7 +105,7 @@ class STACDatasetValidator:
 
         self.dataset_metadata.append({"url": url})
 
-        for asset in url_json.get("assets", {}).values():
+        for asset in object_json.get("assets", {}).values():
             asset_url = asset["href"]
             asset_url_prefix = get_url_before_filename(asset_url)
 
@@ -117,19 +117,26 @@ class STACDatasetValidator:
                     ValidationResult.FAILED,
                     details={"message": error_message},
                 )
-                raise AssertionError(error_message)
 
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             self.logger.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 
-        for link_object in url_json["links"]:
+        for link_object in object_json["links"]:
             next_url = link_object["href"]
             if next_url not in self.traversed_urls:
                 next_url_prefix = get_url_before_filename(next_url)
-                assert (
-                    url_prefix == next_url_prefix
-                ), f"“{url}” links to metadata file in different directory: “{next_url}”"
+
+                if url_prefix != next_url_prefix:
+                    error_message = (
+                        f"“{url}” links to metadata file in different directory: “{next_url}”"
+                    )
+                    self.validation_result_factory.save(
+                        url,
+                        Check.MULTIPLE_DIRECTORIES,
+                        ValidationResult.FAILED,
+                        details={"message": error_message},
+                    )
                 self.validate(next_url)
 
     def get_object(self, url: str) -> Any:
