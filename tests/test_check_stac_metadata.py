@@ -104,8 +104,8 @@ def should_save_asset_multiple_directories_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     base_url = f"s3://{staging_bucket_name}/"
-    invalid_key = f"test/{any_safe_filename()}"
-    valid_key = any_safe_filename()
+    first_invalid_key = f"{any_safe_filename()}/{any_safe_filename()}"
+    second_invalid_key = f"{any_safe_filename()}/{any_safe_filename()}"
 
     with S3Object(
         file_object=json_dict_to_file_object(
@@ -113,11 +113,11 @@ def should_save_asset_multiple_directories_validation_results(
                 **deepcopy(MINIMAL_VALID_STAC_OBJECT),
                 "assets": {
                     any_asset_name(): {
-                        "href": f"{base_url}{invalid_key}",
+                        "href": f"{base_url}{first_invalid_key}",
                         "checksum:multihash": any_hex_multihash(),
                     },
                     any_asset_name(): {
-                        "href": f"{base_url}{valid_key}",
+                        "href": f"{base_url}{second_invalid_key}",
                         "checksum:multihash": any_hex_multihash(),
                     },
                 },
@@ -128,11 +128,11 @@ def should_save_asset_multiple_directories_validation_results(
     ) as root_s3_object, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
-        key=invalid_key,
+        key=first_invalid_key,
     ) as invalid_asset, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
-        key=valid_key,
+        key=second_invalid_key,
     ):
 
         sys.argv = [
@@ -176,7 +176,9 @@ def should_save_metadata_multiple_directories_validation_results(
 ) -> None:
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
     base_url = f"s3://{staging_bucket_name}/"
-    invalid_child_key = f"test/{any_safe_filename()}"
+    child_dir = any_safe_filename()
+    invalid_child_key = f"{child_dir}/{any_safe_filename()}"
+    invalid_grandchild_key = f"{child_dir}/{any_safe_filename()}/{any_safe_filename()}"
 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
@@ -193,10 +195,21 @@ def should_save_metadata_multiple_directories_validation_results(
         bucket_name=staging_bucket_name,
         key=any_safe_filename(),
     ) as root_s3_object, S3Object(
-        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                "links": [
+                    {"href": f"{base_url}{invalid_grandchild_key}", "rel": "child"},
+                ],
+            }
+        ),
         bucket_name=staging_bucket_name,
         key=invalid_child_key,
-    ) as invalid_child_s3_object:
+    ) as invalid_child_s3_object, S3Object(
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        bucket_name=staging_bucket_name,
+        key=invalid_grandchild_key,
+    ) as invalid_grandchild_s3_object:
         sys.argv = [
             any_program_name(),
             f"--metadata-url={root_s3_object.url}",
@@ -208,9 +221,7 @@ def should_save_metadata_multiple_directories_validation_results(
             assert main() == 0
 
         hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_error = "“{}” links to metadata file in different directory: “{}”".format(
-            root_s3_object.url, invalid_child_s3_object.url
-        )
+        expected_error = "“{}” links to metadata file in different directory: “{}”"
         with subtests.test(msg="S3 url validation results"):
             validation_results_factory_mock.assert_has_calls(
                 [
@@ -224,10 +235,29 @@ def should_save_metadata_multiple_directories_validation_results(
                         root_s3_object.url,
                         Check.MULTIPLE_DIRECTORIES,
                         ValidationResult.FAILED,
-                        details={"message": expected_error},
+                        details={
+                            "message": expected_error.format(
+                                root_s3_object.url, invalid_child_s3_object.url
+                            )
+                        },
                     ),
                     call().save(
                         invalid_child_s3_object.url,
+                        Check.JSON_SCHEMA,
+                        ValidationResult.PASSED,
+                    ),
+                    call().save(
+                        invalid_child_s3_object.url,
+                        Check.MULTIPLE_DIRECTORIES,
+                        ValidationResult.FAILED,
+                        details={
+                            "message": expected_error.format(
+                                invalid_child_s3_object.url, invalid_grandchild_s3_object.url
+                            )
+                        },
+                    ),
+                    call().save(
+                        invalid_grandchild_s3_object.url,
                         Check.JSON_SCHEMA,
                         ValidationResult.PASSED,
                     ),
