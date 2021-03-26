@@ -127,9 +127,10 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 next_url_prefix = get_url_before_filename(next_url)
 
-                if url_prefix != next_url_prefix:
+                if self.traversed_urls[0] != next_url_prefix:
                     error_message = (
-                        f"“{url}” links to metadata file in different directory: “{next_url}”"
+                        f"“{next_url}” exists in a different directory"
+                        f" to the root metadata file: “{self.traversed_urls[0]}”"
                     )
                     self.validation_result_factory.save(
                         url,

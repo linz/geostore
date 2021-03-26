@@ -80,17 +80,15 @@ def should_save_non_s3_url_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="S3 url validation results"):
-        validation_results_factory_mock.assert_has_calls(
-            [
-                call(hash_key),
-                call().save(
-                    non_s3_url,
-                    Check.NON_S3_URL,
-                    ValidationResult.FAILED,
-                    details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
-                ),
-            ]
-        )
+        assert validation_results_factory_mock.mock_calls == [
+            call(hash_key),
+            call().save(
+                non_s3_url,
+                Check.NON_S3_URL,
+                ValidationResult.FAILED,
+                details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
+            ),
+        ]
 
 
 @mark.infrastructure
@@ -129,11 +127,11 @@ def should_save_asset_multiple_directories_validation_results(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
         key=first_invalid_key,
-    ) as invalid_asset, S3Object(
+    ) as first_invalid_asset, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
         key=second_invalid_key,
-    ):
+    ) as second_invalid_asset:
 
         sys.argv = [
             any_program_name(),
@@ -146,26 +144,33 @@ def should_save_asset_multiple_directories_validation_results(
             assert main() == 0
 
         hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_error = "“{}” links to asset file in different directory: “{}”".format(
-            root_s3_object.url, invalid_asset.url
-        )
         with subtests.test(msg="S3 url validation results"):
-            validation_results_factory_mock.assert_has_calls(
-                [
-                    call(hash_key),
-                    call().save(
-                        root_s3_object.url,
-                        Check.JSON_SCHEMA,
-                        ValidationResult.PASSED,
-                    ),
-                    call().save(
-                        root_s3_object.url,
-                        Check.MULTIPLE_DIRECTORIES,
-                        ValidationResult.FAILED,
-                        details={"message": expected_error},
-                    ),
-                ]
-            )
+            assert validation_results_factory_mock.mock_calls == [
+                call(hash_key),
+                call().save(
+                    root_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    root_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"“{root_s3_object.url}” links to asset file"
+                        f" in different directory: “{first_invalid_asset.url}”"
+                    },
+                ),
+                call().save(
+                    root_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"“{root_s3_object.url}” links to asset file in"
+                        f" different directory: “{second_invalid_asset.url}”"
+                    },
+                ),
+            ]
 
 
 @mark.infrastructure
@@ -221,48 +226,43 @@ def should_save_metadata_multiple_directories_validation_results(
             assert main() == 0
 
         hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_error = "“{}” links to metadata file in different directory: “{}”"
         with subtests.test(msg="S3 url validation results"):
-            validation_results_factory_mock.assert_has_calls(
-                [
-                    call(hash_key),
-                    call().save(
-                        root_s3_object.url,
-                        Check.JSON_SCHEMA,
-                        ValidationResult.PASSED,
-                    ),
-                    call().save(
-                        root_s3_object.url,
-                        Check.MULTIPLE_DIRECTORIES,
-                        ValidationResult.FAILED,
-                        details={
-                            "message": expected_error.format(
-                                root_s3_object.url, invalid_child_s3_object.url
-                            )
-                        },
-                    ),
-                    call().save(
-                        invalid_child_s3_object.url,
-                        Check.JSON_SCHEMA,
-                        ValidationResult.PASSED,
-                    ),
-                    call().save(
-                        invalid_child_s3_object.url,
-                        Check.MULTIPLE_DIRECTORIES,
-                        ValidationResult.FAILED,
-                        details={
-                            "message": expected_error.format(
-                                invalid_child_s3_object.url, invalid_grandchild_s3_object.url
-                            )
-                        },
-                    ),
-                    call().save(
-                        invalid_grandchild_s3_object.url,
-                        Check.JSON_SCHEMA,
-                        ValidationResult.PASSED,
-                    ),
-                ]
-            )
+            assert validation_results_factory_mock.mock_calls == [
+                call(hash_key),
+                call().save(
+                    root_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    root_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"“{invalid_child_s3_object.url}” exists in a different"
+                        f" directory to the root metadata file: “{root_s3_object.url}”"
+                    },
+                ),
+                call().save(
+                    invalid_child_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    invalid_child_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"“{invalid_grandchild_s3_object.url}” exists in a different"
+                        f" directory to the root metadata file: “{root_s3_object.url}”"
+                    },
+                ),
+                call().save(
+                    invalid_grandchild_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+            ]
 
 
 @mark.infrastructure
@@ -295,17 +295,15 @@ def should_save_staging_access_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="Root validation results"):
-        validation_results_factory_mock.assert_has_calls(
-            [
-                call(hash_key),
-                call().save(
-                    s3_url,
-                    Check.STAGING_ACCESS,
-                    ValidationResult.FAILED,
-                    details={"message": str(expected_error)},
-                ),
-            ]
-        )
+        assert validation_results_factory_mock.mock_calls == [
+            call(hash_key),
+            call().save(
+                s3_url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(expected_error)},
+            ),
+        ]
 
 
 @mark.infrastructure
