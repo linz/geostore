@@ -1,11 +1,12 @@
 from json import dumps
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 from uuid import uuid4
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetsModel
@@ -57,7 +58,12 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         ):
             logger.debug(dumps({"Adding file to manifest": item.url}))
             key = urlparse(item.url).path[1:]
-            s3_manifest.write(f"{staging_bucket_name},{key}\n")
+            task_parameters = {
+                ORIGINAL_KEY_KEY: key,
+                NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{key}",
+            }
+            row = ",".join([staging_bucket_name, quote(dumps(task_parameters))])
+            s3_manifest.write(f"{row}\n")
 
     caller_identity = STS_CLIENT.get_caller_identity()
     assert "Account" in caller_identity, caller_identity
@@ -68,17 +74,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     manifest_s3_etag = manifest_s3_object["ETag"]
 
     s3_batch_copy_role_arn = get_param(ParameterName.IMPORT_DATASET_ROLE_ARN)
+    import_dataset_file_task_arn = get_param(ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
         AccountId=account_number,
         ConfirmationRequired=False,
-        Operation={
-            "S3PutObjectCopy": {
-                "TargetResource": storage_bucket_arn,
-                "TargetKeyPrefix": f"{dataset_id}/{dataset_version_id}",
-            }
-        },
+        Operation={"LambdaInvoke": {"FunctionArn": import_dataset_file_task_arn}},
         Manifest={
             "Spec": {
                 "Format": "S3BatchOperations_CSV_20180820",
