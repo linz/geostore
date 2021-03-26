@@ -122,14 +122,6 @@ class ProcessingStack(Stack):
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
         }
-        check_files_checksums_default_container_overrides_command = [
-            "--dataset-id",
-            "Ref::dataset_id",
-            "--version-id",
-            "Ref::version_id",
-            "--first-item",
-            "Ref::first_item",
-        ]
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-single-task",
@@ -138,7 +130,14 @@ class ProcessingStack(Stack):
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
-            container_overrides_command=check_files_checksums_default_container_overrides_command,
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
         )
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_array_task = BatchSubmitJobTask(
@@ -149,26 +148,31 @@ class ProcessingStack(Stack):
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
-            container_overrides_command=check_files_checksums_default_container_overrides_command,
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
             array_size=array_size,
         )
 
-        processing_assets_table_readers = [
+        for reader in [
             content_iterator_task.lambda_function,
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
-        ]
-        for reader in processing_assets_table_readers:
+        ]:
             processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
             processing_assets_table.grant(
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
-        validation_results_table_writers = [
+        for reader in [
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
-        ]
-        for reader in validation_results_table_writers:
+        ]:
             self.validation_results_table.grant_read_write_data(reader)  # type: ignore[arg-type]
             self.validation_results_table.grant(
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
