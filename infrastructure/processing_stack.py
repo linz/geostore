@@ -49,9 +49,6 @@ class ProcessingStack(Stack):
             application_layer=application_layer,
         )
 
-        assert ValidationOutcomeIdx.result.attr_name
-        assert ValidationOutcomeIdx.pk.attr_name
-
         self.validation_results_table.add_global_secondary_index(
             index_name=ValidationOutcomeIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(
