@@ -1,4 +1,4 @@
-import json
+from json import dumps
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -21,7 +21,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     # pylint: disable=too-many-locals
 
     logger = set_up_logging(__name__)
-    logger.debug(json.dumps({"event": event}))
+    logger.debug(dumps({"event": event}))
 
     # validate input
     try:
@@ -38,7 +38,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        logger.warning(json.dumps({"error": error}, default=str))
+        logger.warning(dumps({"error": error}, default=str))
         return {"error message": error.message}
 
     dataset_id = event["dataset_id"]
@@ -55,7 +55,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         for item in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            logger.debug(json.dumps({"Adding file to manifest": item.url}))
+            logger.debug(dumps({"Adding file to manifest": item.url}))
             key = urlparse(item.url).path[1:]
             s3_manifest.write(f"{staging_bucket_name},{key}\n")
 
@@ -100,6 +100,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         RoleArn=s3_batch_copy_role_arn,
         ClientRequestToken=uuid4().hex,
     )
-    logger.debug(json.dumps({"s3 batch response": response}, default=str))
+    logger.debug(dumps({"s3 batch response": response}, default=str))
 
     return {"job_id": response["JobId"]}
