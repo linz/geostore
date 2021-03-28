@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from functools import lru_cache
 from json import dumps, load
 from logging import Logger
 from os.path import dirname, join
@@ -153,13 +154,14 @@ class STACDatasetValidator:
                 Check.MULTIPLE_DIRECTORIES,
                 ValidationResult.FAILED,
                 details={
-                    "message": f"“metadata file: {parent_metadata_url} links to {url}”"
+                    "message": f"Metadata file “{parent_metadata_url}” links to “{url}”"
                     f" which exists in a different directory to the root "
                     f"metadata file directory: “{root_path}”"
                 },
             )
 
 
+@lru_cache
 def get_url_before_filename(url: str) -> str:
     return url.rsplit("/", maxsplit=1)[0]
 

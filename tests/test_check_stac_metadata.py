@@ -159,9 +159,10 @@ def should_save_asset_multiple_directories_validation_results(
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        f"“metadata file: {root_s3_object.url} links to {first_invalid_asset.url}”"
-                        f" which exists in a different directory to the root metadata file"
-                        f" directory: “{root_metadata_path}”"
+                        "message": f"Metadata file “{root_s3_object.url}” links to "
+                        f"“{first_invalid_asset.url}” which exists in a different"
+                        f" directory to the root metadata file directory:"
+                        f" “{root_metadata_path}”"
                     },
                 ),
                 call().save(
@@ -169,8 +170,8 @@ def should_save_asset_multiple_directories_validation_results(
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        f"“metadata file: {root_s3_object.url} links to"
-                        f" {second_invalid_asset.url}” which exists in a different directory"
+                        "message": f"Metadata file “{root_s3_object.url}” links to"
+                        f" “{second_invalid_asset.url}” which exists in a different directory"
                         f" to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
@@ -244,8 +245,8 @@ def should_save_metadata_multiple_directories_validation_results(
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“metadata file: {root_s3_object.url} links to"
-                        f" {invalid_child_s3_object.url}” which exists in a different directory"
+                        "message": f"Metadata file “{root_s3_object.url}” links to"
+                        f" “{invalid_child_s3_object.url}” which exists in a different directory"
                         f" to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
@@ -259,8 +260,8 @@ def should_save_metadata_multiple_directories_validation_results(
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“metadata file: {invalid_child_s3_object.url} links to "
-                        f"{invalid_grandchild_s3_object.url}” which exists in a different"
+                        "message": f"Metadata file “{invalid_child_s3_object.url}” links to "
+                        f"“{invalid_grandchild_s3_object.url}” which exists in a different"
                         f" directory to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
