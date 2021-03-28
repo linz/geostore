@@ -88,8 +88,13 @@ class TestWithStagingBucket:
     ) -> None:
         # pylint: disable=too-many-locals
         key_prefix = any_safe_file_path()
+
+        s3_metadata_filename = any_safe_filename()
+
         first_asset_contents = any_file_contents()
+        first_asset_filename = any_safe_filename()
         second_asset_contents = any_file_contents()
+        second_asset_filename = any_safe_filename()
 
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
@@ -97,11 +102,11 @@ class TestWithStagingBucket:
         with S3Object(
             file_object=BytesIO(initial_bytes=first_asset_contents),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{any_safe_filename()}.txt",
+            key=f"{key_prefix}/{first_asset_filename}",
         ) as first_asset_s3_object, S3Object(
             file_object=BytesIO(initial_bytes=second_asset_contents),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{any_safe_filename()}.txt",
+            key=f"{key_prefix}/{second_asset_filename}",
         ) as second_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -123,7 +128,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=("{}/{}.json".format(key_prefix, any_safe_filename())),
+            key=f"{key_prefix}/{s3_metadata_filename}",
         ) as s3_metadata_file, Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
@@ -180,12 +185,8 @@ class TestWithStagingBucket:
                     assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
             finally:
                 # Cleanup
-                for key in [
-                    s3_metadata_file.key,
-                    first_asset_s3_object.key,
-                    second_asset_s3_object.key,
-                ]:
-                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}"
+                for filename in [s3_metadata_filename, first_asset_filename, second_asset_filename]:
+                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -235,7 +236,12 @@ class TestWithStagingBucket:
     ) -> None:
         # pylint: disable=too-many-locals
         key_prefix = any_safe_file_path()
+
+        root_metadata_filename = any_safe_filename()
+        child_metadata_filename = any_safe_filename()
+
         asset_contents = any_file_contents()
+        asset_filename = any_safe_filename()
 
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
@@ -243,7 +249,7 @@ class TestWithStagingBucket:
         with S3Object(
             file_object=BytesIO(initial_bytes=asset_contents),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{any_safe_filename()}.txt",
+            key=f"{key_prefix}/{asset_filename}",
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -259,7 +265,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=("{}/{}.json".format(key_prefix, any_safe_filename())),
+            key=("{}/{}".format(key_prefix, child_metadata_filename)),
         ) as child_metadata_file, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -270,7 +276,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=("{}/{}.json".format(key_prefix, any_safe_filename())),
+            key=("{}/{}".format(key_prefix, root_metadata_filename)),
         ) as root_metadata_file, Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
@@ -327,8 +333,8 @@ class TestWithStagingBucket:
                     assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
             finally:
                 # Cleanup
-                for key in [root_metadata_file.key, child_metadata_file.key, asset_s3_object.key]:
-                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}"
+                for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
+                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -372,16 +378,20 @@ class TestWithStagingBucket:
         step_functions_client: SFNClient,
         subtests: SubTests,
     ) -> None:
+        # pylint:disable=too-many-locals
         # Given an asset with an invalid checksum
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
 
         key_prefix = any_safe_file_path()
 
+        metadata_filename = any_safe_filename()
+        asset_filename = any_safe_filename()
+
         with S3Object(
             file_object=BytesIO(),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{any_safe_filename()}.txt",
+            key=f"{key_prefix}/{asset_filename}",
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -395,7 +405,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{any_safe_filename()}.json",
+            key=f"{key_prefix}/{metadata_filename}",
         ) as s3_metadata_file, Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
@@ -434,10 +444,10 @@ class TestWithStagingBucket:
                 assert execution["status"] == "SUCCEEDED", execution
 
         # Then the files should not be copied
-        for key in [s3_metadata_file.key, asset_s3_object.key]:
-            with subtests.test(msg=key), raises(AssertionError):
+        for filename in [metadata_filename, asset_filename]:
+            with subtests.test(msg=filename), raises(AssertionError):
                 delete_s3_key(
                     self.storage_bucket_name,
-                    f"{dataset_id}/{response_payload['body']['dataset_version']}/{key}",
+                    f"{dataset_id}/{response_payload['body']['dataset_version']}/{filename}",
                     s3_client,
                 )
