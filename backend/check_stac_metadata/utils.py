@@ -100,23 +100,11 @@ class STACDatasetValidator:
             )
             raise
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
-
-        url_prefix = get_url_before_filename(url)
-
         self.dataset_metadata.append({"url": url})
 
         for asset in object_json.get("assets", {}).values():
             asset_url = asset["href"]
-            asset_url_prefix = get_url_before_filename(asset_url)
-
-            if url_prefix != asset_url_prefix:
-                error_message = f"“{url}” links to asset file in different directory: “{asset_url}”"
-                self.validation_result_factory.save(
-                    url,
-                    Check.MULTIPLE_DIRECTORIES,
-                    ValidationResult.FAILED,
-                    details={"message": error_message},
-                )
+            self.validate_directory(asset_url, url)
 
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             self.logger.debug(dumps({"asset": asset_dict}))
@@ -125,19 +113,7 @@ class STACDatasetValidator:
         for link_object in object_json["links"]:
             next_url = link_object["href"]
             if next_url not in self.traversed_urls:
-                next_url_prefix = get_url_before_filename(next_url)
-
-                if self.traversed_urls[0] != next_url_prefix:
-                    error_message = (
-                        f"“{next_url}” exists in a different directory"
-                        f" to the root metadata file: “{self.traversed_urls[0]}”"
-                    )
-                    self.validation_result_factory.save(
-                        url,
-                        Check.MULTIPLE_DIRECTORIES,
-                        ValidationResult.FAILED,
-                        details={"message": error_message},
-                    )
+                self.validate_directory(next_url, url)
                 self.validate(next_url)
 
     def get_object(self, url: str) -> Any:
@@ -168,6 +144,20 @@ class STACDatasetValidator:
                 url=asset["url"],
                 multihash=asset["multihash"],
             ).save()
+
+    def validate_directory(self, url: str, parent_metadata_url: str) -> None:
+        root_path = get_url_before_filename(self.traversed_urls[0])
+        if root_path != get_url_before_filename(url):
+            self.validation_result_factory.save(
+                url,
+                Check.MULTIPLE_DIRECTORIES,
+                ValidationResult.FAILED,
+                details={
+                    "message": f"“metadata file: {parent_metadata_url} links to {url}”"
+                    f" which exists in a different directory to the root "
+                    f"metadata file directory: “{root_path}”"
+                },
+            )
 
 
 def get_url_before_filename(url: str) -> str:

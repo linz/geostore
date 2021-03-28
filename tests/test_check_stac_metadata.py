@@ -144,6 +144,8 @@ def should_save_asset_multiple_directories_validation_results(
             assert main() == 0
 
         hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+        root_metadata_path = root_s3_object.url.rsplit("/", maxsplit=1)[0]
+
         with subtests.test(msg="S3 url validation results"):
             assert validation_results_factory_mock.mock_calls == [
                 call(hash_key),
@@ -153,21 +155,23 @@ def should_save_asset_multiple_directories_validation_results(
                     ValidationResult.PASSED,
                 ),
                 call().save(
-                    root_s3_object.url,
+                    first_invalid_asset.url,
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“{root_s3_object.url}” links to asset file"
-                        f" in different directory: “{first_invalid_asset.url}”"
+                        f"“metadata file: {root_s3_object.url} links to {first_invalid_asset.url}”"
+                        f" which exists in a different directory to the root metadata file"
+                        f" directory: “{root_metadata_path}”"
                     },
                 ),
                 call().save(
-                    root_s3_object.url,
+                    second_invalid_asset.url,
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“{root_s3_object.url}” links to asset file in"
-                        f" different directory: “{second_invalid_asset.url}”"
+                        f"“metadata file: {root_s3_object.url} links to"
+                        f" {second_invalid_asset.url}” which exists in a different directory"
+                        f" to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
             ]
@@ -221,6 +225,7 @@ def should_save_metadata_multiple_directories_validation_results(
             f"--dataset-id={dataset_id}",
             f"--version-id={version_id}",
         ]
+        root_metadata_path = root_s3_object.url.rsplit("/", maxsplit=1)[0]
 
         with subtests.test(msg="Exit code"):
             assert main() == 0
@@ -235,12 +240,13 @@ def should_save_metadata_multiple_directories_validation_results(
                     ValidationResult.PASSED,
                 ),
                 call().save(
-                    root_s3_object.url,
+                    invalid_child_s3_object.url,
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“{invalid_child_s3_object.url}” exists in a different"
-                        f" directory to the root metadata file: “{root_s3_object.url}”"
+                        "message": f"“metadata file: {root_s3_object.url} links to"
+                        f" {invalid_child_s3_object.url}” which exists in a different directory"
+                        f" to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
                 call().save(
@@ -249,12 +255,13 @@ def should_save_metadata_multiple_directories_validation_results(
                     ValidationResult.PASSED,
                 ),
                 call().save(
-                    invalid_child_s3_object.url,
+                    invalid_grandchild_s3_object.url,
                     Check.MULTIPLE_DIRECTORIES,
                     ValidationResult.FAILED,
                     details={
-                        "message": f"“{invalid_grandchild_s3_object.url}” exists in a different"
-                        f" directory to the root metadata file: “{root_s3_object.url}”"
+                        "message": f"“metadata file: {invalid_child_s3_object.url} links to "
+                        f"{invalid_grandchild_s3_object.url}” which exists in a different"
+                        f" directory to the root metadata file directory: “{root_metadata_path}”"
                     },
                 ),
                 call().save(
