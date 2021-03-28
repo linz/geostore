@@ -57,7 +57,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
             logger.debug(dumps({"Adding file to manifest": item.url}))
-            key = urlparse(item.url).path[1:]
+            key = s3_url_to_key(item.url)
             task_parameters = {
                 ORIGINAL_KEY_KEY: key,
                 NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{key}",
@@ -105,3 +105,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     logger.debug(dumps({"s3 batch response": response}, default=str))
 
     return {"job_id": response["JobId"]}
+
+
+def s3_url_to_key(url: str) -> str:
+    return urlparse(url).path[1:]

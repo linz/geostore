@@ -3,7 +3,6 @@ from copy import deepcopy
 from datetime import timedelta
 from io import BytesIO
 from json import dumps
-from urllib.parse import urlparse
 
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
@@ -11,7 +10,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.import_dataset.task import lambda_handler
+from backend.import_dataset.task import lambda_handler, s3_url_to_key
 from backend.parameter_store import ParameterName, get_param
 
 from .aws_utils import (
@@ -132,7 +131,7 @@ def should_batch_copy_files_to_storage(
             # Then
             new_prefix = f"{dataset_id}/{version_id}"
             for original_url in [metadata_processing_asset.url, processing_asset.url]:
-                new_key = f"{new_prefix}/{urlparse(original_url).path[1:]}"
+                new_key = f"{new_prefix}/{s3_url_to_key(original_url)}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(storage_bucket_name, new_key, s3_client)
 
