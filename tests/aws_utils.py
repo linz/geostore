@@ -105,6 +105,10 @@ def any_s3_bucket_name() -> str:
     return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
 
 
+def any_s3_bucket_arn() -> str:
+    return f"arn:aws:s3:::{any_s3_bucket_name()}"
+
+
 def any_job_id() -> str:
     return uuid4().hex
 

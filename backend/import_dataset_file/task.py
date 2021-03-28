@@ -1,18 +1,22 @@
-from json import loads
+from json import dumps, loads
 from urllib.parse import unquote_plus
 
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
+from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 
 S3_CLIENT = boto3.client("s3")
 TARGET_BUCKET = get_param(ParameterName.STORAGE_BUCKET_NAME)
+LOGGER = set_up_logging(__name__)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
+    LOGGER.debug(dumps(event))
+
     task = event["tasks"][0]
     source_bucket_name = task["s3BucketArn"].split(":::", maxsplit=1)[-1]
     parameters = loads(unquote_plus(task["s3Key"]))
