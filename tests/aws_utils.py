@@ -159,6 +159,8 @@ class Dataset:
 
 
 class ProcessingAsset:
+    index = 0
+
     def __init__(
         self,
         asset_id: str,
@@ -169,10 +171,11 @@ class ProcessingAsset:
 
         self._item = ProcessingAssetsModel(
             hash_key=asset_id,
-            range_key=f"{prefix}_ITEM_INDEX#0",
+            range_key=f"{prefix}_ITEM_INDEX#{self.index}",
             url=url,
             multihash=multihash,
         )
+        ProcessingAsset.index += 1
 
     def __enter__(self) -> ProcessingAssetsModel:
         self._item.save()
