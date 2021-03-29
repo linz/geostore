@@ -13,6 +13,8 @@ from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 
+LOGGER = set_up_logging(__name__)
+
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -32,9 +34,7 @@ JOB_ID_KEY = "job_id"
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     # pylint: disable=too-many-locals
-
-    logger = set_up_logging(__name__)
-    logger.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(dumps({EVENT_KEY: event}))
 
     # validate input
     try:
@@ -51,7 +51,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        logger.warning(dumps({ERROR_KEY: error}, default=str))
+        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
         return {ERROR_MESSAGE_KEY: error.message}
 
     dataset_id = event[DATASET_ID_KEY]
@@ -68,7 +68,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         for item in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            logger.debug(dumps({"Adding file to manifest": item.url}))
+            LOGGER.debug(dumps({"Adding file to manifest": item.url}))
             key = s3_url_to_key(item.url)
             task_parameters = {
                 ORIGINAL_KEY_KEY: key,
@@ -114,7 +114,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         RoleArn=s3_batch_copy_role_arn,
         ClientRequestToken=uuid4().hex,
     )
-    logger.debug(dumps({"s3 batch response": response}, default=str))
+    LOGGER.debug(dumps({"s3 batch response": response}, default=str))
 
     return {JOB_ID_KEY: response["JobId"]}
 
