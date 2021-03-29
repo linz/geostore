@@ -3,10 +3,7 @@ from jsonschema import validate  # type: ignore[import]
 from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 
-# From https://docs.aws.amazon.com/batch/latest/userguide/array_jobs.html
-# TODO: Set MAX_ITERATION_SIZE to 10_000 once we figure out [how to set a numeric
-# size](https://stackoverflow.com/q/66202138/96588)
-MAX_ITERATION_SIZE = 5
+MAX_ITERATION_SIZE = 10000
 
 EVENT_SCHEMA = {
     "type": "object",
