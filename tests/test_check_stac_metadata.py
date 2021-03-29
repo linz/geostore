@@ -1,4 +1,3 @@
-import logging
 import sys
 from copy import deepcopy
 from datetime import timedelta
@@ -44,9 +43,7 @@ from .stac_generators import (
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_return_non_zero_exit_code_on_validation_failure(
-    validate_url_mock: MagicMock,
-) -> None:
+def should_return_non_zero_exit_code_on_validation_failure(validate_url_mock: MagicMock) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
     sys.argv = [
         any_program_name(),
@@ -515,115 +512,102 @@ def should_detect_invalid_datetime() -> None:
         STACSchemaValidator().validate(stac_object)
 
 
-class TestsWithLogger:
-    logger: logging.Logger
+def should_validate_metadata_files_recursively() -> None:
+    base_url = any_s3_url()
+    parent_url = f"{base_url}/{any_safe_filename()}"
+    child_url = f"{base_url}/{any_safe_filename()}"
 
-    @classmethod
-    def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.check_stac_metadata.task")
+    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object["links"].append({"href": child_url, "rel": "child"})
+    url_reader = MockJSONURLReader(
+        {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
+    )
 
-    def should_validate_metadata_files_recursively(self) -> None:
-        base_url = any_s3_url()
-        parent_url = f"{base_url}/{any_safe_filename()}"
-        child_url = f"{base_url}/{any_safe_filename()}"
+    STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(parent_url)
 
-        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        stac_object["links"].append({"href": child_url, "rel": "child"})
-        url_reader = MockJSONURLReader(
-            {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
-        )
+    assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
-        STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
-            parent_url
-        )
 
-        assert url_reader.mock_calls == [call(parent_url), call(child_url)]
+def should_only_validate_each_file_once() -> None:
+    base_url = any_s3_url()
+    root_url = f"{base_url}/{any_safe_filename()}"
+    child_url = f"{base_url}/{any_safe_filename()}"
+    leaf_url = f"{base_url}/{any_safe_filename()}"
 
-    def should_only_validate_each_file_once(self) -> None:
-        base_url = any_s3_url()
-        root_url = f"{base_url}/{any_safe_filename()}"
-        child_url = f"{base_url}/{any_safe_filename()}"
-        leaf_url = f"{base_url}/{any_safe_filename()}"
+    root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    root_stac_object["links"] = [
+        {"href": child_url, "rel": "child"},
+        {"href": root_url, "rel": "root"},
+        {"href": root_url, "rel": "self"},
+    ]
+    child_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    child_stac_object["links"] = [
+        {"href": leaf_url, "rel": "child"},
+        {"href": root_url, "rel": "root"},
+        {"href": child_url, "rel": "self"},
+    ]
+    leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    leaf_stac_object["links"] = [
+        {"href": root_url, "rel": "root"},
+        {"href": leaf_url, "rel": "self"},
+    ]
+    url_reader = MockJSONURLReader(
+        {
+            root_url: root_stac_object,
+            child_url: child_stac_object,
+            leaf_url: leaf_stac_object,
+        },
+        call_limit=3,
+    )
 
-        root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        root_stac_object["links"] = [
-            {"href": child_url, "rel": "child"},
-            {"href": root_url, "rel": "root"},
-            {"href": root_url, "rel": "self"},
-        ]
-        child_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        child_stac_object["links"] = [
-            {"href": leaf_url, "rel": "child"},
-            {"href": root_url, "rel": "root"},
-            {"href": child_url, "rel": "self"},
-        ]
-        leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        leaf_stac_object["links"] = [
-            {"href": root_url, "rel": "root"},
-            {"href": leaf_url, "rel": "self"},
-        ]
-        url_reader = MockJSONURLReader(
-            {
-                root_url: root_stac_object,
-                child_url: child_stac_object,
-                leaf_url: leaf_stac_object,
-            },
-            call_limit=3,
-        )
+    STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(root_url)
 
-        STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
-            root_url
-        )
+    assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
-        assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
-    def should_raise_exception_if_non_s3_url_is_passed(self) -> None:
-        https_url = any_https_url()
-        url_reader = MockJSONURLReader({})
+def should_raise_exception_if_non_s3_url_is_passed() -> None:
+    https_url = any_https_url()
+    url_reader = MockJSONURLReader({})
 
-        with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
-            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).run(
-                https_url
-            )
+    with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
+        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(https_url)
 
-    def should_return_assets_from_validated_metadata_files(
-        self,
-        subtests: SubTests,
-    ) -> None:
-        base_url = any_s3_url()
-        metadata_url = f"{base_url}/{any_safe_filename()}"
-        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        first_asset_url = f"{base_url}/{any_safe_filename()}"
-        first_asset_multihash = any_hex_multihash()
-        second_asset_url = f"{base_url}/{any_safe_filename()}"
-        second_asset_multihash = any_hex_multihash()
-        stac_object["assets"] = {
-            any_asset_name(): {
-                "href": first_asset_url,
-                "checksum:multihash": first_asset_multihash,
-            },
-            any_asset_name(): {
-                "href": second_asset_url,
-                "checksum:multihash": second_asset_multihash,
-            },
-        }
-        expected_assets = [
-            {"multihash": first_asset_multihash, "url": first_asset_url},
-            {"multihash": second_asset_multihash, "url": second_asset_url},
-        ]
-        expected_metadata = [
-            {"url": metadata_url},
-        ]
-        url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        validator = STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger)
+def should_return_assets_from_validated_metadata_files(subtests: SubTests) -> None:
+    base_url = any_s3_url()
+    metadata_url = f"{base_url}/{any_safe_filename()}"
+    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    first_asset_url = f"{base_url}/{any_safe_filename()}"
+    first_asset_multihash = any_hex_multihash()
+    second_asset_url = f"{base_url}/{any_safe_filename()}"
+    second_asset_multihash = any_hex_multihash()
+    stac_object["assets"] = {
+        any_asset_name(): {
+            "href": first_asset_url,
+            "checksum:multihash": first_asset_multihash,
+        },
+        any_asset_name(): {
+            "href": second_asset_url,
+            "checksum:multihash": second_asset_multihash,
+        },
+    }
+    expected_assets = [
+        {"multihash": first_asset_multihash, "url": first_asset_url},
+        {"multihash": second_asset_multihash, "url": second_asset_url},
+    ]
+    expected_metadata = [
+        {"url": metadata_url},
+    ]
+    url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-        validator.validate(metadata_url)
+    validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
 
-        with subtests.test():
-            assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
-        with subtests.test():
-            assert validator.dataset_metadata == expected_metadata
+    validator.validate(metadata_url)
+
+    with subtests.test():
+        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+    with subtests.test():
+        assert validator.dataset_metadata == expected_metadata
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
