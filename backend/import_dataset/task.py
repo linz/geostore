@@ -17,13 +17,24 @@ STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
 
+DATASET_ID_KEY = "dataset_id"
+VERSION_ID_KEY = "version_id"
+METADATA_URL_KEY = "metadata_url"
+
+EVENT_KEY = "event"
+ERROR_KEY = "error"
+
+ERROR_MESSAGE_KEY = "error message"
+
+JOB_ID_KEY = "job_id"
+
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     # pylint: disable=too-many-locals
 
     logger = set_up_logging(__name__)
-    logger.debug(dumps({"event": event}))
+    logger.debug(dumps({EVENT_KEY: event}))
 
     # validate input
     try:
@@ -32,20 +43,20 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {"type": "string"},
-                    "version_id": {"type": "string"},
-                    "metadata_url": {"type": "string"},
+                    DATASET_ID_KEY: {"type": "string"},
+                    VERSION_ID_KEY: {"type": "string"},
+                    METADATA_URL_KEY: {"type": "string"},
                 },
-                "required": ["dataset_id", "metadata_url", "version_id"],
+                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
             },
         )
     except ValidationError as error:
-        logger.warning(dumps({"error": error}, default=str))
-        return {"error message": error.message}
+        logger.warning(dumps({ERROR_KEY: error}, default=str))
+        return {ERROR_MESSAGE_KEY: error.message}
 
-    dataset_id = event["dataset_id"]
-    dataset_version_id = event["version_id"]
-    metadata_url = event["metadata_url"]
+    dataset_id = event[DATASET_ID_KEY]
+    dataset_version_id = event[VERSION_ID_KEY]
+    metadata_url = event[METADATA_URL_KEY]
 
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     storage_bucket_arn = f"arn:aws:s3:::{storage_bucket_name}"
@@ -105,7 +116,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     )
     logger.debug(dumps({"s3 batch response": response}, default=str))
 
-    return {"job_id": response["JobId"]}
+    return {JOB_ID_KEY: response["JobId"]}
 
 
 def s3_url_to_key(url: str) -> str:
