@@ -83,7 +83,7 @@ jobs:
         poetry run cdk deploy --all --require-approval never
       env:
         DEPLOY_ENV: nonprod
-        DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN }}
+        DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_NON_PROD }}
 
     # PROD DEPLOYMENT
     - name: (Prod) Configure AWS credentials
@@ -107,4 +107,4 @@ jobs:
         poetry run cdk deploy --all --require-approval never
       env:
         DEPLOY_ENV: prod
-        DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN }}
+        DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_PROD }}
