@@ -80,7 +80,7 @@ There are several end user interaction points in GDL:
 
 - A [dataset space endpoint](TODO), to create, get, update or delete individual datasets, and to list all datasets
 - A [dataset versions endpoint](TODO), to create new versions of datasets. The S3 files which constitute the dataset are all linked to a specific dataset version.
-- A [import status endpoint](TODO), to get information about the status of dataset version import, including errors and issues
+- An [import status endpoint](TODO), to get information about the status of dataset version import, including errors and issues
 
 These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
 
