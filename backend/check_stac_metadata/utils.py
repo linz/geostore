@@ -16,9 +16,12 @@ from jsonschema import (  # type: ignore[import]
 from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..check import Check
+from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
+
+LOGGER = set_up_logging(__name__)
 
 
 class STACSchemaValidator(Draft7Validator):
@@ -60,11 +63,9 @@ class STACDatasetValidator:
         self,
         url_reader: Callable[[str], StreamingBody],
         validation_result_factory: ValidationResultFactory,
-        logger: Logger,
     ):
         self.url_reader = url_reader
         self.validation_result_factory = validation_result_factory
-        self.logger = logger
 
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
@@ -108,7 +109,7 @@ class STACDatasetValidator:
             self.validate_directory(asset_url, url)
 
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
-            self.logger.debug(dumps({"asset": asset_dict}))
+            LOGGER.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json["links"]:
