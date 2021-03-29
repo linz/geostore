@@ -6,6 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack
 
+from backend.environment import ENV
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
@@ -14,6 +15,7 @@ from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.bundled_lambda_function import BundledLambdaFunction
 from .constructs.lambda_task import LambdaTask
+from .constructs.parameter import Parameter
 from .constructs.table import Table
 
 
@@ -38,7 +40,7 @@ class ProcessingStack(Stack):
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
-            ResourceName.PROCESSING_ASSETS_TABLE_NAME.value,
+            f"{ENV}-processing-assets",
             deploy_env=deploy_env,
             application_layer=application_layer,
         )
@@ -207,13 +209,6 @@ class ProcessingStack(Stack):
                 "batchoperations.s3.amazonaws.com"
             ),
         )
-        import_dataset_role_arn_parameter = aws_ssm.StringParameter(
-            self,
-            "import-dataset-role-arn",
-            description=f"Import dataset role ARN for {deploy_env}",
-            parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
-            string_value=import_dataset_role.role_arn,
-        )
 
         import_dataset_file_function = BundledLambdaFunction(
             self,
@@ -221,13 +216,6 @@ class ProcessingStack(Stack):
             directory="import_dataset_file",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
-        )
-        import_dataset_file_function_arn_parameter = aws_ssm.StringParameter(
-            self,
-            "import-dataset-file-function-arn",
-            description=f"Import dataset file function ARN for {deploy_env}",
-            parameter_name=ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN.value,
-            string_value=import_dataset_file_function.function_arn,
         )
 
         assert import_dataset_file_function.role is not None
@@ -260,8 +248,6 @@ class ProcessingStack(Stack):
         import_dataset_task.lambda_function.role.add_to_policy(
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
-        import_dataset_role_arn_parameter.grant_read(import_dataset_task.lambda_function)
-        import_dataset_file_function_arn_parameter.grant_read(import_dataset_task.lambda_function)
 
         import_dataset_file_function.grant_invoke(import_dataset_role)  # type: ignore[arg-type]
 
@@ -272,6 +258,40 @@ class ProcessingStack(Stack):
 
         processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
         processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
+
+        # Parameters
+        Parameter(
+            self,
+            "import-dataset-file-function-arn",
+            string_value=import_dataset_file_function.function_arn,
+            description=f"Import dataset file function ARN for {deploy_env}",
+            parameter_name=ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN.value,
+            readers=[import_dataset_task.lambda_function],
+        )
+
+        Parameter(
+            self,
+            "import-dataset-role-arn",
+            string_value=import_dataset_role.role_arn,
+            description=f"Import dataset role ARN for {deploy_env}",
+            parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
+            readers=[import_dataset_task.lambda_function],
+        )
+
+        Parameter(
+            self,
+            "processing-assets-table-name-parameter",
+            string_value=processing_assets_table.table_name,
+            description=f"Processing Assets Table name for {deploy_env}",
+            parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME.value,
+            readers=[
+                check_files_checksums_array_task.job_role,  # type: ignore[list-item]
+                check_files_checksums_single_task.job_role,  # type: ignore[list-item]
+                check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
+                content_iterator_task.lambda_function,
+                import_dataset_task.lambda_function,
+            ],
+        )
 
         success_task = aws_stepfunctions.Succeed(self, "success")
 

@@ -1,6 +1,6 @@
 from jsonschema import validate  # type: ignore[import]
 
-from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..types import JsonObject
 
 MAX_ITERATION_SIZE = 10_000
@@ -48,9 +48,11 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_id = event["dataset_id"]
     version_id = event["version_id"]
 
-    asset_count = ProcessingAssetsModel.count(
+    processing_assets_model = processing_assets_model_with_meta()
+
+    asset_count = processing_assets_model.count(
         hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
-        range_key_condition=ProcessingAssetsModel.sk.startswith(
+        range_key_condition=processing_assets_model.sk.startswith(
             f"{ProcessingAssetType.DATA.value}#"
         ),
     )

@@ -16,7 +16,10 @@ from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.dataset_model import DatasetModel
-from backend.processing_assets_model import ProcessingAssetsModel
+from backend.processing_assets_model import (
+    ProcessingAssetsModelBase,
+    processing_assets_model_with_meta,
+)
 from backend.types import JsonObject
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
@@ -169,7 +172,8 @@ class ProcessingAsset:
     ):
         prefix = "METADATA" if multihash is None else "DATA"
 
-        self._item = ProcessingAssetsModel(
+        processing_assets_model = processing_assets_model_with_meta()
+        self._item = processing_assets_model(
             hash_key=asset_id,
             range_key=f"{prefix}_ITEM_INDEX#{self.index}",
             url=url,
@@ -177,7 +181,7 @@ class ProcessingAsset:
         )
         ProcessingAsset.index += 1
 
-    def __enter__(self) -> ProcessingAssetsModel:
+    def __enter__(self) -> ProcessingAssetsModelBase:
         self._item.save()
         return self._item
 

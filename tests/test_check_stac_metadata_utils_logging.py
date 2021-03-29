@@ -62,7 +62,9 @@ def should_log_assets() -> None:
     url_reader = MockJSONURLReader({metadata_url: stac_object})
     expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
 
-    with patch.object(LOGGER, "debug") as logger_mock:
+    with patch.object(LOGGER, "debug") as logger_mock, patch(
+        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
+    ):
         STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
