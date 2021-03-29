@@ -94,16 +94,14 @@ class TestLogging:
             # then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.dataset_versions.create.DatasetsModel.get")
-    def should_log_warning_if_dataset_does_not_exist(
-        self, validate_dataset_mock: MagicMock
-    ) -> None:
+    @patch("backend.dataset_versions.create.datasets_model_with_meta")
+    def should_log_warning_if_dataset_does_not_exist(self, datasets_model_mock: MagicMock) -> None:
         # given
         dataset_id = any_dataset_id()
         dataset_type = any_valid_dataset_type()
         metadata_url = any_s3_url()
         error_message = "Some error message"
-        validate_dataset_mock.side_effect = DoesNotExist(error_message)
+        datasets_model_mock.return_value.get.side_effect = DoesNotExist(error_message)
 
         payload = {
             "httpMethod": "POST",

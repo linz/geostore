@@ -5,7 +5,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..datasets_model import DatasetsModel
+from ..datasets_model import DatasetsModelBase, datasets_model_with_meta
 from ..types import JsonObject
 
 
@@ -38,9 +38,10 @@ def update_dataset(payload: JsonObject) -> JsonObject:
         return error_response(400, err.message)
 
     # check for duplicate type/title
-    if DatasetsModel.datasets_title_idx.count(
+    datasets_model_class = datasets_model_with_meta()
+    if datasets_model_class.datasets_title_idx.count(  # pylint:disable=no-member
         hash_key=f"TYPE#{req_body['type']}",
-        range_key_condition=(DatasetsModel.title == req_body["title"]),
+        range_key_condition=(datasets_model_class.title == req_body["title"]),
     ):
         return error_response(
             409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"
@@ -48,7 +49,7 @@ def update_dataset(payload: JsonObject) -> JsonObject:
 
     # get dataset to update
     try:
-        dataset = DatasetsModel.get(
+        dataset = datasets_model_class.get(
             hash_key=f"DATASET#{req_body['id']}",
             range_key=f"TYPE#{req_body['type']}",
             consistent_read=True,
@@ -69,7 +70,7 @@ def update_dataset(payload: JsonObject) -> JsonObject:
     return success_response(200, resp_body)
 
 
-def update_dataset_attributes(dataset: DatasetsModel, req_body: JsonObject) -> None:
-    for attr in DatasetsModel.get_attributes():
+def update_dataset_attributes(dataset: DatasetsModelBase, req_body: JsonObject) -> None:
+    for attr in DatasetsModelBase.get_attributes():
         if attr in req_body and attr not in ("id", "type"):
             setattr(dataset, attr, req_body[attr])

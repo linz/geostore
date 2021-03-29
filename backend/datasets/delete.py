@@ -5,7 +5,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..datasets_model import DatasetsModel
+from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 
 
@@ -31,9 +31,11 @@ def delete_dataset(payload: JsonObject) -> JsonObject:
     except ValidationError as err:
         return error_response(400, err.message)
 
+    datasets_model_class = datasets_model_with_meta()
+
     # get dataset to delete
     try:
-        dataset = DatasetsModel.get(
+        dataset = datasets_model_class.get(
             hash_key=f"DATASET#{req_body['id']}",
             range_key=f"TYPE#{req_body['type']}",
             consistent_read=True,

@@ -1,7 +1,7 @@
 """List all datasets function."""
 
 from ..api_responses import success_response
-from ..datasets_model import DatasetsModel
+from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 
 
@@ -9,9 +9,10 @@ def list_datasets() -> JsonObject:
     """GET: List all Datasets."""
 
     # list all datasets
-    datasets = DatasetsModel.scan(
-        filter_condition=DatasetsModel.id.startswith("DATASET#")
-        & DatasetsModel.type.startswith("TYPE#")
+    datasets_model_class = datasets_model_with_meta()
+    datasets = datasets_model_class.scan(
+        filter_condition=datasets_model_class.id.startswith("DATASET#")
+        & datasets_model_class.type.startswith("TYPE#")
     )
 
     # return response
