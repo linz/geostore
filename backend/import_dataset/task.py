@@ -1,4 +1,5 @@
 from json import dumps
+from os.path import basename
 from urllib.parse import quote, urlparse
 from uuid import uuid4
 
@@ -60,7 +61,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             key = s3_url_to_key(item.url)
             task_parameters = {
                 ORIGINAL_KEY_KEY: key,
-                NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{key}",
+                NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{basename(key)}",
             }
             row = ",".join([staging_bucket_name, quote(dumps(task_parameters))])
             s3_manifest.write(f"{row}\n")
