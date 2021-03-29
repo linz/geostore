@@ -40,7 +40,6 @@ from .stac_generators import (
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
-    any_stac_relation,
 )
 
 
@@ -81,22 +80,20 @@ def should_save_non_s3_url_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="S3 url validation results"):
-        validation_results_factory_mock.assert_has_calls(
-            [
-                call(hash_key),
-                call().save(
-                    non_s3_url,
-                    Check.NON_S3_URL,
-                    ValidationResult.FAILED,
-                    details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
-                ),
-            ]
-        )
+        assert validation_results_factory_mock.mock_calls == [
+            call(hash_key),
+            call().save(
+                non_s3_url,
+                Check.NON_S3_URL,
+                ValidationResult.FAILED,
+                details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
+            ),
+        ]
 
 
 @mark.infrastructure
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
-def should_save_multiple_directories_validation_results(
+def should_save_asset_multiple_directories_validation_results(
     validation_results_factory_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
@@ -105,7 +102,8 @@ def should_save_multiple_directories_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     base_url = f"s3://{staging_bucket_name}/"
-    invalid_key = f"test/{any_safe_filename()}"
+    first_invalid_key = f"{any_safe_filename()}/{any_safe_filename()}"
+    second_invalid_key = f"{any_safe_filename()}/{any_safe_filename()}"
 
     with S3Object(
         file_object=json_dict_to_file_object(
@@ -113,8 +111,13 @@ def should_save_multiple_directories_validation_results(
                 **deepcopy(MINIMAL_VALID_STAC_OBJECT),
                 "assets": {
                     any_asset_name(): {
-                        "href": f"{base_url}{invalid_key}",
-                    }
+                        "href": f"{base_url}{first_invalid_key}",
+                        "checksum:multihash": any_hex_multihash(),
+                    },
+                    any_asset_name(): {
+                        "href": f"{base_url}{second_invalid_key}",
+                        "checksum:multihash": any_hex_multihash(),
+                    },
                 },
             }
         ),
@@ -123,8 +126,12 @@ def should_save_multiple_directories_validation_results(
     ) as root_s3_object, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
         bucket_name=staging_bucket_name,
-        key=invalid_key,
-    ) as invalid_asset:
+        key=first_invalid_key,
+    ) as first_invalid_asset, S3Object(
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        bucket_name=staging_bucket_name,
+        key=second_invalid_key,
+    ) as second_invalid_asset:
 
         sys.argv = [
             any_program_name(),
@@ -134,29 +141,136 @@ def should_save_multiple_directories_validation_results(
         ]
 
         with subtests.test(msg="Exit code"):
-            assert main() == 1
+            assert main() == 0
 
         hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        expected_error = "“{}” links to asset file in different directory: “{}”".format(
-            root_s3_object.url, invalid_asset.url
-        )
+        root_metadata_path = root_s3_object.url.rsplit("/", maxsplit=1)[0]
+
         with subtests.test(msg="S3 url validation results"):
-            validation_results_factory_mock.assert_has_calls(
-                [
-                    call(hash_key),
-                    call().save(
-                        root_s3_object.url,
-                        Check.JSON_SCHEMA,
-                        ValidationResult.PASSED,
-                    ),
-                    call().save(
-                        root_s3_object.url,
-                        Check.MULTIPLE_DIRECTORIES,
-                        ValidationResult.FAILED,
-                        details={"message": expected_error},
-                    ),
-                ]
-            )
+            assert validation_results_factory_mock.mock_calls == [
+                call(hash_key),
+                call().save(
+                    root_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    first_invalid_asset.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"Metadata file “{root_s3_object.url}” links to "
+                        f"“{first_invalid_asset.url}” which exists in a different"
+                        f" directory to the root metadata file directory:"
+                        f" “{root_metadata_path}”"
+                    },
+                ),
+                call().save(
+                    second_invalid_asset.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"Metadata file “{root_s3_object.url}” links to"
+                        f" “{second_invalid_asset.url}” which exists in a different directory"
+                        f" to the root metadata file directory: “{root_metadata_path}”"
+                    },
+                ),
+            ]
+
+
+@mark.infrastructure
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_save_metadata_multiple_directories_validation_results(
+    validation_results_factory_mock: MagicMock,
+    subtests: SubTests,
+) -> None:
+    staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
+    base_url = f"s3://{staging_bucket_name}/"
+    child_dir = any_safe_filename()
+    invalid_child_key = f"{child_dir}/{any_safe_filename()}"
+    invalid_grandchild_key = f"{child_dir}/{any_safe_filename()}/{any_safe_filename()}"
+
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    with S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                "links": [
+                    {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
+                ],
+            }
+        ),
+        bucket_name=staging_bucket_name,
+        key=any_safe_filename(),
+    ) as root_s3_object, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                "links": [
+                    {"href": f"{base_url}{invalid_grandchild_key}", "rel": "child"},
+                ],
+            }
+        ),
+        bucket_name=staging_bucket_name,
+        key=invalid_child_key,
+    ) as invalid_child_s3_object, S3Object(
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        bucket_name=staging_bucket_name,
+        key=invalid_grandchild_key,
+    ) as invalid_grandchild_s3_object:
+        sys.argv = [
+            any_program_name(),
+            f"--metadata-url={root_s3_object.url}",
+            f"--dataset-id={dataset_id}",
+            f"--version-id={version_id}",
+        ]
+        root_metadata_path = root_s3_object.url.rsplit("/", maxsplit=1)[0]
+
+        with subtests.test(msg="Exit code"):
+            assert main() == 0
+
+        hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+        with subtests.test(msg="S3 url validation results"):
+            assert validation_results_factory_mock.mock_calls == [
+                call(hash_key),
+                call().save(
+                    root_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    invalid_child_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"Metadata file “{root_s3_object.url}” links to"
+                        f" “{invalid_child_s3_object.url}” which exists in a different directory"
+                        f" to the root metadata file directory: “{root_metadata_path}”"
+                    },
+                ),
+                call().save(
+                    invalid_child_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+                call().save(
+                    invalid_grandchild_s3_object.url,
+                    Check.MULTIPLE_DIRECTORIES,
+                    ValidationResult.FAILED,
+                    details={
+                        "message": f"Metadata file “{invalid_child_s3_object.url}” links to "
+                        f"“{invalid_grandchild_s3_object.url}” which exists in a different"
+                        f" directory to the root metadata file directory: “{root_metadata_path}”"
+                    },
+                ),
+                call().save(
+                    invalid_grandchild_s3_object.url,
+                    Check.JSON_SCHEMA,
+                    ValidationResult.PASSED,
+                ),
+            ]
 
 
 @mark.infrastructure
@@ -189,17 +303,15 @@ def should_save_staging_access_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="Root validation results"):
-        validation_results_factory_mock.assert_has_calls(
-            [
-                call(hash_key),
-                call().save(
-                    s3_url,
-                    Check.STAGING_ACCESS,
-                    ValidationResult.FAILED,
-                    details={"message": str(expected_error)},
-                ),
-            ]
-        )
+        assert validation_results_factory_mock.mock_calls == [
+            call(hash_key),
+            call().save(
+                s3_url,
+                Check.STAGING_ACCESS,
+                ValidationResult.FAILED,
+                details={"message": str(expected_error)},
+            ),
+        ]
 
 
 @mark.infrastructure
@@ -465,24 +577,6 @@ class TestsWithLogger:
 
         assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
-    def should_raise_exception_if_metadata_file_is_in_different_directory(self) -> None:
-        base_url = any_s3_url()
-        root_url = f"{base_url}/{any_safe_filename()}"
-        other_url = f"{base_url}/{any_safe_filename()}/{any_safe_filename()}"
-
-        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        stac_object["links"].append({"href": other_url, "rel": any_stac_relation()})
-
-        url_reader = MockJSONURLReader({root_url: stac_object})
-
-        with raises(
-            AssertionError,
-            match=f"“{root_url}” links to metadata file in different directory: “{other_url}”",
-        ):
-            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
-                root_url
-            )
-
     def should_raise_exception_if_non_s3_url_is_passed(self) -> None:
         https_url = any_https_url()
         url_reader = MockJSONURLReader({})
@@ -490,26 +584,6 @@ class TestsWithLogger:
         with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
             STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).run(
                 https_url
-            )
-
-    def should_raise_exception_if_asset_file_is_in_different_directory(self) -> None:
-        base_url = any_s3_url()
-        root_url = f"{base_url}/{any_safe_filename()}"
-        other_url = f"{base_url}/{any_safe_filename()}/{any_safe_filename()}"
-
-        stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
-        stac_object["assets"] = {
-            any_asset_name(): {"href": other_url, "checksum:multihash": any_hex_multihash()}
-        }
-
-        url_reader = MockJSONURLReader({root_url: stac_object})
-
-        with raises(
-            AssertionError,
-            match=f"“{root_url}” links to asset file in different directory: “{other_url}”",
-        ):
-            STACDatasetValidator(url_reader, MockValidationResultFactory(), self.logger).validate(
-                root_url
             )
 
     def should_return_assets_from_validated_metadata_files(
