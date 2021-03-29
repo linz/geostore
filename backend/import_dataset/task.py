@@ -61,7 +61,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     storage_bucket_arn = f"arn:aws:s3:::{storage_bucket_name}"
 
-    staging_bucket_name = urlparse(metadata_url).netloc
+    source_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
     with smart_open(f"s3://{storage_bucket_name}/{manifest_key}", "w") as s3_manifest:
@@ -74,7 +74,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 ORIGINAL_KEY_KEY: key,
                 NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{basename(key)}",
             }
-            row = ",".join([staging_bucket_name, quote(dumps(task_parameters))])
+            row = ",".join([source_bucket_name, quote(dumps(task_parameters))])
             s3_manifest.write(f"{row}\n")
 
     caller_identity = STS_CLIENT.get_caller_identity()
