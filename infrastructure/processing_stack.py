@@ -12,6 +12,7 @@ from backend.validation_results_model import ValidationOutcomeIdx
 
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
+from .constructs.bundled_lambda_function import BundledLambdaFunction
 from .constructs.lambda_task import LambdaTask
 from .constructs.table import Table
 
@@ -49,9 +50,6 @@ class ProcessingStack(Stack):
             application_layer=application_layer,
         )
 
-        assert ValidationOutcomeIdx.result.attr_name
-        assert ValidationOutcomeIdx.pk.attr_name
-
         self.validation_results_table.add_global_secondary_index(
             index_name=ValidationOutcomeIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(
@@ -66,7 +64,7 @@ class ProcessingStack(Stack):
         # BATCH JOB DEPENDENCIES
         batch_job_queue = BatchJobQueue(
             self,
-            "batch_job_queue",
+            "batch-job-queue",
             deploy_env=deploy_env,
             processing_assets_table=processing_assets_table,
         ).job_queue
@@ -79,7 +77,7 @@ class ProcessingStack(Stack):
         # STATE MACHINE TASKS
         check_stac_metadata_job_task = BatchSubmitJobTask(
             self,
-            "check_stac_metadata_task",
+            "check-stac-metadata-task",
             deploy_env=deploy_env,
             directory="check_stac_metadata",
             s3_policy=s3_read_only_access_policy,
@@ -110,7 +108,7 @@ class ProcessingStack(Stack):
 
         content_iterator_task = LambdaTask(
             self,
-            "content_iterator_task",
+            "content-iterator-task",
             directory="content_iterator",
             result_path="$.content",
             application_layer=application_layer,
@@ -125,53 +123,57 @@ class ProcessingStack(Stack):
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
         }
-        check_files_checksums_default_container_overrides_command = [
-            "--dataset-id",
-            "Ref::dataset_id",
-            "--version-id",
-            "Ref::version_id",
-            "--first-item",
-            "Ref::first_item",
-        ]
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
-            "check_files_checksums_single_task",
+            "check-files-checksums-single-task",
             deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
-            container_overrides_command=check_files_checksums_default_container_overrides_command,
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
         )
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
         check_files_checksums_array_task = BatchSubmitJobTask(
             self,
-            "check_files_checksums_array_task",
+            "check-files-checksums-array-task",
             deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
-            container_overrides_command=check_files_checksums_default_container_overrides_command,
+            container_overrides_command=[
+                "--dataset-id",
+                "Ref::dataset_id",
+                "--version-id",
+                "Ref::version_id",
+                "--first-item",
+                "Ref::first_item",
+            ],
             array_size=array_size,
         )
 
-        processing_assets_table_readers = [
+        for reader in [
             content_iterator_task.lambda_function,
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
-        ]
-        for reader in processing_assets_table_readers:
+        ]:
             processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
             processing_assets_table.grant(
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
-        validation_results_table_writers = [
+        for reader in [
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
-        ]
-        for reader in validation_results_table_writers:
+        ]:
             self.validation_results_table.grant_read_write_data(reader)  # type: ignore[arg-type]
             self.validation_results_table.grant(
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
@@ -179,7 +181,7 @@ class ProcessingStack(Stack):
 
         validation_summary_task = LambdaTask(
             self,
-            "validation_summary_task",
+            "validation-summary-task",
             directory="validation_summary",
             result_path="$.validation",
             application_layer=application_layer,
@@ -192,60 +194,58 @@ class ProcessingStack(Stack):
 
         validation_failure_lambda_invoke = LambdaTask(
             self,
-            "validation_failure_task",
+            "validation-failure-task",
             directory="validation_failure",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
             application_layer=application_layer,
         ).lambda_invoke
 
-        s3_batch_copy_role = aws_iam.Role(
+        import_dataset_role = aws_iam.Role(
             self,
-            "s3_batch_copy_role",
+            "import-dataset",
             assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
                 "batchoperations.s3.amazonaws.com"
             ),
         )
-        s3_batch_copy_role.add_to_policy(
-            aws_iam.PolicyStatement(
-                actions=[
-                    "s3:GetObject",
-                    "s3:GetObjectAcl",
-                    "s3:GetObjectTagging",
-                ],
-                resources=[
-                    "*",
-                ],
-            ),
-        )
-        s3_batch_copy_role.add_to_policy(
-            aws_iam.PolicyStatement(
-                actions=[
-                    "s3:PutObject",
-                    "s3:PutObjectAcl",
-                    "s3:PutObjectTagging",
-                    "s3:GetObject",
-                    "s3:GetObjectVersion",
-                    "s3:GetBucketLocation",
-                ],
-                resources=[
-                    f"{storage_bucket.bucket_arn}/*",
-                ],
-            )
+        import_dataset_role_arn_parameter = aws_ssm.StringParameter(
+            self,
+            "import-dataset-role-arn",
+            description=f"Import dataset role ARN for {deploy_env}",
+            parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
+            string_value=import_dataset_role.role_arn,
         )
 
-        s3_batch_copy_role_arn = aws_ssm.StringParameter(
+        import_dataset_file_function = BundledLambdaFunction(
             self,
-            "s3-batch-copy-role-arn",
-            description=f"S3 Batch Copy Role ARN for {deploy_env}",
-            parameter_name=ParameterName.S3_BATCH_COPY_ROLE_ARN.value,
-            string_value=s3_batch_copy_role.role_arn,
+            "import-dataset-file-task",
+            directory="import_dataset_file",
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
+        )
+        import_dataset_file_function_arn_parameter = aws_ssm.StringParameter(
+            self,
+            "import-dataset-file-function-arn",
+            description=f"Import dataset file function ARN for {deploy_env}",
+            parameter_name=ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN.value,
+            string_value=import_dataset_file_function.function_arn,
+        )
+
+        assert import_dataset_file_function.role is not None
+        for storage_writer in [import_dataset_role, import_dataset_file_function.role]:
+            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
+
+        import_dataset_file_function.role.add_to_policy(
+            aws_iam.PolicyStatement(
+                actions=["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
+                resources=["*"],
+            ),
         )
 
         import_dataset_task = LambdaTask(
             self,
-            "import_dataset_task",
+            "import-dataset-task",
             directory="import_dataset",
-            result_path="$.s3_batch_copy",
+            result_path="$.import_dataset",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
@@ -253,20 +253,22 @@ class ProcessingStack(Stack):
         assert import_dataset_task.lambda_function.role is not None
         import_dataset_task.lambda_function.role.add_to_policy(
             aws_iam.PolicyStatement(
-                resources=[s3_batch_copy_role.role_arn],
+                resources=[import_dataset_role.role_arn],
                 actions=["iam:PassRole"],
             ),
         )
         import_dataset_task.lambda_function.role.add_to_policy(
-            aws_iam.PolicyStatement(
-                resources=["*"],
-                actions=["s3:CreateJob"],
-            ),
+            aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
-        s3_batch_copy_role_arn.grant_read(import_dataset_task.lambda_function)
+        import_dataset_role_arn_parameter.grant_read(import_dataset_task.lambda_function)
+        import_dataset_file_function_arn_parameter.grant_read(import_dataset_task.lambda_function)
+
+        import_dataset_file_function.grant_invoke(import_dataset_role)  # type: ignore[arg-type]
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
-        storage_bucket_parameter.grant_read(import_dataset_task.lambda_function)
+
+        for reader in [import_dataset_task.lambda_function, import_dataset_file_function]:
+            storage_bucket_parameter.grant_read(reader)
 
         processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
         processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")

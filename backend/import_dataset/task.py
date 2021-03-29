@@ -1,11 +1,12 @@
-import json
-from urllib.parse import urlparse
+from json import dumps
+from urllib.parse import quote, urlparse
 from uuid import uuid4
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetsModel
@@ -21,7 +22,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     # pylint: disable=too-many-locals
 
     logger = set_up_logging(__name__)
-    logger.debug(json.dumps({"event": event}))
+    logger.debug(dumps({"event": event}))
 
     # validate input
     try:
@@ -38,7 +39,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        logger.warning(json.dumps({"error": error}, default=str))
+        logger.warning(dumps({"error": error}, default=str))
         return {"error message": error.message}
 
     dataset_id = event["dataset_id"]
@@ -55,9 +56,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         for item in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            logger.debug(json.dumps({"Adding file to manifest": item.url}))
-            key = urlparse(item.url).path[1:]
-            s3_manifest.write(f"{staging_bucket_name},{key}\n")
+            logger.debug(dumps({"Adding file to manifest": item.url}))
+            key = s3_url_to_key(item.url)
+            task_parameters = {
+                ORIGINAL_KEY_KEY: key,
+                NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{key}",
+            }
+            row = ",".join([staging_bucket_name, quote(dumps(task_parameters))])
+            s3_manifest.write(f"{row}\n")
 
     caller_identity = STS_CLIENT.get_caller_identity()
     assert "Account" in caller_identity, caller_identity
@@ -67,18 +73,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     assert "ETag" in manifest_s3_object, manifest_s3_object
     manifest_s3_etag = manifest_s3_object["ETag"]
 
-    s3_batch_copy_role_arn = get_param(ParameterName.S3_BATCH_COPY_ROLE_ARN)
+    s3_batch_copy_role_arn = get_param(ParameterName.IMPORT_DATASET_ROLE_ARN)
+    import_dataset_file_task_arn = get_param(ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN)
 
     # trigger s3 batch copy operation
     response = S3CONTROL_CLIENT.create_job(
         AccountId=account_number,
         ConfirmationRequired=False,
-        Operation={
-            "S3PutObjectCopy": {
-                "TargetResource": storage_bucket_arn,
-                "TargetKeyPrefix": f"{dataset_id}/{dataset_version_id}",
-            }
-        },
+        Operation={"LambdaInvoke": {"FunctionArn": import_dataset_file_task_arn}},
         Manifest={
             "Spec": {
                 "Format": "S3BatchOperations_CSV_20180820",
@@ -100,6 +102,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         RoleArn=s3_batch_copy_role_arn,
         ClientRequestToken=uuid4().hex,
     )
-    logger.debug(json.dumps({"s3 batch response": response}, default=str))
+    logger.debug(dumps({"s3 batch response": response}, default=str))
 
     return {"job_id": response["JobId"]}
+
+
+def s3_url_to_key(url: str) -> str:
+    return urlparse(url).path[1:]

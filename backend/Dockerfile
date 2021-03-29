@@ -4,7 +4,7 @@ RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends curl python3-pip \
     && rm -rf /var/lib/apt/lists/*
 RUN curl --location --show-error --silent --output get-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    && echo 'bfc42cff9cb49bb74f6a1fe12c37fb08bcf7a49245a441c272dfd25254d8ae39 get-poetry.py' > get-poetry.py.sha256 \
+    && echo '08336beb0091ab192adef2cedbaa3428dabfc8572e724d2aa7fc4a4922efb20a get-poetry.py' > get-poetry.py.sha256 \
     && sha256sum --check get-poetry.py.sha256 \
     && python3 get-poetry.py \
     && rm get-poetry.py get-poetry.py.sha256

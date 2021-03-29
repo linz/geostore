@@ -61,7 +61,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         step_function_output.get("validation", {}).get("success")
     )
 
-    s3_job_id = step_function_output.get("s3_batch_copy", {}).get("job_id")
+    s3_job_id = step_function_output.get("import_dataset", {}).get("job_id")
     if s3_job_id:
         upload_response = get_s3_batch_copy_status(s3_job_id, LOGGER)
     else:

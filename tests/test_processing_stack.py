@@ -59,8 +59,8 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
 @mark.infrastructure
 def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=ParameterName.S3_BATCH_COPY_ROLE_ARN.value)
-    assert parameter_response["Parameter"]["Name"] == ParameterName.S3_BATCH_COPY_ROLE_ARN.value
+    parameter_response = ssm_client.get_parameter(Name=ParameterName.IMPORT_DATASET_ROLE_ARN.value)
+    assert parameter_response["Parameter"]["Name"] == ParameterName.IMPORT_DATASET_ROLE_ARN.value
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 
@@ -166,7 +166,7 @@ class TestWithStagingBucket:
 
                 with subtests.test(msg="Should complete S3 batch copy operation successfully"):
                     assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
 
                     # poll for S3 Batch Copy completion
                     while (
@@ -260,7 +260,18 @@ class TestWithStagingBucket:
             ),
             bucket_name=self.staging_bucket_name,
             key=("{}/{}.json".format(key_prefix, any_safe_filename())),
-        ) as s3_metadata_file, Dataset(
+        ) as child_metadata_file, S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    "links": [
+                        {"href": f"{child_metadata_file.url}", "rel": "child"},
+                    ],
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=("{}/{}.json".format(key_prefix, any_safe_filename())),
+        ) as root_metadata_file, Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
 
@@ -273,7 +284,7 @@ class TestWithStagingBucket:
                             "httpMethod": "POST",
                             "body": {
                                 "id": dataset_id,
-                                "metadata-url": s3_metadata_file.url,
+                                "metadata-url": root_metadata_file.url,
                                 "type": dataset_type,
                             },
                         }
@@ -302,7 +313,7 @@ class TestWithStagingBucket:
 
                 with subtests.test(msg="Should complete S3 batch copy operation successfully"):
                     assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["s3_batch_copy"]["job_id"]
+                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
 
                     # poll for S3 Batch Copy completion
                     while (
@@ -316,7 +327,7 @@ class TestWithStagingBucket:
                     assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
             finally:
                 # Cleanup
-                for key in [s3_metadata_file.key, asset_s3_object.key]:
+                for key in [root_metadata_file.key, child_metadata_file.key, asset_s3_object.key]:
                     new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{key}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
