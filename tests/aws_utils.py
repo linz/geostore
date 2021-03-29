@@ -105,6 +105,10 @@ def any_s3_bucket_name() -> str:
     return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
 
 
+def any_s3_bucket_arn() -> str:
+    return f"arn:aws:s3:::{any_s3_bucket_name()}"
+
+
 def any_job_id() -> str:
     return uuid4().hex
 
@@ -155,6 +159,8 @@ class Dataset:
 
 
 class ProcessingAsset:
+    index = 0
+
     def __init__(
         self,
         asset_id: str,
@@ -165,10 +171,11 @@ class ProcessingAsset:
 
         self._item = ProcessingAssetsModel(
             hash_key=asset_id,
-            range_key=f"{prefix}_ITEM_INDEX#0",
+            range_key=f"{prefix}_ITEM_INDEX#{self.index}",
             url=url,
             multihash=multihash,
         )
+        ProcessingAsset.index += 1
 
     def __enter__(self) -> ProcessingAssetsModel:
         self._item.save()

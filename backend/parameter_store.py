@@ -20,6 +20,7 @@ class ParameterName(Enum):
         return f"/{ENV}/{name.lower()}"
 
     DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
+    IMPORT_DATASET_FILE_FUNCTION_TASK_ARN = auto()
     IMPORT_DATASET_ROLE_ARN = auto()
     STAGING_BUCKET_NAME = auto()
     STORAGE_BUCKET_NAME = auto()

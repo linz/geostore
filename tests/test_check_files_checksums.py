@@ -102,10 +102,10 @@ def should_validate_given_index(
             info_log_mock.assert_any_call('{"success": true, "message": ""}')
 
     with subtests.test(msg="Validate checksums"):
-        validate_url_multihash_mock.assert_has_calls([call(url, hex_multihash)])
+        assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
 
     with subtests.test(msg="Validation result"):
-        validation_results_factory_mock.assert_has_calls(expected_calls)
+        assert validation_results_factory_mock.mock_calls == expected_calls
 
 
 @patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
@@ -156,12 +156,10 @@ def should_log_error_when_validation_fails(
             error_log_mock.assert_any_call(expected_log)
 
     with subtests.test(msg="Validation result"):
-        validation_results_factory_mock.assert_has_calls(
-            [
-                call(hash_key),
-                call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
-            ]
-        )
+        assert validation_results_factory_mock.mock_calls == [
+            call(hash_key),
+            call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
+        ]
 
 
 @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
@@ -207,17 +205,15 @@ def should_save_staging_access_validation_results(
     with raises(ClientError), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
         main()
 
-    validation_results_factory_mock.assert_has_calls(
-        [
-            call(hash_key),
-            call().save(
-                s3_url,
-                Check.STAGING_ACCESS,
-                ValidationResult.FAILED,
-                details={"message": str(expected_error)},
-            ),
-        ]
-    )
+    assert validation_results_factory_mock.mock_calls == [
+        call(hash_key),
+        call().save(
+            s3_url,
+            Check.STAGING_ACCESS,
+            ValidationResult.FAILED,
+            details={"message": str(expected_error)},
+        ),
+    ]
 
 
 class TestsWithLogger:
