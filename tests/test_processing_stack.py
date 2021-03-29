@@ -284,7 +284,7 @@ class TestWithStagingBucket:
                             "httpMethod": "POST",
                             "body": {
                                 "id": dataset_id,
-                                "metadata-url": child_metadata_file.url,
+                                "metadata-url": root_metadata_file.url,
                                 "type": dataset_type,
                             },
                         }
