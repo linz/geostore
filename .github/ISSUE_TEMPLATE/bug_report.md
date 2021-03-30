@@ -13,10 +13,10 @@ Checklist before submitting:
 - [ ] Provide stacktrace / debugging messages where possible
 -->
 
-### Bug Description
+## Bug Description
 <!-- A clear and concise description of what the bug is. -->
 
-### How to Reproduce
+## How to Reproduce
 
 <!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
 
@@ -28,11 +28,11 @@ Try to include any stack traces or debugging info.
 
 -->
 
-#### Software and OS versions
+## Software context
  - OS: <!-- e.g. Windows / Ubuntu / Mac -->
  - Environment: <!-- e.g. network, AWS environment -->
  - Relevant Software Versions: <!-- e.g. aws --version -->
 
-### Additional context
+## Additional context
 
 <!-- Add any other context about the problem here. -->
