@@ -71,7 +71,7 @@ def any_batch_job_array_index() -> int:
     return randrange(2, 10_001)
 
 
-def any_item_index() -> int:
+def any_next_item_index() -> int:
     """Arbitrary non-negative multiple of iteration size"""
     return randrange(1_000_000) * MAX_ITERATION_SIZE
 
