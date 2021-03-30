@@ -16,7 +16,7 @@ from backend.check import Check
 from backend.check_stac_metadata.task import main
 from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
 from backend.parameter_store import ParameterName, get_param
-from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.validation_results_model import ValidationResult, ValidationResultsModel
 
 from .aws_utils import (
@@ -52,7 +52,8 @@ def should_return_non_zero_exit_code_on_validation_failure(validate_url_mock: Ma
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    assert main() == 1
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        assert main() == 1
 
 
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
@@ -72,7 +73,9 @@ def should_save_non_s3_url_validation_results(
         f"--version-id={version_id}",
     ]
 
-    with subtests.test(msg="Exit code"):
+    with subtests.test(msg="Exit code"), patch(
+        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
+    ):
         assert main() == 1
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
@@ -425,14 +428,15 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         ) as metadata_s3_object:
             # When
 
+            processing_assets_model = processing_assets_model_with_meta()
             expected_asset_items = [
-                ProcessingAssetsModel(
+                processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.DATA.value}#0",
                     url=first_asset_s3_object.url,
                     multihash=first_asset_multihash,
                 ),
-                ProcessingAssetsModel(
+                processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.DATA.value}#1",
                     url=second_asset_s3_object.url,
@@ -441,7 +445,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             ]
 
             expected_metadata_items = [
-                ProcessingAssetsModel(
+                processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}#0",
                     url=metadata_s3_object.url,
@@ -458,17 +462,17 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             assert main() == 0
 
             # Then
-            actual_items = ProcessingAssetsModel.query(
+            actual_items = processing_assets_model.query(
                 expected_hash_key,
-                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.DATA.value}#"),
+                processing_assets_model.sk.startswith(f"{ProcessingAssetType.DATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_asset_items):
                 with subtests.test():
                     assert actual_item.attribute_values == expected_item.attribute_values
 
-            actual_items = ProcessingAssetsModel.query(
+            actual_items = processing_assets_model.query(
                 expected_hash_key,
-                ProcessingAssetsModel.sk.startswith(f"{ProcessingAssetType.METADATA.value}#"),
+                processing_assets_model.sk.startswith(f"{ProcessingAssetType.METADATA.value}#"),
             )
             for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():
@@ -485,7 +489,7 @@ def should_validate_given_url(validate_url_mock: MagicMock) -> None:
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    with patch("backend.processing_assets_model.ProcessingAssetsModel"):
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
         assert main() == 0
 
     validate_url_mock.assert_called_once_with(url)
@@ -523,7 +527,8 @@ def should_validate_metadata_files_recursively() -> None:
         {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
     )
 
-    STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(parent_url)
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(parent_url)
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -560,7 +565,8 @@ def should_only_validate_each_file_once() -> None:
         call_limit=3,
     )
 
-    STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(root_url)
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(root_url)
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
@@ -569,7 +575,9 @@ def should_raise_exception_if_non_s3_url_is_passed() -> None:
     https_url = any_https_url()
     url_reader = MockJSONURLReader({})
 
-    with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"):
+    with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"), patch(
+        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
+    ):
         STACDatasetValidator(url_reader, MockValidationResultFactory()).run(https_url)
 
 
@@ -600,7 +608,8 @@ def should_return_assets_from_validated_metadata_files(subtests: SubTests) -> No
     ]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-    validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
 
     validator.validate(metadata_url)
 

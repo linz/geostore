@@ -10,7 +10,7 @@ from smart_open import open as smart_open  # type: ignore[import]
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
-from ..processing_assets_model import ProcessingAssetsModel
+from ..processing_assets_model import processing_assets_model_with_meta
 from ..types import JsonObject
 
 LOGGER = set_up_logging(__name__)
@@ -65,7 +65,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
     with smart_open(f"s3://{storage_bucket_name}/{manifest_key}", "w") as s3_manifest:
-        for item in ProcessingAssetsModel.query(
+        processing_assets_model = processing_assets_model_with_meta()
+
+        for item in processing_assets_model.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
             LOGGER.debug(dumps({"Adding file to manifest": item.url}))

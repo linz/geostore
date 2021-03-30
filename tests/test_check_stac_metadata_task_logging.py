@@ -24,7 +24,7 @@ def should_log_on_validation_success() -> None:
 
     with patch.object(LOGGER, "info") as logger_mock, patch(
         "backend.check_stac_metadata.task.STACDatasetValidator.validate"
-    ):
+    ), patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
         main()
 
         logger_mock.assert_any_call('{"success": true, "message": ""}')
@@ -41,7 +41,9 @@ def should_log_on_validation_failure(validate_url_mock: MagicMock) -> None:
         f"--version-id={any_dataset_version_id()}",
     ]
 
-    with patch.object(LOGGER, "error") as logger_mock:
+    with patch.object(LOGGER, "error") as logger_mock, patch(
+        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
+    ):
         main()
 
         logger_mock.assert_any_call(f'{{"success": false, "message": "{error_message}"}}')

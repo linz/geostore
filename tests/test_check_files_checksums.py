@@ -19,7 +19,7 @@ from backend.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
-from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -52,7 +52,7 @@ def should_return_default_offset_to_zero() -> None:
 
 
 @patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
-@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
@@ -70,17 +70,17 @@ def should_validate_given_index(
 
     array_index = "1"
 
-    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModel:
+    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
         assert given_hash_key == hash_key
         assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
-        return ProcessingAssetsModel(
+        return ProcessingAssetsModelBase(
             hash_key=given_hash_key,
             range_key="{ProcessingAssetType.DATA.value}#1",
             url=url,
             multihash=hex_multihash,
         )
 
-    processing_assets_model_mock.get.side_effect = get_mock
+    processing_assets_model_mock.return_value.get.side_effect = get_mock
     logger = logging.getLogger("backend.check_files_checksums.task")
     expected_calls = [call(hash_key), call().save(url, Check.CHECKSUM, ValidationResult.PASSED)]
 
@@ -109,7 +109,7 @@ def should_validate_given_index(
 
 
 @patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
-@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
@@ -125,7 +125,7 @@ def should_log_error_when_validation_fails(
     dataset_version_id = any_dataset_version_id()
     hash_key = f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
     url = any_s3_url()
-    processing_assets_model_mock.get.return_value = ProcessingAssetsModel(
+    processing_assets_model_mock.return_value.get.return_value = ProcessingAssetsModelBase(
         hash_key=hash_key,
         range_key=f"{ProcessingAssetType.DATA.value}#0",
         url=url,
@@ -163,7 +163,7 @@ def should_log_error_when_validation_fails(
 
 
 @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
-@patch("backend.check_files_checksums.utils.ProcessingAssetsModel")
+@patch("backend.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
@@ -190,17 +190,17 @@ def should_save_staging_access_validation_results(
         "--first-item=0",
     ]
 
-    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModel:
+    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
         assert given_hash_key == hash_key
         assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
-        return ProcessingAssetsModel(
+        return ProcessingAssetsModelBase(
             hash_key=given_hash_key,
             range_key="{ProcessingAssetType.DATA.value}#1",
             url=s3_url,
             multihash=any_hex_multihash(),
         )
 
-    processing_assets_model_mock.get.side_effect = get_mock
+    processing_assets_model_mock.return_value.get.side_effect = get_mock
 
     with raises(ClientError), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
         main()
@@ -226,9 +226,11 @@ class TestsWithLogger:
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_return_when_empty_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
         get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
-        ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
-            any_s3_url(), EMPTY_FILE_MULTIHASH
-        )
+
+        with patch("backend.check_files_checksums.utils.processing_assets_model_with_meta"):
+            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
+                any_s3_url(), EMPTY_FILE_MULTIHASH
+            )
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_raise_exception_when_checksum_does_not_match(
@@ -239,7 +241,9 @@ class TestsWithLogger:
         checksum = "0" * 64
         checksum_byte_count = 32
 
-        with raises(ChecksumMismatchError):
+        with raises(ChecksumMismatchError), patch(
+            "backend.check_files_checksums.utils.processing_assets_model_with_meta"
+        ):
             ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
                 any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}"
             )

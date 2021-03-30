@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
 from ..check import Check
-from ..processing_assets_model import ProcessingAssetsModel
+from ..processing_assets_model import processing_assets_model_with_meta
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 
@@ -43,14 +43,16 @@ class ChecksumValidator:
         self.validation_result_factory = validation_result_factory
         self.logger = logger
 
+        self.processing_assets_model = processing_assets_model_with_meta()
+
     def log_failure(self, content: JsonObject) -> None:
         self.logger.error(dumps({"success": False, **content}))
 
     def validate(self, hash_key: str, range_key: str) -> None:
 
         try:
-            item = ProcessingAssetsModel.get(hash_key, range_key=range_key)
-        except ProcessingAssetsModel.DoesNotExist:
+            item = self.processing_assets_model.get(hash_key, range_key=range_key)
+        except self.processing_assets_model.DoesNotExist:
             self.log_failure(
                 {
                     "error": {"message": "Item does not exist"},

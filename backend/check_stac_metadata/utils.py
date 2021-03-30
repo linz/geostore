@@ -17,7 +17,7 @@ from jsonschema._utils import URIDict  # type: ignore[import]
 
 from ..check import Check
 from ..log import set_up_logging
-from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
+from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 
@@ -72,6 +72,8 @@ class STACDatasetValidator:
         self.dataset_metadata: List[Dict[str, str]] = []
 
         self.validator = STACSchemaValidator()
+
+        self.processing_assets_model = processing_assets_model_with_meta()
 
     def run(self, metadata_url: str) -> None:
         s3_url_prefix = "s3://"
@@ -133,14 +135,14 @@ class STACDatasetValidator:
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
-            ProcessingAssetsModel(
+            self.processing_assets_model(
                 hash_key=key,
                 range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
                 url=metadata_file["url"],
             ).save()
 
         for index, asset in enumerate(self.dataset_assets):
-            ProcessingAssetsModel(
+            self.processing_assets_model(
                 hash_key=key,
                 range_key=f"{ProcessingAssetType.DATA.value}#{index}",
                 url=asset["url"],
