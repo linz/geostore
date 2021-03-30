@@ -16,7 +16,7 @@ Checklist before submitting:
 ### Bug Description
 <!-- A clear and concise description of what the bug is. -->
 
-### How to Reproduce**
+### How to Reproduce
 
 <!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
 
