@@ -9,7 +9,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 
-from .aws_utils import any_item_count, any_item_index, any_lambda_context, any_s3_url
+from .aws_utils import any_item_count, any_lambda_context, any_next_item_index, any_s3_url
 from .general_generators import any_dictionary_key
 from .stac_generators import (
     any_dataset_id,
@@ -27,9 +27,9 @@ INITIAL_EVENT: Dict[str, Any] = {
 
 SUBSEQUENT_EVENT: Dict[str, Any] = {
     "content": {
-        "first_item": str(any_item_index()),
+        "first_item": str(any_next_item_index()),
         "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": any_item_index(),
+        "next_item": any_next_item_index(),
     },
     "dataset_id": any_dataset_id(),
     "metadata_url": any_s3_url(),
@@ -130,7 +130,7 @@ def should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     event = deepcopy(INITIAL_EVENT)
-    processing_assets_model_mock.count.return_value = any_item_index()
+    processing_assets_model_mock.count.return_value = any_item_count()
 
     response = lambda_handler(event, any_lambda_context())
 
@@ -140,7 +140,7 @@ def should_return_zero_as_first_item_if_no_content(
 @patch("backend.content_iterator.task.ProcessingAssetsModel")
 def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    next_item_index = any_item_index()
+    next_item_index = any_next_item_index()
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = any_item_count()
 
@@ -154,7 +154,7 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE - 1
-    next_item_index = any_item_index()
+    next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
@@ -174,7 +174,7 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE
-    next_item_index = any_item_index()
+    next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
@@ -194,7 +194,7 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     processing_assets_model_mock: MagicMock,
 ) -> None:
     remaining_item_count = MAX_ITERATION_SIZE + 1
-    next_item_index = any_item_index()
+    next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
     event["content"]["next_item"] = next_item_index
     processing_assets_model_mock.count.return_value = next_item_index + remaining_item_count
