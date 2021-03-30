@@ -28,10 +28,17 @@ Try to include any stack traces or debugging info.
 
 -->
 
-## Software context
- - OS: <!-- e.g. Windows / Ubuntu / Mac -->
- - Environment: <!-- e.g. network, AWS environment -->
- - Relevant Software Versions: <!-- e.g. aws --version -->
+## Software Context
+
+Operating system: <!-- e.g. Windows / Linux / macOS -->
+
+Environment: <!-- e.g. production -->
+
+Relevant software versions:
+
+- AWS CLI: <!-- include the output of `aws --version` -->
+- Poetry: <!-- include the output of `poetry --version` -->
+<!-- Any other relevant software -->
 
 ## Additional context
 
