@@ -20,11 +20,12 @@ Checklist before submitting:
 
 <!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
 
-1. Do '...'
-2. Run '....'
-3. See error 
+1. Do …
+1. Run `…`
 
-Try to include any stack traces or debugging info.
+What did you expect to happen? [Describe the expected result]
+
+What actually happened? [Describe the actual outcome]
 
 -->
 
@@ -42,4 +43,4 @@ Relevant software versions:
 
 ## Additional context
 
-<!-- Add any other context about the problem here. -->
+<!-- Add any other context about the problem here, such as stack traces or debugging info. -->
