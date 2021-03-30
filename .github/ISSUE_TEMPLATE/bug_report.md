@@ -9,30 +9,37 @@ labels: 'bug'
 Checklist before submitting:
 
 - [ ] Search through existing issue reports to check whether the issue already exists
-- [ ] If you can, please create a light and self-contained sample dataset
+- [ ] If relevant, please include or link to a small sample dataset
 - [ ] Provide stacktrace / debugging messages where possible
 -->
 
-### Bug Description
+## Bug Description
+
 <!-- A clear and concise description of what the bug is. -->
 
-### How to Reproduce**
+## How to Reproduce
 
-<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
+<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. --> 
 
-1. Do '...'
-2. Run '....'
-3. See error 
+1. Do …
+1. Run `…`
 
-Try to include any stack traces or debugging info.
+What did you expect to happen? <!-- Describe the expected result -->
 
--->
+What actually happened? <!-- Describe the actual outcome -->
 
-#### Software and OS versions
- - OS: <!-- e.g. Windows / Ubuntu / Mac -->
- - Environment: <!-- e.g. network, AWS environment -->
- - Relevant Software Versions: <!-- e.g. aws --version -->
+## Software Context
 
-### Additional context
+Operating system: <!-- e.g. Windows / Linux / macOS -->
 
-<!-- Add any other context about the problem here. -->
+Environment: <!-- e.g. production -->
+
+Relevant software versions:
+
+- AWS CLI: <!-- include the output of `aws --version` -->
+- Poetry: <!-- include the output of `poetry --version` -->
+<!-- Any other relevant software -->
+
+## Additional context
+
+<!-- Add any other context about the problem here, such as stack traces or debugging info. -->
