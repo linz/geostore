@@ -20,21 +20,21 @@ class TestLogging:
         event = {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
         expected_log = dumps({"event": event})
 
-        with patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}"), patch.object(
-            self.logger, "debug"
-        ) as logger_mock:
+        with patch(
+            f"{task.__name__}.{task.validation_results_model_with_meta.__name__}"
+        ), patch.object(self.logger, "debug") as logger_mock:
             # When
             task.lambda_handler(event, any_lambda_context())
 
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}")
+    @patch(f"{task.__name__}.{task.validation_results_model_with_meta.__name__}")
     def should_log_failure_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
         expected_log = dumps({"success": False})
-        validation_results_model_mock.validation_outcome_index.count.return_value = 1
+        validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 1
 
         with patch.object(self.logger, "debug") as logger_mock:
             # When
@@ -43,12 +43,12 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch(f"{task.__name__}.{task.ValidationResultsModel.__name__}")
+    @patch(f"{task.__name__}.{task.validation_results_model_with_meta.__name__}")
     def should_log_success_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
         expected_log = dumps({"success": True})
-        validation_results_model_mock.validation_outcome_index.count.return_value = 0
+        validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 0
 
         with patch.object(self.logger, "debug") as logger_mock:
             # When

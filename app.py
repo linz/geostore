@@ -63,7 +63,6 @@ def main() -> None:
         env=environment,
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
-        datasets_table_name_parameter=storage.datasets_table_name_parameter,
         validation_results_table=processing.validation_results_table,
         users_role=users.users_role,
         state_machine=processing.state_machine,

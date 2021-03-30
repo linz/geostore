@@ -8,14 +8,13 @@ from aws_cdk.core import Construct, Stack
 
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
 
+from .common import grant_parameter_read_access
 from .constructs.batch_job_queue import BatchJobQueue
 from .constructs.batch_submit_job_task import BatchSubmitJobTask
 from .constructs.bundled_lambda_function import BundledLambdaFunction
 from .constructs.lambda_task import LambdaTask
-from .constructs.parameter import Parameter
 from .constructs.table import Table
 
 
@@ -43,13 +42,15 @@ class ProcessingStack(Stack):
             f"{ENV}-processing-assets",
             deploy_env=deploy_env,
             application_layer=application_layer,
+            parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
         )
 
         self.validation_results_table = Table(
             self,
-            ResourceName.VALIDATION_RESULTS_TABLE_NAME.value,
+            f"{ENV}-validation-results",
             deploy_env=deploy_env,
             application_layer=application_layer,
+            parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
         )
 
         self.validation_results_table.add_global_secondary_index(
@@ -172,13 +173,13 @@ class ProcessingStack(Stack):
                 reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
-        for reader in [
+        for writer in [
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            self.validation_results_table.grant_read_write_data(reader)  # type: ignore[arg-type]
+            self.validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
             self.validation_results_table.grant(
-                reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+                writer, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
         validation_summary_task = LambdaTask(
@@ -253,44 +254,48 @@ class ProcessingStack(Stack):
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
 
-        for reader in [import_dataset_task.lambda_function, import_dataset_file_function]:
-            storage_bucket_parameter.grant_read(reader)
-
         processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
         processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
         # Parameters
-        Parameter(
+        import_dataset_file_function_arn_parameter = aws_ssm.StringParameter(
             self,
             "import dataset file function arn",
             string_value=import_dataset_file_function.function_arn,
             description=f"Import dataset file function ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN.value,
-            readers=[import_dataset_task.lambda_function],
         )
 
-        Parameter(
+        import_dataset_role_arn_parameter = aws_ssm.StringParameter(
             self,
             "import dataset role arn",
             string_value=import_dataset_role.role_arn,
             description=f"Import dataset role ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
-            readers=[import_dataset_task.lambda_function],
         )
 
-        Parameter(
-            self,
-            "processing assets table name",
-            string_value=processing_assets_table.table_name,
-            description=f"Processing assets table name for {deploy_env}",
-            parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME.value,
-            readers=[
-                check_files_checksums_array_task.job_role,  # type: ignore[list-item]
-                check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
-                content_iterator_task.lambda_function,
-                import_dataset_task.lambda_function,
-            ],
+        grant_parameter_read_access(
+            {
+                import_dataset_file_function_arn_parameter: [import_dataset_task.lambda_function],
+                import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
+                processing_assets_table.name_parameter: [
+                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
+                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
+                    check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
+                    content_iterator_task.lambda_function,
+                    import_dataset_task.lambda_function,
+                ],
+                storage_bucket_parameter: [
+                    import_dataset_file_function,
+                    import_dataset_task.lambda_function,
+                ],
+                self.validation_results_table.name_parameter: [
+                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
+                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
+                    check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
+                    validation_summary_task.lambda_function,
+                ],
+            }
         )
 
         success_task = aws_stepfunctions.Succeed(self, "success")
