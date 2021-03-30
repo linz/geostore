@@ -3,7 +3,7 @@ from jsonschema import validate  # type: ignore[import]
 from ..processing_assets_model import ProcessingAssetType, ProcessingAssetsModel
 from ..types import JsonObject
 
-MAX_ITERATION_SIZE = 10000
+MAX_ITERATION_SIZE = 10_000
 
 EVENT_SCHEMA = {
     "type": "object",
