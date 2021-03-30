@@ -9,7 +9,7 @@ labels: 'bug'
 Checklist before submitting:
 
 - [ ] Search through existing issue reports to check whether the issue already exists
-- [ ] If you can, please create a light and self-contained sample dataset
+- [ ] If relevant, please include or link to a small sample dataset
 - [ ] Provide stacktrace / debugging messages where possible
 -->
 
