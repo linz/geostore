@@ -19,16 +19,14 @@ Checklist before submitting:
 
 ## How to Reproduce
 
-<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. 
+<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. --> 
 
 1. Do …
 1. Run `…`
 
-What did you expect to happen? [Describe the expected result]
+What did you expect to happen? <!-- Describe the expected result -->
 
-What actually happened? [Describe the actual outcome]
-
--->
+What actually happened? <!-- Describe the actual outcome -->
 
 ## Software Context
 
