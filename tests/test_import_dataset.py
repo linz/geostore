@@ -12,7 +12,14 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.import_dataset.task import lambda_handler
+from backend.import_dataset.task import (
+    DATASET_ID_KEY,
+    ERROR_MESSAGE_KEY,
+    JOB_ID_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+    lambda_handler,
+)
 from backend.parameter_store import ParameterName, get_param
 
 from .aws_utils import (
@@ -41,30 +48,31 @@ def should_return_required_property_error_when_missing_metadata_url() -> None:
     # When
 
     response = lambda_handler(
-        {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()},
+        {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()},
         any_lambda_context(),
     )
 
-    assert response == {"error message": "'metadata_url' is a required property"}
+    assert response == {ERROR_MESSAGE_KEY: f"'{METADATA_URL_KEY}' is a required property"}
 
 
 def should_return_required_property_error_when_missing_dataset_id() -> None:
     # When
     response = lambda_handler(
-        {"metadata_url": any_s3_url(), "version_id": any_dataset_version_id()}, any_lambda_context()
+        {METADATA_URL_KEY: any_s3_url(), VERSION_ID_KEY: any_dataset_version_id()},
+        any_lambda_context(),
     )
 
-    assert response == {"error message": "'dataset_id' is a required property"}
+    assert response == {ERROR_MESSAGE_KEY: f"'{DATASET_ID_KEY}' is a required property"}
 
 
 def should_return_required_property_error_when_missing_version_id() -> None:
     # When
 
     response = lambda_handler(
-        {"dataset_id": any_dataset_id(), "metadata_url": any_s3_url()}, any_lambda_context()
+        {DATASET_ID_KEY: any_dataset_id(), METADATA_URL_KEY: any_s3_url()}, any_lambda_context()
     )
 
-    assert response == {"error message": "'version_id' is a required property"}
+    assert response == {ERROR_MESSAGE_KEY: f"'{VERSION_ID_KEY}' is a required property"}
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
@@ -155,9 +163,9 @@ def should_batch_copy_files_to_storage(
         try:
             response = lambda_handler(
                 {
-                    "dataset_id": dataset_id,
-                    "version_id": version_id,
-                    "metadata_url": root_metadata_s3_object.url,
+                    DATASET_ID_KEY: dataset_id,
+                    VERSION_ID_KEY: version_id,
+                    METADATA_URL_KEY: root_metadata_s3_object.url,
                     "type": any_valid_dataset_type(),
                 },
                 any_lambda_context(),
@@ -166,7 +174,7 @@ def should_batch_copy_files_to_storage(
             # poll for S3 Batch Copy completion
             while (
                 copy_job := s3_control_client.describe_job(
-                    AccountId=account, JobId=response["job_id"]
+                    AccountId=account, JobId=response[JOB_ID_KEY]
                 )
             )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
                 time.sleep(5)
