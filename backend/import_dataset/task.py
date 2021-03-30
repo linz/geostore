@@ -13,17 +13,28 @@ from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetsModel
 from ..types import JsonObject
 
+LOGGER = set_up_logging(__name__)
+
 STS_CLIENT = boto3.client("sts")
 S3_CLIENT = boto3.client("s3")
 S3CONTROL_CLIENT = boto3.client("s3control")
+
+DATASET_ID_KEY = "dataset_id"
+VERSION_ID_KEY = "version_id"
+METADATA_URL_KEY = "metadata_url"
+
+EVENT_KEY = "event"
+ERROR_KEY = "error"
+
+ERROR_MESSAGE_KEY = "error message"
+
+JOB_ID_KEY = "job_id"
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     # pylint: disable=too-many-locals
-
-    logger = set_up_logging(__name__)
-    logger.debug(dumps({"event": event}))
+    LOGGER.debug(dumps({EVENT_KEY: event}))
 
     # validate input
     try:
@@ -32,38 +43,38 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             {
                 "type": "object",
                 "properties": {
-                    "dataset_id": {"type": "string"},
-                    "version_id": {"type": "string"},
-                    "metadata_url": {"type": "string"},
+                    DATASET_ID_KEY: {"type": "string"},
+                    VERSION_ID_KEY: {"type": "string"},
+                    METADATA_URL_KEY: {"type": "string"},
                 },
-                "required": ["dataset_id", "metadata_url", "version_id"],
+                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
             },
         )
     except ValidationError as error:
-        logger.warning(dumps({"error": error}, default=str))
-        return {"error message": error.message}
+        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        return {ERROR_MESSAGE_KEY: error.message}
 
-    dataset_id = event["dataset_id"]
-    dataset_version_id = event["version_id"]
-    metadata_url = event["metadata_url"]
+    dataset_id = event[DATASET_ID_KEY]
+    dataset_version_id = event[VERSION_ID_KEY]
+    metadata_url = event[METADATA_URL_KEY]
 
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     storage_bucket_arn = f"arn:aws:s3:::{storage_bucket_name}"
 
-    staging_bucket_name = urlparse(metadata_url).netloc
+    source_bucket_name = urlparse(metadata_url).netloc
     manifest_key = f"manifests/{dataset_version_id}.csv"
 
     with smart_open(f"s3://{storage_bucket_name}/{manifest_key}", "w") as s3_manifest:
         for item in ProcessingAssetsModel.query(
             f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
         ):
-            logger.debug(dumps({"Adding file to manifest": item.url}))
+            LOGGER.debug(dumps({"Adding file to manifest": item.url}))
             key = s3_url_to_key(item.url)
             task_parameters = {
                 ORIGINAL_KEY_KEY: key,
                 NEW_KEY_KEY: f"{dataset_id}/{dataset_version_id}/{basename(key)}",
             }
-            row = ",".join([staging_bucket_name, quote(dumps(task_parameters))])
+            row = ",".join([source_bucket_name, quote(dumps(task_parameters))])
             s3_manifest.write(f"{row}\n")
 
     caller_identity = STS_CLIENT.get_caller_identity()
@@ -103,9 +114,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         RoleArn=s3_batch_copy_role_arn,
         ClientRequestToken=uuid4().hex,
     )
-    logger.debug(dumps({"s3 batch response": response}, default=str))
+    LOGGER.debug(dumps({"s3 batch response": response}, default=str))
 
-    return {"job_id": response["JobId"]}
+    return {JOB_ID_KEY: response["JobId"]}
 
 
 def s3_url_to_key(url: str) -> str:

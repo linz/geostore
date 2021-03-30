@@ -36,7 +36,7 @@ Example bucket policy:
                 "s3:GetObjectAcl",
                 "s3:GetObjectTagging"
             ],
-            "Resource": "arn:aws:s3:::<YOUR_STAGING_BUCKET>/<YOUR_DATASET>/*"
+            "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
         }
     ]
 }

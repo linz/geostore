@@ -7,7 +7,14 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.import_dataset.task import lambda_handler
+from backend.import_dataset.task import (
+    DATASET_ID_KEY,
+    ERROR_KEY,
+    EVENT_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+    lambda_handler,
+)
 
 from .aws_utils import ProcessingAsset, any_lambda_context, any_s3_url
 from .general_generators import any_etag
@@ -32,12 +39,12 @@ class TestLogging:
         # Given
 
         event = {
-            "dataset_id": any_dataset_id(),
-            "metadata_url": any_s3_url(),
-            "version_id": any_dataset_version_id(),
+            DATASET_ID_KEY: any_dataset_id(),
+            METADATA_URL_KEY: any_s3_url(),
+            VERSION_ID_KEY: any_dataset_version_id(),
         }
         head_object_mock.return_value = {"ETag": any_etag()}
-        expected_payload_log = dumps({"event": event})
+        expected_payload_log = dumps({EVENT_KEY: event})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
@@ -55,12 +62,12 @@ class TestLogging:
 
         error_message = "Some error message"
         validate_schema_mock.side_effect = ValidationError(error_message)
-        expected_log = dumps({"error": error_message})
+        expected_log = dumps({ERROR_KEY: error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
             # When
             lambda_handler(
-                {"metadata_url": any_s3_url(), "version_id": any_dataset_version_id()},
+                {METADATA_URL_KEY: any_s3_url(), VERSION_ID_KEY: any_dataset_version_id()},
                 any_lambda_context(),
             )
 
@@ -101,9 +108,9 @@ class TestLogging:
                 # When
                 lambda_handler(
                     {
-                        "dataset_id": dataset_id,
-                        "metadata_url": any_s3_url(),
-                        "version_id": version_id,
+                        DATASET_ID_KEY: dataset_id,
+                        METADATA_URL_KEY: any_s3_url(),
+                        VERSION_ID_KEY: version_id,
                     },
                     any_lambda_context(),
                 )
@@ -133,9 +140,9 @@ class TestLogging:
             # When
             lambda_handler(
                 {
-                    "dataset_id": any_dataset_id(),
-                    "metadata_url": any_s3_url(),
-                    "version_id": any_dataset_version_id(),
+                    DATASET_ID_KEY: any_dataset_id(),
+                    METADATA_URL_KEY: any_s3_url(),
+                    VERSION_ID_KEY: any_dataset_version_id(),
                 },
                 any_lambda_context(),
             )
