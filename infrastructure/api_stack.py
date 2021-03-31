@@ -6,7 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack
 
-from infrastructure.constructs.lambda_endpoint import LambdaEndpoint
+from .constructs.lambda_endpoint import LambdaEndpoint
 
 
 class APIStack(Stack):
