@@ -15,8 +15,6 @@ from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
 from infrastructure.users_stack import UsersStack
 
-ENVIRONMENT_TYPE_TAG_NAME = "EnvironmentType"
-
 
 def main() -> None:
     app = core.App()
@@ -75,7 +73,7 @@ def main() -> None:
     core.Tag.add(app, "CostCentre", "100005")
     core.Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
     core.Tag.add(app, "Owner", "Bill M. Nelson")
-    core.Tag.add(app, ENVIRONMENT_TYPE_TAG_NAME, ENV)
+    core.Tag.add(app, "EnvironmentType", ENV)
     core.Tag.add(app, "SupportType", "Dev")
     core.Tag.add(app, "HoursOfOperation", "24x7")
 
