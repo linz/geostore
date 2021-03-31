@@ -5,7 +5,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..dataset_model import DatasetModel
+from ..datasets_model import DatasetsModel
 from ..types import JsonObject
 from .list import list_datasets
 
@@ -47,7 +47,7 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
 
     # get dataset
     try:
-        dataset = DatasetModel.get(
+        dataset = DatasetsModel.get(
             hash_key=f"DATASET#{req_body['id']}",
             range_key=f"TYPE#{req_body['type']}",
             consistent_read=True,
@@ -90,15 +90,15 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
 
     # dataset query by filter
     if "title" in req_body:
-        datasets = DatasetModel.datasets_title_idx.query(
+        datasets = DatasetsModel.datasets_title_idx.query(
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetModel.title == req_body["title"],
+            range_key_condition=DatasetsModel.title == req_body["title"],
         )
 
     if "owning_group" in req_body:
-        datasets = DatasetModel.datasets_owning_group_idx.query(
+        datasets = DatasetsModel.datasets_owning_group_idx.query(
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetModel.owning_group == req_body["owning_group"],
+            range_key_condition=DatasetsModel.owning_group == req_body["owning_group"],
         )
 
     # return response

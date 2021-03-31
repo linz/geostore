@@ -6,7 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
-from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
+from backend.datasets_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
