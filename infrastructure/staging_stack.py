@@ -26,7 +26,7 @@ class StagingStack(Stack):
         self.staging_bucket_name_parameter = aws_ssm.StringParameter(
             self,
             "staging bucket name",
-            description=f"Staging Bucket name for {deploy_env}",
+            description=f"Staging bucket name for {deploy_env}",
             parameter_name=ParameterName.STAGING_BUCKET_NAME.value,
             string_value=self.staging_bucket.bucket_name,
         )

@@ -282,7 +282,7 @@ class ProcessingStack(Stack):
             self,
             "processing assets table name",
             string_value=processing_assets_table.table_name,
-            description=f"Processing Assets Table name for {deploy_env}",
+            description=f"Processing assets table name for {deploy_env}",
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME.value,
             readers=[
                 check_files_checksums_array_task.job_role,  # type: ignore[list-item]
@@ -342,7 +342,7 @@ class ProcessingStack(Stack):
         self.state_machine_parameter = aws_ssm.StringParameter(
             self,
             "state machine arn",
-            description=f"Step Function State Machine ARN for {deploy_env}",
+            description=f"State machine ARN for {deploy_env}",
             parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
         )

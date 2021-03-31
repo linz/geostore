@@ -39,7 +39,7 @@ class StorageStack(Stack):
         self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
             "storage bucket name",
-            description=f"Storage Bucket name for {deploy_env}",
+            description=f"Storage bucket name for {deploy_env}",
             parameter_name=ParameterName.STORAGE_BUCKET_NAME.value,
             string_value=self.storage_bucket.bucket_name,
         )
