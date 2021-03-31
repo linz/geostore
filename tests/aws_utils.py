@@ -15,7 +15,7 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.dataset_model import DatasetModel
+from backend.datasets_model import DatasetsModel
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
@@ -139,7 +139,7 @@ class Dataset:
         if owning_group is None:
             owning_group = any_dataset_owning_group()
 
-        self._item = DatasetModel(
+        self._item = DatasetsModel(
             id=f"DATASET#{dataset_id}",
             type=f"TYPE#{dataset_type}",
             title=title,
@@ -148,7 +148,7 @@ class Dataset:
             updated_at=any_past_datetime(),
         )
 
-    def __enter__(self) -> DatasetModel:
+    def __enter__(self) -> DatasetsModel:
         self._item.save()
         return self._item
 

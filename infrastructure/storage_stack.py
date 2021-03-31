@@ -6,7 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
-from backend.dataset_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
+from backend.datasets_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
@@ -38,8 +38,8 @@ class StorageStack(Stack):
 
         self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
-            "Storage Bucket Name Parameter",
-            description=f"Storage Bucket name for {deploy_env}",
+            "storage bucket name",
+            description=f"Storage bucket name for {deploy_env}",
             parameter_name=ParameterName.STORAGE_BUCKET_NAME.value,
             string_value=self.storage_bucket.bucket_name,
         )

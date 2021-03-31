@@ -94,7 +94,7 @@ class TestLogging:
             # then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.dataset_versions.create.DatasetModel.get")
+    @patch("backend.dataset_versions.create.DatasetsModel.get")
     def should_log_warning_if_dataset_does_not_exist(
         self, validate_dataset_mock: MagicMock
     ) -> None:

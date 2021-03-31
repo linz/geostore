@@ -13,7 +13,7 @@ from .resources import ResourceName
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsTitleIdx(
-    GlobalSecondaryIndex["DatasetModel"]
+    GlobalSecondaryIndex["DatasetsModel"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/title global index."""
 
@@ -31,7 +31,7 @@ class DatasetsTitleIdx(
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsOwningGroupIdx(
-    GlobalSecondaryIndex["DatasetModel"]
+    GlobalSecondaryIndex["DatasetsModel"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/owning_group global index."""
 
@@ -47,7 +47,7 @@ class DatasetsOwningGroupIdx(
     owning_group = UnicodeAttribute(range_key=True)
 
 
-class DatasetModel(Model):
+class DatasetsModel(Model):
     """Dataset model."""
 
     class Meta:  # pylint:disable=too-few-public-methods
