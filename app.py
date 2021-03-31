@@ -5,7 +5,7 @@ CDK application entry point file.
 """
 from os import environ
 
-from aws_cdk import core
+from aws_cdk.core import App, Environment, Tag
 
 from backend.environment import ENV
 from infrastructure.api_stack import APIStack
@@ -17,9 +17,9 @@ from infrastructure.users_stack import UsersStack
 
 
 def main() -> None:
-    app = core.App()
+    app = App()
 
-    environment = core.Environment(
+    environment = Environment(
         account=environ["CDK_DEFAULT_ACCOUNT"], region=environ["CDK_DEFAULT_REGION"]
     )
 
@@ -70,12 +70,12 @@ def main() -> None:
     )
 
     # tag all resources in stack
-    core.Tag.add(app, "CostCentre", "100005")
-    core.Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
-    core.Tag.add(app, "Owner", "Bill M. Nelson")
-    core.Tag.add(app, "EnvironmentType", ENV)
-    core.Tag.add(app, "SupportType", "Dev")
-    core.Tag.add(app, "HoursOfOperation", "24x7")
+    Tag.add(app, "CostCentre", "100005")
+    Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
+    Tag.add(app, "Owner", "Bill M. Nelson")
+    Tag.add(app, "EnvironmentType", ENV)
+    Tag.add(app, "SupportType", "Dev")
+    Tag.add(app, "HoursOfOperation", "24x7")
 
     app.synth()
 
