@@ -262,7 +262,7 @@ class ProcessingStack(Stack):
         # Parameters
         Parameter(
             self,
-            "import-dataset-file-function-arn",
+            "import dataset file function arn",
             string_value=import_dataset_file_function.function_arn,
             description=f"Import dataset file function ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_DATASET_FILE_FUNCTION_TASK_ARN.value,
@@ -271,7 +271,7 @@ class ProcessingStack(Stack):
 
         Parameter(
             self,
-            "import-dataset-role-arn",
+            "import dataset role arn",
             string_value=import_dataset_role.role_arn,
             description=f"Import dataset role ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
@@ -280,7 +280,7 @@ class ProcessingStack(Stack):
 
         Parameter(
             self,
-            "processing-assets-table-name-parameter",
+            "processing assets table name",
             string_value=processing_assets_table.table_name,
             description=f"Processing Assets Table name for {deploy_env}",
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME.value,
@@ -341,7 +341,7 @@ class ProcessingStack(Stack):
 
         self.state_machine_parameter = aws_ssm.StringParameter(
             self,
-            "Step Function State Machine Parameter",
+            "state machine arn",
             description=f"Step Function State Machine ARN for {deploy_env}",
             parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
