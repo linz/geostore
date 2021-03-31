@@ -19,7 +19,7 @@ EVENT_SCHEMA = {
                 },
                 "next_item": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": MAX_ITERATION_SIZE,
                     "multipleOf": MAX_ITERATION_SIZE,
                 },
             },
