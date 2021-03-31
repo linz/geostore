@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from functools import lru_cache
 from json import dumps
 from typing import Sequence
 
@@ -29,6 +30,7 @@ class ParameterName(Enum):
     VALIDATION_RESULTS_TABLE_NAME = auto()
 
 
+@lru_cache
 def get_param(parameter: ParameterName) -> str:
     try:
         parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
