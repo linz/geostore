@@ -96,10 +96,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         ConfirmationRequired=False,
         Operation={"LambdaInvoke": {"FunctionArn": import_dataset_file_task_arn}},
         Manifest={
-            "Spec": {
-                "Format": "S3BatchOperations_CSV_20180820",
-                "Fields": ["Bucket", "Key"],
-            },
+            "Spec": {"Format": "S3BatchOperations_CSV_20180820", "Fields": ["Bucket", "Key"]},
             "Location": {
                 "ObjectArn": f"{storage_bucket_arn}/{manifest_key}",
                 "ETag": manifest_s3_etag,
