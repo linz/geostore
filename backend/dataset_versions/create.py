@@ -8,7 +8,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..datasets_model import DatasetsModel
+from ..datasets_model import datasets_model_with_meta
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
@@ -42,9 +42,11 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         logger.warning(json.dumps({"error": err}, default=str))
         return error_response(400, err.message)
 
+    datasets_model_class = datasets_model_with_meta()
+
     # validate dataset exists
     try:
-        dataset = DatasetsModel.get(
+        dataset = datasets_model_class.get(
             hash_key=f"DATASET#{req_body['id']}",
             range_key=f"TYPE#{req_body['type']}",
             consistent_read=True,

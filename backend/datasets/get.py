@@ -5,7 +5,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..datasets_model import DatasetsModel
+from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 from .list import list_datasets
 
@@ -45,9 +45,11 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
     except ValidationError as err:
         return error_response(400, err.message)
 
+    datasets_model_class = datasets_model_with_meta()
+
     # get dataset
     try:
-        dataset = DatasetsModel.get(
+        dataset = datasets_model_class.get(
             hash_key=f"DATASET#{req_body['id']}",
             range_key=f"TYPE#{req_body['type']}",
             consistent_read=True,
@@ -89,16 +91,17 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
         return error_response(400, err.message)
 
     # dataset query by filter
+    datasets_model_class = datasets_model_with_meta()
     if "title" in req_body:
-        datasets = DatasetsModel.datasets_title_idx.query(
+        datasets = datasets_model_class.datasets_title_idx.query(  # pylint:disable=no-member
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetsModel.title == req_body["title"],
+            range_key_condition=datasets_model_class.title == req_body["title"],
         )
 
     if "owning_group" in req_body:
-        datasets = DatasetsModel.datasets_owning_group_idx.query(
+        datasets = datasets_model_class.datasets_owning_group_idx.query(  # pylint:disable=no-member
             hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=DatasetsModel.owning_group == req_body["owning_group"],
+            range_key_condition=datasets_model_class.owning_group == req_body["owning_group"],
         )
 
     # return response

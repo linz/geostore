@@ -17,6 +17,7 @@ class APIStack(Stack):
         scope: Construct,
         stack_id: str,
         datasets_table: aws_dynamodb.Table,
+        datasets_table_name_parameter: aws_ssm.StringParameter,
         validation_results_table: aws_dynamodb.Table,
         users_role: aws_iam.Role,
         deploy_env: str,
@@ -52,6 +53,7 @@ class APIStack(Stack):
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)
             datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
+            datasets_table_name_parameter.grant_read(function)
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,

@@ -1,19 +1,20 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from os import environ
+from typing import Any, Dict, Optional, Tuple, Type
 
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
-from pynamodb.models import Model
+from pynamodb.models import MetaModel, Model
 from pynamodb.settings import OperationSettings
 
-from .resources import ResourceName
+from .parameter_store import ParameterName, get_param
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsTitleIdx(
-    GlobalSecondaryIndex["DatasetsModel"]
+    GlobalSecondaryIndex["DatasetsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/title global index."""
 
@@ -31,7 +32,7 @@ class DatasetsTitleIdx(
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsOwningGroupIdx(
-    GlobalSecondaryIndex["DatasetsModel"]
+    GlobalSecondaryIndex["DatasetsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
     """Dataset type/owning_group global index."""
 
@@ -47,14 +48,8 @@ class DatasetsOwningGroupIdx(
     owning_group = UnicodeAttribute(range_key=True)
 
 
-class DatasetsModel(Model):
+class DatasetsModelBase(Model):
     """Dataset model."""
-
-    class Meta:  # pylint:disable=too-few-public-methods
-        """Meta class."""
-
-        table_name = ResourceName.DATASETS_TABLE_NAME.value
-        region = "ap-southeast-2"  # TODO: don't hardcode region
 
     id = UnicodeAttribute(
         hash_key=True, attr_name="pk", default=f"DATASET#{uuid.uuid1().hex}", null=False
@@ -65,8 +60,8 @@ class DatasetsModel(Model):
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()
 
-    datasets_title_idx = DatasetsTitleIdx()
-    datasets_owning_group_idx = DatasetsOwningGroupIdx()
+    datasets_title_idx: DatasetsTitleIdx
+    datasets_owning_group_idx: DatasetsOwningGroupIdx
 
     def save(
         self,
@@ -92,3 +87,33 @@ class DatasetsModel(Model):
     def dataset_type(self) -> str:
         """Dataset type value."""
         return str(self.type).split("#")[1]
+
+
+class DatasetsModelMeta(MetaModel):
+    def __new__(
+        cls,
+        name: str,
+        bases: Tuple[Type[object], ...],
+        namespace: Dict[str, Any],
+        discriminator: Optional[Any] = None,
+    ) -> "DatasetsModelMeta":
+        namespace["Meta"] = type(
+            "Meta",
+            (),
+            {
+                "table_name": get_param(ParameterName.DATASETS_TABLE_NAME),
+                "region": environ["AWS_DEFAULT_REGION"],
+            },
+        )
+        klass: "DatasetsModelMeta" = MetaModel.__new__(
+            cls, name, bases, namespace, discriminator=discriminator
+        )
+        return klass
+
+
+def datasets_model_with_meta() -> Type[DatasetsModelBase]:
+    class DatasetModel(DatasetsModelBase, metaclass=DatasetsModelMeta):
+        datasets_title_idx = DatasetsTitleIdx()
+        datasets_owning_group_idx = DatasetsOwningGroupIdx()
+
+    return DatasetModel

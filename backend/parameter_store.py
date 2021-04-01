@@ -19,6 +19,7 @@ class ParameterName(Enum):
     ) -> str:
         return f"/{ENV}/{name.lower()}"
 
+    DATASETS_TABLE_NAME = auto()
     DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
     IMPORT_DATASET_FILE_FUNCTION_TASK_ARN = auto()
     IMPORT_DATASET_ROLE_ARN = auto()

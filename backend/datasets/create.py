@@ -4,7 +4,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
 from ..dataset import DATASET_TYPES
-from ..datasets_model import DatasetsModel
+from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 
 
@@ -32,16 +32,17 @@ def create_dataset(payload: JsonObject) -> JsonObject:
         return error_response(400, err.message)
 
     # check for duplicate type/title
-    if DatasetsModel.datasets_title_idx.count(
+    datasets_model_class = datasets_model_with_meta()
+    if datasets_model_class.datasets_title_idx.count(  # pylint:disable=no-member
         hash_key=f"TYPE#{req_body['type']}",
-        range_key_condition=(DatasetsModel.title == req_body["title"]),
+        range_key_condition=(datasets_model_class.title == req_body["title"]),
     ):
         return error_response(
             409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"
         )
 
     # create dataset
-    dataset = DatasetsModel(
+    dataset = datasets_model_class(
         type=f"TYPE#{req_body['type']}",
         title=req_body["title"],
         owning_group=req_body["owning_group"],
