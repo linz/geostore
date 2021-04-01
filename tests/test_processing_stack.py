@@ -97,9 +97,13 @@ class TestWithStagingBucket:
         catalog_metadata_filename = any_safe_filename()
         item_metadata_filename = any_safe_filename()
 
-        collection_metadata_url = f"s3://{self.staging_bucket_name}/{collection_metadata_filename}"
-        catalog_metadata_url = f"s3://{self.staging_bucket_name}/{catalog_metadata_filename}"
-        item_metadata_url = f"s3://{self.staging_bucket_name}/{item_metadata_filename}"
+        collection_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{collection_metadata_filename}"
+        )
+        catalog_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{catalog_metadata_filename}"
+        )
+        item_metadata_url = f"s3://{self.staging_bucket_name}/{key_prefix}/{item_metadata_filename}"
 
         first_asset_contents = any_file_contents()
         first_asset_filename = any_safe_filename()
@@ -129,7 +133,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{collection_metadata_filename}",
+            key=f"{key_prefix}/{catalog_metadata_filename}",
         ) as catalog_metadata_file, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -170,7 +174,7 @@ class TestWithStagingBucket:
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{collection_metadata_filename}",
+            key=f"{key_prefix}/{item_metadata_filename}",
         ), Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
