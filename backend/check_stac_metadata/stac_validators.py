@@ -61,6 +61,7 @@ class STACCatalogSchemaValidator(BaseSTACValidator):
     def __init__(self) -> None:
         extra_schemas = [
             "stac-spec/catalog-spec/json-schema/catalog.json",
+            "stac-spec/catalog-spec/json-schema/catalog-core.json",
         ]
 
         super().__init__("stac-spec/catalog-spec/json-schema/catalog.json", extra_schemas)

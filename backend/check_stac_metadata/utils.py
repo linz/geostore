@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from functools import lru_cache
 from json import dumps, load
 from logging import Logger
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Type, Union
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
@@ -13,7 +13,6 @@ from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 from .stac_validators import (
-    BaseSTACValidator,
     STACCatalogSchemaValidator,
     STACCollectionSchemaValidator,
     STACItemSchemaValidator,
@@ -24,6 +23,19 @@ LOGGER = set_up_logging(__name__)
 STAC_COLLECTION_TYPE = "Collection"
 STAC_ITEM_TYPE = "Feature"
 STAC_CATALOG_TYPE = "Catalog"
+
+STAC_TYPE_VALIDATION_MAP: Dict[
+    str,
+    Union[
+        Type[STACCatalogSchemaValidator],
+        Type[STACCollectionSchemaValidator],
+        Type[STACItemSchemaValidator],
+    ],
+] = {
+    STAC_COLLECTION_TYPE: STACCollectionSchemaValidator,
+    STAC_CATALOG_TYPE: STACCatalogSchemaValidator,
+    STAC_ITEM_TYPE: STACItemSchemaValidator,
+}
 
 
 class STACDatasetValidator:
@@ -59,8 +71,8 @@ class STACDatasetValidator:
         self.traversed_urls.append(url)
         object_json = self.get_object(url)
 
-        stac_type = object_json.get("type")
-        validator = get_validator(stac_type)
+        stac_type = object_json["type"]
+        validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
 
         try:
             validator.validate(object_json)
@@ -146,13 +158,3 @@ def parse_arguments(logger: Logger) -> Namespace:
     arguments = argument_parser.parse_args()
     logger.debug(dumps({"arguments": vars(arguments)}))
     return arguments
-
-
-def get_validator(stac_type: str) -> BaseSTACValidator:
-    if stac_type == STAC_CATALOG_TYPE:
-        return STACCatalogSchemaValidator()
-    if stac_type == STAC_COLLECTION_TYPE:
-        return STACCollectionSchemaValidator()
-    if stac_type == STAC_ITEM_TYPE:
-        return STACItemSchemaValidator()
-    raise ValueError(stac_type)
