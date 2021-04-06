@@ -197,9 +197,7 @@ def should_save_metadata_multiple_directories_validation_results(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                "links": [
-                    {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
-                ],
+                "links": [{"href": f"{base_url}{invalid_child_key}", "rel": "child"}],
             }
         ),
         bucket_name=staging_bucket_name,
@@ -208,9 +206,7 @@ def should_save_metadata_multiple_directories_validation_results(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                "links": [
-                    {"href": f"{base_url}{invalid_grandchild_key}", "rel": "child"},
-                ],
+                "links": [{"href": f"{base_url}{invalid_grandchild_key}", "rel": "child"}],
             }
         ),
         bucket_name=staging_bucket_name,
@@ -235,11 +231,7 @@ def should_save_metadata_multiple_directories_validation_results(
         with subtests.test(msg="S3 url validation results"):
             assert validation_results_factory_mock.mock_calls == [
                 call(hash_key),
-                call().save(
-                    root_s3_object.url,
-                    Check.JSON_SCHEMA,
-                    ValidationResult.PASSED,
-                ),
+                call().save(root_s3_object.url, Check.JSON_SCHEMA, ValidationResult.PASSED),
                 call().save(
                     invalid_child_s3_object.url,
                     Check.MULTIPLE_DIRECTORIES,
@@ -251,9 +243,7 @@ def should_save_metadata_multiple_directories_validation_results(
                     },
                 ),
                 call().save(
-                    invalid_child_s3_object.url,
-                    Check.JSON_SCHEMA,
-                    ValidationResult.PASSED,
+                    invalid_child_s3_object.url, Check.JSON_SCHEMA, ValidationResult.PASSED
                 ),
                 call().save(
                     invalid_grandchild_s3_object.url,
@@ -564,11 +554,7 @@ def should_only_validate_each_file_once() -> None:
         {"href": leaf_url, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
-        {
-            root_url: root_stac_object,
-            child_url: child_stac_object,
-            leaf_url: leaf_stac_object,
-        },
+        {root_url: root_stac_object, child_url: child_stac_object, leaf_url: leaf_stac_object},
         call_limit=3,
     )
 
@@ -597,22 +583,14 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_url = f"{base_url}/{any_safe_filename()}"
     second_asset_multihash = any_hex_multihash()
     stac_object["assets"] = {
-        any_asset_name(): {
-            "href": first_asset_url,
-            "checksum:multihash": first_asset_multihash,
-        },
-        any_asset_name(): {
-            "href": second_asset_url,
-            "checksum:multihash": second_asset_multihash,
-        },
+        any_asset_name(): {"href": first_asset_url, "checksum:multihash": first_asset_multihash},
+        any_asset_name(): {"href": second_asset_url, "checksum:multihash": second_asset_multihash},
     }
     expected_assets = [
         {"multihash": first_asset_multihash, "url": first_asset_url},
         {"multihash": second_asset_multihash, "url": second_asset_url},
     ]
-    expected_metadata = [
-        {"url": metadata_url},
-    ]
+    expected_metadata = [{"url": metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -635,22 +613,14 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     second_asset_url = f"{base_url}/{any_safe_filename()}"
     second_asset_multihash = any_hex_multihash()
     stac_object["assets"] = {
-        any_asset_name(): {
-            "href": first_asset_url,
-            "checksum:multihash": first_asset_multihash,
-        },
-        any_asset_name(): {
-            "href": second_asset_url,
-            "checksum:multihash": second_asset_multihash,
-        },
+        any_asset_name(): {"href": first_asset_url, "checksum:multihash": first_asset_multihash},
+        any_asset_name(): {"href": second_asset_url, "checksum:multihash": second_asset_multihash},
     }
     expected_assets = [
         {"multihash": first_asset_multihash, "url": first_asset_url},
         {"multihash": second_asset_multihash, "url": second_asset_url},
     ]
-    expected_metadata = [
-        {"url": metadata_url},
-    ]
+    expected_metadata = [{"url": metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
