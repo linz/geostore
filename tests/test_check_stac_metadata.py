@@ -588,7 +588,7 @@ def should_raise_exception_if_non_s3_url_is_passed() -> None:
         STACDatasetValidator(url_reader, MockValidationResultFactory()).run(https_url)
 
 
-def should_return_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
+def should_collect_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
     base_url = any_s3_url()
     metadata_url = f"{base_url}/{any_safe_filename()}"
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
@@ -626,7 +626,7 @@ def should_return_assets_from_validated_collection_metadata_files(subtests: SubT
         assert validator.dataset_metadata == expected_metadata
 
 
-def should_return_assets_from_validated_item_metadata_files(subtests: SubTests) -> None:
+def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests) -> None:
     base_url = any_s3_url()
     metadata_url = f"{base_url}/{any_safe_filename()}"
     stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
