@@ -34,7 +34,14 @@ class BaseSTACValidator(Draft7Validator):
 class STACItemSchemaValidator(BaseSTACValidator):
     def __init__(self) -> None:
         extra_schemas = [
+            "geojson-spec/Feature.json",
+            "geojson-spec/Geometry.json",
+            "stac-spec/item-spec/json-schema/basics.json",
+            "stac-spec/item-spec/json-schema/datetime.json",
+            "stac-spec/item-spec/json-schema/instrument.json",
             "stac-spec/item-spec/json-schema/item.json",
+            "stac-spec/item-spec/json-schema/licensing.json",
+            "stac-spec/item-spec/json-schema/provider.json",
         ]
 
         super().__init__("stac-spec/item-spec/json-schema/item.json", extra_schemas)
