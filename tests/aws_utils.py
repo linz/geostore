@@ -21,7 +21,11 @@ from backend.processing_assets_model import (
     processing_assets_model_with_meta,
 )
 from backend.types import JsonObject
-from backend.validation_results_model import ValidationResult, ValidationResultsModel
+from backend.validation_results_model import (
+    ValidationResult,
+    ValidationResultsModelBase,
+    validation_results_model_with_meta,
+)
 
 from .general_generators import (
     _random_string_choices,
@@ -204,15 +208,15 @@ class ValidationItem:
         url: str,
         check: str,
     ):
-
-        self._item = ValidationResultsModel(
+        validation_results_model = validation_results_model_with_meta()
+        self._item = validation_results_model(
             pk=asset_id,
             sk=f"CHECK#{check}#URL#{url}",
             result=result.value,
             details=details,
         )
 
-    def __enter__(self) -> ValidationResultsModel:
+    def __enter__(self) -> ValidationResultsModelBase:
         self._item.save()
         return self._item
 

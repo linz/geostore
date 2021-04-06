@@ -17,7 +17,7 @@ from backend.check_stac_metadata.task import main
 from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.validation_results_model import ValidationResult, ValidationResultsModel
+from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
     MINIMAL_VALID_STAC_OBJECT,
@@ -358,29 +358,36 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             assert main() == 1
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    validation_results_model = validation_results_model_with_meta()
     with subtests.test(msg="Root validation results"):
-        root_result = ValidationResultsModel.get(
-            hash_key=hash_key,
-            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{root_s3_object.url}",
-            consistent_read=True,
+        assert (
+            validation_results_model.get(
+                hash_key=hash_key,
+                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{root_s3_object.url}",
+                consistent_read=True,
+            ).result
+            == ValidationResult.PASSED.value
         )
-        assert root_result.result == ValidationResult.PASSED.value
 
     with subtests.test(msg="Valid child validation results"):
-        valid_child_result = ValidationResultsModel.get(
-            hash_key=hash_key,
-            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{valid_child_s3_object.url}",
-            consistent_read=True,
+        assert (
+            validation_results_model.get(
+                hash_key=hash_key,
+                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{valid_child_s3_object.url}",
+                consistent_read=True,
+            ).result
+            == ValidationResult.PASSED.value
         )
-        assert valid_child_result.result == ValidationResult.PASSED.value
 
     with subtests.test(msg="Invalid child validation results"):
-        invalid_child_result = ValidationResultsModel.get(
-            hash_key=hash_key,
-            range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{invalid_child_s3_object.url}",
-            consistent_read=True,
+        assert (
+            validation_results_model.get(
+                hash_key=hash_key,
+                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{invalid_child_s3_object.url}",
+                consistent_read=True,
+            ).result
+            == ValidationResult.FAILED.value
         )
-        assert invalid_child_result.result == ValidationResult.FAILED.value
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())

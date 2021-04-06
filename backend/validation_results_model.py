@@ -1,12 +1,13 @@
 from enum import Enum
-from typing import Optional
+from os import environ
+from typing import Any, Dict, Optional, Tuple, Type
 
 from pynamodb.attributes import MapAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
-from pynamodb.models import Model
+from pynamodb.models import MetaModel, Model
 
 from .check import Check
-from .resources import ResourceName
+from .parameter_store import ParameterName, get_param
 from .types import JsonObject
 
 
@@ -17,7 +18,7 @@ class ValidationResult(Enum):
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class ValidationOutcomeIdx(
-    GlobalSecondaryIndex["ValidationResultsModel"]
+    GlobalSecondaryIndex["ValidationResultsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
     class Meta:  # pylint:disable=too-few-public-methods
 
@@ -30,28 +31,54 @@ class ValidationOutcomeIdx(
     result = UnicodeAttribute(range_key=True, attr_name="result")
 
 
-class ValidationResultsModel(Model):
-    class Meta:  # pylint:disable=too-few-public-methods
-        table_name = ResourceName.VALIDATION_RESULTS_TABLE_NAME.value
-        region = "ap-southeast-2"  # TODO: don't hardcode region
-
+class ValidationResultsModelBase(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     result = UnicodeAttribute()
     # TODO: Remove type-arg when https://github.com/pynamodb/PynamoDB/issues/682 is fixed
     details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
 
-    validation_outcome_index = ValidationOutcomeIdx()
+    validation_outcome_index: ValidationOutcomeIdx
+
+
+class ValidationResultsModelMeta(MetaModel):
+    def __new__(
+        cls,
+        name: str,
+        bases: Tuple[Type[object], ...],
+        namespace: Dict[str, Any],
+        discriminator: Optional[Any] = None,
+    ) -> "ValidationResultsModelMeta":
+        namespace["Meta"] = type(
+            "Meta",
+            (),
+            {
+                "table_name": get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME),
+                "region": environ["AWS_DEFAULT_REGION"],
+            },
+        )
+        klass: "ValidationResultsModelMeta" = MetaModel.__new__(
+            cls, name, bases, namespace, discriminator=discriminator
+        )
+        return klass
+
+
+def validation_results_model_with_meta() -> Type[ValidationResultsModelBase]:
+    class ValidationResultsModel(ValidationResultsModelBase, metaclass=ValidationResultsModelMeta):
+        validation_outcome_index = ValidationOutcomeIdx()
+
+    return ValidationResultsModel
 
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(self, hash_key: str):
         self.hash_key = hash_key
+        self.validation_results_model = validation_results_model_with_meta()
 
     def save(
         self, url: str, check: Check, result: ValidationResult, details: Optional[JsonObject] = None
     ) -> None:
-        ValidationResultsModel(
+        self.validation_results_model(
             pk=self.hash_key,
             sk=f"CHECK#{check.value}#URL#{url}",
             result=result.value,

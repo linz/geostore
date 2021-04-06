@@ -4,7 +4,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..log import set_up_logging
 from ..types import JsonObject
-from ..validation_results_model import ValidationResult, ValidationResultsModel
+from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
 LOGGER = set_up_logging(__name__)
 
@@ -24,10 +24,11 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     except ValidationError as error:
         return {"error message": error.message}
 
+    validation_results_model = validation_results_model_with_meta()
     success = not bool(
-        ValidationResultsModel.validation_outcome_index.count(
+        validation_results_model.validation_outcome_index.count(  # pylint: disable=no-member
             f"DATASET#{event['dataset_id']}#VERSION#{event['version_id']}",
-            range_key_condition=ValidationResultsModel.result == ValidationResult.FAILED.value,
+            range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
             limit=1,
         )
     )

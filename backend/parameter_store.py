@@ -26,6 +26,7 @@ class ParameterName(Enum):
     PROCESSING_ASSETS_TABLE_NAME = auto()
     STAGING_BUCKET_NAME = auto()
     STORAGE_BUCKET_NAME = auto()
+    VALIDATION_RESULTS_TABLE_NAME = auto()
 
 
 def get_param(parameter: ParameterName) -> str:
