@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
+from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.import_status.get import ValidationOutcome
 from backend.validation_results_model import ValidationResult
@@ -48,7 +49,8 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         "body": {
             "step function": {"status": "RUNNING"},
             "validation": {"status": ValidationOutcome.PENDING.value, "errors": []},
-            "upload": {"status": "Pending", "errors": []},
+            "metadata upload": {"status": "Pending", "errors": []},
+            "asset upload": {"status": "Pending", "errors": []},
         },
     }
 
@@ -99,10 +101,8 @@ def should_retrieve_validation_failures(
                     }
                 ],
             },
-            "upload": {
-                "status": "Pending",
-                "errors": [],
-            },
+            "metadata upload": {"status": "Pending", "errors": []},
+            "asset upload": {"status": "Pending", "errors": []},
         },
     }
     with ValidationItem(
@@ -135,7 +135,13 @@ def should_report_s3_batch_upload_failures(
             {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
         ),
         "output": json.dumps(
-            {"validation": {"success": True}, "import_dataset": {"job_id": any_job_id()}}
+            {
+                "validation": {"success": True},
+                "import_dataset": {
+                    METADATA_JOB_ID_KEY: any_job_id(),
+                    ASSET_JOB_ID_KEY: any_job_id(),
+                },
+            }
         ),
     }
 
@@ -151,7 +157,11 @@ def should_report_s3_batch_upload_failures(
         "body": {
             "step function": {"status": "SUCCEEDED"},
             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
-            "upload": {
+            "metadata upload": {
+                "status": "Completed",
+                "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+            },
+            "asset upload": {
                 "status": "Completed",
                 "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             },

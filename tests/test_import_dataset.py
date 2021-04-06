@@ -1,4 +1,3 @@
-import time
 from copy import deepcopy
 from datetime import timedelta
 from hashlib import sha256
@@ -15,7 +14,6 @@ from smart_open import smart_open  # type: ignore[import]
 from backend.import_dataset.task import (
     DATASET_ID_KEY,
     ERROR_MESSAGE_KEY,
-    JOB_ID_KEY,
     METADATA_URL_KEY,
     VERSION_ID_KEY,
     lambda_handler,
@@ -23,15 +21,13 @@ from backend.import_dataset.task import (
 from backend.parameter_store import ParameterName, get_param
 
 from .aws_utils import (
-    S3_BATCH_JOB_COMPLETED_STATE,
-    S3_BATCH_JOB_FINAL_STATES,
     ProcessingAsset,
     S3Object,
     any_lambda_context,
     any_s3_url,
+    delete_copy_job_files,
     delete_s3_key,
-    delete_s3_prefix,
-    s3_object_arn_to_key,
+    wait_for_copy_jobs,
 )
 from .general_generators import any_file_contents, any_safe_filename
 from .stac_generators import (
@@ -106,8 +102,6 @@ def should_batch_copy_files_to_storage(
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
 
-    account = sts_client.get_caller_identity()["Account"]
-
     with S3Object(
         BytesIO(initial_bytes=root_asset_content),
         staging_bucket_name,
@@ -171,15 +165,14 @@ def should_batch_copy_files_to_storage(
                 any_lambda_context(),
             )
 
-            # poll for S3 Batch Copy completion
-            while (
-                copy_job := s3_control_client.describe_job(
-                    AccountId=account, JobId=response[JOB_ID_KEY]
-                )
-            )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                time.sleep(5)
+            account_id = sts_client.get_caller_identity()["Account"]
 
-            assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+            metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
+                response,
+                account_id,
+                s3_control_client,
+                subtests,
+            )
         finally:
             # Then
             new_prefix = f"{dataset_id}/{version_id}"
@@ -190,11 +183,11 @@ def should_batch_copy_files_to_storage(
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         root_asset_name: {
-                            "href": root_asset_s3_object.url,
+                            "href": root_asset_filename,
                             "checksum:multihash": root_asset_multihash,
                         },
                     },
-                    "links": [{"href": child_metadata_s3_object.url, "rel": "child"}],
+                    "links": [{"href": child_metadata_filename, "rel": "child"}],
                 }
             ).encode()
             with subtests.test(msg="Root metadata content"), smart_open(
@@ -211,7 +204,7 @@ def should_batch_copy_files_to_storage(
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         child_asset_name: {
-                            "href": child_asset_s3_object.url,
+                            "href": child_asset_filename,
                             "checksum:multihash": child_asset_multihash,
                         }
                     },
@@ -236,13 +229,10 @@ def should_batch_copy_files_to_storage(
                 )
 
             # Cleanup
-            manifest_key = s3_object_arn_to_key(
-                copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
+            delete_copy_job_files(
+                metadata_copy_job_result,
+                asset_copy_job_result,
+                storage_bucket_name,
+                s3_client,
+                subtests,
             )
-            with subtests.test(msg="Delete manifest"):
-                delete_s3_key(storage_bucket_name, manifest_key, s3_client)
-
-            with subtests.test(msg="Delete job report prefix"):
-                delete_s3_prefix(
-                    storage_bucket_name, copy_job["Job"]["Report"]["Prefix"], s3_client
-                )

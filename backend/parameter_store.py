@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from functools import lru_cache
 from json import dumps
 from typing import Sequence
 
@@ -21,7 +22,8 @@ class ParameterName(Enum):
 
     DATASETS_TABLE_NAME = auto()
     DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
-    IMPORT_DATASET_FILE_FUNCTION_TASK_ARN = auto()
+    IMPORT_ASSET_FILE_FUNCTION_TASK_ARN = auto()
+    IMPORT_METADATA_FILE_FUNCTION_TASK_ARN = auto()
     IMPORT_DATASET_ROLE_ARN = auto()
     PROCESSING_ASSETS_TABLE_NAME = auto()
     STAGING_BUCKET_NAME = auto()
@@ -29,6 +31,7 @@ class ParameterName(Enum):
     VALIDATION_RESULTS_TABLE_NAME = auto()
 
 
+@lru_cache
 def get_param(parameter: ParameterName) -> str:
     try:
         parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
