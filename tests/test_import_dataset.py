@@ -23,7 +23,6 @@ from backend.import_dataset.task import (
 from backend.parameter_store import ParameterName, get_param
 
 from .aws_utils import (
-    MINIMAL_VALID_STAC_OBJECT,
     S3_BATCH_JOB_COMPLETED_STATE,
     S3_BATCH_JOB_FINAL_STATES,
     ProcessingAsset,
@@ -42,6 +41,7 @@ from .stac_generators import (
     any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
 )
+from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
 def should_return_required_property_error_when_missing_metadata_url() -> None:
@@ -120,7 +120,7 @@ def should_batch_copy_files_to_storage(
         BytesIO(
             initial_bytes=dumps(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         child_asset_name: {
                             "href": child_asset_s3_object.url,
@@ -136,7 +136,7 @@ def should_batch_copy_files_to_storage(
         BytesIO(
             initial_bytes=dumps(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         root_asset_name: {
                             "href": root_asset_s3_object.url,
@@ -187,7 +187,7 @@ def should_batch_copy_files_to_storage(
             new_root_metadata_key = f"{new_prefix}/{root_metadata_filename}"
             expected_root_metadata = dumps(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         root_asset_name: {
                             "href": root_asset_s3_object.url,
@@ -208,7 +208,7 @@ def should_batch_copy_files_to_storage(
             new_child_metadata_key = f"{new_prefix}/{child_metadata_filename}"
             expected_child_metadata = dumps(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         child_asset_name: {
                             "href": child_asset_s3_object.url,

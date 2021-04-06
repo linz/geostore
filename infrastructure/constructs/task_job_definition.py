@@ -1,17 +1,11 @@
-from typing import TYPE_CHECKING, Any
-
 from aws_cdk import aws_batch, aws_ecs, aws_iam
-
-if TYPE_CHECKING:
-    from .batch_submit_job_task import BatchSubmitJobTask
-else:
-    BatchSubmitJobTask = Any
+from aws_cdk.core import Construct
 
 
 class TaskJobDefinition(aws_batch.JobDefinition):
     def __init__(
         self,
-        scope: BatchSubmitJobTask,
+        scope: Construct,
         construct_id: str,
         *,
         deploy_env: str,
@@ -35,7 +29,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             memory_limit_mib=batch_job_definition_memory_limit,
             vcpus=1,
             environment={
-                "AWS_DEFAULT_REGION": scope.job_role.stack.region,
+                "AWS_DEFAULT_REGION": job_role.stack.region,
                 "DEPLOY_ENV": deploy_env,
             },
         )

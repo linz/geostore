@@ -19,7 +19,6 @@ from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
 from .aws_utils import (
-    MINIMAL_VALID_STAC_OBJECT,
     S3_BATCH_JOB_COMPLETED_STATE,
     S3_BATCH_JOB_FINAL_STATES,
     Dataset,
@@ -36,6 +35,11 @@ from .stac_generators import (
     any_hex_multihash,
     any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
+)
+from .stac_objects import (
+    MINIMAL_VALID_STAC_CATALOG_OBJECT,
+    MINIMAL_VALID_STAC_COLLECTION_OBJECT,
+    MINIMAL_VALID_STAC_ITEM_OBJECT,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -89,7 +93,17 @@ class TestWithStagingBucket:
         # pylint: disable=too-many-locals
         key_prefix = any_safe_file_path()
 
-        s3_metadata_filename = any_safe_filename()
+        collection_metadata_filename = any_safe_filename()
+        catalog_metadata_filename = any_safe_filename()
+        item_metadata_filename = any_safe_filename()
+
+        collection_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{collection_metadata_filename}"
+        )
+        catalog_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{catalog_metadata_filename}"
+        )
+        item_metadata_url = f"s3://{self.staging_bucket_name}/{key_prefix}/{item_metadata_filename}"
 
         first_asset_contents = any_file_contents()
         first_asset_filename = any_safe_filename()
@@ -110,14 +124,21 @@ class TestWithStagingBucket:
         ) as second_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    "links": [
+                        {"href": collection_metadata_url, "rel": "child"},
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": catalog_metadata_url, "rel": "self"},
+                    ],
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=f"{key_prefix}/{catalog_metadata_filename}",
+        ) as catalog_metadata_file, S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
-                        any_asset_name(): {
-                            "href": first_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
-                                sha256(first_asset_contents).hexdigest()
-                            ),
-                        },
                         any_asset_name(): {
                             "href": second_asset_s3_object.url,
                             "checksum:multihash": sha256_hex_digest_to_multihash(
@@ -125,11 +146,36 @@ class TestWithStagingBucket:
                             ),
                         },
                     },
+                    "links": [
+                        {"href": item_metadata_url, "rel": "child"},
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": collection_metadata_url, "rel": "self"},
+                    ],
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{s3_metadata_filename}",
-        ) as s3_metadata_file, Dataset(
+            key=f"{key_prefix}/{collection_metadata_filename}",
+        ), S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                    "assets": {
+                        any_asset_name(): {
+                            "href": first_asset_s3_object.url,
+                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                                sha256(first_asset_contents).hexdigest()
+                            ),
+                        },
+                    },
+                    "links": [
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": item_metadata_url, "rel": "self"},
+                    ],
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=f"{key_prefix}/{item_metadata_filename}",
+        ), Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
 
@@ -142,7 +188,7 @@ class TestWithStagingBucket:
                             "httpMethod": "POST",
                             "body": {
                                 "id": dataset_id,
-                                "metadata-url": s3_metadata_file.url,
+                                "metadata-url": catalog_metadata_file.url,
                                 "type": dataset_type,
                             },
                         }
@@ -185,7 +231,13 @@ class TestWithStagingBucket:
                     assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
             finally:
                 # Cleanup
-                for filename in [s3_metadata_filename, first_asset_filename, second_asset_filename]:
+                for filename in [
+                    catalog_metadata_filename,
+                    collection_metadata_filename,
+                    item_metadata_filename,
+                    first_asset_filename,
+                    second_asset_filename,
+                ]:
                     new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
@@ -253,7 +305,7 @@ class TestWithStagingBucket:
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
@@ -269,7 +321,7 @@ class TestWithStagingBucket:
         ) as child_metadata_file, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "links": [
                         {"href": f"{child_metadata_file.url}", "rel": "child"},
                     ],
@@ -395,7 +447,7 @@ class TestWithStagingBucket:
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,

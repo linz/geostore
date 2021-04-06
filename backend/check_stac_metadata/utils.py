@@ -2,60 +2,40 @@ from argparse import ArgumentParser, Namespace
 from functools import lru_cache
 from json import dumps, load
 from logging import Logger
-from os.path import dirname, join
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Type, Union
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
-from jsonschema import (  # type: ignore[import]
-    Draft7Validator,
-    FormatChecker,
-    RefResolver,
-    ValidationError,
-)
-from jsonschema._utils import URIDict  # type: ignore[import]
+from jsonschema import ValidationError  # type: ignore[import]
 
 from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
+from .stac_validators import (
+    STACCatalogSchemaValidator,
+    STACCollectionSchemaValidator,
+    STACItemSchemaValidator,
+)
 
 LOGGER = set_up_logging(__name__)
 
+STAC_COLLECTION_TYPE = "Collection"
+STAC_ITEM_TYPE = "Feature"
+STAC_CATALOG_TYPE = "Catalog"
 
-class STACSchemaValidator(Draft7Validator):
-    def __init__(self) -> None:
-        self.script_dir = dirname(__file__)
-
-        collection_schema = self.get_schema_dict(
-            "stac-spec/collection-spec/json-schema/collection.json"
-        )
-
-        schema_store = {}
-        uri_dictionary = URIDict()
-        for schema in [
-            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog.json"),
-            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog-core.json"),
-            collection_schema,
-            self.get_schema_dict("stac-spec/item-spec/json-schema/basics.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/datetime.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/instrument.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/item.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/licensing.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/provider.json"),
-        ]:
-            # Normalize URLs the same way as jsonschema does
-            schema_store[uri_dictionary.normalize(schema["$id"])] = schema
-
-        resolver = RefResolver.from_schema(collection_schema, store=schema_store)
-
-        super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
-
-    def get_schema_dict(self, path: str) -> JsonObject:
-        with open(join(self.script_dir, path)) as file_pointer:
-            schema_dict: JsonObject = load(file_pointer)
-            return schema_dict
+STAC_TYPE_VALIDATION_MAP: Dict[
+    str,
+    Union[
+        Type[STACCatalogSchemaValidator],
+        Type[STACCollectionSchemaValidator],
+        Type[STACItemSchemaValidator],
+    ],
+] = {
+    STAC_COLLECTION_TYPE: STACCollectionSchemaValidator,
+    STAC_CATALOG_TYPE: STACCatalogSchemaValidator,
+    STAC_ITEM_TYPE: STACItemSchemaValidator,
+}
 
 
 class STACDatasetValidator:
@@ -70,8 +50,6 @@ class STACDatasetValidator:
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
         self.dataset_metadata: List[Dict[str, str]] = []
-
-        self.validator = STACSchemaValidator()
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
@@ -93,8 +71,11 @@ class STACDatasetValidator:
         self.traversed_urls.append(url)
         object_json = self.get_object(url)
 
+        stac_type = object_json["type"]
+        validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
+
         try:
-            self.validator.validate(object_json)
+            validator.validate(object_json)
         except ValidationError as error:
             self.validation_result_factory.save(
                 url,

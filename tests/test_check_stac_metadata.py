@@ -13,19 +13,14 @@ from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check import Check
+from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import main
-from backend.check_stac_metadata.utils import STACDatasetValidator, STACSchemaValidator
+from backend.check_stac_metadata.utils import STACDatasetValidator
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
-from .aws_utils import (
-    MINIMAL_VALID_STAC_OBJECT,
-    MockJSONURLReader,
-    MockValidationResultFactory,
-    S3Object,
-    any_s3_url,
-)
+from .aws_utils import MockJSONURLReader, MockValidationResultFactory, S3Object, any_s3_url
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
     any_error_message,
@@ -39,6 +34,11 @@ from .stac_generators import (
     any_dataset_id,
     any_dataset_version_id,
     any_hex_multihash,
+)
+from .stac_objects import (
+    MINIMAL_VALID_STAC_CATALOG_OBJECT,
+    MINIMAL_VALID_STAC_COLLECTION_OBJECT,
+    MINIMAL_VALID_STAC_ITEM_OBJECT,
 )
 
 
@@ -108,7 +108,7 @@ def should_save_asset_multiple_directories_validation_results(
     with S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 "assets": {
                     any_asset_name(): {
                         "href": f"{base_url}{first_invalid_key}",
@@ -124,11 +124,11 @@ def should_save_asset_multiple_directories_validation_results(
         bucket_name=staging_bucket_name,
         key=any_safe_filename(),
     ) as root_s3_object, S3Object(
-        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
         bucket_name=staging_bucket_name,
         key=first_invalid_key,
     ) as first_invalid_asset, S3Object(
-        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
         bucket_name=staging_bucket_name,
         key=second_invalid_key,
     ) as second_invalid_asset:
@@ -196,7 +196,7 @@ def should_save_metadata_multiple_directories_validation_results(
     with S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 "links": [
                     {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
                 ],
@@ -207,7 +207,7 @@ def should_save_metadata_multiple_directories_validation_results(
     ) as root_s3_object, S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 "links": [
                     {"href": f"{base_url}{invalid_grandchild_key}", "rel": "child"},
                 ],
@@ -216,7 +216,7 @@ def should_save_metadata_multiple_directories_validation_results(
         bucket_name=staging_bucket_name,
         key=invalid_child_key,
     ) as invalid_child_s3_object, S3Object(
-        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
         bucket_name=staging_bucket_name,
         key=invalid_grandchild_key,
     ) as invalid_grandchild_s3_object:
@@ -320,7 +320,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     base_url = f"s3://{staging_bucket_name}/"
     valid_child_key = any_safe_filename()
     invalid_child_key = any_safe_filename()
-    invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     invalid_stac_object.pop("id")
 
     dataset_id = any_dataset_id()
@@ -329,7 +329,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     with S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 "links": [
                     {"href": f"{base_url}{valid_child_key}", "rel": "child"},
                     {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
@@ -339,7 +339,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         bucket_name=staging_bucket_name,
         key=any_safe_filename(),
     ) as root_s3_object, S3Object(
-        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_OBJECT)),
+        file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
         bucket_name=staging_bucket_name,
         key=valid_child_key,
     ) as valid_child_s3_object, S3Object(
@@ -416,7 +416,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
-        metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+        metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
         metadata_stac_object["assets"] = {
             any_asset_name(): {
                 "href": first_asset_s3_object.url,
@@ -503,24 +503,24 @@ def should_validate_given_url(validate_url_mock: MagicMock) -> None:
 
 
 def should_treat_minimal_stac_object_as_valid() -> None:
-    STACSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_OBJECT))
+    STACCollectionSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
 
 
 def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> None:
-    for key in MINIMAL_VALID_STAC_OBJECT:
+    for key in MINIMAL_VALID_STAC_COLLECTION_OBJECT:
         with subtests.test(msg=key):
-            stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+            stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
             stac_object.pop(key)
 
             with raises(ValidationError):
-                STACSchemaValidator().validate(stac_object)
+                STACCollectionSchemaValidator().validate(stac_object)
 
 
 def should_detect_invalid_datetime() -> None:
-    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
     with raises(ValidationError):
-        STACSchemaValidator().validate(stac_object)
+        STACCollectionSchemaValidator().validate(stac_object)
 
 
 def should_validate_metadata_files_recursively() -> None:
@@ -528,10 +528,10 @@ def should_validate_metadata_files_recursively() -> None:
     parent_url = f"{base_url}/{any_safe_filename()}"
     child_url = f"{base_url}/{any_safe_filename()}"
 
-    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     stac_object["links"].append({"href": child_url, "rel": "child"})
     url_reader = MockJSONURLReader(
-        {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_OBJECT)}
+        {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
     )
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -546,19 +546,19 @@ def should_only_validate_each_file_once() -> None:
     child_url = f"{base_url}/{any_safe_filename()}"
     leaf_url = f"{base_url}/{any_safe_filename()}"
 
-    root_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
     root_stac_object["links"] = [
         {"href": child_url, "rel": "child"},
         {"href": root_url, "rel": "root"},
         {"href": root_url, "rel": "self"},
     ]
-    child_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     child_stac_object["links"] = [
         {"href": leaf_url, "rel": "child"},
         {"href": root_url, "rel": "root"},
         {"href": child_url, "rel": "self"},
     ]
-    leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     leaf_stac_object["links"] = [
         {"href": root_url, "rel": "root"},
         {"href": leaf_url, "rel": "self"},
@@ -588,10 +588,48 @@ def should_raise_exception_if_non_s3_url_is_passed() -> None:
         STACDatasetValidator(url_reader, MockValidationResultFactory()).run(https_url)
 
 
-def should_return_assets_from_validated_metadata_files(subtests: SubTests) -> None:
+def should_collect_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
     base_url = any_s3_url()
     metadata_url = f"{base_url}/{any_safe_filename()}"
-    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
+    first_asset_url = f"{base_url}/{any_safe_filename()}"
+    first_asset_multihash = any_hex_multihash()
+    second_asset_url = f"{base_url}/{any_safe_filename()}"
+    second_asset_multihash = any_hex_multihash()
+    stac_object["assets"] = {
+        any_asset_name(): {
+            "href": first_asset_url,
+            "checksum:multihash": first_asset_multihash,
+        },
+        any_asset_name(): {
+            "href": second_asset_url,
+            "checksum:multihash": second_asset_multihash,
+        },
+    }
+    expected_assets = [
+        {"multihash": first_asset_multihash, "url": first_asset_url},
+        {"multihash": second_asset_multihash, "url": second_asset_url},
+    ]
+    expected_metadata = [
+        {"url": metadata_url},
+    ]
+    url_reader = MockJSONURLReader({metadata_url: stac_object})
+
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
+
+    validator.validate(metadata_url)
+
+    with subtests.test():
+        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+    with subtests.test():
+        assert validator.dataset_metadata == expected_metadata
+
+
+def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests) -> None:
+    base_url = any_s3_url()
+    metadata_url = f"{base_url}/{any_safe_filename()}"
+    stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     first_asset_url = f"{base_url}/{any_safe_filename()}"
     first_asset_multihash = any_hex_multihash()
     second_asset_url = f"{base_url}/{any_safe_filename()}"

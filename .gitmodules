@@ -1,3 +1,7 @@
-[submodule "datalake/backend/processing/check_stac_metadata/stac-spec"]
+[submodule "stac-spec"]
 	path = backend/check_stac_metadata/stac-spec
 	url = https://github.com/radiantearth/stac-spec.git
+[submodule "geojson-spec"]
+	path = backend/check_stac_metadata/geojson-spec
+	url = https://github.com/geojson/schema.git
+	branch = gh-pages
