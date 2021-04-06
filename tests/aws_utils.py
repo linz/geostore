@@ -40,8 +40,6 @@ from .stac_generators import (
     any_valid_dataset_type,
 )
 
-STAC_VERSION = "1.0.0-rc.2"
-
 SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
 EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
 
