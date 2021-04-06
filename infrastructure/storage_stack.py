@@ -52,6 +52,7 @@ class StorageStack(Stack):
             f"{ENV}-datasets",
             deploy_env=deploy_env,
             application_layer="application-db",
+            parameter_name=ParameterName.DATASETS_TABLE_NAME,
         )
 
         self.datasets_table.add_global_secondary_index(
@@ -65,12 +66,4 @@ class StorageStack(Stack):
             sort_key=aws_dynamodb.Attribute(
                 name="owning_group", type=aws_dynamodb.AttributeType.STRING
             ),
-        )
-
-        self.datasets_table_name_parameter = aws_ssm.StringParameter(
-            self,
-            "datasets table name",
-            description=f"Datasets table name for {deploy_env}",
-            string_value=self.datasets_table.table_name,
-            parameter_name=ParameterName.DATASETS_TABLE_NAME.value,
         )

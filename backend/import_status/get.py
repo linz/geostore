@@ -9,7 +9,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from ..api_responses import error_response, success_response
 from ..log import set_up_logging
 from ..types import JsonList, JsonObject
-from ..validation_results_model import ValidationResult, ValidationResultsModel
+from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -85,9 +85,12 @@ def get_step_function_validation_results(dataset_id: str, version_id: str) -> Js
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
     errors = []
-    for validation_item in ValidationResultsModel.validation_outcome_index.query(
+    validation_results_model = validation_results_model_with_meta()
+    for (
+        validation_item
+    ) in validation_results_model.validation_outcome_index.query(  # pylint: disable=no-member
         hash_key=hash_key,
-        range_key_condition=ValidationResultsModel.result == ValidationResult.FAILED.value,
+        range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
     ):
         _, check_type, _, url = validation_item.sk.split("#", maxsplit=4)
         errors.append(

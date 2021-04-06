@@ -18,12 +18,12 @@ def should_require_dataset_version() -> None:
     assert response == {"error message": "'version_id' is a required property"}
 
 
-@patch("backend.validation_summary.task.ValidationResultsModel")
+@patch("backend.validation_summary.task.validation_results_model_with_meta")
 def should_return_success_false_if_any_validation_results_are_unsuccessful(
     validation_results_model_mock: MagicMock,
 ) -> None:
     # Given an unsuccessful result
-    validation_results_model_mock.validation_outcome_index.count.return_value = 1
+    validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 1
 
     response = lambda_handler(
         {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()},
