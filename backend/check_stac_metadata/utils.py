@@ -37,6 +37,8 @@ STAC_TYPE_VALIDATION_MAP: Dict[
     STAC_ITEM_TYPE: STACItemSchemaValidator,
 }
 
+S3_URL_PREFIX = "s3://"
+
 
 class STACDatasetValidator:
     def __init__(
@@ -54,10 +56,8 @@ class STACDatasetValidator:
         self.processing_assets_model = processing_assets_model_with_meta()
 
     def run(self, metadata_url: str) -> None:
-        s3_url_prefix = "s3://"
-
-        if metadata_url[:5] != s3_url_prefix:
-            error_message = f"URL doesn't start with “{s3_url_prefix}”: “{metadata_url}”"
+        if metadata_url[:5] != S3_URL_PREFIX:
+            error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
                 metadata_url,
                 Check.NON_S3_URL,
