@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from functools import lru_cache
 from json import dumps, load
 from logging import Logger
+from os.path import dirname
 from typing import Any, Callable, Dict, List, Type, Union
 
 from botocore.exceptions import ClientError  # type: ignore[import]
@@ -38,6 +39,14 @@ STAC_TYPE_VALIDATION_MAP: Dict[
 }
 
 S3_URL_PREFIX = "s3://"
+
+
+@lru_cache
+def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
+    if url_or_path[:5] == S3_URL_PREFIX:
+        return url_or_path
+
+    return f"{dirname(parent_url)}/{url_or_path}"
 
 
 class STACDatasetValidator:
@@ -88,17 +97,16 @@ class STACDatasetValidator:
         self.dataset_metadata.append({"url": url})
 
         for asset in object_json.get("assets", {}).values():
-            asset_url = asset["href"]
-            self.validate_directory(asset_url, url)
+            asset_url = maybe_convert_relative_url_to_absolute(asset["href"], url)
 
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             LOGGER.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json["links"]:
-            next_url = link_object["href"]
+            next_url = maybe_convert_relative_url_to_absolute(link_object["href"], url)
+
             if next_url not in self.traversed_urls:
-                self.validate_directory(next_url, url)
                 self.validate(next_url)
 
     def get_object(self, url: str) -> Any:
@@ -129,20 +137,6 @@ class STACDatasetValidator:
                 url=asset["url"],
                 multihash=asset["multihash"],
             ).save()
-
-    def validate_directory(self, url: str, parent_metadata_url: str) -> None:
-        root_path = get_url_before_filename(self.traversed_urls[0])
-        if root_path != get_url_before_filename(url):
-            self.validation_result_factory.save(
-                url,
-                Check.MULTIPLE_DIRECTORIES,
-                ValidationResult.FAILED,
-                details={
-                    "message": f"Metadata file “{parent_metadata_url}” links to “{url}”"
-                    f" which exists in a different directory to the root "
-                    f"metadata file directory: “{root_path}”"
-                },
-            )
 
 
 @lru_cache
