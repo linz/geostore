@@ -7,9 +7,10 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
+from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
 from ..types import JsonList, JsonObject
-from ..validation_results_model import ValidationResult, ValidationResultsModel
+from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -61,12 +62,6 @@ def get_import_status(event: JsonObject) -> JsonObject:
         step_function_output.get("validation", {}).get("success")
     )
 
-    s3_job_id = step_function_output.get("import_dataset", {}).get("job_id")
-    if s3_job_id:
-        upload_response = get_s3_batch_copy_status(s3_job_id, LOGGER)
-    else:
-        upload_response = {"status": "Pending", "errors": []}
-
     response_body = {
         "step function": {"status": step_function_resp["status"]},
         "validation": {
@@ -75,19 +70,29 @@ def get_import_status(event: JsonObject) -> JsonObject:
                 step_function_input["dataset_id"], step_function_input["version_id"]
             ),
         },
-        "upload": upload_response,
+        "metadata upload": get_import_job_status(step_function_output, METADATA_JOB_ID_KEY),
+        "asset upload": get_import_job_status(step_function_output, ASSET_JOB_ID_KEY),
     }
 
     return success_response(200, response_body)
+
+
+def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
+    if s3_job_id := step_function_output.get("import_dataset", {}).get(job_id_key):
+        return get_s3_batch_copy_status(s3_job_id, LOGGER)
+    return {"status": "Pending", "errors": []}
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
 
     errors = []
-    for validation_item in ValidationResultsModel.validation_outcome_index.query(
+    validation_results_model = validation_results_model_with_meta()
+    for (
+        validation_item
+    ) in validation_results_model.validation_outcome_index.query(  # pylint: disable=no-member
         hash_key=hash_key,
-        range_key_condition=ValidationResultsModel.result == ValidationResult.FAILED.value,
+        range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
     ):
         _, check_type, _, url = validation_item.sk.split("#", maxsplit=4)
         errors.append(

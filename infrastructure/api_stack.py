@@ -3,10 +3,12 @@ Data Lake AWS resources definitions.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_iam, aws_ssm, aws_stepfunctions
+from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack
 
+from .common import grant_parameter_read_access
 from .constructs.lambda_endpoint import LambdaEndpoint
+from .constructs.table import Table
 
 
 class APIStack(Stack):
@@ -16,9 +18,8 @@ class APIStack(Stack):
         self,
         scope: Construct,
         stack_id: str,
-        datasets_table: aws_dynamodb.Table,
-        datasets_table_name_parameter: aws_ssm.StringParameter,
-        validation_results_table: aws_dynamodb.Table,
+        datasets_table: Table,
+        validation_results_table: Table,
         users_role: aws_iam.Role,
         deploy_env: str,
         state_machine: aws_stepfunctions.StateMachine,
@@ -47,13 +48,11 @@ class APIStack(Stack):
             users_role=users_role,
         ).lambda_function
 
-        state_machine_parameter.grant_read(dataset_versions_endpoint_lambda)
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)
             datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
-            datasets_table_name_parameter.grant_read(function)
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,
@@ -75,4 +74,15 @@ class APIStack(Stack):
                 resources=["*"],
                 actions=["s3:DescribeJob"],
             ),
+        )
+
+        grant_parameter_read_access(
+            {
+                datasets_table.name_parameter: [
+                    datasets_endpoint_lambda,
+                    dataset_versions_endpoint_lambda,
+                ],
+                validation_results_table.name_parameter: [import_status_endpoint_lambda],
+                state_machine_parameter: [dataset_versions_endpoint_lambda],
+            }
         )

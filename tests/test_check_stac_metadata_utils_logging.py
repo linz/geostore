@@ -6,12 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from backend.check_stac_metadata.utils import STACDatasetValidator, parse_arguments
 
-from .aws_utils import (
-    MINIMAL_VALID_STAC_OBJECT,
-    MockJSONURLReader,
-    MockValidationResultFactory,
-    any_s3_url,
-)
+from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
 from .general_generators import any_program_name, any_safe_filename
 from .stac_generators import (
     any_asset_name,
@@ -19,6 +14,7 @@ from .stac_generators import (
     any_dataset_version_id,
     any_hex_multihash,
 )
+from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 LOGGER = logging.getLogger("backend.check_stac_metadata.utils")
 
@@ -49,7 +45,7 @@ def should_log_arguments(validate_url_mock: MagicMock) -> None:
 def should_log_assets() -> None:
     base_url = any_s3_url()
     metadata_url = f"{base_url}/{any_safe_filename()}"
-    stac_object = deepcopy(MINIMAL_VALID_STAC_OBJECT)
+    stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     asset_url = f"{base_url}/{any_safe_filename()}"
     asset_multihash = any_hex_multihash()
     stac_object["assets"] = {

@@ -1,10 +1,11 @@
 import string
+import time
 from contextlib import AbstractContextManager
 from io import StringIO
 from json import dump
 from random import randrange
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Type
+from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -13,48 +14,39 @@ from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
+from mypy_boto3_s3control import S3ControlClient
+from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
+from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
 from backend.types import JsonObject
-from backend.validation_results_model import ValidationResult, ValidationResultsModel
+from backend.validation_results_model import (
+    ValidationResult,
+    ValidationResultsModelBase,
+    validation_results_model_with_meta,
+)
 
 from .general_generators import (
     _random_string_choices,
     any_past_datetime,
-    any_past_datetime_string,
     any_safe_file_path,
     random_string,
 )
 from .stac_generators import (
-    any_dataset_description,
     any_dataset_id,
     any_dataset_owning_group,
     any_dataset_title,
     any_valid_dataset_type,
 )
 
-STAC_VERSION = "1.0.0-rc.1"
-
 SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
 EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
-
-MINIMAL_VALID_STAC_OBJECT: Dict[str, Any] = {
-    "description": any_dataset_description(),
-    "extent": {
-        "spatial": {"bbox": [[-180, -90, 180, 90]]},
-        "temporal": {"interval": [[any_past_datetime_string(), None]]},
-    },
-    "id": any_dataset_id(),
-    "license": "MIT",
-    "links": [],
-    "stac_version": STAC_VERSION,
-    "type": "Collection",
-}
 
 DELETE_OBJECTS_MAX_KEYS = 1000
 
@@ -204,15 +196,15 @@ class ValidationItem:
         url: str,
         check: str,
     ):
-
-        self._item = ValidationResultsModel(
+        validation_results_model = validation_results_model_with_meta()
+        self._item = validation_results_model(
             pk=asset_id,
             sk=f"CHECK#{check}#URL#{url}",
             result=result.value,
             details=details,
         )
 
-    def __enter__(self) -> ValidationResultsModel:
+    def __enter__(self) -> ValidationResultsModelBase:
         self._item.save()
         return self._item
 
@@ -334,3 +326,57 @@ def get_s3_prefix_versions(
 def s3_object_arn_to_key(arn: str) -> str:
     bucket_and_key = arn.split(sep=":", maxsplit=5)[-1]
     return bucket_and_key.split(sep="/", maxsplit=1)[-1]
+
+
+def wait_for_copy_jobs(
+    import_dataset_response: JsonObject,
+    account_id: str,
+    s3_control_client: S3ControlClient,
+    subtests: SubTests,
+) -> Tuple[DescribeJobResultTypeDef, DescribeJobResultTypeDef]:
+    with subtests.test(msg="Should complete metadata copy operation successfully"):
+        metadata_copy_job_result = wait_for_s3_batch_job_completion(
+            import_dataset_response[METADATA_JOB_ID_KEY], account_id, s3_control_client
+        )
+
+    with subtests.test(msg="Should complete asset copy operation successfully"):
+        asset_copy_job_result = wait_for_s3_batch_job_completion(
+            import_dataset_response[ASSET_JOB_ID_KEY], account_id, s3_control_client
+        )
+
+    return metadata_copy_job_result, asset_copy_job_result
+
+
+def wait_for_s3_batch_job_completion(
+    s3_batch_job_arn: str,
+    account_id: str,
+    s3_control_client: S3ControlClient,
+) -> DescribeJobResultTypeDef:
+    while (
+        job_result := s3_control_client.describe_job(
+            AccountId=account_id,
+            JobId=s3_batch_job_arn,
+        )
+    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+        time.sleep(5)
+
+    assert job_result["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, job_result
+
+    return job_result
+
+
+def delete_copy_job_files(
+    metadata_copy_job_result: DescribeJobResultTypeDef,
+    asset_copy_job_result: DescribeJobResultTypeDef,
+    storage_bucket_name: str,
+    s3_client: S3Client,
+    subtests: SubTests,
+) -> None:
+    for response in [metadata_copy_job_result, asset_copy_job_result]:
+        manifest_key = s3_object_arn_to_key(response["Job"]["Manifest"]["Location"]["ObjectArn"])
+        with subtests.test(msg=f"Delete {manifest_key}"):
+            delete_s3_key(storage_bucket_name, manifest_key, s3_client)
+
+    copy_job_report_prefix = asset_copy_job_result["Job"]["Report"]["Prefix"]
+    with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
+        delete_s3_prefix(storage_bucket_name, copy_job_report_prefix, s3_client)

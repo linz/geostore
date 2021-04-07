@@ -2,60 +2,51 @@ from argparse import ArgumentParser, Namespace
 from functools import lru_cache
 from json import dumps, load
 from logging import Logger
-from os.path import dirname, join
-from typing import Any, Callable, Dict, List
+from os.path import dirname
+from typing import Any, Callable, Dict, List, Type, Union
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
-from jsonschema import (  # type: ignore[import]
-    Draft7Validator,
-    FormatChecker,
-    RefResolver,
-    ValidationError,
-)
-from jsonschema._utils import URIDict  # type: ignore[import]
+from jsonschema import ValidationError  # type: ignore[import]
 
 from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
+from .stac_validators import (
+    STACCatalogSchemaValidator,
+    STACCollectionSchemaValidator,
+    STACItemSchemaValidator,
+)
 
 LOGGER = set_up_logging(__name__)
 
+STAC_COLLECTION_TYPE = "Collection"
+STAC_ITEM_TYPE = "Feature"
+STAC_CATALOG_TYPE = "Catalog"
 
-class STACSchemaValidator(Draft7Validator):
-    def __init__(self) -> None:
-        self.script_dir = dirname(__file__)
+STAC_TYPE_VALIDATION_MAP: Dict[
+    str,
+    Union[
+        Type[STACCatalogSchemaValidator],
+        Type[STACCollectionSchemaValidator],
+        Type[STACItemSchemaValidator],
+    ],
+] = {
+    STAC_COLLECTION_TYPE: STACCollectionSchemaValidator,
+    STAC_CATALOG_TYPE: STACCatalogSchemaValidator,
+    STAC_ITEM_TYPE: STACItemSchemaValidator,
+}
 
-        collection_schema = self.get_schema_dict(
-            "stac-spec/collection-spec/json-schema/collection.json"
-        )
+S3_URL_PREFIX = "s3://"
 
-        schema_store = {}
-        uri_dictionary = URIDict()
-        for schema in [
-            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog.json"),
-            self.get_schema_dict("stac-spec/catalog-spec/json-schema/catalog-core.json"),
-            collection_schema,
-            self.get_schema_dict("stac-spec/item-spec/json-schema/basics.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/datetime.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/instrument.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/item.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/licensing.json"),
-            self.get_schema_dict("stac-spec/item-spec/json-schema/provider.json"),
-        ]:
-            # Normalize URLs the same way as jsonschema does
-            schema_store[uri_dictionary.normalize(schema["$id"])] = schema
 
-        resolver = RefResolver.from_schema(collection_schema, store=schema_store)
+@lru_cache
+def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
+    if url_or_path[:5] == S3_URL_PREFIX:
+        return url_or_path
 
-        super().__init__(collection_schema, resolver=resolver, format_checker=FormatChecker())
-
-    def get_schema_dict(self, path: str) -> JsonObject:
-        with open(join(self.script_dir, path)) as file_pointer:
-            schema_dict: JsonObject = load(file_pointer)
-            return schema_dict
+    return f"{dirname(parent_url)}/{url_or_path}"
 
 
 class STACDatasetValidator:
@@ -71,15 +62,11 @@ class STACDatasetValidator:
         self.dataset_assets: List[Dict[str, str]] = []
         self.dataset_metadata: List[Dict[str, str]] = []
 
-        self.validator = STACSchemaValidator()
-
         self.processing_assets_model = processing_assets_model_with_meta()
 
     def run(self, metadata_url: str) -> None:
-        s3_url_prefix = "s3://"
-
-        if metadata_url[:5] != s3_url_prefix:
-            error_message = f"URL doesn't start with “{s3_url_prefix}”: “{metadata_url}”"
+        if metadata_url[:5] != S3_URL_PREFIX:
+            error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
                 metadata_url,
                 Check.NON_S3_URL,
@@ -93,8 +80,11 @@ class STACDatasetValidator:
         self.traversed_urls.append(url)
         object_json = self.get_object(url)
 
+        stac_type = object_json["type"]
+        validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
+
         try:
-            self.validator.validate(object_json)
+            validator.validate(object_json)
         except ValidationError as error:
             self.validation_result_factory.save(
                 url,
@@ -107,17 +97,16 @@ class STACDatasetValidator:
         self.dataset_metadata.append({"url": url})
 
         for asset in object_json.get("assets", {}).values():
-            asset_url = asset["href"]
-            self.validate_directory(asset_url, url)
+            asset_url = maybe_convert_relative_url_to_absolute(asset["href"], url)
 
             asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
             LOGGER.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json["links"]:
-            next_url = link_object["href"]
+            next_url = maybe_convert_relative_url_to_absolute(link_object["href"], url)
+
             if next_url not in self.traversed_urls:
-                self.validate_directory(next_url, url)
                 self.validate(next_url)
 
     def get_object(self, url: str) -> Any:
@@ -148,20 +137,6 @@ class STACDatasetValidator:
                 url=asset["url"],
                 multihash=asset["multihash"],
             ).save()
-
-    def validate_directory(self, url: str, parent_metadata_url: str) -> None:
-        root_path = get_url_before_filename(self.traversed_urls[0])
-        if root_path != get_url_before_filename(url):
-            self.validation_result_factory.save(
-                url,
-                Check.MULTIPLE_DIRECTORIES,
-                ValidationResult.FAILED,
-                details={
-                    "message": f"Metadata file “{parent_metadata_url}” links to “{url}”"
-                    f" which exists in a different directory to the root "
-                    f"metadata file directory: “{root_path}”"
-                },
-            )
 
 
 @lru_cache

@@ -19,14 +19,12 @@ from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
 from .aws_utils import (
-    MINIMAL_VALID_STAC_OBJECT,
     S3_BATCH_JOB_COMPLETED_STATE,
-    S3_BATCH_JOB_FINAL_STATES,
     Dataset,
     S3Object,
+    delete_copy_job_files,
     delete_s3_key,
-    delete_s3_prefix,
-    s3_object_arn_to_key,
+    wait_for_copy_jobs,
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import any_file_contents, any_safe_file_path, any_safe_filename
@@ -36,6 +34,11 @@ from .stac_generators import (
     any_hex_multihash,
     any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
+)
+from .stac_objects import (
+    MINIMAL_VALID_STAC_CATALOG_OBJECT,
+    MINIMAL_VALID_STAC_COLLECTION_OBJECT,
+    MINIMAL_VALID_STAC_ITEM_OBJECT,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -89,7 +92,17 @@ class TestWithStagingBucket:
         # pylint: disable=too-many-locals
         key_prefix = any_safe_file_path()
 
-        s3_metadata_filename = any_safe_filename()
+        collection_metadata_filename = any_safe_filename()
+        catalog_metadata_filename = any_safe_filename()
+        item_metadata_filename = any_safe_filename()
+
+        collection_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{collection_metadata_filename}"
+        )
+        catalog_metadata_url = (
+            f"s3://{self.staging_bucket_name}/{key_prefix}/{catalog_metadata_filename}"
+        )
+        item_metadata_url = f"s3://{self.staging_bucket_name}/{key_prefix}/{item_metadata_filename}"
 
         first_asset_contents = any_file_contents()
         first_asset_filename = any_safe_filename()
@@ -110,14 +123,21 @@ class TestWithStagingBucket:
         ) as second_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    "links": [
+                        {"href": collection_metadata_url, "rel": "child"},
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": catalog_metadata_url, "rel": "self"},
+                    ],
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=f"{key_prefix}/{catalog_metadata_filename}",
+        ) as catalog_metadata_file, S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
-                        any_asset_name(): {
-                            "href": first_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
-                                sha256(first_asset_contents).hexdigest()
-                            ),
-                        },
                         any_asset_name(): {
                             "href": second_asset_s3_object.url,
                             "checksum:multihash": sha256_hex_digest_to_multihash(
@@ -125,11 +145,36 @@ class TestWithStagingBucket:
                             ),
                         },
                     },
+                    "links": [
+                        {"href": item_metadata_url, "rel": "child"},
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": collection_metadata_url, "rel": "self"},
+                    ],
                 }
             ),
             bucket_name=self.staging_bucket_name,
-            key=f"{key_prefix}/{s3_metadata_filename}",
-        ) as s3_metadata_file, Dataset(
+            key=f"{key_prefix}/{collection_metadata_filename}",
+        ), S3Object(
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                    "assets": {
+                        any_asset_name(): {
+                            "href": first_asset_s3_object.url,
+                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                                sha256(first_asset_contents).hexdigest()
+                            ),
+                        },
+                    },
+                    "links": [
+                        {"href": catalog_metadata_url, "rel": "root"},
+                        {"href": item_metadata_url, "rel": "self"},
+                    ],
+                }
+            ),
+            bucket_name=self.staging_bucket_name,
+            key=f"{key_prefix}/{item_metadata_filename}",
+        ), Dataset(
             dataset_id=dataset_id, dataset_type=dataset_type
         ):
 
@@ -142,7 +187,7 @@ class TestWithStagingBucket:
                             "httpMethod": "POST",
                             "body": {
                                 "id": dataset_id,
-                                "metadata-url": s3_metadata_file.url,
+                                "metadata-url": catalog_metadata_file.url,
                                 "type": dataset_type,
                             },
                         }
@@ -169,36 +214,35 @@ class TestWithStagingBucket:
 
                     assert execution["status"] == "SUCCEEDED", execution
 
-                with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-                    assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
+                assert (execution_output := execution.get("output")) , execution
 
-                    # poll for S3 Batch Copy completion
-                    while (
-                        copy_job := s3_control_client.describe_job(
-                            AccountId=sts_client.get_caller_identity()["Account"],
-                            JobId=s3_batch_copy_arn,
-                        )
-                    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                        time.sleep(5)
+                account_id = sts_client.get_caller_identity()["Account"]
 
-                    assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+                import_dataset_response = json.loads(execution_output)["import_dataset"]
+                metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
+                    import_dataset_response, account_id, s3_control_client, subtests
+                )
             finally:
                 # Cleanup
-                for filename in [s3_metadata_filename, first_asset_filename, second_asset_filename]:
+                for filename in [
+                    catalog_metadata_filename,
+                    collection_metadata_filename,
+                    item_metadata_filename,
+                    first_asset_filename,
+                    second_asset_filename,
+                ]:
                     new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
-                manifest_key = s3_object_arn_to_key(
-                    copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
+                storage_bucket_name = self.storage_bucket_name
+                delete_copy_job_files(
+                    metadata_copy_job_result,
+                    asset_copy_job_result,
+                    storage_bucket_name,
+                    s3_client,
+                    subtests,
                 )
-                with subtests.test(msg=f"Delete {manifest_key}"):
-                    delete_s3_key(self.storage_bucket_name, manifest_key, s3_client)
-
-                copy_job_report_prefix = copy_job["Job"]["Report"]["Prefix"]
-                with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
-                    delete_s3_prefix(self.storage_bucket_name, copy_job_report_prefix, s3_client)
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
@@ -206,7 +250,8 @@ class TestWithStagingBucket:
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
-                    "upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
             }
             status_resp = lambda_client.invoke(
@@ -253,7 +298,7 @@ class TestWithStagingBucket:
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
@@ -269,7 +314,7 @@ class TestWithStagingBucket:
         ) as child_metadata_file, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "links": [
                         {"href": f"{child_metadata_file.url}", "rel": "child"},
                     ],
@@ -315,22 +360,17 @@ class TestWithStagingBucket:
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
                         time.sleep(5)
 
-                    assert execution["status"] == "SUCCEEDED", execution
+                assert (execution_output := execution.get("output")) , execution
 
-                with subtests.test(msg="Should complete S3 batch copy operation successfully"):
-                    assert "output" in execution, execution
-                    s3_batch_copy_arn = json.loads(execution["output"])["import_dataset"]["job_id"]
+                account_id = sts_client.get_caller_identity()["Account"]
 
-                    # poll for S3 Batch Copy completion
-                    while (
-                        copy_job := s3_control_client.describe_job(
-                            AccountId=sts_client.get_caller_identity()["Account"],
-                            JobId=s3_batch_copy_arn,
-                        )
-                    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-                        time.sleep(5)
-
-                    assert copy_job["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, copy_job
+                import_dataset_response = json.loads(execution_output)["import_dataset"]
+                metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
+                    import_dataset_response,
+                    account_id,
+                    s3_control_client,
+                    subtests,
+                )
             finally:
                 # Cleanup
                 for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
@@ -338,15 +378,13 @@ class TestWithStagingBucket:
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
-                manifest_key = s3_object_arn_to_key(
-                    copy_job["Job"]["Manifest"]["Location"]["ObjectArn"]
+                delete_copy_job_files(
+                    metadata_copy_job_result,
+                    asset_copy_job_result,
+                    self.storage_bucket_name,
+                    s3_client,
+                    subtests,
                 )
-                with subtests.test(msg=f"Delete {manifest_key}"):
-                    delete_s3_key(self.storage_bucket_name, manifest_key, s3_client)
-
-                copy_job_report_prefix = copy_job["Job"]["Report"]["Prefix"]
-                with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
-                    delete_s3_prefix(self.storage_bucket_name, copy_job_report_prefix, s3_client)
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
@@ -354,7 +392,8 @@ class TestWithStagingBucket:
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
-                    "upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
             }
             status_resp = lambda_client.invoke(
@@ -395,7 +434,7 @@ class TestWithStagingBucket:
         ) as asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(
                 {
-                    **deepcopy(MINIMAL_VALID_STAC_OBJECT),
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
