@@ -521,5 +521,29 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         assert validator.dataset_metadata == expected_metadata
 
 
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> None:
+    # Given
+    metadata_url = any_s3_url()
+    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
+    validator = STACDatasetValidator(url_reader, validation_results_factory_mock)
+
+    # When
+    validator.validate(metadata_url)
+
+    # Then
+    assert validation_results_factory_mock.mock_calls == [
+        call.save(
+            metadata_url,
+            Check.JSON_PARSE,
+            ValidationResult.FAILED,
+            details={
+                "message": "Expecting property name enclosed in double quotes:"
+                " line 1 column 2 (char 1)"
+            },
+        ),
+    ]
+
+
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
     return sorted(assets, key=lambda entry: entry["url"])
