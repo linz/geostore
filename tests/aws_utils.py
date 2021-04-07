@@ -257,8 +257,13 @@ class MockJSONURLReader(Mock):
         if self.call_limit is not None:
             assert self.call_count <= self.call_limit
 
+        json_dict_or_io = self.url_to_json[url]
+        if isinstance(json_dict_or_io, StringIO):
+            json_dict_or_io.seek(0)
+            return json_dict_or_io
+
         result = StringIO()
-        dump(self.url_to_json[url], result)
+        dump(json_dict_or_io, result)
         result.seek(0)
         return result
 
