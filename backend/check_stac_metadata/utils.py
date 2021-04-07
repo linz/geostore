@@ -3,7 +3,7 @@ from functools import lru_cache
 from json import dumps, load
 from logging import Logger
 from os.path import dirname
-from typing import Any, Callable, Dict, List, Type, Union
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
@@ -12,6 +12,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 from .stac_validators import (
     STACCatalogSchemaValidator,
@@ -120,7 +121,7 @@ class STACDatasetValidator:
                 details={"message": str(error)},
             )
             raise
-        return load(url_stream)
+        return load(url_stream, object_pairs_hook=self.duplicate_object_names_report_builder(url))
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
@@ -137,6 +138,25 @@ class STACDatasetValidator:
                 url=asset["url"],
                 multihash=asset["multihash"],
             ).save()
+
+    def duplicate_object_names_report_builder(
+        self, url: str
+    ) -> Callable[[List[Tuple[str, Any]]], JsonObject]:
+        def report_duplicate_object_names(object_pairs: List[Tuple[str, Any]]) -> JsonObject:
+            result = {}
+            for key, value in object_pairs:
+                if key in result:
+                    self.validation_result_factory.save(
+                        url,
+                        Check.DUPLICATE_OBJECT_KEY,
+                        ValidationResult.FAILED,
+                        details={"message": f"Found duplicate object name “{key}” in “{url}”"},
+                    )
+                else:
+                    result[key] = value
+            return result
+
+        return report_duplicate_object_names
 
 
 @lru_cache
