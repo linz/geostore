@@ -65,7 +65,7 @@ class STACDatasetValidator:
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
-    def run(self, metadata_url: str) -> None:
+    def run(self, metadata_url: str, hash_key: str) -> None:
         if metadata_url[:5] != S3_URL_PREFIX:
             error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
@@ -74,8 +74,16 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={"message": error_message},
             )
-            raise AssertionError(error_message)
-        self.validate(metadata_url)
+            LOGGER.error(dumps({"success": False, "message": str(error_message)}))
+            return
+
+        try:
+            self.validate(metadata_url)
+        except (ValidationError, ClientError) as error:
+            LOGGER.error(dumps({"success": False, "message": str(error)}))
+            return
+
+        self.save(hash_key)
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)

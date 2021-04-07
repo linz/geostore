@@ -44,7 +44,7 @@ from .stac_objects import (
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_return_non_zero_exit_code_on_validation_failure(validate_url_mock: MagicMock) -> None:
+def should_return_zero_exit_code_on_validation_failure(validate_url_mock: MagicMock) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
     sys.argv = [
         any_program_name(),
@@ -54,7 +54,7 @@ def should_return_non_zero_exit_code_on_validation_failure(validate_url_mock: Ma
     ]
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        assert main() == 1
+        assert main() == 0
 
 
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
@@ -77,7 +77,7 @@ def should_save_non_s3_url_validation_results(
     with subtests.test(msg="Exit code"), patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        assert main() == 1
+        assert main() == 0
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="S3 url validation results"):
@@ -163,7 +163,7 @@ def should_save_staging_access_validation_results(
     ]
 
     with subtests.test(msg="Exit code"):
-        assert main() == 1
+        assert main() == 0
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     with subtests.test(msg="Root validation results"):
@@ -219,7 +219,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         ]
 
         with subtests.test(msg="Exit code"):
-            assert main() == 1
+            assert main() == 0
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     validation_results_model = validation_results_model_with_meta()
@@ -439,16 +439,6 @@ def should_only_validate_each_file_once() -> None:
         STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(root_url)
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
-
-
-def should_raise_exception_if_non_s3_url_is_passed() -> None:
-    https_url = any_https_url()
-    url_reader = MockJSONURLReader({})
-
-    with raises(AssertionError, match=f"URL doesn't start with “s3://”: “{https_url}”"), patch(
-        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
-    ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(https_url)
 
 
 def should_collect_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
