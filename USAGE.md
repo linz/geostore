@@ -56,7 +56,7 @@ checks which are currently in place.
 - Every asset (in the [`item_assets` property](https://github.com/radiantearth/stac-spec/blob/master/extensions/item-assets/README.md)) must have:
    - an S3 [URL](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object), as defined above
    - a [multihash](https://github.com/radiantearth/stac-spec/blob/master/extensions/checksum/README.md) corresponding to the contents of the asset file
-- Every metadata and asset must be in the same S3 "folder." That is, every metadata and asset URL must have the same content up to the last slash. For example, a having a root metadata URL `s3://bucket/folder/collection.json` and an asset URL `s3://bucket/folder/subfolder/1.tif` is invalid.
+- Every metadata and asset file must be in the same S3 bucket.
 - Every metadata and asset URL must be readable by the GDL.
 - A dataset *may* refer to the same asset more than once. All references to the same asset must have the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be considered invalid, even if both checksums are valid. This is to enable a simpler checksum validation.
 
