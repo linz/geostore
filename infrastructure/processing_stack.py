@@ -81,33 +81,20 @@ class ProcessingStack(Stack):
 
         ############################################################################################
         # STATE MACHINE TASKS
-        check_stac_metadata_job_task = BatchSubmitJobTask(
+
+        check_stac_metadata_task = LambdaTask(
             self,
             "check-stac-metadata-task",
-            deploy_env=self.deploy_env,
             directory="check_stac_metadata",
-            s3_policy=s3_read_only_access_policy,
-            job_queue=batch_job_queue,
-            payload_object={
-                "dataset_id.$": "$.dataset_id",
-                "version_id.$": "$.version_id",
-                "metadata_url.$": "$.metadata_url",
-            },
-            container_overrides_command=[
-                "--dataset-id",
-                "Ref::dataset_id",
-                "--version-id",
-                "Ref::version_id",
-                "--metadata-url",
-                "Ref::metadata_url",
-            ],
+            result_path="$.check_stac_metadata",
+            application_layer=self.application_layer,
+            extra_environment={"DEPLOY_ENV": self.deploy_env},
         )
+
         for table in [processing_assets_table, self.validation_results_table]:
-            table.grant_read_write_data(
-                check_stac_metadata_job_task.job_role  # type: ignore[arg-type]
-            )
+            table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
-                check_stac_metadata_job_task.job_role,  # type: ignore[arg-type]
+                check_stac_metadata_task.lambda_function,
                 "dynamodb:DescribeTable",
             )
 
@@ -291,7 +278,7 @@ class ProcessingStack(Stack):
                 processing_assets_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]
                     check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                    check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
+                    check_stac_metadata_task.lambda_function.role,  # type: ignore[list-item]
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
@@ -303,7 +290,7 @@ class ProcessingStack(Stack):
                 self.validation_results_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]
                     check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                    check_stac_metadata_job_task.job_role,  # type: ignore[list-item]
+                    check_stac_metadata_task.lambda_function.role,  # type: ignore[list-item]
                     validation_summary_task.lambda_function,
                 ],
             }
@@ -314,7 +301,7 @@ class ProcessingStack(Stack):
         ############################################################################################
         # STATE MACHINE
         dataset_version_creation_definition = (
-            check_stac_metadata_job_task.batch_submit_job.next(content_iterator_task.lambda_invoke)
+            check_stac_metadata_task.lambda_invoke.next(content_iterator_task.lambda_invoke)
             .next(
                 aws_stepfunctions.Choice(  # type: ignore[arg-type]
                     self, "check_files_checksums_maybe_array"

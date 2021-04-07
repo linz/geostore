@@ -1,10 +1,16 @@
-#!/usr/bin/env python3
+from json import dumps
 from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
+from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from backend.keys.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+
+from ..import_dataset.task import EVENT_KEY
+from ..keys.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
+from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator, parse_arguments
 
@@ -20,7 +26,28 @@ def s3_url_reader(url: str) -> StreamingBody:
     return response["Body"]
 
 
-def main() -> None:
+def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
+
+    LOGGER.debug(dumps({EVENT_KEY: event}))
+
+    # validate input
+    try:
+        validate(
+            event,
+            {
+                "type": "object",
+                "properties": {
+                    DATASET_ID_KEY: {"type": "string"},
+                    VERSION_ID_KEY: {"type": "string"},
+                    METADATA_URL_KEY: {"type": "string"},
+                },
+                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+            },
+        )
+    except ValidationError as error:
+        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        return {ERROR_MESSAGE_KEY: error.message}
+
     arguments = parse_arguments(LOGGER)
 
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
@@ -28,7 +55,4 @@ def main() -> None:
     validator = STACDatasetValidator(s3_url_reader, validation_result_factory)
 
     validator.run(arguments.metadata_url, hash_key)
-
-
-if __name__ == "__main__":
-    main()
+    return {}
