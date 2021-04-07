@@ -1,14 +1,14 @@
+<!-- List of links to issues which will be closed by this PR. Uncomment this section if relevant.
 ## Issues
 
-<!-- List of links to issues if applicable, for example: -->
-
 Closes https://example.org/issues/1, https://example.org/issues/2.
+-->
 
+<!-- List of issues which had to be resolved or worked around to get through this work. Uncomment this section if relevant.
 ## Challenges
 
-<!-- Optional list of issues which had to be resolved or worked around to get through this work, for example: -->
-
 - [X doesn't support Y](https://example.org/issues/1)
+-->
 
 ## Reference
 
