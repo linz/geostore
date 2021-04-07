@@ -110,7 +110,7 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
 
-    def get_object(self, url: str) -> Any:
+    def get_object(self, url: str) -> JsonObject:
         try:
             url_stream = self.url_reader(url)
         except ClientError as error:
@@ -121,7 +121,10 @@ class STACDatasetValidator:
                 details={"message": str(error)},
             )
             raise
-        return load(url_stream, object_pairs_hook=self.duplicate_object_names_report_builder(url))
+        json_object: JsonObject = load(
+            url_stream, object_pairs_hook=self.duplicate_object_names_report_builder(url)
+        )
+        return json_object
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
