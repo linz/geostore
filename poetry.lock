@@ -1426,8 +1426,8 @@ crt = ["awscrt (==0.10.8)"]
 
 [[package]]
 name = "cattrs"
-version = "1.3.0"
-description = "Composable complex class support for attrs."
+version = "1.4.0"
+description = "Composable complex class support for attrs and dataclasses."
 category = "main"
 optional = true
 python-versions = "~=3.7"
@@ -1676,7 +1676,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "jsii"
-version = "1.24.0"
+version = "1.27.0"
 description = "Python client for jsii runtime"
 category = "main"
 optional = true
@@ -1684,7 +1684,7 @@ python-versions = "~=3.6"
 
 [package.dependencies]
 attrs = ">=20.1,<21.0"
-cattrs = {version = ">=1.3.0,<1.4.0", markers = "python_version >= \"3.7\""}
+cattrs = {version = ">=1.4.0,<1.5.0", markers = "python_version >= \"3.7\""}
 python-dateutil = "*"
 typing-extensions = ">=3.7,<4.0"
 
@@ -2638,8 +2638,8 @@ botocore = [
     {file = "botocore-1.20.39.tar.gz", hash = "sha256:28506d23ffa9abf5666c2c909c7edc83a1112cd44fe74eb1a4960df561531e98"},
 ]
 cattrs = [
-    {file = "cattrs-1.3.0-py3-none-any.whl", hash = "sha256:f92ca39ccb7373289f9cccf71b86849a29a2d75370bc983e7bf579ce95bfccd8"},
-    {file = "cattrs-1.3.0.tar.gz", hash = "sha256:12688f56fbb7f54cf647d031669840e1ab0b9a198bf374a217fcb5be821855df"},
+    {file = "cattrs-1.4.0-py3-none-any.whl", hash = "sha256:7f73af7f0424ef734178a42dd4e608a30bc18d24baee2ba9a46115967c8e01cb"},
+    {file = "cattrs-1.4.0.tar.gz", hash = "sha256:3e95495dc7504108427f1b69d63360ef9d04b6e7d3305b351835549a8c05f4bc"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -2781,8 +2781,8 @@ jmespath = [
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
 ]
 jsii = [
-    {file = "jsii-1.24.0-py3-none-any.whl", hash = "sha256:fe127b4f9ae336efb0fa4212c36fa7cf5e11cf952c4faff7868197c8364b4870"},
-    {file = "jsii-1.24.0.tar.gz", hash = "sha256:dcb46fd389e7f102413a6a5ddab3d541ee6afce9529a544dff468db28dd81bcc"},
+    {file = "jsii-1.27.0-py3-none-any.whl", hash = "sha256:83682617308055ee1152dcf9eb2eae3447d4d298828ca6ee7f5e3eee0bc9b749"},
+    {file = "jsii-1.27.0.tar.gz", hash = "sha256:788fa4f53bea8472898a3d00b85c418b117e33e38ce415ab3f746922c4b88459"},
 ]
 jsonpointer = [
     {file = "jsonpointer-2.0-py2.py3-none-any.whl", hash = "sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e"},
