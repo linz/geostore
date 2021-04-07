@@ -2,7 +2,7 @@ import sys
 from copy import deepcopy
 from datetime import timedelta
 from hashlib import sha256, sha512
-from io import BytesIO
+from io import BytesIO, StringIO
 from json import dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
@@ -39,6 +39,7 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
     MINIMAL_VALID_STAC_ITEM_OBJECT,
+    STAC_VERSION,
 )
 
 
@@ -89,6 +90,51 @@ def should_save_non_s3_url_validation_results(
                 details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
             ),
         ]
+
+
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMock) -> None:
+    # Given
+    asset_name = "name"
+    metadata = (
+        "{"
+        '"assets": {'
+        f'"{asset_name}": {{"href": "s3://bucket/foo", "checksum:multihash": ""}},'
+        f'"{asset_name}": {{"href": "s3://bucket/bar", "checksum:multihash": ""}}'
+        "},"
+        '"description": "any description",'
+        ' "extent": {'
+        '"spatial": {"bbox": [[-180, -90, 180, 90]]},'
+        ' "temporal": {"interval": [["2000-01-01T00:00:00+00:00", null]]}'
+        "},"
+        f' "id": "{any_dataset_id()}",'
+        ' "license": "MIT",'
+        ' "links": [],'
+        f' "stac_version": "{STAC_VERSION}",'
+        ' "type": "Collection"'
+        "}"
+    )
+    metadata_url = any_s3_url()
+    sys.argv = [
+        any_program_name(),
+        f"--metadata-url={metadata_url}",
+        f"--dataset-id={any_dataset_id()}",
+        f"--version-id={any_dataset_version_id()}",
+    ]
+
+    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
+
+    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        # When
+        STACDatasetValidator(url_reader, validation_results_factory_mock).validate(metadata_url)
+
+    # Then
+    validation_results_factory_mock.save.assert_any_call(
+        metadata_url,
+        Check.DUPLICATE_OBJECT_KEY,
+        ValidationResult.FAILED,
+        details={"message": f"Found duplicate object name “{asset_name}” in “{metadata_url}”"},
+    )
 
 
 @mark.infrastructure
