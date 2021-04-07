@@ -72,7 +72,6 @@ pytest-socket = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
-smart-open = {version = "*", extras = ["s3"]}
 
 [tool.poetry.dev-dependencies.boto3-stubs]
 version = "*"
