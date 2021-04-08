@@ -83,7 +83,20 @@ class STACDatasetValidator:
             LOGGER.error(dumps({"success": False, "message": str(error)}))
             return
 
-        self.save(hash_key)
+        for index, metadata_file in enumerate(self.dataset_metadata):
+            self.processing_assets_model(
+                hash_key=hash_key,
+                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
+                url=metadata_file["url"],
+            ).save()
+
+        for index, asset in enumerate(self.dataset_assets):
+            self.processing_assets_model(
+                hash_key=hash_key,
+                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
+                url=asset["url"],
+                multihash=asset["multihash"],
+            ).save()
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
@@ -139,22 +152,6 @@ class STACDatasetValidator:
             )
             raise
         return json_object
-
-    def save(self, key: str) -> None:
-        for index, metadata_file in enumerate(self.dataset_metadata):
-            self.processing_assets_model(
-                hash_key=key,
-                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
-                url=metadata_file["url"],
-            ).save()
-
-        for index, asset in enumerate(self.dataset_assets):
-            self.processing_assets_model(
-                hash_key=key,
-                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
-                url=asset["url"],
-                multihash=asset["multihash"],
-            ).save()
 
     def duplicate_object_names_report_builder(
         self, url: str

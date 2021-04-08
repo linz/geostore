@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from urllib.parse import urlparse
 
 import boto3
@@ -21,7 +20,7 @@ def s3_url_reader(url: str) -> StreamingBody:
     return response["Body"]
 
 
-def main() -> int:
+def main() -> None:
     arguments = parse_arguments(LOGGER)
 
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
@@ -29,8 +28,7 @@ def main() -> int:
     validator = STACDatasetValidator(s3_url_reader, validation_result_factory)
 
     validator.run(arguments.metadata_url, hash_key)
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
