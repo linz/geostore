@@ -8,7 +8,6 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
-from ..import_dataset.task import EVENT_KEY
 from ..log import set_up_logging
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
@@ -28,7 +27,7 @@ def s3_url_reader(url: str) -> StreamingBody:
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(dumps({"event": event}))
 
     # validate input
     try:
