@@ -32,7 +32,6 @@ from .stac_generators import (
     any_asset_name,
     any_dataset_id,
     any_hex_multihash,
-    any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
 )
 from .stac_objects import (
@@ -110,7 +109,6 @@ class TestWithStagingBucket:
         second_asset_filename = any_safe_filename()
 
         dataset_id = any_dataset_id()
-        dataset_type = any_valid_dataset_type()
 
         with S3Object(
             file_object=BytesIO(initial_bytes=first_asset_contents),
@@ -175,7 +173,7 @@ class TestWithStagingBucket:
             bucket_name=self.staging_bucket_name,
             key=f"{key_prefix}/{item_metadata_filename}",
         ), Dataset(
-            dataset_id=dataset_id, dataset_type=dataset_type
+            dataset_id=dataset_id
         ):
 
             # When
@@ -185,11 +183,7 @@ class TestWithStagingBucket:
                     Payload=json.dumps(
                         {
                             "httpMethod": "POST",
-                            "body": {
-                                "id": dataset_id,
-                                "metadata-url": catalog_metadata_file.url,
-                                "type": dataset_type,
-                            },
+                            "body": {"id": dataset_id, "metadata-url": catalog_metadata_file.url},
                         }
                     ).encode(),
                     InvocationType="RequestResponse",
@@ -289,7 +283,6 @@ class TestWithStagingBucket:
         asset_filename = any_safe_filename()
 
         dataset_id = any_dataset_id()
-        dataset_type = any_valid_dataset_type()
 
         with S3Object(
             file_object=BytesIO(initial_bytes=asset_contents),
@@ -323,7 +316,7 @@ class TestWithStagingBucket:
             bucket_name=self.staging_bucket_name,
             key=("{}/{}".format(key_prefix, root_metadata_filename)),
         ) as root_metadata_file, Dataset(
-            dataset_id=dataset_id, dataset_type=dataset_type
+            dataset_id=dataset_id
         ):
 
             # When
@@ -333,11 +326,7 @@ class TestWithStagingBucket:
                     Payload=json.dumps(
                         {
                             "httpMethod": "POST",
-                            "body": {
-                                "id": dataset_id,
-                                "metadata-url": root_metadata_file.url,
-                                "type": dataset_type,
-                            },
+                            "body": {"id": dataset_id, "metadata-url": root_metadata_file.url},
                         }
                     ).encode(),
                     InvocationType="RequestResponse",
@@ -420,7 +409,6 @@ class TestWithStagingBucket:
         # pylint:disable=too-many-locals
         # Given an asset with an invalid checksum
         dataset_id = any_dataset_id()
-        dataset_type = any_valid_dataset_type()
 
         key_prefix = any_safe_file_path()
 
@@ -446,7 +434,7 @@ class TestWithStagingBucket:
             bucket_name=self.staging_bucket_name,
             key=f"{key_prefix}/{metadata_filename}",
         ) as s3_metadata_file, Dataset(
-            dataset_id=dataset_id, dataset_type=dataset_type
+            dataset_id=dataset_id
         ):
 
             # When creating a dataset version
@@ -455,11 +443,7 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         "httpMethod": "POST",
-                        "body": {
-                            "id": dataset_id,
-                            "metadata-url": s3_metadata_file.url,
-                            "type": dataset_type,
-                        },
+                        "body": {"id": dataset_id, "metadata-url": s3_metadata_file.url},
                     }
                 ).encode(),
                 InvocationType="RequestResponse",

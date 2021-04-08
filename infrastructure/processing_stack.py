@@ -44,6 +44,7 @@ class ProcessingStack(Stack):
             deploy_env=self.deploy_env,
             application_layer=self.application_layer,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
 
         self.validation_results_table = Table(
@@ -52,6 +53,7 @@ class ProcessingStack(Stack):
             deploy_env=self.deploy_env,
             application_layer=self.application_layer,
             parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
 
         self.validation_results_table.add_global_secondary_index(
@@ -89,7 +91,6 @@ class ProcessingStack(Stack):
             payload_object={
                 "dataset_id.$": "$.dataset_id",
                 "version_id.$": "$.version_id",
-                "type.$": "$.type",
                 "metadata_url.$": "$.metadata_url",
             },
             container_overrides_command=[
@@ -123,7 +124,6 @@ class ProcessingStack(Stack):
         check_files_checksums_default_payload_object = {
             "dataset_id.$": "$.dataset_id",
             "version_id.$": "$.version_id",
-            "type.$": "$.type",
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
         }

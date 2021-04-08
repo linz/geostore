@@ -7,7 +7,6 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
-from ..dataset import DATASET_TYPES
 from ..datasets_model import datasets_model_with_meta
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
@@ -23,15 +22,8 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "type": {
-                "type": "string",
-                "enum": DATASET_TYPES,
-            },
-            "metadata-url": {"type": "string"},
-        },
-        "required": ["id", "metadata-url", "type"],
+        "properties": {"id": {"type": "string"}, "metadata-url": {"type": "string"}},
+        "required": ["id", "metadata-url"],
     }
 
     # validate input
@@ -47,9 +39,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
     # validate dataset exists
     try:
         dataset = datasets_model_class.get(
-            hash_key=f"DATASET#{req_body['id']}",
-            range_key=f"TYPE#{req_body['type']}",
-            consistent_read=True,
+            hash_key=f"DATASET#{req_body['id']}", consistent_read=True
         )
     except DoesNotExist as err:
         logger.warning(json.dumps({"error": err}, default=str))
@@ -61,7 +51,6 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
     step_functions_input = {
         "dataset_id": dataset.dataset_id,
         "version_id": dataset_version_id,
-        "type": dataset.dataset_type,
         "metadata_url": req_body["metadata-url"],
     }
     state_machine_arn = get_param(ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN)

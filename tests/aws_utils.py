@@ -38,12 +38,7 @@ from .general_generators import (
     any_safe_file_path,
     random_string,
 )
-from .stac_generators import (
-    any_dataset_id,
-    any_dataset_owning_group,
-    any_dataset_title,
-    any_valid_dataset_type,
-)
+from .stac_generators import any_dataset_id, any_dataset_owning_group, any_dataset_title
 
 SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
 EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
@@ -115,15 +110,11 @@ class Dataset:
     def __init__(
         self,
         dataset_id: Optional[str] = None,
-        dataset_type: Optional[str] = None,
         title: Optional[str] = None,
         owning_group: Optional[str] = None,
     ):
         if dataset_id is None:
             dataset_id = any_dataset_id()
-
-        if dataset_type is None:
-            dataset_type = any_valid_dataset_type()
 
         if title is None:
             title = any_dataset_title()
@@ -134,7 +125,6 @@ class Dataset:
         datasets_model_class = datasets_model_with_meta()
         self._item = datasets_model_class(
             id=f"DATASET#{dataset_id}",
-            type=f"TYPE#{dataset_type}",
             title=title,
             owning_group=owning_group,
             created_at=any_past_datetime(),

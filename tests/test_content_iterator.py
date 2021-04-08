@@ -11,17 +11,11 @@ from backend.processing_assets_model import ProcessingAssetType, processing_asse
 
 from .aws_utils import any_item_count, any_lambda_context, any_next_item_index, any_s3_url
 from .general_generators import any_dictionary_key
-from .stac_generators import (
-    any_dataset_id,
-    any_dataset_version_id,
-    any_hex_multihash,
-    any_valid_dataset_type,
-)
+from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 INITIAL_EVENT: Dict[str, Any] = {
     "dataset_id": any_dataset_id(),
     "metadata_url": any_s3_url(),
-    "type": any_valid_dataset_type(),
     "version_id": any_dataset_version_id(),
 }
 
@@ -33,7 +27,6 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
     },
     "dataset_id": any_dataset_id(),
     "metadata_url": any_s3_url(),
-    "type": any_valid_dataset_type(),
     "version_id": any_dataset_version_id(),
 }
 
@@ -41,7 +34,7 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
 def should_raise_exception_if_event_is_missing_state_machine_properties(
     subtests: SubTests,
 ) -> None:
-    for property_name in ["dataset_id", "metadata_url", "type", "version_id"]:
+    for property_name in ["dataset_id", "metadata_url", "version_id"]:
         event = deepcopy(INITIAL_EVENT)
         del event[property_name]
         expected_message = f"'{property_name}' is a required property"

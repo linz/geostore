@@ -34,7 +34,6 @@ from .stac_generators import (
     any_asset_name,
     any_dataset_id,
     any_dataset_version_id,
-    any_valid_dataset_type,
     sha256_hex_digest_to_multihash,
 )
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
@@ -160,7 +159,6 @@ def should_batch_copy_files_to_storage(
                     DATASET_ID_KEY: dataset_id,
                     VERSION_ID_KEY: version_id,
                     METADATA_URL_KEY: root_metadata_s3_object.url,
-                    "type": any_valid_dataset_type(),
                 },
                 any_lambda_context(),
             )
