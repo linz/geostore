@@ -20,7 +20,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
-from backend.keys.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,

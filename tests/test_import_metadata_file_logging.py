@@ -3,8 +3,8 @@ from json import dumps
 from unittest.mock import patch
 from urllib.parse import quote
 
+from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from backend.import_metadata_file.task import lambda_handler
-from backend.keys.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 
 from .aws_utils import any_lambda_context, any_s3_bucket_arn
 from .general_generators import any_safe_file_path
