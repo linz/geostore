@@ -211,8 +211,8 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             f"--version-id={version_id}",
         ]
 
-    # When
-    main()
+        # When
+        main()
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     validation_results_model = validation_results_model_with_meta()
