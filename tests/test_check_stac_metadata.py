@@ -3,7 +3,7 @@ from copy import deepcopy
 from datetime import timedelta
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
-from json import dumps
+from json import JSONDecodeError, dumps
 from typing import Dict, List
 from unittest.mock import MagicMock, call, patch
 
@@ -519,7 +519,8 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     validator = STACDatasetValidator(url_reader, validation_results_factory_mock)
 
     # When
-    validator.validate(metadata_url)
+    with raises(JSONDecodeError):
+        validator.validate(metadata_url)
 
     # Then
     assert validation_results_factory_mock.mock_calls == [

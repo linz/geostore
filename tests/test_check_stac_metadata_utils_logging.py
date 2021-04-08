@@ -1,7 +1,8 @@
 import logging
 import sys
 from copy import deepcopy
-from json import dumps
+from io import StringIO
+from json import JSONDecodeError, dumps
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError  # type: ignore[import]
@@ -113,7 +114,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
 
 
 @patch("backend.check_stac_metadata.utils.STACDatasetValidator.validate")
-def should_log_incorrect_schema_validation(validate_mock: MagicMock) -> None:
+def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     metadata_url = any_s3_url()
     hash_key = f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
 
@@ -123,6 +124,26 @@ def should_log_incorrect_schema_validation(validate_mock: MagicMock) -> None:
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
 
     expected_message = dumps({"success": False, "message": expected_error.message})
+
+    with patch.object(LOGGER, "error") as logger_mock, patch(
+        "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
+    ):
+        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+
+        logger_mock.assert_any_call(expected_message)
+
+
+@patch("backend.check_stac_metadata.utils.STACDatasetValidator.validate")
+def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
+    metadata_url = any_s3_url()
+    hash_key = f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
+
+    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
+
+    expected_error = JSONDecodeError(any_error_message(), "", 0)
+    validate_mock.side_effect = expected_error
+
+    expected_message = dumps({"success": False, "message": str(expected_error)})
 
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"

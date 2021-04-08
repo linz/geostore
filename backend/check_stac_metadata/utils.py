@@ -79,7 +79,7 @@ class STACDatasetValidator:
 
         try:
             self.validate(metadata_url)
-        except (ValidationError, ClientError) as error:
+        except (ValidationError, ClientError, JSONDecodeError) as error:
             LOGGER.error(dumps({"success": False, "message": str(error)}))
             return
 
@@ -87,10 +87,7 @@ class STACDatasetValidator:
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
-        try:
-            object_json = self.get_object(url)
-        except JSONDecodeError:
-            return
+        object_json = self.get_object(url)
 
         stac_type = object_json["type"]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
