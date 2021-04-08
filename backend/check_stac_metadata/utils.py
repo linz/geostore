@@ -74,7 +74,7 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={"message": error_message},
             )
-            LOGGER.error(dumps({"success": False, "message": str(error_message)}))
+            LOGGER.error(dumps({"success": False, "message": error_message}))
             return
 
         try:
