@@ -65,7 +65,7 @@ class STACDatasetValidator:
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
-    def run(self, metadata_url: str) -> None:
+    def run(self, metadata_url: str, hash_key: str) -> None:
         if metadata_url[:5] != S3_URL_PREFIX:
             error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
@@ -74,15 +74,33 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={"message": error_message},
             )
-            raise AssertionError(error_message)
-        self.validate(metadata_url)
+            LOGGER.error(dumps({"success": False, "message": error_message}))
+            return
+
+        try:
+            self.validate(metadata_url)
+        except (ValidationError, ClientError, JSONDecodeError) as error:
+            LOGGER.error(dumps({"success": False, "message": str(error)}))
+            return
+
+        for index, metadata_file in enumerate(self.dataset_metadata):
+            self.processing_assets_model(
+                hash_key=hash_key,
+                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
+                url=metadata_file["url"],
+            ).save()
+
+        for index, asset in enumerate(self.dataset_assets):
+            self.processing_assets_model(
+                hash_key=hash_key,
+                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
+                url=asset["url"],
+                multihash=asset["multihash"],
+            ).save()
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
-        try:
-            object_json = self.get_object(url)
-        except JSONDecodeError:
-            return
+        object_json = self.get_object(url)
 
         stac_type = object_json["type"]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
@@ -134,22 +152,6 @@ class STACDatasetValidator:
             )
             raise
         return json_object
-
-    def save(self, key: str) -> None:
-        for index, metadata_file in enumerate(self.dataset_metadata):
-            self.processing_assets_model(
-                hash_key=key,
-                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
-                url=metadata_file["url"],
-            ).save()
-
-        for index, asset in enumerate(self.dataset_assets):
-            self.processing_assets_model(
-                hash_key=key,
-                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
-                url=asset["url"],
-                multihash=asset["multihash"],
-            ).save()
 
     def duplicate_object_names_report_builder(
         self, url: str
