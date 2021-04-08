@@ -3,7 +3,6 @@
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
-from ..dataset import DATASET_TYPES
 from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 
@@ -13,15 +12,8 @@ def create_dataset(payload: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {
-            "type": {
-                "type": "string",
-                "enum": DATASET_TYPES,
-            },
-            "title": {"type": "string"},
-            "owning_group": {"type": "string"},
-        },
-        "required": ["type", "title", "owning_group"],
+        "properties": {"title": {"type": "string"}, "owning_group": {"type": "string"}},
+        "required": ["title", "owning_group"],
     }
 
     # request body validation
@@ -33,20 +25,11 @@ def create_dataset(payload: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(  # pylint:disable=no-member
-        hash_key=f"TYPE#{req_body['type']}",
-        range_key_condition=(datasets_model_class.title == req_body["title"]),
-    ):
-        return error_response(
-            409, f"dataset '{req_body['title']}' of type '{req_body['type']}' already exists"
-        )
+    if datasets_model_class.datasets_title_idx.count(hash_key=req_body["title"]):
+        return error_response(409, f"dataset '{req_body['title']}' already exists")
 
     # create dataset
-    dataset = datasets_model_class(
-        type=f"TYPE#{req_body['type']}",
-        title=req_body["title"],
-        owning_group=req_body["owning_group"],
-    )
+    dataset = datasets_model_class(title=req_body["title"], owning_group=req_body["owning_group"])
     dataset.save()
     dataset.refresh(consistent_read=True)
 

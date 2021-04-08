@@ -57,13 +57,13 @@ class StorageStack(Stack):
 
         self.datasets_table.add_global_secondary_index(
             index_name=DatasetsTitleIdx.Meta.index_name,
-            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
-            sort_key=aws_dynamodb.Attribute(name="title", type=aws_dynamodb.AttributeType.STRING),
+            partition_key=aws_dynamodb.Attribute(
+                name="title", type=aws_dynamodb.AttributeType.STRING
+            ),
         )
         self.datasets_table.add_global_secondary_index(
             index_name=DatasetsOwningGroupIdx.Meta.index_name,
-            partition_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
-            sort_key=aws_dynamodb.Attribute(
+            partition_key=aws_dynamodb.Attribute(
                 name="owning_group", type=aws_dynamodb.AttributeType.STRING
             ),
         )

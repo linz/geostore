@@ -28,10 +28,9 @@ EVENT_SCHEMA = {
         },
         "dataset_id": {"type": "string"},
         "metadata_url": {"type": "string"},
-        "type": {"type": "string"},
         "version_id": {"type": "string"},
     },
-    "required": ["dataset_id", "metadata_url", "type", "version_id"],
+    "required": ["dataset_id", "metadata_url", "version_id"],
     "additionalProperties": False,
 }
 

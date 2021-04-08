@@ -4,14 +4,13 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
-from ..dataset import DATASET_TYPES
 from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 from .list import list_datasets
 
 
 def handle_get(event: JsonObject) -> JsonObject:
-    if "id" in event["body"] and "type" in event["body"]:
+    if "id" in event["body"]:
         return get_dataset_single(event)
 
     if "title" in event["body"] or "owning_group" in event["body"]:
@@ -26,17 +25,7 @@ def handle_get(event: JsonObject) -> JsonObject:
 def get_dataset_single(payload: JsonObject) -> JsonObject:
     """GET: Get single Dataset."""
 
-    body_schema = {
-        "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "type": {
-                "type": "string",
-                "enum": DATASET_TYPES,
-            },
-        },
-        "required": ["id", "type"],
-    }
+    body_schema = {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}
 
     # request body validation
     req_body = payload["body"]
@@ -50,14 +39,10 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
     # get dataset
     try:
         dataset = datasets_model_class.get(
-            hash_key=f"DATASET#{req_body['id']}",
-            range_key=f"TYPE#{req_body['type']}",
-            consistent_read=True,
+            hash_key=f"DATASET#{req_body['id']}", consistent_read=True
         )
     except DoesNotExist:
-        return error_response(
-            404, f"dataset '{req_body['id']}' of type '{req_body['type']}' does not exist"
-        )
+        return error_response(404, f"dataset '{req_body['id']}' does not exist")
 
     # return response
     resp_body = dataset.as_dict()
@@ -70,17 +55,9 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {
-            "type": {
-                "type": "string",
-                "enum": DATASET_TYPES,
-            },
-            "title": {"type": "string"},
-            "owning_group": {"type": "string"},
-        },
-        "required": ["type"],
-        "minProperties": 2,
-        "maxProperties": 2,
+        "properties": {"title": {"type": "string"}, "owning_group": {"type": "string"}},
+        "minProperties": 1,
+        "maxProperties": 1,
     }
 
     # request body validation
@@ -94,14 +71,12 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     datasets_model_class = datasets_model_with_meta()
     if "title" in req_body:
         datasets = datasets_model_class.datasets_title_idx.query(  # pylint:disable=no-member
-            hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=datasets_model_class.title == req_body["title"],
+            hash_key=req_body["title"],
         )
 
     if "owning_group" in req_body:
         datasets = datasets_model_class.datasets_owning_group_idx.query(  # pylint:disable=no-member
-            hash_key=f"TYPE#{req_body['type']}",
-            range_key_condition=datasets_model_class.owning_group == req_body["owning_group"],
+            hash_key=req_body["owning_group"],
         )
 
     # return response

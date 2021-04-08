@@ -10,17 +10,11 @@ from mypy_boto3_lambda import LambdaClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.dataset import DATASET_TYPES
 from backend.datasets import entrypoint
 from backend.resources import ResourceName
 
 from .aws_utils import Dataset, any_lambda_context
-from .stac_generators import (
-    any_dataset_id,
-    any_dataset_owning_group,
-    any_dataset_title,
-    any_valid_dataset_type,
-)
+from .stac_generators import any_dataset_id, any_dataset_owning_group, any_dataset_title
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,11 +22,10 @@ logger = logging.getLogger(__name__)
 
 @mark.infrastructure
 def should_create_dataset(subtests: SubTests) -> None:
-    dataset_type = any_valid_dataset_type()
     dataset_title = any_dataset_title()
     dataset_owning_group = any_dataset_owning_group()
 
-    body = {"type": dataset_type, "title": dataset_title, "owning_group": dataset_owning_group}
+    body = {"title": dataset_title, "owning_group": dataset_owning_group}
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -43,9 +36,6 @@ def should_create_dataset(subtests: SubTests) -> None:
     with subtests.test(msg="ID length"):
         assert len(response["body"]["id"]) == 32  # 32 characters long UUID
 
-    with subtests.test(msg="type"):
-        assert response["body"]["type"] == dataset_type
-
     with subtests.test(msg="title"):
         assert response["body"]["title"] == dataset_title
 
@@ -53,62 +43,19 @@ def should_create_dataset(subtests: SubTests) -> None:
         assert response["body"]["owning_group"] == dataset_owning_group
 
 
-def should_fail_if_post_request_not_containing_mandatory_attribute() -> None:
-    # Given a missing "type" attribute in the body
-    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
-
-    # When attempting to create the instance
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
-
-    # Then the API should return an error message
-    assert response == {
-        "statusCode": 400,
-        "body": {"message": "Bad Request: 'type' is a required property"},
-    }
-
-
-def should_fail_if_post_request_containing_incorrect_dataset_type(subtests: SubTests) -> None:
-    dataset_type = f"{''.join(DATASET_TYPES)}x"  # Guaranteed not in `DATASET_TYPES`
-    body = {
-        "type": dataset_type,
-        "title": any_dataset_title(),
-        "owning_group": any_dataset_owning_group(),
-    }
-
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
-    logger.info("Response: %s", response)
-
-    with subtests.test(msg="status code"):
-        assert response["statusCode"] == 400
-
-    with subtests.test(msg="message"):
-        assert re.search(
-            f"^Bad Request: '{dataset_type}' is not one of .*", response["body"]["message"]
-        )
-
-
 @mark.infrastructure
 def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
-    dataset_type = any_valid_dataset_type()
     dataset_title = "Dataset ABC"
+    body = {"title": dataset_title, "owning_group": any_dataset_owning_group()}
 
-    body = {
-        "type": dataset_type,
-        "title": dataset_title,
-        "owning_group": any_dataset_owning_group(),
-    }
-    with Dataset(dataset_type=dataset_type, title=dataset_title):
+    with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
             {"httpMethod": "POST", "body": body}, any_lambda_context()
         )
 
     assert response == {
         "statusCode": 409,
-        "body": {
-            "message": (
-                f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
-            )
-        },
+        "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
 
@@ -116,10 +63,9 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
 def should_return_single_dataset(subtests: SubTests) -> None:
     # Given a dataset instance
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
+    body = {"id": dataset_id}
 
-    body = {"id": dataset_id, "type": dataset_type}
-    with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
+    with Dataset(dataset_id=dataset_id):
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
             {"httpMethod": "GET", "body": body}, any_lambda_context()
@@ -155,16 +101,12 @@ def should_return_all_datasets(subtests: SubTests) -> None:
 
 
 @mark.infrastructure
-def should_return_single_dataset_filtered_by_type_and_title(subtests: SubTests) -> None:
+def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
-    dataset_type = "IMAGE"
     dataset_title = any_dataset_title()
+    body = {"title": dataset_title}
 
-    body = {"type": dataset_type, "title": dataset_title}
-
-    with Dataset(dataset_type=dataset_type, title=dataset_title) as matching_dataset, Dataset(
-        dataset_type="RASTER", title=dataset_title
-    ), Dataset(dataset_type=dataset_type):
+    with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
         response = entrypoint.lambda_handler(
             {"httpMethod": "GET", "body": body}, any_lambda_context()
@@ -183,22 +125,14 @@ def should_return_single_dataset_filtered_by_type_and_title(subtests: SubTests) 
 
 
 @mark.infrastructure
-def should_return_multiple_datasets_filtered_by_type_and_owning_group(subtests: SubTests) -> None:
+def should_return_multiple_datasets_filtered_by_owning_group(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
-    dataset_type = "RASTER"
     dataset_owning_group = any_dataset_owning_group()
+    body = {"owning_group": dataset_owning_group}
 
-    body = {"type": dataset_type, "owning_group": dataset_owning_group}
-
-    with Dataset(
-        dataset_type=dataset_type, owning_group=dataset_owning_group
-    ) as first_match, Dataset(
-        dataset_type=dataset_type, owning_group=dataset_owning_group
-    ) as second_match, Dataset(
-        dataset_type=dataset_type
-    ), Dataset(
-        dataset_type="IMAGE", owning_group=dataset_owning_group
-    ):
+    with Dataset(owning_group=dataset_owning_group) as first_match, Dataset(
+        owning_group=dataset_owning_group
+    ) as second_match, Dataset():
         # When requesting a specific type and owning group
         response = entrypoint.lambda_handler(
             {"httpMethod": "GET", "body": body}, any_lambda_context()
@@ -222,11 +156,7 @@ def should_return_multiple_datasets_filtered_by_type_and_owning_group(subtests: 
 
 @mark.infrastructure
 def should_fail_if_get_request_containing_tile_and_owning_group_filter(subtests: SubTests) -> None:
-    body = {
-        "type": any_valid_dataset_type(),
-        "title": any_dataset_title(),
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -241,36 +171,34 @@ def should_fail_if_get_request_containing_tile_and_owning_group_filter(subtests:
 @mark.infrastructure
 def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
 
-    body = {"id": dataset_id, "type": dataset_type}
+    body = {"id": dataset_id}
 
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
 
     assert response == {
         "statusCode": 404,
-        "body": {
-            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-        },
+        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
 @mark.infrastructure
 def should_update_dataset(subtests: SubTests) -> None:
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
     new_dataset_title = any_dataset_title()
-
     body = {
         "id": dataset_id,
-        "type": dataset_type,
         "title": new_dataset_title,
         "owning_group": any_dataset_owning_group(),
     }
 
-    with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
+    with Dataset(dataset_id=dataset_id):
         response = entrypoint.lambda_handler(
-            {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+            {
+                "httpMethod": "PATCH",
+                "body": body,
+            },
+            any_lambda_context(),
         )
     logger.info("Response: %s", response)
 
@@ -283,39 +211,30 @@ def should_update_dataset(subtests: SubTests) -> None:
 
 @mark.infrastructure
 def should_fail_if_updating_with_already_existing_dataset_title() -> None:
-    dataset_type = any_valid_dataset_type()
     dataset_title = any_dataset_title()
-
     body = {
         "id": any_dataset_id(),
-        "type": dataset_type,
         "title": dataset_title,
         "owning_group": any_dataset_owning_group(),
     }
 
-    with Dataset(dataset_type=dataset_type, title=dataset_title):
+    with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
             {"httpMethod": "PATCH", "body": body}, any_lambda_context()
         )
 
     assert response == {
         "statusCode": 409,
-        "body": {
-            "message": (
-                f"Conflict: dataset '{dataset_title}' of type '{dataset_type}' already exists"
-            )
-        },
+        "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
 
 @mark.infrastructure
 def should_fail_if_updating_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
 
     body = {
         "id": dataset_id,
-        "type": dataset_type,
         "title": any_dataset_title(),
         "owning_group": any_dataset_owning_group(),
     }
@@ -325,20 +244,16 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
     assert response == {
         "statusCode": 404,
-        "body": {
-            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-        },
+        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
 @mark.infrastructure
 def should_delete_dataset() -> None:
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
+    body = {"id": dataset_id}
 
-    body = {"id": dataset_id, "type": dataset_type}
-
-    with Dataset(dataset_id=dataset_id, dataset_type=dataset_type):
+    with Dataset(dataset_id=dataset_id):
         response = entrypoint.lambda_handler(
             {"httpMethod": "DELETE", "body": body}, any_lambda_context()
         )
@@ -349,11 +264,9 @@ def should_delete_dataset() -> None:
 @mark.infrastructure
 def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
-    dataset_type = any_valid_dataset_type()
 
     body = {
         "id": dataset_id,
-        "type": dataset_type,
         "title": any_dataset_title(),
         "owning_group": any_dataset_owning_group(),
     }
@@ -364,9 +277,7 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
 
     assert response == {
         "statusCode": 404,
-        "body": {
-            "message": f"Not Found: dataset '{dataset_id}' of type '{dataset_type}' does not exist"
-        },
+        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
@@ -378,11 +289,7 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     """
 
     method = "POST"
-    body = {
-        "type": any_valid_dataset_type(),
-        "title": any_dataset_title(),
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
 
     resp = lambda_client.invoke(
         FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,

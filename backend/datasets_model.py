@@ -16,7 +16,7 @@ from .parameter_store import ParameterName, get_param
 class DatasetsTitleIdx(
     GlobalSecondaryIndex["DatasetsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
-    """Dataset type/title global index."""
+    """Dataset title global index."""
 
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
@@ -26,15 +26,14 @@ class DatasetsTitleIdx(
         write_capacity_units = 1
         projection = AllProjection()
 
-    type = UnicodeAttribute(hash_key=True, attr_name="sk")
-    title = UnicodeAttribute(range_key=True)
+    title = UnicodeAttribute(hash_key=True)
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
 class DatasetsOwningGroupIdx(
     GlobalSecondaryIndex["DatasetsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
-    """Dataset type/owning_group global index."""
+    """Dataset owning_group global index."""
 
     class Meta:  # pylint:disable=too-few-public-methods
         """Meta class."""
@@ -44,8 +43,7 @@ class DatasetsOwningGroupIdx(
         write_capacity_units = 1
         projection = AllProjection()
 
-    type = UnicodeAttribute(hash_key=True, attr_name="sk")
-    owning_group = UnicodeAttribute(range_key=True)
+    owning_group = UnicodeAttribute(hash_key=True)
 
 
 class DatasetsModelBase(Model):
@@ -54,7 +52,6 @@ class DatasetsModelBase(Model):
     id = UnicodeAttribute(
         hash_key=True, attr_name="pk", default=f"DATASET#{uuid.uuid1().hex}", null=False
     )
-    type = UnicodeAttribute(range_key=True, attr_name="sk", null=False)
     title = UnicodeAttribute(null=False)
     owning_group = UnicodeAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now(timezone.utc))
@@ -75,18 +72,12 @@ class DatasetsModelBase(Model):
         serialized = self.serialize()
         result: Dict[str, Any] = {key: value["S"] for key, value in serialized.items()}
         result["id"] = self.dataset_id
-        result["type"] = self.dataset_type
         return result
 
     @property
     def dataset_id(self) -> str:
         """Dataset ID value."""
         return str(self.id).split("#")[1]
-
-    @property
-    def dataset_type(self) -> str:
-        """Dataset type value."""
-        return str(self.type).split("#")[1]
 
 
 class DatasetsModelMeta(MetaModel):

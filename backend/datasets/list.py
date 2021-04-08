@@ -12,7 +12,6 @@ def list_datasets() -> JsonObject:
     datasets_model_class = datasets_model_with_meta()
     datasets = datasets_model_class.scan(
         filter_condition=datasets_model_class.id.startswith("DATASET#")
-        & datasets_model_class.type.startswith("TYPE#")
     )
 
     # return response
