@@ -11,14 +11,10 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.import_dataset.task import (
-    DATASET_ID_KEY,
-    ERROR_MESSAGE_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-    lambda_handler,
-)
+from backend.error_response_keys import ERROR_MESSAGE_KEY
+from backend.import_dataset.task import lambda_handler
 from backend.parameter_store import ParameterName, get_param
+from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
     ProcessingAsset,

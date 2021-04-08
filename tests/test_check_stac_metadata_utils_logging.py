@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.check_stac_metadata.utils import S3_URL_PREFIX, STACDatasetValidator, parse_arguments
+from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
 from .general_generators import (
@@ -35,7 +36,13 @@ def should_log_arguments(validate_url_mock: MagicMock) -> None:
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     expected_log = dumps(
-        {"arguments": {"metadata_url": url, "dataset_id": dataset_id, "version_id": version_id}}
+        {
+            "arguments": {
+                METADATA_URL_KEY: url,
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+            }
+        }
     )
 
     sys.argv = [

@@ -2,7 +2,9 @@ from json import dumps
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..log import set_up_logging
+from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -17,12 +19,15 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             event,
             {
                 "type": "object",
-                "properties": {"dataset_id": {"type": "string"}, "version_id": {"type": "string"}},
-                "required": ["dataset_id", "version_id"],
+                "properties": {
+                    DATASET_ID_KEY: {"type": "string"},
+                    VERSION_ID_KEY: {"type": "string"},
+                },
+                "required": [DATASET_ID_KEY, VERSION_ID_KEY],
             },
         )
     except ValidationError as error:
-        return {"error message": error.message}
+        return {ERROR_MESSAGE_KEY: error.message}
 
     validation_results_model = validation_results_model_with_meta()
     success = not bool(

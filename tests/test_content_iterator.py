@@ -8,15 +8,16 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_item_count, any_lambda_context, any_next_item_index, any_s3_url
 from .general_generators import any_dictionary_key
 from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 INITIAL_EVENT: Dict[str, Any] = {
-    "dataset_id": any_dataset_id(),
-    "metadata_url": any_s3_url(),
-    "version_id": any_dataset_version_id(),
+    DATASET_ID_KEY: any_dataset_id(),
+    METADATA_URL_KEY: any_s3_url(),
+    VERSION_ID_KEY: any_dataset_version_id(),
 }
 
 SUBSEQUENT_EVENT: Dict[str, Any] = {
@@ -25,16 +26,16 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
         "iteration_size": MAX_ITERATION_SIZE,
         "next_item": any_next_item_index(),
     },
-    "dataset_id": any_dataset_id(),
-    "metadata_url": any_s3_url(),
-    "version_id": any_dataset_version_id(),
+    DATASET_ID_KEY: any_dataset_id(),
+    METADATA_URL_KEY: any_s3_url(),
+    VERSION_ID_KEY: any_dataset_version_id(),
 }
 
 
 def should_raise_exception_if_event_is_missing_state_machine_properties(
     subtests: SubTests,
 ) -> None:
-    for property_name in ["dataset_id", "metadata_url", "version_id"]:
+    for property_name in [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY]:
         event = deepcopy(INITIAL_EVENT)
         del event[property_name]
         expected_message = f"'{property_name}' is a required property"

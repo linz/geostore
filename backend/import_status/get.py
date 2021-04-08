@@ -7,8 +7,10 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
+from ..error_response_keys import ERROR_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
+from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonList, JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -46,7 +48,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
             },
         )
     except ValidationError as err:
-        LOGGER.warning(json.dumps({"error": err}, default=str))
+        LOGGER.warning(json.dumps({ERROR_KEY: err}, default=str))
         return error_response(400, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
@@ -67,7 +69,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         "validation": {
             "status": validation_status,
             "errors": get_step_function_validation_results(
-                step_function_input["dataset_id"], step_function_input["version_id"]
+                step_function_input[DATASET_ID_KEY], step_function_input[VERSION_ID_KEY]
             ),
         },
         "metadata upload": get_import_job_status(step_function_output, METADATA_JOB_ID_KEY),

@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
 from ..check import Check
+from ..error_response_keys import ERROR_KEY
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
@@ -55,7 +56,7 @@ class ChecksumValidator:
         except self.processing_assets_model.DoesNotExist:
             self.log_failure(
                 {
-                    "error": {"message": "Item does not exist"},
+                    ERROR_KEY: {"message": "Item does not exist"},
                     "parameters": {"hash_key": hash_key, "range_key": range_key},
                 }
             )

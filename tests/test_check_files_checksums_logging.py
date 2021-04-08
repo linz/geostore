@@ -10,6 +10,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
+from backend.error_response_keys import ERROR_KEY
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 
 from .general_generators import any_program_name
@@ -32,7 +33,7 @@ class TestLogging:
         expected_log = dumps(
             {
                 "success": False,
-                "error": {"message": ProcessingAssetsModelBase.DoesNotExist.msg},
+                ERROR_KEY: {"message": ProcessingAssetsModelBase.DoesNotExist.msg},
                 "parameters": {
                     "hash_key": f"DATASET#{dataset_id}#VERSION#{version_id}",
                     "range_key": f"{ProcessingAssetType.DATA.value}#{index}",

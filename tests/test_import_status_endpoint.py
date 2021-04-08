@@ -9,6 +9,7 @@ from pytest import mark
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.import_status.get import ValidationOutcome
+from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -40,7 +41,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock.return_value = {
         "status": "RUNNING",
         "input": json.dumps(
-            {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
 
@@ -78,7 +79,7 @@ def should_retrieve_validation_failures(
 
     describe_step_function_mock.return_value = {
         "status": "SUCCEEDED",
-        "input": json.dumps({"dataset_id": dataset_id, "version_id": version_id}),
+        "input": json.dumps({DATASET_ID_KEY: dataset_id, VERSION_ID_KEY: version_id}),
         "output": json.dumps({"validation": {"success": False}}),
     }
 
@@ -132,7 +133,7 @@ def should_report_s3_batch_upload_failures(
     describe_step_function_mock.return_value = {
         "status": "SUCCEEDED",
         "input": json.dumps(
-            {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
         "output": json.dumps(
             {

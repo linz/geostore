@@ -5,7 +5,9 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
+from backend.error_response_keys import ERROR_KEY
 from backend.import_status.get import get_import_status, get_s3_batch_copy_status
+from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
 from .stac_generators import any_dataset_id, any_dataset_version_id
@@ -31,7 +33,7 @@ class TestLogging:
         describe_step_function_mock.return_value = {
             "status": "RUNNING",
             "input": json.dumps(
-                {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+                {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
             ),
         }
 
@@ -52,7 +54,7 @@ class TestLogging:
 
         error_message = "Some error message"
         validate_schema_mock.side_effect = ValidationError(error_message)
-        expected_log = dumps({"error": error_message})
+        expected_log = dumps({ERROR_KEY: error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
 
@@ -76,7 +78,7 @@ class TestLogging:
         describe_execution_mock.return_value = describe_execution_response = {
             "status": "Some Response",
             "input": json.dumps(
-                {"dataset_id": any_dataset_id(), "version_id": any_dataset_version_id()}
+                {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
             ),
         }
         expected_response_log = json.dumps({"step function response": describe_execution_response})
