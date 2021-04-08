@@ -7,6 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 from pytest import mark
 
 from backend.dataset_versions.create import create_dataset_version
+from backend.error_response_keys import ERROR_KEY
 
 from .aws_utils import Dataset, any_s3_url
 from .stac_generators import any_dataset_id
@@ -70,7 +71,7 @@ class TestLogging:
 
         payload = {"httpMethod": "POST", "body": {"metadata-url": metadata_url}}
 
-        expected_log = dumps({"error": error_message})
+        expected_log = dumps({ERROR_KEY: error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
             # when
@@ -89,7 +90,7 @@ class TestLogging:
 
         payload = {"httpMethod": "POST", "body": {"metadata-url": metadata_url, "id": dataset_id}}
 
-        expected_log = dumps({"error": error_message})
+        expected_log = dumps({ERROR_KEY: error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
             # when

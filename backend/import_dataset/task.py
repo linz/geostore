@@ -9,11 +9,13 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
 if TYPE_CHECKING:
@@ -47,14 +49,7 @@ STORAGE_BUCKET_ARN = f"arn:aws:s3:::{STORAGE_BUCKET_NAME}"
 
 S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.IMPORT_DATASET_ROLE_ARN)
 
-DATASET_ID_KEY = "dataset_id"
-VERSION_ID_KEY = "version_id"
-METADATA_URL_KEY = "metadata_url"
-
 EVENT_KEY = "event"
-ERROR_KEY = "error"
-
-ERROR_MESSAGE_KEY = "error message"
 
 
 class Importer:

@@ -7,14 +7,9 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.import_dataset.task import (
-    DATASET_ID_KEY,
-    ERROR_KEY,
-    EVENT_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-    lambda_handler,
-)
+from backend.error_response_keys import ERROR_KEY
+from backend.import_dataset.task import EVENT_KEY, lambda_handler
+from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import ProcessingAsset, any_lambda_context, any_s3_url
 from .general_generators import any_etag

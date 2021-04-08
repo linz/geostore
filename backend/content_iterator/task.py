@@ -1,6 +1,7 @@
 from jsonschema import validate  # type: ignore[import]
 
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
 MAX_ITERATION_SIZE = 10_000
@@ -26,11 +27,11 @@ EVENT_SCHEMA = {
             "required": ["first_item", "iteration_size", "next_item"],
             "additionalProperties": False,
         },
-        "dataset_id": {"type": "string"},
-        "metadata_url": {"type": "string"},
-        "version_id": {"type": "string"},
+        DATASET_ID_KEY: {"type": "string"},
+        METADATA_URL_KEY: {"type": "string"},
+        VERSION_ID_KEY: {"type": "string"},
     },
-    "required": ["dataset_id", "metadata_url", "version_id"],
+    "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
     "additionalProperties": False,
 }
 
@@ -44,8 +45,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     else:
         first_item_index = 0
 
-    dataset_id = event["dataset_id"]
-    version_id = event["version_id"]
+    dataset_id = event[DATASET_ID_KEY]
+    version_id = event[VERSION_ID_KEY]
 
     processing_assets_model = processing_assets_model_with_meta()
 

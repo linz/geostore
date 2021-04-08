@@ -6,6 +6,7 @@ from typing import Sequence
 import boto3
 
 from .environment import ENV
+from .error_response_keys import ERROR_KEY
 from .log import set_up_logging
 
 LOGGER = set_up_logging(__name__)
@@ -36,11 +37,11 @@ def get_param(parameter: ParameterName) -> str:
     try:
         parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
     except SSM_CLIENT.exceptions.ParameterNotFound:
-        LOGGER.error(dumps({"error": f"Parameter not found: “{parameter.value}”"}))
+        LOGGER.error(dumps({ERROR_KEY: f"Parameter not found: “{parameter.value}”"}))
         raise
 
     try:
         return parameter_response["Parameter"]["Value"]
     except KeyError as error:
-        LOGGER.error(dumps({"error": error}, default=str))
+        LOGGER.error(dumps({ERROR_KEY: error}, default=str))
         raise
