@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from functools import lru_cache
-from json import dumps, load
+from json import JSONDecodeError, dumps, load
 from logging import Logger
 from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
@@ -79,7 +79,10 @@ class STACDatasetValidator:
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
-        object_json = self.get_object(url)
+        try:
+            object_json = self.get_object(url)
+        except JSONDecodeError:
+            return
 
         stac_type = object_json["type"]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
@@ -110,7 +113,7 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
 
-    def get_object(self, url: str) -> Any:
+    def get_object(self, url: str) -> JsonObject:
         try:
             url_stream = self.url_reader(url)
         except ClientError as error:
@@ -121,7 +124,16 @@ class STACDatasetValidator:
                 details={"message": str(error)},
             )
             raise
-        return load(url_stream, object_pairs_hook=self.duplicate_object_names_report_builder(url))
+        try:
+            json_object: JsonObject = load(
+                url_stream, object_pairs_hook=self.duplicate_object_names_report_builder(url)
+            )
+        except JSONDecodeError as error:
+            self.validation_result_factory.save(
+                url, Check.JSON_PARSE, ValidationResult.FAILED, details={"message": str(error)}
+            )
+            raise
+        return json_object
 
     def save(self, key: str) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
