@@ -86,7 +86,6 @@ class ProcessingStack(Stack):
             self,
             "check-stac-metadata-task",
             directory="check_stac_metadata",
-            result_path="$.check_stac_metadata",
             application_layer=self.application_layer,
             extra_environment={"DEPLOY_ENV": self.deploy_env},
         )
