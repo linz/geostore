@@ -31,9 +31,7 @@ def update_dataset(payload: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(  # pylint:disable=no-member
-        hash_key=req_body["title"],
-    ):
+    if datasets_model_class.datasets_title_idx.count(hash_key=req_body["title"]):
         return error_response(409, f"dataset '{req_body['title']}' already exists")
 
     # get dataset to update

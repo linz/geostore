@@ -70,12 +70,12 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     # dataset query by filter
     datasets_model_class = datasets_model_with_meta()
     if "title" in req_body:
-        datasets = datasets_model_class.datasets_title_idx.query(  # pylint:disable=no-member
+        datasets = datasets_model_class.datasets_title_idx.query(
             hash_key=req_body["title"],
         )
 
     if "owning_group" in req_body:
-        datasets = datasets_model_class.datasets_owning_group_idx.query(  # pylint:disable=no-member
+        datasets = datasets_model_class.datasets_owning_group_idx.query(
             hash_key=req_body["owning_group"],
         )
 
