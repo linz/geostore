@@ -97,7 +97,6 @@ export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT
 
 aws lambda invoke \
     --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-    --invocation-type RequestResponse \
     --payload '<REQUEST-PAYLOAD-JSON>'
 /dev/stdout
 ```
@@ -114,7 +113,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
        --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020"}}' \
        /dev/stdout
 
@@ -125,7 +123,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
 
@@ -136,7 +133,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
        --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
 
@@ -147,7 +143,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
        --function-name datasets-endpoint \
-       --invocation-type RequestResponse \
        --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
 
@@ -166,7 +161,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-      --invocation-type RequestResponse \
       --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER", "metadata-url": "s3://example-s3-url"}}' \
       /dev/stdout
 
@@ -185,7 +179,6 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
       --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-      --invocation-type RequestResponse \
       --payload '{"httpMethod": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
       /dev/stdout
 
