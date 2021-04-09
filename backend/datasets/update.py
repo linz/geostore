@@ -13,13 +13,8 @@ def update_dataset(payload: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "title": {"type": "string"},
-            "owning_group": {"type": "string"},
-        },
-        "required": ["id"],
-        "minProperties": 3,
+        "properties": {"id": {"type": "string"}, "title": {"type": "string"}},
+        "required": ["id", "title"],
     }
 
     # request body validation
