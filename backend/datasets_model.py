@@ -29,23 +29,6 @@ class DatasetsTitleIdx(
     title = UnicodeAttribute(hash_key=True)
 
 
-# TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
-class DatasetsOwningGroupIdx(
-    GlobalSecondaryIndex["DatasetsModelBase"]
-):  # pylint:disable=too-few-public-methods,inherit-non-class
-    """Dataset owning_group global index."""
-
-    class Meta:  # pylint:disable=too-few-public-methods
-        """Meta class."""
-
-        index_name = "datasets_owning_group"
-        read_capacity_units = 1
-        write_capacity_units = 1
-        projection = AllProjection()
-
-    owning_group = UnicodeAttribute(hash_key=True)
-
-
 class DatasetsModelBase(Model):
     """Dataset model."""
 
@@ -53,12 +36,10 @@ class DatasetsModelBase(Model):
         hash_key=True, attr_name="pk", default=f"DATASET#{uuid.uuid1().hex}", null=False
     )
     title = UnicodeAttribute(null=False)
-    owning_group = UnicodeAttribute(null=False)
     created_at = UTCDateTimeAttribute(null=False, default=datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()
 
     datasets_title_idx: DatasetsTitleIdx
-    datasets_owning_group_idx: DatasetsOwningGroupIdx
 
     def save(
         self,
@@ -105,6 +86,5 @@ class DatasetsModelMeta(MetaModel):
 def datasets_model_with_meta() -> Type[DatasetsModelBase]:
     class DatasetModel(DatasetsModelBase, metaclass=DatasetsModelMeta):
         datasets_title_idx = DatasetsTitleIdx()
-        datasets_owning_group_idx = DatasetsOwningGroupIdx()
 
     return DatasetModel

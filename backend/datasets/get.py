@@ -13,7 +13,7 @@ def handle_get(event: JsonObject) -> JsonObject:
     if "id" in event["body"]:
         return get_dataset_single(event)
 
-    if "title" in event["body"] or "owning_group" in event["body"]:
+    if "title" in event["body"]:
         return get_dataset_filter(event)
 
     if event["body"] == {}:
@@ -55,7 +55,7 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {"title": {"type": "string"}, "owning_group": {"type": "string"}},
+        "properties": {"title": {"type": "string"}},
         "minProperties": 1,
         "maxProperties": 1,
     }
@@ -69,15 +69,7 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
 
     # dataset query by filter
     datasets_model_class = datasets_model_with_meta()
-    if "title" in req_body:
-        datasets = datasets_model_class.datasets_title_idx.query(  # pylint:disable=no-member
-            hash_key=req_body["title"],
-        )
-
-    if "owning_group" in req_body:
-        datasets = datasets_model_class.datasets_owning_group_idx.query(  # pylint:disable=no-member
-            hash_key=req_body["owning_group"],
-        )
+    datasets = datasets_model_class.datasets_title_idx.query(hash_key=req_body["title"])
 
     # return response
     resp_body = []

@@ -115,10 +115,10 @@ aws lambda invoke \
    $ aws lambda invoke \
        --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
        --invocation-type RequestResponse \
-       --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020", "owning_group": "A_XYZ_XYZ"}}' \
+       --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020"}}' \
        /dev/stdout
 
-   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of all Datasets listing request
 
@@ -129,7 +129,7 @@ aws lambda invoke \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
 - Example of single Dataset listing request
 
@@ -140,7 +140,7 @@ aws lambda invoke \
        --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "owning_group": "A_XYZ_XYZ", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of Dataset delete request
 

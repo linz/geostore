@@ -44,10 +44,5 @@ def any_dataset_description() -> str:
     return random_string(100)
 
 
-def any_dataset_owning_group() -> str:
-    """Arbitrary-length string"""
-    return random_string(20)
-
-
 def any_stac_relation() -> str:
     return choice(["child", "root", "self"])
