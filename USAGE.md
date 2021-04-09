@@ -105,7 +105,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-       --function-name "${ENV}-datasets-endpoint" \
+       --function-name "${ENV}-datasets" \
        --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020"}}' \
        /dev/stdout
 
@@ -115,7 +115,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-       --function-name "${ENV}-datasets-endpoint" \
+       --function-name "${ENV}-datasets" \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
 
@@ -125,7 +125,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-       --function-name "${ENV}-datasets-endpoint" \
+       --function-name "${ENV}-datasets" \
        --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
 
@@ -135,7 +135,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-       --function-name "${ENV}-datasets-endpoint" \
+       --function-name "${ENV}-datasets" \
        --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
        /dev/stdout
 
@@ -148,7 +148,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-      --function-name "${ENV}-dataset-versions-endpoint" \
+      --function-name "${ENV}-dataset-versions" \
       --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER", "metadata-url": "s3://example-s3-url"}}' \
       /dev/stdout
 
@@ -161,7 +161,7 @@ aws lambda invoke \
 
    ```console
    $ aws lambda invoke \
-      --function-name "${ENV}-import-status-endpoint" \
+      --function-name "${ENV}-import-status" \
       --payload '{"httpMethod": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
       /dev/stdout
 
