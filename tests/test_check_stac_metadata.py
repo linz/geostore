@@ -364,13 +364,18 @@ def should_treat_minimal_stac_object_as_valid() -> None:
 
 
 def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> None:
-    for key in MINIMAL_VALID_STAC_COLLECTION_OBJECT:
-        with subtests.test(msg=key):
-            stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-            stac_object.pop(key)
+    for stac_object in [
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT,
+        MINIMAL_VALID_STAC_ITEM_OBJECT,
+        MINIMAL_VALID_STAC_CATALOG_OBJECT,
+    ]:
+        for key in stac_object:
+            with subtests.test(msg=f"{stac_object['type']} {key}"):
+                stac_object = deepcopy(stac_object)
+                stac_object.pop(key)
 
-            with raises(ValidationError):
-                STACCollectionSchemaValidator().validate(stac_object)
+                with raises(ValidationError):
+                    STACCollectionSchemaValidator().validate(stac_object)
 
 
 def should_detect_invalid_datetime() -> None:
