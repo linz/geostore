@@ -33,7 +33,7 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
     "description": any_dataset_description(),
     "assets": {
-        any_asset_name(): {"href": any_s3_url(), "checksum:multihash": any_hex_multihash()},
+        any_asset_name(): {"href": any_s3_url(), "file:checksum": any_hex_multihash()},
     },
     "id": any_dataset_id(),
     "links": [],

@@ -95,8 +95,8 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     metadata = (
         "{"
         '"assets": {'
-        f'"{asset_name}": {{"href": "s3://bucket/foo", "checksum:multihash": ""}},'
-        f'"{asset_name}": {{"href": "s3://bucket/bar", "checksum:multihash": ""}}'
+        f'"{asset_name}": {{"href": "s3://bucket/foo", "file:checksum": ""}},'
+        f'"{asset_name}": {{"href": "s3://bucket/bar", "file:checksum": ""}}'
         "},"
         '"description": "any description",'
         ' "extent": {'
@@ -277,11 +277,11 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_stac_object["assets"] = {
             any_asset_name(): {
                 "href": first_asset_s3_object.url,
-                "checksum:multihash": first_asset_multihash,
+                "file:checksum": first_asset_multihash,
             },
             any_asset_name(): {
                 "href": second_asset_s3_object.url,
-                "checksum:multihash": second_asset_multihash,
+                "file:checksum": second_asset_multihash,
             },
         }
         metadata_content = dumps(metadata_stac_object).encode()
@@ -445,10 +445,10 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_url = f"{base_url}/{second_asset_filename}"
     second_asset_multihash = any_hex_multihash()
     stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "checksum:multihash": first_asset_multihash},
+        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
         any_asset_name(): {
             "href": second_asset_filename,
-            "checksum:multihash": second_asset_multihash,
+            "file:checksum": second_asset_multihash,
         },
     }
     expected_assets = [
@@ -480,10 +480,10 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     second_asset_filename = any_safe_filename()
     second_asset_multihash = any_hex_multihash()
     stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "checksum:multihash": first_asset_multihash},
+        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
         any_asset_name(): {
             "href": second_asset_filename,
-            "checksum:multihash": second_asset_multihash,
+            "file:checksum": second_asset_multihash,
         },
     }
     expected_assets = [

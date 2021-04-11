@@ -113,7 +113,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         child_asset_name: {
                             "href": child_asset_s3_object.url,
-                            "checksum:multihash": child_asset_multihash,
+                            "file:checksum": child_asset_multihash,
                         }
                     },
                 }
@@ -129,7 +129,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         root_asset_name: {
                             "href": root_asset_s3_object.url,
-                            "checksum:multihash": root_asset_multihash,
+                            "file:checksum": root_asset_multihash,
                         },
                     },
                     "links": [{"href": child_metadata_s3_object.url, "rel": "child"}],
@@ -178,7 +178,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         root_asset_name: {
                             "href": root_asset_filename,
-                            "checksum:multihash": root_asset_multihash,
+                            "file:checksum": root_asset_multihash,
                         },
                     },
                     "links": [{"href": child_metadata_filename, "rel": "child"}],
@@ -199,7 +199,7 @@ def should_batch_copy_files_to_storage(
                     "assets": {
                         child_asset_name: {
                             "href": child_asset_filename,
-                            "checksum:multihash": child_asset_multihash,
+                            "file:checksum": child_asset_multihash,
                         }
                     },
                 }

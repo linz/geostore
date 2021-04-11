@@ -138,7 +138,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": second_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(second_asset_contents).hexdigest()
                             ),
                         },
@@ -159,7 +159,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": first_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(first_asset_contents).hexdigest()
                             ),
                         },
@@ -295,7 +295,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(asset_contents).hexdigest()
                             ),
                         },
@@ -426,7 +426,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": any_hex_multihash(),
+                            "file:checksum": any_hex_multihash(),
                         },
                     },
                 }
