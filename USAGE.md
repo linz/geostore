@@ -106,10 +106,10 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
        --function-name "${ENV}-datasets" \
-       --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020"}}' \
+       --payload '{"httpMethod": "POST", "body": {"title": "Auckland 2020"}}' \
        /dev/stdout
 
-   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of all Datasets listing request
 
@@ -119,24 +119,24 @@ aws lambda invoke \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
 - Example of single Dataset listing request
 
    ```console
    $ aws lambda invoke \
        --function-name "${ENV}-datasets" \
-       --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of Dataset delete request
 
    ```console
    $ aws lambda invoke \
        --function-name "${ENV}-datasets" \
-       --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
        /dev/stdout
 
    {"statusCode": 204, "body": {}}
@@ -149,7 +149,7 @@ aws lambda invoke \
    ```console
    $ aws lambda invoke \
       --function-name "${ENV}-dataset-versions" \
-      --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER", "metadata-url": "s3://example-s3-url"}}' \
+      --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata-url": "s3://example-s3-url"}}' \
       /dev/stdout
 
    {"statusCode": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
