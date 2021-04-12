@@ -3,6 +3,7 @@ Dataset Versions endpoint Lambda function tests.
 """
 
 import logging
+from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -25,7 +26,7 @@ def should_return_required_property_error_when_missing_mandatory_metadata_url() 
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": 400,
+        "statusCode": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'metadata-url' is a required property"},
     }
 
@@ -39,7 +40,7 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": 400,
+        "statusCode": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'id' is a required property"},
     }
 
@@ -52,7 +53,7 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     logger.info("Response: %s", response)
 
     assert response == {
-        "statusCode": 404,
+        "statusCode": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{body['id']}' could not be found"},
     }
 

@@ -3,6 +3,7 @@ import logging
 import time
 from copy import deepcopy
 from hashlib import sha256
+from http import HTTPStatus
 from io import BytesIO
 
 from mypy_boto3_lambda import LambdaClient
@@ -240,7 +241,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": 200,
+                "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
@@ -377,7 +378,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": 200,
+                "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
