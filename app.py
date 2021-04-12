@@ -13,7 +13,6 @@ from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICAT
 from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
-from infrastructure.users_stack import UsersStack
 
 
 def main() -> None:
@@ -21,13 +20,6 @@ def main() -> None:
 
     environment = Environment(
         account=environ["CDK_DEFAULT_ACCOUNT"], region=environ["CDK_DEFAULT_REGION"]
-    )
-
-    users = UsersStack(
-        app,
-        "users",
-        stack_name=f"{ENV}-geospatial-data-lake-users",
-        env=environment,
     )
 
     storage = StorageStack(
@@ -64,7 +56,6 @@ def main() -> None:
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
         validation_results_table=processing.validation_results_table,
-        users_role=users.users_role,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
     )
