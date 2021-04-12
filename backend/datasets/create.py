@@ -12,8 +12,8 @@ def create_dataset(payload: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {"title": {"type": "string"}, "owning_group": {"type": "string"}},
-        "required": ["title", "owning_group"],
+        "properties": {"title": {"type": "string"}},
+        "required": ["title"],
     }
 
     # request body validation
@@ -29,7 +29,7 @@ def create_dataset(payload: JsonObject) -> JsonObject:
         return error_response(409, f"dataset '{req_body['title']}' already exists")
 
     # create dataset
-    dataset = datasets_model_class(title=req_body["title"], owning_group=req_body["owning_group"])
+    dataset = datasets_model_class(title=req_body["title"])
     dataset.save()
     dataset.refresh(consistent_read=True)
 

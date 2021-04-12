@@ -6,7 +6,7 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 
-from backend.datasets_model import DatasetsOwningGroupIdx, DatasetsTitleIdx
+from backend.datasets_model import DatasetsTitleIdx
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
 
@@ -59,11 +59,5 @@ class StorageStack(Stack):
             index_name=DatasetsTitleIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(
                 name="title", type=aws_dynamodb.AttributeType.STRING
-            ),
-        )
-        self.datasets_table.add_global_secondary_index(
-            index_name=DatasetsOwningGroupIdx.Meta.index_name,
-            partition_key=aws_dynamodb.Attribute(
-                name="owning_group", type=aws_dynamodb.AttributeType.STRING
             ),
         )

@@ -4,7 +4,6 @@ required (run '$ cdk deploy' before running tests).
 """
 import json
 import logging
-import re
 
 from mypy_boto3_lambda import LambdaClient
 from pytest import mark
@@ -14,7 +13,7 @@ from backend.datasets import entrypoint
 from backend.resources import ResourceName
 
 from .aws_utils import Dataset, any_lambda_context
-from .stac_generators import any_dataset_id, any_dataset_owning_group, any_dataset_title
+from .stac_generators import any_dataset_id, any_dataset_title
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,9 +22,8 @@ logger = logging.getLogger(__name__)
 @mark.infrastructure
 def should_create_dataset(subtests: SubTests) -> None:
     dataset_title = any_dataset_title()
-    dataset_owning_group = any_dataset_owning_group()
 
-    body = {"title": dataset_title, "owning_group": dataset_owning_group}
+    body = {"title": dataset_title}
 
     response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
     logger.info("Response: %s", response)
@@ -39,14 +37,11 @@ def should_create_dataset(subtests: SubTests) -> None:
     with subtests.test(msg="title"):
         assert response["body"]["title"] == dataset_title
 
-    with subtests.test(msg="owning group"):
-        assert response["body"]["owning_group"] == dataset_owning_group
-
 
 @mark.infrastructure
 def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
     dataset_title = "Dataset ABC"
-    body = {"title": dataset_title, "owning_group": any_dataset_owning_group()}
+    body = {"title": dataset_title}
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
@@ -125,50 +120,6 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
 
 
 @mark.infrastructure
-def should_return_multiple_datasets_filtered_by_owning_group(subtests: SubTests) -> None:
-    # Given matching and non-matching dataset instances
-    dataset_owning_group = any_dataset_owning_group()
-    body = {"owning_group": dataset_owning_group}
-
-    with Dataset(owning_group=dataset_owning_group) as first_match, Dataset(
-        owning_group=dataset_owning_group
-    ) as second_match, Dataset():
-        # When requesting a specific type and owning group
-        response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": body}, any_lambda_context()
-        )
-        logger.info("Response: %s", response)
-
-    with subtests.test(msg="ID"):
-        # Then only the matching instances should be returned
-        assert response["body"][0]["id"] in (first_match.dataset_id, second_match.dataset_id)
-
-    with subtests.test(msg="status code"):
-        assert response["statusCode"] == 200
-
-    with subtests.test(msg="body length"):
-        assert len(response["body"]) == 2
-
-    actual_owning_groups = [entry["owning_group"] for entry in response["body"]]
-    with subtests.test(msg="owning group"):
-        assert dataset_owning_group in actual_owning_groups
-
-
-@mark.infrastructure
-def should_fail_if_get_request_containing_tile_and_owning_group_filter(subtests: SubTests) -> None:
-    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
-
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
-    logger.info("Response: %s", response)
-
-    with subtests.test(msg="status code"):
-        assert response["statusCode"] == 400
-
-    with subtests.test(msg="message"):
-        assert re.search("^Bad Request: .* has too many properties", response["body"]["message"])
-
-
-@mark.infrastructure
 def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
@@ -186,11 +137,7 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
 def should_update_dataset(subtests: SubTests) -> None:
     dataset_id = any_dataset_id()
     new_dataset_title = any_dataset_title()
-    body = {
-        "id": dataset_id,
-        "title": new_dataset_title,
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"id": dataset_id, "title": new_dataset_title}
 
     with Dataset(dataset_id=dataset_id):
         response = entrypoint.lambda_handler(
@@ -212,11 +159,7 @@ def should_update_dataset(subtests: SubTests) -> None:
 @mark.infrastructure
 def should_fail_if_updating_with_already_existing_dataset_title() -> None:
     dataset_title = any_dataset_title()
-    body = {
-        "id": any_dataset_id(),
-        "title": dataset_title,
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"id": any_dataset_id(), "title": dataset_title}
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
@@ -233,11 +176,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
 def should_fail_if_updating_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {
-        "id": dataset_id,
-        "title": any_dataset_title(),
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"id": dataset_id, "title": any_dataset_title()}
     response = entrypoint.lambda_handler(
         {"httpMethod": "PATCH", "body": body}, any_lambda_context()
     )
@@ -265,11 +204,7 @@ def should_delete_dataset() -> None:
 def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {
-        "id": dataset_id,
-        "title": any_dataset_title(),
-        "owning_group": any_dataset_owning_group(),
-    }
+    body = {"id": dataset_id, "title": any_dataset_title()}
 
     response = entrypoint.lambda_handler(
         {"httpMethod": "DELETE", "body": body}, any_lambda_context()
@@ -289,7 +224,7 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     """
 
     method = "POST"
-    body = {"title": any_dataset_title(), "owning_group": any_dataset_owning_group()}
+    body = {"title": any_dataset_title()}
 
     resp = lambda_client.invoke(
         FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
