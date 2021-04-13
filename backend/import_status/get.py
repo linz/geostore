@@ -2,6 +2,7 @@
 import json
 import logging
 from enum import Enum
+from http import HTTPStatus
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -49,7 +50,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         )
     except ValidationError as err:
         LOGGER.warning(json.dumps({ERROR_KEY: err}, default=str))
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
         executionArn=event["body"]["execution_arn"]
@@ -76,7 +77,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         "asset upload": get_import_job_status(step_function_output, ASSET_JOB_ID_KEY),
     }
 
-    return success_response(200, response_body)
+    return success_response(HTTPStatus.OK, response_body)
 
 
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
