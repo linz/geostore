@@ -16,8 +16,8 @@ class LambdaEndpoint(Construct):
 
         self.lambda_function = aws_lambda.Function(
             self,
-            f"{deploy_env}-{construct_id}-endpoint-function",
-            function_name=f"{deploy_env}-{construct_id}-endpoint",
+            f"{deploy_env}-{construct_id}-function",
+            function_name=f"{deploy_env}-{construct_id}",
             handler=f"backend.{package_name}.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             timeout=Duration.seconds(60),
