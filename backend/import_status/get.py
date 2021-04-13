@@ -66,7 +66,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
     ]
 
     response_body = {
-        "step function": {"status": step_function_resp["status"]},
+        "step function": {"status": step_function_resp["status"].title()},
         "validation": {
             "status": validation_status,
             "errors": get_step_function_validation_results(

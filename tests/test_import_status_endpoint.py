@@ -50,7 +50,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "RUNNING"},
+            "step function": {"status": "Running"},
             "validation": {"status": ValidationOutcome.PENDING.value, "errors": []},
             "metadata upload": {"status": "Pending", "errors": []},
             "asset upload": {"status": "Pending", "errors": []},
@@ -90,7 +90,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "SUCCEEDED"},
+            "step function": {"status": "Succeeded"},
             "validation": {
                 "status": ValidationOutcome.FAILED.value,
                 "errors": [
@@ -156,7 +156,7 @@ def should_report_s3_batch_upload_failures(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "SUCCEEDED"},
+            "step function": {"status": "Succeeded"},
             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
             "metadata upload": {
                 "status": "Completed",
