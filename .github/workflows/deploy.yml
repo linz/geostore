@@ -302,7 +302,7 @@ jobs:
 
     - name: (Prod) Deploy AWS stacks (only on release tag)
       if: >
-        startsWith(github.ref, 'refs/tags/release-')
+        startsWith(github.ref, 'refs/heads/release-') && startsWith(github.ref, 'refs/tags/release-')
         && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
