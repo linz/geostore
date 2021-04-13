@@ -1,4 +1,4 @@
-name: Deploy
+name: Deployment
 on:
   push:
     branches:
@@ -63,7 +63,7 @@ jobs:
     - name: Print CDK version
       run: poetry run cdk --version
 
-    # NONPROD DEPLOYMENT
+    # NONPROD DEPLOYMENT - deploy all changes in master branch
     - name: (NonProd) Configure AWS credentials
       if: >
         github.ref == 'refs/heads/master'
@@ -87,10 +87,10 @@ jobs:
         DEPLOY_ENV: nonprod
         DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_NON_PROD }}
 
-    # PROD DEPLOYMENT
+    # PROD DEPLOYMENT - in release branch, deploy on tag, otherwise report stack changes only
     - name: (Prod) Configure AWS credentials
       if: >
-        startsWith(github.ref, 'release')
+        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
         && github.repository == 'linz/geospatial-data-lake'
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -100,9 +100,16 @@ jobs:
         mask-aws-account-id: true
         role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
 
-    - name: (Prod) Deploy AWS stacks
+    - name: (Prod) Report AWS stack changes before deployment
       if: >
-        startsWith(github.ref, 'release')
+        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
+        && github.repository == 'linz/geospatial-data-lake'
+      run: |
+        poetry run cdk diff -c aws-cdk:enableDiffNoFail=true
+
+    - name: (Prod) Deploy AWS stacks (only on release tag)
+      if: >
+        startsWith(github.ref, 'refs/tags/release-')
         && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2

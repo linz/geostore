@@ -1,4 +1,5 @@
 """List all datasets function."""
+from http import HTTPStatus
 
 from ..api_responses import success_response
 from ..datasets_model import datasets_model_with_meta
@@ -20,4 +21,4 @@ def list_datasets() -> JsonObject:
         resp_item = dataset.as_dict()
         resp_body.append(resp_item)
 
-    return success_response(200, resp_body)
+    return success_response(HTTPStatus.OK, resp_body)

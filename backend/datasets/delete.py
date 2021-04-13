@@ -1,4 +1,5 @@
 """Delete dataset function."""
+from http import HTTPStatus
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
@@ -18,7 +19,7 @@ def delete_dataset(payload: JsonObject) -> JsonObject:
     try:
         validate(req_body, body_schema)
     except ValidationError as err:
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
 
@@ -28,9 +29,9 @@ def delete_dataset(payload: JsonObject) -> JsonObject:
             hash_key=f"DATASET#{req_body['id']}", consistent_read=True
         )
     except DoesNotExist:
-        return error_response(404, f"dataset '{req_body['id']}' does not exist")
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' does not exist")
 
     # delete dataset
     dataset.delete()
 
-    return success_response(204, {})
+    return success_response(HTTPStatus.NO_CONTENT, {})

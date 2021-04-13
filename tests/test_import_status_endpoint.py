@@ -2,6 +2,7 @@
 Dataset Versions endpoint Lambda function tests.
 """
 import json
+from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -28,7 +29,7 @@ def should_return_required_property_error_when_missing_mandatory_execution_arn()
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": 400,
+        "statusCode": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'execution_arn' is a required property"},
     }
 
@@ -46,7 +47,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     }
 
     expected_response = {
-        "statusCode": 200,
+        "statusCode": HTTPStatus.OK,
         "body": {
             "step function": {"status": "RUNNING"},
             "validation": {"status": ValidationOutcome.PENDING.value, "errors": []},
@@ -88,7 +89,7 @@ def should_retrieve_validation_failures(
     check = "example"
 
     expected_response = {
-        "statusCode": 200,
+        "statusCode": HTTPStatus.OK,
         "body": {
             "step function": {"status": "SUCCEEDED"},
             "validation": {
@@ -154,7 +155,7 @@ def should_report_s3_batch_upload_failures(
     }
 
     expected_response = {
-        "statusCode": 200,
+        "statusCode": HTTPStatus.OK,
         "body": {
             "step function": {"status": "SUCCEEDED"},
             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},

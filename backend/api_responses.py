@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from http.client import responses as http_responses
 from typing import Callable, Mapping, Union
 
@@ -33,7 +34,7 @@ def handle_request(
             },
         )
     except ValidationError as err:
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     method = event["httpMethod"]
     return request_handlers[method](event)

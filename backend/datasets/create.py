@@ -1,4 +1,5 @@
 """Create dataset function."""
+from http import HTTPStatus
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
@@ -21,12 +22,12 @@ def create_dataset(payload: JsonObject) -> JsonObject:
     try:
         validate(req_body, body_schema)
     except ValidationError as err:
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
     if datasets_model_class.datasets_title_idx.count(hash_key=req_body["title"]):
-        return error_response(409, f"dataset '{req_body['title']}' already exists")
+        return error_response(HTTPStatus.CONFLICT, f"dataset '{req_body['title']}' already exists")
 
     # create dataset
     dataset = datasets_model_class(title=req_body["title"])
@@ -36,4 +37,4 @@ def create_dataset(payload: JsonObject) -> JsonObject:
     # return response
     resp_body = dataset.as_dict()
 
-    return success_response(201, resp_body)
+    return success_response(HTTPStatus.CREATED, resp_body)

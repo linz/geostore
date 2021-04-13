@@ -1,4 +1,5 @@
 """Get datasets functions."""
+from http import HTTPStatus
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
@@ -19,7 +20,7 @@ def handle_get(event: JsonObject) -> JsonObject:
     if event["body"] == {}:
         return list_datasets()
 
-    return error_response(400, "Unhandled request")
+    return error_response(HTTPStatus.BAD_REQUEST, "Unhandled request")
 
 
 def get_dataset_single(payload: JsonObject) -> JsonObject:
@@ -32,7 +33,7 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
     try:
         validate(req_body, body_schema)
     except ValidationError as err:
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
 
@@ -42,12 +43,12 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
             hash_key=f"DATASET#{req_body['id']}", consistent_read=True
         )
     except DoesNotExist:
-        return error_response(404, f"dataset '{req_body['id']}' does not exist")
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' does not exist")
 
     # return response
     resp_body = dataset.as_dict()
 
-    return success_response(200, resp_body)
+    return success_response(HTTPStatus.OK, resp_body)
 
 
 def get_dataset_filter(payload: JsonObject) -> JsonObject:
@@ -65,7 +66,7 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     try:
         validate(req_body, body_schema)
     except ValidationError as err:
-        return error_response(400, err.message)
+        return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     # dataset query by filter
     datasets_model_class = datasets_model_with_meta()
@@ -77,4 +78,4 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
         resp_item = dataset.as_dict()
         resp_body.append(resp_item)
 
-    return success_response(200, resp_body)
+    return success_response(HTTPStatus.OK, resp_body)
