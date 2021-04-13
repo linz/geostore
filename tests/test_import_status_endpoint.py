@@ -102,8 +102,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
                     }
                 ],
             },
-            "metadata upload": {"status": "Pending", "errors": []},
-            "asset upload": {"status": "Pending", "errors": []},
+            "metadata upload": {"status": "Skipped", "errors": []},
+            "asset upload": {"status": "Skipped", "errors": []},
         },
     }
     with ValidationItem(
