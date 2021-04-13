@@ -36,7 +36,7 @@ jobs:
 
     - name: Get current production environment version
       run: |
-          echo "PROD_VERSION=$(aws cloudformation describe-stacks --stack-name prod-geospatial-data-lake-storage --query 'Stacks[].Tags[?Key==`Version`].Value[]' --output text)" | tee -a $GITHUB_ENV
+          echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
     - name: Checkout to current production version
       run: git checkout ${{ env.PROD_VERSION }}
