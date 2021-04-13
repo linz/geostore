@@ -13,7 +13,7 @@ Following information must be provided by Data Lake instance maintainer in order
 
 - Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
 - Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
-- Data Lake lambda function endpoint names (`DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME`)
+- Environment name (`ENV`, typically "prod")
 
 ## Dataset source S3 bucket
 To import data in to the Data Lake, dataset source S3 bucket must be readable by
@@ -93,62 +93,50 @@ the AWS web interface (links above) or via any tool using the AWS API, such as t
 ## Endpoint Request Format
 
 ```bash
-export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
-
 aws lambda invoke \
-    --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-    --invocation-type RequestResponse \
+    --function-name '<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>' \
     --payload '<REQUEST-PAYLOAD-JSON>'
 /dev/stdout
 ```
 
 ## Dataset Space Endpoint Usage Examples
 
-- Set Dataset Space Endpont Lambda function name
-
-   ```bash
-   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
-   ```
 - Example of Dataset creation request
 
    ```console
    $ aws lambda invoke \
-       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
-       --payload '{"httpMethod": "POST", "body": {"type": "RASTER", "title": "Auckland 2020"}}' \
+       --function-name "${ENV}-datasets" \
+       --payload '{"httpMethod": "POST", "body": {"title": "Auckland 2020"}}' \
        /dev/stdout
 
-   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of all Datasets listing request
 
    ```console
    $ aws lambda invoke \
-       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
+       --function-name "${ENV}-datasets" \
        --payload '{"httpMethod": "GET", "body": {}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
 - Example of single Dataset listing request
 
    ```console
    $ aws lambda invoke \
-       --function-name "$DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME" \
-       --invocation-type RequestResponse \
-       --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       --function-name "${ENV}-datasets" \
+       --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
        /dev/stdout
 
-   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "type": "RASTER", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 - Example of Dataset delete request
 
    ```console
    $ aws lambda invoke \
-       --function-name datasets-endpoint \
-       --invocation-type RequestResponse \
-       --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER"}}' \
+       --function-name "${ENV}-datasets" \
+       --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
        /dev/stdout
 
    {"statusCode": 204, "body": {}}
@@ -156,18 +144,12 @@ aws lambda invoke \
 
 ## Dataset Version Endpoint Usage Examples
 
-- Set Dataset Space Endpoint Lambda function name
-
-   ```bash
-   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
-   ```
 - Example of Dataset Version creation request
 
    ```console
    $ aws lambda invoke \
-      --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-      --invocation-type RequestResponse \
-      --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "type": "RASTER", "metadata-url": "s3://example-s3-url"}}' \
+      --function-name "${ENV}-dataset-versions" \
+      --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata-url": "s3://example-s3-url"}}' \
       /dev/stdout
 
    {"statusCode": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
@@ -175,17 +157,11 @@ aws lambda invoke \
 
 ## Import Status Endpoint Usage Examples
 
-- Set Import Status Endpoint Lambda function name
-
-   ```bash
-   export DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME=<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>
-   ```
 - Example of get Import Status request
 
    ```console
    $ aws lambda invoke \
-      --function-name $DATALAKE_LAMBDA_FUNCTION_ENDPOINT_NAME \
-      --invocation-type RequestResponse \
+      --function-name "${ENV}-import-status" \
       --payload '{"httpMethod": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
       /dev/stdout
 

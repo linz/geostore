@@ -187,7 +187,6 @@ class TestWithStagingBucket:
                             "body": {"id": dataset_id, "metadata-url": catalog_metadata_file.url},
                         }
                     ).encode(),
-                    InvocationType="RequestResponse",
                 )
                 json_resp = json.load(resp["Payload"])
 
@@ -257,7 +256,6 @@ class TestWithStagingBucket:
                         "body": {"execution_arn": execution["executionArn"]},
                     }
                 ).encode(),
-                InvocationType="RequestResponse",
             )
             status_json_resp = json.load(status_resp["Payload"])
             assert status_json_resp == expected_response
@@ -330,7 +328,6 @@ class TestWithStagingBucket:
                             "body": {"id": dataset_id, "metadata-url": root_metadata_file.url},
                         }
                     ).encode(),
-                    InvocationType="RequestResponse",
                 )
                 json_resp = json.load(resp["Payload"])
 
@@ -394,7 +391,6 @@ class TestWithStagingBucket:
                         "body": {"execution_arn": execution["executionArn"]},
                     }
                 ).encode(),
-                InvocationType="RequestResponse",
             )
             status_json_resp = json.load(status_resp["Payload"])
             assert status_json_resp == expected_response
@@ -447,7 +443,6 @@ class TestWithStagingBucket:
                         "body": {"id": dataset_id, "metadata-url": s3_metadata_file.url},
                     }
                 ).encode(),
-                InvocationType="RequestResponse",
             )
 
             response_payload = json.load(dataset_version_creation_response["Payload"])
