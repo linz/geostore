@@ -1,10 +1,13 @@
 """
 Data Lake AWS resources definitions.
 """
+from os import environ
 from typing import Any
 
 from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Stack
+from aws_cdk.core import Construct, Duration, Stack, Tags
+
+from backend.resources import ResourceName
 
 from .common import grant_parameter_read_access
 from .constructs.lambda_endpoint import LambdaEndpoint
@@ -14,19 +17,39 @@ from .constructs.table import Table
 class APIStack(Stack):
     """Data Lake stack definition."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         scope: Construct,
         stack_id: str,
         datasets_table: Table,
         validation_results_table: Table,
-        users_role: aws_iam.Role,
         deploy_env: str,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
+
+        if saml_provider_arn := environ.get("DATALAKE_SAML_IDENTITY_PROVIDER_ARN"):
+            principal = aws_iam.FederatedPrincipal(
+                federated=saml_provider_arn,
+                assume_role_action="sts:AssumeRoleWithSAML",
+                conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
+            )
+
+        else:
+            principal = aws_iam.AccountPrincipal(  # type: ignore[assignment]
+                account_id=aws_iam.AccountRootPrincipal().account_id
+            )
+
+        users_role = aws_iam.Role(
+            self,
+            "users-role",
+            role_name=ResourceName.USERS_ROLE_NAME.value,
+            assumed_by=principal,  # type: ignore[arg-type]
+            max_session_duration=Duration.hours(12),
+        )
+        Tags.of(users_role).add("ApplicationLayer", "users")  # type: ignore[arg-type]
 
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
