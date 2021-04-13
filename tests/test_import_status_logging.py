@@ -9,7 +9,7 @@ from backend.error_response_keys import ERROR_KEY
 from backend.import_status.get import get_import_status, get_s3_batch_copy_status
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 
-from .aws_utils import any_arn_formatted_string
+from .aws_utils import any_account_id, any_arn_formatted_string
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
@@ -112,7 +112,7 @@ class TestLogging:
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"
         ) as sts_mock:
-            sts_mock.return_value = {"Account": "1234567890"}
+            sts_mock.return_value = {"Account": any_account_id()}
 
             # When
             get_s3_batch_copy_status("test", self.logger)
