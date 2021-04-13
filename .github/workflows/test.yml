@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python }}
 
     - name: Cache pip
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
@@ -66,7 +66,7 @@ jobs:
         registry-url: https://registry.npmjs.org
 
     - name: Cache Node.js packages
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -85,7 +85,7 @@ jobs:
         python-version: ${{ matrix.python }}
 
     - name: Cache pip
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
