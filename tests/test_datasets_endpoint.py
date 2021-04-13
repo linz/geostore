@@ -230,7 +230,6 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     resp = lambda_client.invoke(
         FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
         Payload=json.dumps({"httpMethod": method, "body": body}).encode(),
-        InvocationType="RequestResponse",
     )
     json_resp = json.load(resp["Payload"])
 
