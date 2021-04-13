@@ -31,16 +31,14 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
 }
 
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
+    "assets": {any_asset_name(): {"href": any_s3_url(), "file:checksum": any_hex_multihash()}},
     "description": any_dataset_description(),
-    "assets": {
-        any_asset_name(): {"href": any_s3_url(), "file:checksum": any_hex_multihash()},
-    },
+    "geometry": None,
     "id": any_dataset_id(),
     "links": [],
+    "properties": {"datetime": any_past_datetime_string()},
     "stac_version": STAC_VERSION,
     "type": STAC_ITEM_TYPE,
-    "geometry": None,
-    "properties": {"datetime": any_past_datetime_string()},
 }
 
 MINIMAL_VALID_STAC_CATALOG_OBJECT: Dict[str, Any] = {

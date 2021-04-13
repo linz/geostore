@@ -15,6 +15,7 @@ from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
     ValidationItem,
+    any_account_id,
     any_arn_formatted_string,
     any_job_id,
     any_lambda_context,
@@ -70,9 +71,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 
 @mark.infrastructure
 @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-def should_retrieve_validation_failures(
-    describe_step_function_mock: MagicMock,
-) -> None:
+def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) -> None:
     # Given
 
     dataset_id = any_dataset_id()
@@ -173,7 +172,7 @@ def should_report_s3_batch_upload_failures(
         "backend.import_status.get.get_step_function_validation_results"
     ) as validation_mock:
         validation_mock.return_value = []
-        sts_mock.return_value = {"Account": "1234567890"}
+        sts_mock.return_value = {"Account": any_account_id()}
 
         # When
         response = entrypoint.lambda_handler(
