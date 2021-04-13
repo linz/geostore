@@ -71,9 +71,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 
 @mark.infrastructure
 @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-def should_retrieve_validation_failures(
-    describe_step_function_mock: MagicMock,
-) -> None:
+def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) -> None:
     # Given
 
     dataset_id = any_dataset_id()
