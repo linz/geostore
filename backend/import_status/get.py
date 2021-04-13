@@ -16,6 +16,7 @@ from ..types import JsonList, JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
 PENDING_STATUS = "Pending"
+SKIPPED_STATUS = "Skipped"
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
@@ -66,6 +67,11 @@ def get_import_status(event: JsonObject) -> JsonObject:
     validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[
         step_function_output.get("validation", {}).get("success")
     ]
+    if (
+        step_function_resp["status"] not in ["RUNNING", "SUCCEEDED"]
+        and validation_status == ValidationOutcome.PENDING.value
+    ):
+        validation_status = SKIPPED_STATUS
 
     metadata_upload_status = get_import_job_status(step_function_output, METADATA_JOB_ID_KEY)
     asset_upload_status = get_import_job_status(step_function_output, ASSET_JOB_ID_KEY)
@@ -74,9 +80,9 @@ def get_import_status(event: JsonObject) -> JsonObject:
     if (
         metadata_upload_status["status"] == PENDING_STATUS
         and asset_upload_status["status"] == PENDING_STATUS
-        and validation_status == ValidationResult.FAILED.value
+        and validation_status in [ValidationResult.FAILED.value, SKIPPED_STATUS]
     ):
-        metadata_upload_status["status"] = asset_upload_status["status"] = "Skipped"
+        metadata_upload_status["status"] = asset_upload_status["status"] = SKIPPED_STATUS
 
     response_body = {
         "step function": {"status": step_function_resp["status"].title()},
