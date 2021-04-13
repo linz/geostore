@@ -74,6 +74,13 @@ def any_item_count() -> int:
     return randrange(3)
 
 
+# IAM
+
+
+def any_account_id() -> int:
+    return randrange(1_000_000_000_000)
+
+
 # Lambda
 
 

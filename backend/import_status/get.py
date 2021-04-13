@@ -61,9 +61,9 @@ def get_import_status(event: JsonObject) -> JsonObject:
     step_function_input = json.loads(step_function_resp["input"])
     step_function_output = json.loads(step_function_resp.get("output", "{}"))
 
-    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING.get(
+    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[
         step_function_output.get("validation", {}).get("success")
-    )
+    ]
 
     response_body = {
         "step function": {"status": step_function_resp["status"]},
