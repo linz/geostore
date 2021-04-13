@@ -121,7 +121,7 @@ class STACDatasetValidator:
         for asset in object_json.get("assets", {}).values():
             asset_url = maybe_convert_relative_url_to_absolute(asset["href"], url)
 
-            asset_dict = {"url": asset_url, "multihash": asset["checksum:multihash"]}
+            asset_dict = {"url": asset_url, "multihash": asset["file:checksum"]}
             LOGGER.debug(dumps({"asset": asset_dict}))
             self.dataset_assets.append(asset_dict)
 

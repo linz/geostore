@@ -3,6 +3,7 @@ import logging
 import time
 from copy import deepcopy
 from hashlib import sha256
+from http import HTTPStatus
 from io import BytesIO
 
 from mypy_boto3_lambda import LambdaClient
@@ -138,7 +139,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": second_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(second_asset_contents).hexdigest()
                             ),
                         },
@@ -159,7 +160,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": first_asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(first_asset_contents).hexdigest()
                             ),
                         },
@@ -240,7 +241,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": 200,
+                "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
@@ -295,7 +296,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": sha256_hex_digest_to_multihash(
+                            "file:checksum": sha256_hex_digest_to_multihash(
                                 sha256(asset_contents).hexdigest()
                             ),
                         },
@@ -377,7 +378,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": 200,
+                "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "SUCCEEDED"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
@@ -426,7 +427,7 @@ class TestWithStagingBucket:
                     "assets": {
                         any_asset_name(): {
                             "href": asset_s3_object.url,
-                            "checksum:multihash": any_hex_multihash(),
+                            "file:checksum": any_hex_multihash(),
                         },
                     },
                 }

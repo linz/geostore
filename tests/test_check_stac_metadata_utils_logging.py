@@ -67,7 +67,7 @@ def should_log_assets() -> None:
     stac_object["assets"] = {
         any_asset_name(): {
             "href": asset_url,
-            "checksum:multihash": asset_multihash,
+            "file:checksum": asset_multihash,
         },
     }
 

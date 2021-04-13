@@ -4,6 +4,7 @@ required (run '$ cdk deploy' before running tests).
 """
 import json
 import logging
+from http import HTTPStatus
 
 from mypy_boto3_lambda import LambdaClient
 from pytest import mark
@@ -49,7 +50,7 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
         )
 
     assert response == {
-        "statusCode": 409,
+        "statusCode": HTTPStatus.CONFLICT,
         "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
@@ -128,7 +129,7 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
 
     assert response == {
-        "statusCode": 404,
+        "statusCode": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
@@ -167,7 +168,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
         )
 
     assert response == {
-        "statusCode": 409,
+        "statusCode": HTTPStatus.CONFLICT,
         "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
@@ -182,7 +183,7 @@ def should_fail_if_updating_not_existing_dataset() -> None:
     )
 
     assert response == {
-        "statusCode": 404,
+        "statusCode": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
@@ -197,7 +198,7 @@ def should_delete_dataset() -> None:
             {"httpMethod": "DELETE", "body": body}, any_lambda_context()
         )
 
-    assert response == {"statusCode": 204, "body": {}}
+    assert response == {"statusCode": HTTPStatus.NO_CONTENT, "body": {}}
 
 
 @mark.infrastructure
@@ -211,7 +212,7 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
     )
 
     assert response == {
-        "statusCode": 404,
+        "statusCode": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
