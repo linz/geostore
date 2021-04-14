@@ -89,6 +89,10 @@ class ProcessingStack(Stack):
             application_layer=self.application_layer,
             extra_environment={"DEPLOY_ENV": self.deploy_env},
         )
+        assert check_stac_metadata_task.lambda_function.role
+        check_stac_metadata_task.lambda_function.role.add_managed_policy(
+            policy=s3_read_only_access_policy
+        )
 
         for table in [processing_assets_table, self.validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
@@ -277,7 +281,7 @@ class ProcessingStack(Stack):
                 processing_assets_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]
                     check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                    check_stac_metadata_task.lambda_function.role,  # type: ignore[list-item]
+                    check_stac_metadata_task.lambda_function.role,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
@@ -289,7 +293,7 @@ class ProcessingStack(Stack):
                 self.validation_results_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]
                     check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                    check_stac_metadata_task.lambda_function.role,  # type: ignore[list-item]
+                    check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
                 ],
             }

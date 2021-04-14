@@ -5,10 +5,9 @@ import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
-
+from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
+from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
