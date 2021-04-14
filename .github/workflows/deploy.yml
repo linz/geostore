@@ -23,9 +23,6 @@ jobs:
 
     # prod version detection
     - name: Configure production AWS credentials
-      if: >
-        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-        && github.repository == 'linz/geospatial-data-lake'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -36,7 +33,7 @@ jobs:
 
     - name: Get current production environment version
       run: |
-          echo "PROD_VERSION=$(aws cloudformation describe-stacks --stack-name prod-geospatial-data-lake-storage --query 'Stacks[].Tags[?Key==`Version`].Value[]' --output text)" | tee -a $GITHUB_ENV
+          echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
     - name: Checkout to current production version
       run: git checkout ${{ env.PROD_VERSION }}
@@ -49,7 +46,7 @@ jobs:
         registry-url: https://registry.npmjs.org
 
     - name: Cache Node.js packages
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -63,12 +60,12 @@ jobs:
       run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
     - name: Use Python ${{ matrix.python }}
-      uses: actions/setup-python@v2.2.1
+      uses: actions/setup-python@v2.2.2
       with:
         python-version: ${{ matrix.python }}
 
     - name: Cache pip
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
@@ -87,9 +84,6 @@ jobs:
 
     # deployment
     - name: Configure CI AWS credentials
-      if: >
-        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-        && github.repository == 'linz/geospatial-data-lake'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -104,9 +98,6 @@ jobs:
         echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
 
     - name: Deploy copy of production AWS stacks in to CI environment
-      if: >
-        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-        && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
         poetry run cdk deploy --all --require-approval never
@@ -133,7 +124,7 @@ jobs:
         registry-url: https://registry.npmjs.org
 
     - name: Cache Node.js packages
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -147,12 +138,12 @@ jobs:
       run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
     - name: Use Python ${{ matrix.python }}
-      uses: actions/setup-python@v2.2.1
+      uses: actions/setup-python@v2.2.2
       with:
         python-version: ${{ matrix.python }}
 
     - name: Cache pip
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
@@ -171,9 +162,6 @@ jobs:
 
     # deployment
     - name: Configure CI AWS credentials
-      if: >
-        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-        && github.repository == 'linz/geospatial-data-lake'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -188,9 +176,6 @@ jobs:
         echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
 
     - name: Upgrade copy of production AWS stacks in CI environment
-      if: >
-        startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-        && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk deploy --all --require-approval never
 
@@ -220,7 +205,7 @@ jobs:
         registry-url: https://registry.npmjs.org
 
     - name: Cache Node.js packages
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -234,12 +219,12 @@ jobs:
       run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
     - name: Use Python ${{ matrix.python }}
-      uses: actions/setup-python@v2.2.1
+      uses: actions/setup-python@v2.2.2
       with:
         python-version: ${{ matrix.python }}
 
     - name: Cache pip
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v2.1.5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
@@ -302,7 +287,7 @@ jobs:
 
     - name: (Prod) Deploy AWS stacks (only on release tag)
       if: >
-        startsWith(github.ref, 'refs/heads/release-') && startsWith(github.ref, 'refs/tags/release-')
+        startsWith(github.ref, 'refs/tags/release-')
         && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk bootstrap aws://unknown-account/ap-southeast-2

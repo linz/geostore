@@ -9,12 +9,13 @@ from pytest import mark
 
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
-from backend.import_status.get import ValidationOutcome
+from backend.import_status.get import SKIPPED_STATUS, ValidationOutcome
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
     ValidationItem,
+    any_account_id,
     any_arn_formatted_string,
     any_job_id,
     any_lambda_context,
@@ -49,7 +50,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "RUNNING"},
+            "step function": {"status": "Running"},
             "validation": {"status": ValidationOutcome.PENDING.value, "errors": []},
             "metadata upload": {"status": "Pending", "errors": []},
             "asset upload": {"status": "Pending", "errors": []},
@@ -70,9 +71,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 
 @mark.infrastructure
 @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-def should_retrieve_validation_failures(
-    describe_step_function_mock: MagicMock,
-) -> None:
+def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) -> None:
     # Given
 
     dataset_id = any_dataset_id()
@@ -91,7 +90,7 @@ def should_retrieve_validation_failures(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "SUCCEEDED"},
+            "step function": {"status": "Succeeded"},
             "validation": {
                 "status": ValidationOutcome.FAILED.value,
                 "errors": [
@@ -103,8 +102,8 @@ def should_retrieve_validation_failures(
                     }
                 ],
             },
-            "metadata upload": {"status": "Pending", "errors": []},
-            "asset upload": {"status": "Pending", "errors": []},
+            "metadata upload": {"status": SKIPPED_STATUS, "errors": []},
+            "asset upload": {"status": SKIPPED_STATUS, "errors": []},
         },
     }
     with ValidationItem(
@@ -157,7 +156,7 @@ def should_report_s3_batch_upload_failures(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "SUCCEEDED"},
+            "step function": {"status": "Succeeded"},
             "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
             "metadata upload": {
                 "status": "Completed",
@@ -173,7 +172,7 @@ def should_report_s3_batch_upload_failures(
         "backend.import_status.get.get_step_function_validation_results"
     ) as validation_mock:
         validation_mock.return_value = []
-        sts_mock.return_value = {"Account": "1234567890"}
+        sts_mock.return_value = {"Account": any_account_id()}
 
         # When
         response = entrypoint.lambda_handler(
@@ -183,3 +182,41 @@ def should_report_s3_batch_upload_failures(
 
         # Then
         assert response == expected_response
+
+
+@patch("backend.import_status.get.get_step_function_validation_results")
+@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.import_status.get.STS_CLIENT.get_caller_identity")
+def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
+    get_caller_identity_mock: MagicMock,
+    describe_step_function_mock: MagicMock,
+    get_step_function_validation_results_mock: MagicMock,
+) -> None:
+    get_caller_identity_mock.return_value = {"Account": any_account_id()}
+    describe_step_function_mock.return_value = {
+        "status": "FAILED",
+        "input": json.dumps(
+            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+        ),
+        "output": "{}",
+    }
+    get_step_function_validation_results_mock.return_value = []
+
+    expected_response = {
+        "statusCode": HTTPStatus.OK,
+        "body": {
+            "step function": {"status": "Failed"},
+            "validation": {"status": SKIPPED_STATUS, "errors": []},
+            "metadata upload": {"status": SKIPPED_STATUS, "errors": []},
+            "asset upload": {"status": SKIPPED_STATUS, "errors": []},
+        },
+    }
+
+    # When attempting to create the instance
+    response = entrypoint.lambda_handler(
+        {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+        any_lambda_context(),
+    )
+
+    # Then
+    assert response == expected_response
