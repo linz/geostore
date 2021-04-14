@@ -15,6 +15,9 @@ from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonList, JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
+PENDING_STATUS = "Pending"
+SKIPPED_STATUS = "Skipped"
+
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
@@ -64,17 +67,33 @@ def get_import_status(event: JsonObject) -> JsonObject:
     validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[
         step_function_output.get("validation", {}).get("success")
     ]
+    if (
+        step_function_resp["status"] not in ["RUNNING", "SUCCEEDED"]
+        and validation_status == ValidationOutcome.PENDING.value
+    ):
+        validation_status = SKIPPED_STATUS
+
+    metadata_upload_status = get_import_job_status(step_function_output, METADATA_JOB_ID_KEY)
+    asset_upload_status = get_import_job_status(step_function_output, ASSET_JOB_ID_KEY)
+
+    # Failed validation implies uploads will never happen
+    if (
+        metadata_upload_status["status"] == PENDING_STATUS
+        and asset_upload_status["status"] == PENDING_STATUS
+        and validation_status in [ValidationResult.FAILED.value, SKIPPED_STATUS]
+    ):
+        metadata_upload_status["status"] = asset_upload_status["status"] = SKIPPED_STATUS
 
     response_body = {
-        "step function": {"status": step_function_resp["status"]},
+        "step function": {"status": step_function_resp["status"].title()},
         "validation": {
             "status": validation_status,
             "errors": get_step_function_validation_results(
                 step_function_input[DATASET_ID_KEY], step_function_input[VERSION_ID_KEY]
             ),
         },
-        "metadata upload": get_import_job_status(step_function_output, METADATA_JOB_ID_KEY),
-        "asset upload": get_import_job_status(step_function_output, ASSET_JOB_ID_KEY),
+        "metadata upload": metadata_upload_status,
+        "asset upload": asset_upload_status,
     }
 
     return success_response(HTTPStatus.OK, response_body)
@@ -83,7 +102,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
     if s3_job_id := step_function_output.get("import_dataset", {}).get(job_id_key):
         return get_s3_batch_copy_status(s3_job_id, LOGGER)
-    return {"status": "Pending", "errors": []}
+    return {"status": PENDING_STATUS, "errors": []}
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
