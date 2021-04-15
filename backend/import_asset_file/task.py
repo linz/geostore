@@ -4,8 +4,7 @@ from urllib.parse import unquote_plus
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
-
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
