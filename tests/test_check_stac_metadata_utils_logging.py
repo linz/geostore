@@ -1,5 +1,4 @@
 import logging
-import sys
 from copy import deepcopy
 from io import StringIO
 from json import JSONDecodeError, dumps
@@ -8,16 +7,10 @@ from unittest.mock import MagicMock, patch
 from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
-from backend.check_stac_metadata.utils import S3_URL_PREFIX, STACDatasetValidator, parse_arguments
-from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.check_stac_metadata.utils import S3_URL_PREFIX, STACDatasetValidator
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
-from .general_generators import (
-    any_error_message,
-    any_https_url,
-    any_program_name,
-    any_safe_filename,
-)
+from .general_generators import any_error_message, any_https_url, any_safe_filename
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
@@ -27,35 +20,6 @@ from .stac_generators import (
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 LOGGER = logging.getLogger("backend.check_stac_metadata.utils")
-
-
-@patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_log_arguments(validate_url_mock: MagicMock) -> None:
-    validate_url_mock.return_value = set()
-    url = any_s3_url()
-    dataset_id = any_dataset_id()
-    version_id = any_dataset_version_id()
-    expected_log = dumps(
-        {
-            "arguments": {
-                METADATA_URL_KEY: url,
-                DATASET_ID_KEY: dataset_id,
-                VERSION_ID_KEY: version_id,
-            }
-        }
-    )
-
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={url}",
-        f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
-    ]
-
-    with patch.object(LOGGER, "debug") as logger_mock:
-        parse_arguments(LOGGER)
-
-        logger_mock.assert_any_call(expected_log)
 
 
 def should_log_assets() -> None:
