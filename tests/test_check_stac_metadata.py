@@ -14,13 +14,20 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
-from backend.check_stac_metadata.task import main
+from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import STACDatasetValidator
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
-from .aws_utils import MockJSONURLReader, MockValidationResultFactory, S3Object, any_s3_url
+from .aws_utils import (
+    MockJSONURLReader,
+    MockValidationResultFactory,
+    S3Object,
+    any_lambda_context,
+    any_s3_url,
+)
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
     any_error_message,
@@ -46,15 +53,16 @@ from .stac_objects import (
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
 def should_succeed_with_validation_failure(validate_url_mock: MagicMock) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={any_s3_url()}",
-        f"--dataset-id={any_dataset_id()}",
-        f"--version-id={any_dataset_version_id()}",
-    ]
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        main()
+        lambda_handler(
+            {
+                DATASET_ID_KEY: any_dataset_id(),
+                VERSION_ID_KEY: any_dataset_version_id(),
+                METADATA_URL_KEY: any_s3_url(),
+            },
+            any_lambda_context(),
+        )
 
 
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
@@ -66,15 +74,15 @@ def should_save_non_s3_url_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
 
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={non_s3_url}",
-        f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
-    ]
-
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        main()
+        lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+                METADATA_URL_KEY: non_s3_url,
+            },
+            any_lambda_context(),
+        )
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     assert validation_results_factory_mock.mock_calls == [
@@ -150,14 +158,14 @@ def should_save_staging_access_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
 
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={s3_url}",
-        f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
-    ]
-
-    main()
+    lambda_handler(
+        {
+            DATASET_ID_KEY: dataset_id,
+            VERSION_ID_KEY: version_id,
+            METADATA_URL_KEY: s3_url,
+        },
+        any_lambda_context(),
+    )
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     assert validation_results_factory_mock.mock_calls == [
@@ -204,15 +212,16 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         bucket_name=staging_bucket_name,
         key=invalid_child_key,
     ) as invalid_child_s3_object:
-        sys.argv = [
-            any_program_name(),
-            f"--metadata-url={root_s3_object.url}",
-            f"--dataset-id={dataset_id}",
-            f"--version-id={version_id}",
-        ]
 
         # When
-        main()
+        lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+                METADATA_URL_KEY: root_s3_object.url,
+            },
+            any_lambda_context(),
+        )
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     validation_results_model = validation_results_model_with_meta()
@@ -316,14 +325,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 ),
             ]
 
-            sys.argv = [
-                any_program_name(),
-                f"--metadata-url={metadata_s3_object.url}",
-                f"--dataset-id={dataset_id}",
-                f"--version-id={version_id}",
-            ]
-
-            main()
+            lambda_handler(
+                {
+                    DATASET_ID_KEY: dataset_id,
+                    VERSION_ID_KEY: version_id,
+                    METADATA_URL_KEY: metadata_s3_object.url,
+                },
+                any_lambda_context(),
+            )
 
             # Then
             actual_items = processing_assets_model.query(
@@ -346,15 +355,16 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
 def should_validate_given_url(validate_url_mock: MagicMock) -> None:
     url = any_s3_url()
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={url}",
-        f"--dataset-id={any_dataset_id()}",
-        f"--version-id={any_dataset_version_id()}",
-    ]
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        main()
+        lambda_handler(
+            {
+                DATASET_ID_KEY: any_dataset_id(),
+                VERSION_ID_KEY: any_dataset_version_id(),
+                METADATA_URL_KEY: url,
+            },
+            any_lambda_context(),
+        )
 
     validate_url_mock.assert_called_once_with(url)
 
