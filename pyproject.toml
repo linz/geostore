@@ -116,8 +116,11 @@ datasets = [
     "pynamodb",
 ]
 dataset_versions = [
+    "boto3",
     "jsonschema",
     "pynamodb",
+]
+import_asset_file = [
 ]
 import_dataset = [
     "boto3",
@@ -125,10 +128,14 @@ import_dataset = [
     "pynamodb",
     "smart-open"
 ]
+import_metadata_file = [
+]
 import_status = [
     "boto3",
     "jsonschema",
     "pynamodb"
+]
+validation_failure = [
 ]
 validation_summary = [
     "jsonschema",

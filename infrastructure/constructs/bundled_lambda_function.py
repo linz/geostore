@@ -1,9 +1,9 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_lambda
-from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
+from aws_cdk.core import Construct, Duration, Tags
 
-from ..common import LOG_LEVEL
+from ..common import LOG_LEVEL, PROJECT_DIRECTORY
 
 
 class BundledLambdaFunction(aws_lambda.Function):
@@ -16,12 +16,12 @@ class BundledLambdaFunction(aws_lambda.Function):
         application_layer: str,
         extra_environment: Optional[Mapping[str, str]] = None,
     ):
-        bundling_options = BundlingOptions(
-            # pylint:disable=no-member
-            image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-            command=["backend/bundle.bash", directory],
+        lambda_code = aws_lambda.Code.from_asset_image(
+            directory=PROJECT_DIRECTORY,
+            cmd=["-m", "src.task.task", "lambda_handler"],
+            build_args={"task": directory},
+            file="backend/Dockerfile",
         )
-        lambda_code = aws_lambda.Code.from_asset(path=".", bundling=bundling_options)
 
         environment = {"LOGLEVEL": LOG_LEVEL}
         if extra_environment is not None:
@@ -31,8 +31,8 @@ class BundledLambdaFunction(aws_lambda.Function):
             scope,
             construct_id,
             code=lambda_code,
-            handler=f"backend.{directory}.task.lambda_handler",
-            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            handler=aws_lambda.Handler.FROM_IMAGE,
+            runtime=aws_lambda.Runtime.FROM_IMAGE,
             environment=environment,
             timeout=Duration.seconds(60),
         )

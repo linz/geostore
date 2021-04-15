@@ -16,7 +16,7 @@ RUN ~/.poetry/bin/poetry install --extras=${task} --no-dev
 
 FROM ubuntu:20.04
 
-ENTRYPOINT ["/opt/.venv/bin/python", "-m", "src.task.task"]
+ENTRYPOINT ["/opt/.venv/bin/python"]
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \

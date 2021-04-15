@@ -1,5 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda
-from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
+from aws_cdk.core import Construct, Duration, Tags
+
+from ..common import PROJECT_DIRECTORY
 
 
 class LambdaEndpoint(Construct):
@@ -14,21 +16,20 @@ class LambdaEndpoint(Construct):
     ):
         super().__init__(scope, construct_id)
 
+        code = aws_lambda.Code.from_asset_image(
+            directory=PROJECT_DIRECTORY,
+            cmd=["-m", "src.task.entrypoint", "lambda_handler"],
+            build_args={"task": package_name},
+            file="backend/Dockerfile",
+        )
         self.lambda_function = aws_lambda.Function(
             self,
             f"{deploy_env}-{construct_id}-function",
             function_name=f"{deploy_env}-{construct_id}",
-            handler=f"backend.{package_name}.entrypoint.lambda_handler",
-            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            handler=aws_lambda.Handler.FROM_IMAGE,
+            runtime=aws_lambda.Runtime.FROM_IMAGE,
             timeout=Duration.seconds(60),
-            code=aws_lambda.Code.from_asset(
-                path=".",
-                bundling=BundlingOptions(
-                    # pylint:disable=no-member
-                    image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                    command=["backend/bundle.bash", package_name],
-                ),
-            ),
+            code=code,
         )
 
         self.lambda_function.add_environment("DEPLOY_ENV", deploy_env)
