@@ -42,7 +42,7 @@ python = "^3.8,<3.9"
 "aws-cdk.aws-ec2" = {version = "*", optional = true}
 "aws-cdk.aws-ecr" = {version = "*", optional = true}
 "aws-cdk.aws-ecr_assets" = {version = "*", optional = true}
-"aws-cdk.aws-ecs" = {version = "^1.73", optional = true}
+"aws-cdk.aws-ecs" = {version = "*", optional = true}
 "aws-cdk.aws-iam" = {version = "*", optional = true}
 "aws-cdk.aws-lambda" = {version = "*", optional = true}
 "aws-cdk.aws-s3" = {version = "*", optional = true}
