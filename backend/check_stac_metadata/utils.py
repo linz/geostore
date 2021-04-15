@@ -1,7 +1,5 @@
-from argparse import ArgumentParser, Namespace
 from functools import lru_cache
 from json import JSONDecodeError, dumps, load
-from logging import Logger
 from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
@@ -176,13 +174,3 @@ class STACDatasetValidator:
 @lru_cache
 def get_url_before_filename(url: str) -> str:
     return url.rsplit("/", maxsplit=1)[0]
-
-
-def parse_arguments(logger: Logger) -> Namespace:
-    argument_parser = ArgumentParser()
-    argument_parser.add_argument("--metadata-url", required=True)
-    argument_parser.add_argument("--dataset-id", required=True)
-    argument_parser.add_argument("--version-id", required=True)
-    arguments = argument_parser.parse_args()
-    logger.debug(dumps({"arguments": vars(arguments)}))
-    return arguments
