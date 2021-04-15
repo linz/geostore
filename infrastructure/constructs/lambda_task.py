@@ -1,6 +1,7 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_stepfunctions_tasks
+from aws_cdk.aws_stepfunctions import JsonPath
 from aws_cdk.core import Construct
 
 from .bundled_lambda_function import BundledLambdaFunction
@@ -13,8 +14,8 @@ class LambdaTask(Construct):
         construct_id: str,
         *,
         directory: str,
-        result_path: str,
         application_layer: str,
+        result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
     ):
         super().__init__(scope, construct_id)

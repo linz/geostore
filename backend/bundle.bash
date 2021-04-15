@@ -29,4 +29,4 @@ pip install --requirement="$requirements_file" --target="$asset_root"
 
 mkdir --parents "${asset_root}/backend/${1}"
 cp --archive --update --verbose "${script_dir}/"*.py "${asset_root}/backend/"
-cp --archive --update --verbose "${script_dir}/${1}/"*.py "${asset_root}/backend/${1}/"
+cp --archive --update --verbose "${script_dir}/${1}" "${asset_root}/backend/"
