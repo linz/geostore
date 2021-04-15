@@ -9,6 +9,7 @@ from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 from backend.datasets_model import DatasetsTitleIdx
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
+from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 from .constructs.table import Table
 
@@ -22,6 +23,34 @@ class StorageStack(Stack):
             resource_removal_policy = RemovalPolicy.RETAIN
         else:
             resource_removal_policy = RemovalPolicy.DESTROY
+
+        ############################################################################################
+        # ### DEPLOYMENT VERSION ###################################################################
+        ############################################################################################
+
+        aws_ssm.StringParameter(
+            self,
+            "git-branch",
+            parameter_name=f"/{ENV}/git_branch",
+            string_value=GIT_BRANCH,
+            description="Deployment git branch",
+        )
+
+        aws_ssm.StringParameter(
+            self,
+            "git-commit",
+            parameter_name=f"/{ENV}/git_commit",
+            string_value=GIT_COMMIT,
+            description="Deployment git commit",
+        )
+
+        aws_ssm.StringParameter(
+            self,
+            "git-tag",
+            parameter_name=f"/{ENV}/version",
+            string_value=GIT_TAG,
+            description="Deployment version",
+        )
 
         ############################################################################################
         # ### STORAGE S3 BUCKET ####################################################################

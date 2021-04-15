@@ -242,7 +242,7 @@ class TestWithStagingBucket:
             expected_response = {
                 "statusCode": HTTPStatus.OK,
                 "body": {
-                    "step function": {"status": "SUCCEEDED"},
+                    "step function": {"status": "Succeeded"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
                     "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                     "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
@@ -377,7 +377,7 @@ class TestWithStagingBucket:
             expected_response = {
                 "statusCode": HTTPStatus.OK,
                 "body": {
-                    "step function": {"status": "SUCCEEDED"},
+                    "step function": {"status": "Succeeded"},
                     "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
                     "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                     "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},

@@ -3,7 +3,6 @@
 """
 CDK application entry point file.
 """
-import subprocess
 from os import environ
 
 from aws_cdk.core import App, Environment, Tag
@@ -62,46 +61,12 @@ def main() -> None:
     )
 
     # tag all resources in stack
-    git_branch = (
-        subprocess.Popen(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"], shell=False, stdout=subprocess.PIPE
-        )
-        .communicate()[0]
-        .decode()
-        .strip()
-    )
-    git_commit = (
-        subprocess.Popen(
-            ["git", "rev-parse", "--short", "HEAD"], shell=False, stdout=subprocess.PIPE
-        )
-        .communicate()[0]
-        .decode()
-        .strip()
-    )
-
-    git_tag = (
-        subprocess.Popen(
-            ["git", "describe", "--tags", "--exact-match"],
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        .communicate()[0]
-        .decode()
-        .strip()
-    )
-    if not git_tag:
-        git_tag = "UNRELEASED"
-
     Tag.add(app, "CostCentre", "100005")
     Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
     Tag.add(app, "Owner", "Bill M. Nelson")
     Tag.add(app, "EnvironmentType", ENV)
     Tag.add(app, "SupportType", "Dev")
     Tag.add(app, "HoursOfOperation", "24x7")
-    Tag.add(app, "GitBranch", f"{git_branch}")
-    Tag.add(app, "GitCommit", f"{git_commit}")
-    Tag.add(app, "Version", f"{git_tag}")
 
     app.synth()
 

@@ -5,16 +5,19 @@ required (run '$ cdk deploy' before running tests).
 import json
 import logging
 from http import HTTPStatus
+from io import BytesIO
 
 from mypy_boto3_lambda import LambdaClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.datasets import entrypoint
+from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
-from .aws_utils import Dataset, any_lambda_context
-from .stac_generators import any_dataset_id, any_dataset_title
+from .aws_utils import Dataset, S3Object, any_lambda_context
+from .general_generators import any_safe_filename
+from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_version_id
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -189,7 +192,7 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
 
 @mark.infrastructure
-def should_delete_dataset() -> None:
+def should_delete_dataset_with_no_versions() -> None:
     dataset_id = any_dataset_id()
     body = {"id": dataset_id}
 
@@ -199,6 +202,27 @@ def should_delete_dataset() -> None:
         )
 
     assert response == {"statusCode": HTTPStatus.NO_CONTENT, "body": {}}
+
+
+@mark.infrastructure
+def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
+    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+    with Dataset() as dataset, S3Object(
+        file_object=BytesIO(),
+        bucket_name=storage_bucket_name,
+        key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
+    ):
+        response = entrypoint.lambda_handler(
+            {"httpMethod": "DELETE", "body": {"id": dataset.dataset_id}}, any_lambda_context()
+        )
+
+    expected_message = (
+        f"Conflict: Can’t delete dataset “{dataset.dataset_id}”: dataset versions still exist"
+    )
+    assert response == {
+        "statusCode": HTTPStatus.CONFLICT,
+        "body": {"message": expected_message},
+    }
 
 
 @mark.infrastructure
