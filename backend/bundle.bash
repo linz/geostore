@@ -17,15 +17,15 @@ work_dir="$(mktemp --directory)"
 python -m venv "${work_dir}/.venv"
 # shellcheck source=/dev/null
 . "${work_dir}/.venv/bin/activate"
-python -m pip install --upgrade pip
-python -m pip install poetry
+python -m pip install --cache-dir="$work_dir" --upgrade pip
+python -m pip install --cache-dir="$work_dir" poetry
 
 asset_root='/asset-output'
 task_directory="$(basename "$1")"
 requirements_file="${work_dir}/requirements.txt"
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
 poetry export --extras="$task_directory" --without-hashes > "$requirements_file"
-pip install --requirement="$requirements_file" --target="$asset_root"
+pip install --cache-dir="$work_dir" --requirement="$requirements_file" --target="$asset_root"
 
 mkdir --parents "${asset_root}/backend/${1}"
 cp --archive --update --verbose "${script_dir}/"*.py "${asset_root}/backend/"
