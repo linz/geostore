@@ -27,6 +27,7 @@ from .aws_utils import (
     MockValidationResultFactory,
     any_batch_job_array_index,
     any_s3_url,
+    any_table_name,
 )
 from .general_generators import any_program_name
 from .stac_generators import (
@@ -89,6 +90,8 @@ def should_validate_given_index(
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--assets-tbl-name={any_table_name()}",
+        f"--results-tbl-name={any_table_name()}",
         "--first-item=0",
     ]
     with patch.object(logger, "info") as info_log_mock, patch.dict(
@@ -142,6 +145,8 @@ def should_log_error_when_validation_fails(
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={dataset_version_id}",
+        f"--assets-tbl-name={any_table_name()}",
+        f"--results-tbl-name={any_table_name()}",
         "--first-item=0",
     ]
 
@@ -187,6 +192,8 @@ def should_save_staging_access_validation_results(
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--assets-tbl-name={any_table_name()}",
+        f"--results-tbl-name={any_table_name()}",
         "--first-item=0",
     ]
 
@@ -228,9 +235,9 @@ class TestsWithLogger:
         get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
 
         with patch("backend.check_files_checksums.utils.processing_assets_model_with_meta"):
-            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
-                any_s3_url(), EMPTY_FILE_MULTIHASH
-            )
+            ChecksumValidator(
+                any_table_name(), MockValidationResultFactory(), self.logger
+            ).validate_url_multihash(any_s3_url(), EMPTY_FILE_MULTIHASH)
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_raise_exception_when_checksum_does_not_match(
@@ -244,6 +251,6 @@ class TestsWithLogger:
         with raises(ChecksumMismatchError), patch(
             "backend.check_files_checksums.utils.processing_assets_model_with_meta"
         ):
-            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
-                any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}"
-            )
+            ChecksumValidator(
+                any_table_name(), MockValidationResultFactory(), self.logger
+            ).validate_url_multihash(any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}")
