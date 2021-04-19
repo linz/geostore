@@ -270,8 +270,6 @@ class ProcessingStack(Stack):
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 processing_assets_table.name_parameter: [
-                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
-                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
                     check_stac_metadata_task.lambda_function.role,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
@@ -280,10 +278,9 @@ class ProcessingStack(Stack):
                     import_dataset_task.lambda_function,
                 ],
                 validation_results_table.name_parameter: [
-                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
-                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
-                    check_stac_metadata_task.lambda_function.role,
+                   check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
+                    content_iterator_task.lambda_function,
                 ],
             }
         )
