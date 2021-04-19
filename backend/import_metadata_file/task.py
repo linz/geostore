@@ -6,13 +6,11 @@ from urllib.parse import unquote_plus
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
-from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..log import set_up_logging
-from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 
 S3_CLIENT = boto3.client("s3")
-TARGET_BUCKET = get_param(ParameterName.STORAGE_BUCKET_NAME)
 LOGGER = set_up_logging(__name__)
 
 
@@ -38,7 +36,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         change_href_to_basename(links)
 
         put_object_response = S3_CLIENT.put_object(
-            Bucket=TARGET_BUCKET, Key=parameters[NEW_KEY_KEY], Body=dumps(metadata).encode()
+            Bucket=parameters[TARGET_BUCKET_NAME_KEY],
+            Key=parameters[NEW_KEY_KEY],
+            Body=dumps(metadata).encode(),
         )
         result_code = "Succeeded"
         result_string = str(put_object_response)
