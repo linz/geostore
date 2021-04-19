@@ -29,10 +29,10 @@ def main() -> int:
 
     validation_result_factory = ValidationResultFactory(
         hash_key,
-        arguments.assets_table_name,
+        arguments.results_table_name,
     )
     checksum_validator = ChecksumValidator(
-        arguments.results_table_name, validation_result_factory, LOGGER
+        arguments.assets_table_name, validation_result_factory, LOGGER
     )
 
     checksum_validator.validate(hash_key, range_key)
