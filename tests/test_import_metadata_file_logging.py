@@ -3,10 +3,10 @@ from json import dumps
 from unittest.mock import patch
 from urllib.parse import quote
 
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
+from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from backend.import_metadata_file.task import lambda_handler
 
-from .aws_utils import any_lambda_context, any_s3_bucket_arn
+from .aws_utils import any_lambda_context, any_s3_bucket_arn, any_s3_bucket_name
 from .general_generators import any_safe_file_path
 
 LOGGER = logging.getLogger("backend.import_metadata_file.task")
@@ -21,6 +21,7 @@ def should_log_payload() -> None:
                 "s3Key": quote(
                     dumps(
                         {
+                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
                             ORIGINAL_KEY_KEY: any_safe_file_path(),
                             NEW_KEY_KEY: any_safe_file_path(),
                         }
