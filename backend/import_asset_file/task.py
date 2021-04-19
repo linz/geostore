@@ -4,13 +4,11 @@ from urllib.parse import unquote_plus
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
-from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..log import set_up_logging
-from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 
 S3_CLIENT = boto3.client("s3")
-TARGET_BUCKET = get_param(ParameterName.STORAGE_BUCKET_NAME)
 LOGGER = set_up_logging(__name__)
 
 
@@ -24,7 +22,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     try:
         response = S3_CLIENT.copy_object(
             CopySource={"Bucket": source_bucket_name, "Key": parameters[ORIGINAL_KEY_KEY]},
-            Bucket=TARGET_BUCKET,
+            Bucket=parameters[TARGET_BUCKET_NAME_KEY],
             Key=parameters[NEW_KEY_KEY],
         )
         result_code = "Succeeded"
