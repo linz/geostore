@@ -46,8 +46,8 @@ class TestLogging:
             any_program_name(),
             f"--dataset-id={dataset_id}",
             f"--version-id={version_id}",
-            f"--assets-tbl-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME.value)}",
-            f"--results-tbl-name={get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME.value)}",
+            f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME.value)}",
+            f"--results-table-name={get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME.value)}",
             f"--first-item={index}",
         ]
 

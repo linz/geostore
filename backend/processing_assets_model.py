@@ -1,7 +1,7 @@
 """Dataset object DynamoDB model."""
 from enum import Enum
 from os import environ
-from typing import Type
+from typing import Optional, Type
 
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
@@ -22,9 +22,9 @@ class ProcessingAssetsModelBase(Model):
 
 
 def processing_assets_model_with_meta(
-    assets_table_name: str = "",
+    assets_table_name: Optional[str] = None,
 ) -> Type[ProcessingAssetsModelBase]:
-    if not assets_table_name:
+    if assets_table_name is None:
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME.value)
 
     class ProcessingAssetsModel(ProcessingAssetsModelBase):

@@ -15,8 +15,8 @@ def parse_arguments() -> Namespace:
     argument_parser.add_argument("--dataset-id", required=True)
     argument_parser.add_argument("--version-id", required=True)
     argument_parser.add_argument("--first-item", type=int, required=True)
-    argument_parser.add_argument("--results-tbl-name", required=True)
-    argument_parser.add_argument("--assets-tbl-name", required=True)
+    argument_parser.add_argument("--results-table-name", required=True)
+    argument_parser.add_argument("--assets-table-name", required=True)
     return argument_parser.parse_args()
 
 
@@ -29,10 +29,10 @@ def main() -> int:
 
     validation_result_factory = ValidationResultFactory(
         hash_key,
-        arguments.assets_tbl_name,
+        arguments.assets_table_name,
     )
     checksum_validator = ChecksumValidator(
-        arguments.results_tbl_name, validation_result_factory, LOGGER
+        arguments.results_table_name, validation_result_factory, LOGGER
     )
 
     checksum_validator.validate(hash_key, range_key)

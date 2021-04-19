@@ -97,8 +97,8 @@ class ProcessingStack(Stack):
             "version_id.$": "$.version_id",
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
-            "assets_tbl_name.$": "$.assets_tbl_name",
-            "results_tbl_name.$": "$.results_tbl_name",
+            "assets_table_name.$": "$.assets_table_name",
+            "results_table_name.$": "$.results_table_name",
         }
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
@@ -115,10 +115,10 @@ class ProcessingStack(Stack):
                 "Ref::version_id",
                 "--first-item",
                 "Ref::first_item",
-                "--assets-tbl-name",
-                "Ref::assets_tbl_name",
-                "--results-tbl-name",
-                "Ref::results_tbl_name",
+                "--assets-table-name",
+                "Ref::assets_table_name",
+                "--results-table-name",
+                "Ref::results_table_name",
             ],
         )
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
@@ -137,10 +137,10 @@ class ProcessingStack(Stack):
                 "Ref::version_id",
                 "--first-item",
                 "Ref::first_item",
-                "--assets-tbl-name",
-                "Ref::assets_tbl_name",
-                "--results-tbl-name",
-                "Ref::results_tbl_name",
+                "--assets-table-name",
+                "Ref::assets_table_name",
+                "--results-table-name",
+                "Ref::results_table_name",
             ],
             array_size=array_size,
         )
