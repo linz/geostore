@@ -1,4 +1,4 @@
-from aws_cdk import aws_iam
+from aws_cdk import aws_iam, aws_lambda_python
 from aws_cdk.core import Construct
 
 from .bundled_lambda_function import BundledLambdaFunction
@@ -13,6 +13,7 @@ class ImportFileFunction(BundledLambdaFunction):
         application_layer: str,
         invoker: aws_iam.Role,
         deploy_env: str,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
         super().__init__(
             scope,
@@ -20,6 +21,7 @@ class ImportFileFunction(BundledLambdaFunction):
             directory=directory,
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         assert self.role is not None
