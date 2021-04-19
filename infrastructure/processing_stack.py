@@ -97,8 +97,8 @@ class ProcessingStack(Stack):
             "version_id.$": "$.version_id",
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
-            "assets_table_name.$": "$.assets_table_name",
-            "results_table_name.$": "$.results_table_name",
+            "assets_table_name.$": "$content.assets_table_name",
+            "results_table_name.$": "$content.results_table_name",
         }
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,

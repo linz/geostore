@@ -10,7 +10,13 @@ from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
-from .aws_utils import any_item_count, any_lambda_context, any_next_item_index, any_s3_url
+from .aws_utils import (
+    any_item_count,
+    any_lambda_context,
+    any_next_item_index,
+    any_s3_url,
+    any_table_name,
+)
 from .general_generators import any_dictionary_key
 from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
@@ -144,9 +150,16 @@ def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMoc
 
 
 @patch("backend.content_iterator.task.processing_assets_model_with_meta")
+@patch("backend.content_iterator.task.get_param")
 def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
+    get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
+
+    assets_table_name = any_table_name()
+    results_table_name = any_table_name()
+    get_param_mock.side_effect = [assets_table_name, results_table_name]
+
     remaining_item_count = MAX_ITERATION_SIZE - 1
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
@@ -158,6 +171,8 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
         "first_item": str(next_item_index),
         "iteration_size": remaining_item_count,
         "next_item": -1,
+        "assets_table_name": assets_table_name,
+        "results_table_name": results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -166,9 +181,16 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
 
 
 @patch("backend.content_iterator.task.processing_assets_model_with_meta")
+@patch("backend.content_iterator.task.get_param")
 def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
+    get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
+
+    assets_table_name = any_table_name()
+    results_table_name = any_table_name()
+    get_param_mock.side_effect = [assets_table_name, results_table_name]
+
     remaining_item_count = MAX_ITERATION_SIZE
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
@@ -180,6 +202,8 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
         "first_item": str(next_item_index),
         "iteration_size": MAX_ITERATION_SIZE,
         "next_item": -1,
+        "assets_table_name": assets_table_name,
+        "results_table_name": results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -188,9 +212,16 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
 
 
 @patch("backend.content_iterator.task.processing_assets_model_with_meta")
+@patch("backend.content_iterator.task.get_param")
 def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
+    get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
+
+    assets_table_name = any_table_name()
+    results_table_name = any_table_name()
+    get_param_mock.side_effect = [assets_table_name, results_table_name]
+
     remaining_item_count = MAX_ITERATION_SIZE + 1
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
@@ -202,6 +233,8 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
         "first_item": str(next_item_index),
         "iteration_size": MAX_ITERATION_SIZE,
         "next_item": next_item_index + MAX_ITERATION_SIZE,
+        "assets_table_name": assets_table_name,
+        "results_table_name": results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
