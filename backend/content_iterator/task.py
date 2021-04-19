@@ -7,9 +7,6 @@ from ..types import JsonObject
 
 MAX_ITERATION_SIZE = 10_000
 
-PROCESSING_ASSETS_TABLE_NAME = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
-VALIDATION_RESULTS_TABLE_NAME = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
-
 EVENT_SCHEMA = {
     "type": "object",
     "properties": {
@@ -52,7 +49,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset_id = event[DATASET_ID_KEY]
     version_id = event[VERSION_ID_KEY]
 
-    processing_assets_model = processing_assets_model_with_meta(PROCESSING_ASSETS_TABLE_NAME)
+    processing_assets_model = processing_assets_model_with_meta()
 
     asset_count = processing_assets_model.count(
         hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
@@ -73,6 +70,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         "first_item": str(first_item_index),
         "iteration_size": iteration_size,
         "next_item": next_item_index,
-        "assets_table_name": PROCESSING_ASSETS_TABLE_NAME,
-        "results_table_name": VALIDATION_RESULTS_TABLE_NAME,
+        "assets_table_name": get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME),
+        "results_table_name": get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME),
     }
