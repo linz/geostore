@@ -287,8 +287,6 @@ class ProcessingStack(Stack):
                 ],
                 storage_bucket_parameter: [
                     import_dataset_task.lambda_function,
-                    import_asset_file_function,
-                    import_metadata_file_function,
                 ],
                 self.validation_results_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]

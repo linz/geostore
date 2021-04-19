@@ -10,7 +10,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY
+from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
@@ -73,6 +73,7 @@ class Importer:
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))
                 key = s3_url_to_key(item.url)
                 task_parameters = {
+                    TARGET_BUCKET_NAME_KEY: STORAGE_BUCKET_NAME,
                     ORIGINAL_KEY_KEY: key,
                     NEW_KEY_KEY: f"{self.dataset_id}/{self.version_id}/{basename(key)}",
                 }
