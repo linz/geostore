@@ -284,6 +284,9 @@ jobs:
         && github.repository == 'linz/geospatial-data-lake'
       run: |
         poetry run cdk diff -c aws-cdk:enableDiffNoFail=true
+      env:
+        DEPLOY_ENV: prod
+        DATALAKE_SAML_IDENTITY_PROVIDER_ARN: ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_PROD }}
 
     - name: (Prod) Deploy AWS stacks (only on release tag)
       if: >
