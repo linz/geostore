@@ -21,7 +21,7 @@ repos:
   - id: hadolint
     name: hadolint
     language: docker_image
-    entry: hadolint/hadolint hadolint
+    entry: hadolint/hadolint:v2.2.0 hadolint
     stages: [commit]
     types: [dockerfile]
 
