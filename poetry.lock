@@ -2238,11 +2238,11 @@ python-versions = "*"
 
 [[package]]
 name = "shellcheck-py"
-version = "0.7.1.1"
+version = "0.7.2.1"
 description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [[package]]
 name = "six"
@@ -3183,10 +3183,10 @@ sh = [
     {file = "sh-1.14.1.tar.gz", hash = "sha256:39aa9af22f6558a0c5d132881cf43e34828ca03e4ae11114852ca6a55c7c1d8e"},
 ]
 shellcheck-py = [
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:9f537613212aad5221a020dde3b86884cf4778688788ac26ddeb21fecf3ec2e0"},
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:0fca77ece2ba232ca2fdbe4f15dc4b0a30f3e38e896345b2dbf4dbe20e4bb8a9"},
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-win_amd64.whl", hash = "sha256:59c623567a1a7bd0a919b5009790b199b5457a78053b775de1886f01693533af"},
-    {file = "shellcheck_py-0.7.1.1.tar.gz", hash = "sha256:044fb62e44d549c49a712c6ac0a60d6f4ae2d1afebbc167d65ec62dc689b8f2b"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:8855607a09888a7fcc6d9289772a29847d19b9785fd57239993db487a861a977"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9f0e0a6498102bb8a72d1e268b34615f5f2f0abdbb70196261fd9c2ac75cbb08"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-win_amd64.whl", hash = "sha256:d594a9750e322b23894f0dd1447542078ad7da6ad4cd3628e6f22707352abd42"},
+    {file = "shellcheck_py-0.7.2.1.tar.gz", hash = "sha256:a45daaab5b3e60daca6c72935d847075aa1177f1d0e01a258268b17a88b5c7e0"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
