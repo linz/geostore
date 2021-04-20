@@ -36,8 +36,8 @@ Environment: <!-- e.g. production -->
 
 Relevant software versions:
 
-- AWS CLI: <!-- include the output of `aws --version` -->
-- Poetry: <!-- include the output of `poetry --version` -->
+- AWS CLI: <!-- include the output of `aws \-\-version` -->
+- Poetry: <!-- include the output of `poetry \-\-version` -->
 <!-- Any other relevant software -->
 
 ## Additional context
