@@ -3,7 +3,7 @@ Data Lake processing stack.
 """
 from typing import Any
 
-from aws_cdk import aws_dynamodb, aws_iam, aws_s3, aws_ssm, aws_stepfunctions
+from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack
 
 from backend.environment import ENV
@@ -28,6 +28,7 @@ class ProcessingStack(Stack):
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
         validation_results_table: Table,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -68,6 +69,7 @@ class ProcessingStack(Stack):
             directory="check_stac_metadata",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
         )
         assert check_stac_metadata_task.lambda_function.role
         check_stac_metadata_task.lambda_function.role.add_managed_policy(
@@ -88,6 +90,7 @@ class ProcessingStack(Stack):
             result_path="$.content",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         check_files_checksums_directory = "check_files_checksums"
@@ -170,6 +173,7 @@ class ProcessingStack(Stack):
             result_path="$.validation",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
         )
         validation_results_table.grant_read_data(validation_summary_task.lambda_function)
         validation_results_table.grant(
@@ -182,6 +186,7 @@ class ProcessingStack(Stack):
             directory="validation_failure",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
             application_layer=application_layer,
+            botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_invoke
 
         import_dataset_role = aws_iam.Role(
@@ -198,6 +203,7 @@ class ProcessingStack(Stack):
             application_layer=application_layer,
             invoker=import_dataset_role,
             deploy_env=deploy_env,
+            botocore_lambda_layer=botocore_lambda_layer,
         )
         import_metadata_file_function = ImportFileFunction(
             self,
@@ -205,6 +211,7 @@ class ProcessingStack(Stack):
             application_layer=application_layer,
             invoker=import_dataset_role,
             deploy_env=deploy_env,
+            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         for storage_writer in [
@@ -221,6 +228,7 @@ class ProcessingStack(Stack):
             result_path="$.import_dataset",
             application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         assert import_dataset_task.lambda_function.role is not None

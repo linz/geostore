@@ -10,6 +10,7 @@ from aws_cdk.core import App, Environment, Tag
 from backend.environment import ENV
 from infrastructure.api_stack import APIStack
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
+from infrastructure.lambda_layers_stack import LambdaLayersStack
 from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
@@ -38,6 +39,13 @@ def main() -> None:
         env=environment,
     )
 
+    lambda_layers = LambdaLayersStack(
+        app,
+        "lambda-layers",
+        stack_name=f"{ENV}-geospatial-data-lake-lambda-layers",
+        env=environment,
+    )
+
     processing = ProcessingStack(
         app,
         "processing",
@@ -47,6 +55,7 @@ def main() -> None:
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
+        botocore_lambda_layer=lambda_layers.botocore,
     )
 
     APIStack(
@@ -61,6 +70,7 @@ def main() -> None:
         state_machine_parameter=processing.state_machine_parameter,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
+        botocore_lambda_layer=lambda_layers.botocore,
     )
 
     # tag all resources in stack

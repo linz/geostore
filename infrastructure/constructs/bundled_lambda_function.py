@@ -1,6 +1,6 @@
 from typing import Mapping, Optional
 
-from aws_cdk import aws_lambda
+from aws_cdk import aws_lambda, aws_lambda_python
 from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
 
 from ..common import LOG_LEVEL
@@ -15,6 +15,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         directory: str,
         application_layer: str,
         extra_environment: Optional[Mapping[str, str]] = None,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
         bundling_options = BundlingOptions(
             # pylint:disable=no-member
@@ -34,6 +35,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             handler=f"backend.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             environment=environment,
+            layers=[botocore_lambda_layer],  # type: ignore[list-item]
             timeout=Duration.seconds(60),
         )
 

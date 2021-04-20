@@ -680,6 +680,22 @@ jsii = ">=1.24.0,<2.0.0"
 publication = ">=0.0.3"
 
 [[package]]
+name = "aws-cdk.aws-lambda-python"
+version = "1.92.0"
+description = "The CDK Construct Library for AWS Lambda in Python"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+"aws-cdk.aws-ec2" = "1.92.0"
+"aws-cdk.aws-lambda" = "1.92.0"
+"aws-cdk.core" = "1.92.0"
+constructs = ">=3.2.0,<4.0.0"
+jsii = ">=1.24.0,<2.0.0"
+publication = ">=0.0.3"
+
+[[package]]
 name = "aws-cdk.aws-logs"
 version = "1.92.0"
 description = "The CDK Construct Library for AWS::Logs"
@@ -2390,7 +2406,7 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
-cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
+cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
 check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
@@ -2403,7 +2419,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "0d23b27c89c14c22bd96c1ceeb37a97438572ef82dffd0c71fc219d9989d62bd"
+content-hash = "0798951be533670d9920271604364004f8447dbe4a5e017e2fe99ebfcba078dd"
 
 [metadata.files]
 appdirs = [
@@ -2557,6 +2573,10 @@ attrs = [
 "aws-cdk.aws-lambda" = [
     {file = "aws-cdk.aws-lambda-1.92.0.tar.gz", hash = "sha256:99d5320b1a5eaee67bd6b7ff213d5d57fc5a845e08ee1ce46fc994a19fb61b2e"},
     {file = "aws_cdk.aws_lambda-1.92.0-py3-none-any.whl", hash = "sha256:405aed6a3f8079b778580243c9e3003bfd605875d03f6ebc61f3555a421ff5ae"},
+]
+"aws-cdk.aws-lambda-python" = [
+    {file = "aws-cdk.aws-lambda-python-1.92.0.tar.gz", hash = "sha256:52152ac0a7cf1a0808a69dea280d090ff9c1e7cc98aa2e108b1c2f63e0296c63"},
+    {file = "aws_cdk.aws_lambda_python-1.92.0-py3-none-any.whl", hash = "sha256:f78fa7b6bc8050fdd7313ff4571379089ff053edcb3fd2b55befae3faa71a4c4"},
 ]
 "aws-cdk.aws-logs" = [
     {file = "aws-cdk.aws-logs-1.92.0.tar.gz", hash = "sha256:e381c1fa396ad70f269d46958e628d02fd43841328ae3e6a157151662dcbe1cc"},
