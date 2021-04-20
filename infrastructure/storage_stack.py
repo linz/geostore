@@ -9,6 +9,7 @@ from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
 from backend.datasets_model import DatasetsTitleIdx
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
+from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 from .constructs.table import Table
@@ -76,11 +77,12 @@ class StorageStack(Stack):
         ############################################################################################
         # ### APPLICATION DB #######################################################################
         ############################################################################################
+        application_layer = "application-db"
         self.datasets_table = Table(
             self,
             f"{ENV}-datasets",
             deploy_env=deploy_env,
-            application_layer="application-db",
+            application_layer=application_layer,
             parameter_name=ParameterName.DATASETS_TABLE_NAME,
         )
 
@@ -88,5 +90,24 @@ class StorageStack(Stack):
             index_name=DatasetsTitleIdx.Meta.index_name,
             partition_key=aws_dynamodb.Attribute(
                 name="title", type=aws_dynamodb.AttributeType.STRING
+            ),
+        )
+
+        self.validation_results_table = Table(
+            self,
+            f"{ENV}-validation-results",
+            deploy_env=deploy_env,
+            application_layer=application_layer,
+            parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
+            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
+        )
+
+        self.validation_results_table.add_global_secondary_index(
+            index_name=ValidationOutcomeIdx.Meta.index_name,
+            partition_key=aws_dynamodb.Attribute(
+                name=ValidationOutcomeIdx.pk.attr_name, type=aws_dynamodb.AttributeType.STRING
+            ),
+            sort_key=aws_dynamodb.Attribute(
+                name=ValidationOutcomeIdx.result.attr_name, type=aws_dynamodb.AttributeType.STRING
             ),
         )

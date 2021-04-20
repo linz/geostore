@@ -8,7 +8,6 @@ from aws_cdk.core import Construct, Stack
 
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
-from backend.validation_results_model import ValidationOutcomeIdx
 
 from .common import grant_parameter_read_access
 from .constructs.batch_job_queue import BatchJobQueue
@@ -28,6 +27,7 @@ class ProcessingStack(Stack):
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
+        validation_results_table: Table,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -45,25 +45,6 @@ class ProcessingStack(Stack):
             application_layer=self.application_layer,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
-        )
-
-        self.validation_results_table = Table(
-            self,
-            f"{ENV}-validation-results",
-            deploy_env=self.deploy_env,
-            application_layer=self.application_layer,
-            parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
-            sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
-        )
-
-        self.validation_results_table.add_global_secondary_index(
-            index_name=ValidationOutcomeIdx.Meta.index_name,
-            partition_key=aws_dynamodb.Attribute(
-                name=ValidationOutcomeIdx.pk.attr_name, type=aws_dynamodb.AttributeType.STRING
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name=ValidationOutcomeIdx.result.attr_name, type=aws_dynamodb.AttributeType.STRING
-            ),
         )
 
         ############################################################################################
@@ -94,7 +75,7 @@ class ProcessingStack(Stack):
             policy=s3_read_only_access_policy
         )
 
-        for table in [processing_assets_table, self.validation_results_table]:
+        for table in [processing_assets_table, validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
                 check_stac_metadata_task.lambda_function,
@@ -168,8 +149,8 @@ class ProcessingStack(Stack):
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            self.validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
-            self.validation_results_table.grant(
+            validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
+            validation_results_table.grant(
                 writer, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
@@ -181,8 +162,8 @@ class ProcessingStack(Stack):
             application_layer=self.application_layer,
             extra_environment={"DEPLOY_ENV": self.deploy_env},
         )
-        self.validation_results_table.grant_read_data(validation_summary_task.lambda_function)
-        self.validation_results_table.grant(
+        validation_results_table.grant_read_data(validation_summary_task.lambda_function)
+        validation_results_table.grant(
             validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
@@ -288,7 +269,7 @@ class ProcessingStack(Stack):
                 storage_bucket_parameter: [
                     import_dataset_task.lambda_function,
                 ],
-                self.validation_results_table.name_parameter: [
+                validation_results_table.name_parameter: [
                     check_files_checksums_array_task.job_role,  # type: ignore[list-item]
                     check_files_checksums_single_task.job_role,  # type: ignore[list-item]
                     check_stac_metadata_task.lambda_function.role,
