@@ -46,6 +46,7 @@ def main() -> None:
         deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
+        validation_results_table=storage.validation_results_table,
     )
 
     APIStack(
@@ -55,7 +56,7 @@ def main() -> None:
         env=environment,
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
-        validation_results_table=processing.validation_results_table,
+        validation_results_table=storage.validation_results_table,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
         storage_bucket=storage.storage_bucket,
