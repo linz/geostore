@@ -192,16 +192,18 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
 
 @mark.infrastructure
-def should_delete_dataset_with_no_versions() -> None:
+def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
     dataset_id = any_dataset_id()
     body = {"id": dataset_id}
 
     with Dataset(dataset_id=dataset_id):
-        response = entrypoint.lambda_handler(
-            {"httpMethod": "DELETE", "body": body}, any_lambda_context()
+        raw_response = lambda_client.invoke(
+            FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
+            Payload=json.dumps({"httpMethod": "DELETE", "body": body}).encode(),
         )
+        response_payload = json.load(raw_response["Payload"])
 
-    assert response == {"statusCode": HTTPStatus.NO_CONTENT, "body": {}}
+    assert response_payload == {"statusCode": HTTPStatus.NO_CONTENT, "body": {}}
 
 
 @mark.infrastructure
