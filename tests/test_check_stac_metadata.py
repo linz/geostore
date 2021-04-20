@@ -154,6 +154,7 @@ def should_save_staging_access_validation_results(
     get_object_mock: MagicMock,
 ) -> None:
 
+    validation_results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
     )
@@ -174,7 +175,7 @@ def should_save_staging_access_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     assert validation_results_factory_mock.mock_calls == [
-        call(hash_key),
+        call(hash_key, validation_results_table_name),
         call().save(
             s3_url,
             Check.STAGING_ACCESS,
