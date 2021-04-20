@@ -3,6 +3,7 @@ import json
 import logging
 from enum import Enum
 from http import HTTPStatus
+from typing import Optional
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -15,25 +16,23 @@ from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonList, JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
-PENDING_STATUS = "Pending"
-SKIPPED_STATUS = "Skipped"
-
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
 
-class ValidationOutcome(Enum):
+class Outcome(Enum):
     PASSED = "Passed"
     PENDING = "Pending"
     FAILED = "Failed"
+    SKIPPED = "Skipped"
 
 
 SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
-    True: ValidationOutcome.PASSED.value,
-    False: ValidationOutcome.FAILED.value,
-    None: ValidationOutcome.PENDING.value,
+    True: Outcome.PASSED,
+    False: Outcome.FAILED,
+    None: Outcome.PENDING,
 }
 
 
@@ -63,35 +62,31 @@ def get_import_status(event: JsonObject) -> JsonObject:
 
     step_function_input = json.loads(step_function_resp["input"])
     step_function_output = json.loads(step_function_resp.get("output", "{}"))
+    step_function_status = step_function_resp["status"]
 
-    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[
-        step_function_output.get("validation", {}).get("success")
-    ]
-    if (
-        step_function_resp["status"] not in ["RUNNING", "SUCCEEDED"]
-        and validation_status == ValidationOutcome.PENDING.value
-    ):
-        validation_status = SKIPPED_STATUS
+    validation_errors = get_step_function_validation_results(
+        step_function_input[DATASET_ID_KEY], step_function_input[VERSION_ID_KEY]
+    )
+
+    validation_success = step_function_output.get("validation", {}).get("success")
+    validation_outcome = get_validation_outcome(
+        step_function_status, validation_errors, validation_success
+    )
 
     metadata_upload_status = get_import_job_status(step_function_output, METADATA_JOB_ID_KEY)
     asset_upload_status = get_import_job_status(step_function_output, ASSET_JOB_ID_KEY)
 
     # Failed validation implies uploads will never happen
     if (
-        metadata_upload_status["status"] == PENDING_STATUS
-        and asset_upload_status["status"] == PENDING_STATUS
-        and validation_status in [ValidationResult.FAILED.value, SKIPPED_STATUS]
+        metadata_upload_status["status"] == Outcome.PENDING.value
+        and asset_upload_status["status"] == Outcome.PENDING.value
+        and validation_outcome in [Outcome.FAILED, Outcome.SKIPPED]
     ):
-        metadata_upload_status["status"] = asset_upload_status["status"] = SKIPPED_STATUS
+        metadata_upload_status["status"] = asset_upload_status["status"] = Outcome.SKIPPED.value
 
     response_body = {
-        "step function": {"status": step_function_resp["status"].title()},
-        "validation": {
-            "status": validation_status,
-            "errors": get_step_function_validation_results(
-                step_function_input[DATASET_ID_KEY], step_function_input[VERSION_ID_KEY]
-            ),
-        },
+        "step function": {"status": step_function_status.title()},
+        "validation": {"status": validation_outcome.value, "errors": validation_errors},
         "metadata upload": metadata_upload_status,
         "asset upload": asset_upload_status,
     }
@@ -99,10 +94,23 @@ def get_import_status(event: JsonObject) -> JsonObject:
     return success_response(HTTPStatus.OK, response_body)
 
 
+def get_validation_outcome(
+    step_function_status: str, validation_errors: JsonList, validation_success: Optional[bool]
+) -> Outcome:
+    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[validation_success]
+    if validation_status == Outcome.PENDING:
+        # Some statuses are not reported by the step function
+        if validation_errors:
+            validation_status = Outcome.FAILED
+        elif step_function_status not in ["RUNNING", "SUCCEEDED"]:
+            validation_status = Outcome.SKIPPED
+    return validation_status
+
+
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
     if s3_job_id := step_function_output.get("import_dataset", {}).get(job_id_key):
         return get_s3_batch_copy_status(s3_job_id, LOGGER)
-    return {"status": PENDING_STATUS, "errors": []}
+    return {"status": Outcome.PENDING.value, "errors": []}
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
