@@ -18,7 +18,7 @@ class NetworkingStack(Stack):
         ############################################################################################
 
         # create new VPC
-        self.datalake_vpc = aws_ec2.Vpc(
+        datalake_vpc = aws_ec2.Vpc(
             self,
             "datalake",
             # cidr='10.0.0.0/16',  # TODO: use specific CIDR
@@ -37,4 +37,4 @@ class NetworkingStack(Stack):
             ],
             max_azs=99 if deploy_env == "prod" else 1,
         )
-        Tags.of(self.datalake_vpc).add("ApplicationLayer", "networking")  # type: ignore[arg-type]
+        Tags.of(datalake_vpc).add("ApplicationLayer", "networking")  # type: ignore[arg-type]

@@ -33,16 +33,15 @@ class ProcessingStack(Stack):
         # pylint: disable=too-many-locals
         super().__init__(scope, stack_id, **kwargs)
 
-        self.deploy_env = deploy_env
-        self.application_layer = "data-processing"
+        application_layer = "data-processing"
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
             f"{ENV}-processing-assets",
-            deploy_env=self.deploy_env,
-            application_layer=self.application_layer,
+            deploy_env=deploy_env,
+            application_layer=application_layer,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
@@ -52,7 +51,7 @@ class ProcessingStack(Stack):
         batch_job_queue = BatchJobQueue(
             self,
             "batch-job-queue",
-            deploy_env=self.deploy_env,
+            deploy_env=deploy_env,
             processing_assets_table=processing_assets_table,
         ).job_queue
 
@@ -67,8 +66,8 @@ class ProcessingStack(Stack):
             self,
             "check-stac-metadata-task",
             directory="check_stac_metadata",
-            application_layer=self.application_layer,
-            extra_environment={"DEPLOY_ENV": self.deploy_env},
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
         )
         assert check_stac_metadata_task.lambda_function.role
         check_stac_metadata_task.lambda_function.role.add_managed_policy(
@@ -87,8 +86,8 @@ class ProcessingStack(Stack):
             "content-iterator-task",
             directory="content_iterator",
             result_path="$.content",
-            application_layer=self.application_layer,
-            extra_environment={"DEPLOY_ENV": self.deploy_env},
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
         )
 
         check_files_checksums_directory = "check_files_checksums"
@@ -101,7 +100,7 @@ class ProcessingStack(Stack):
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-single-task",
-            deploy_env=self.deploy_env,
+            deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
@@ -119,7 +118,7 @@ class ProcessingStack(Stack):
         check_files_checksums_array_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-array-task",
-            deploy_env=self.deploy_env,
+            deploy_env=deploy_env,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
@@ -159,8 +158,8 @@ class ProcessingStack(Stack):
             "validation-summary-task",
             directory="validation_summary",
             result_path="$.validation",
-            application_layer=self.application_layer,
-            extra_environment={"DEPLOY_ENV": self.deploy_env},
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
         )
         validation_results_table.grant_read_data(validation_summary_task.lambda_function)
         validation_results_table.grant(
@@ -172,10 +171,10 @@ class ProcessingStack(Stack):
             "validation-failure-task",
             directory="validation_failure",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
-            application_layer=self.application_layer,
+            application_layer=application_layer,
         ).lambda_invoke
 
-        self.import_dataset_role = aws_iam.Role(
+        import_dataset_role = aws_iam.Role(
             self,
             "import-dataset",
             assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
@@ -186,20 +185,20 @@ class ProcessingStack(Stack):
         import_asset_file_function = ImportFileFunction(
             self,
             directory="import_asset_file",
-            application_layer=self.application_layer,
-            invoker=self.import_dataset_role,
-            deploy_env=self.deploy_env,
+            application_layer=application_layer,
+            invoker=import_dataset_role,
+            deploy_env=deploy_env,
         )
         import_metadata_file_function = ImportFileFunction(
             self,
             directory="import_metadata_file",
-            application_layer=self.application_layer,
-            invoker=self.import_dataset_role,
-            deploy_env=self.deploy_env,
+            application_layer=application_layer,
+            invoker=import_dataset_role,
+            deploy_env=deploy_env,
         )
 
         for storage_writer in [
-            self.import_dataset_role,
+            import_dataset_role,
             import_asset_file_function.role,
             import_metadata_file_function.role,
         ]:
@@ -210,14 +209,14 @@ class ProcessingStack(Stack):
             "import-dataset-task",
             directory="import_dataset",
             result_path="$.import_dataset",
-            application_layer=self.application_layer,
-            extra_environment={"DEPLOY_ENV": self.deploy_env},
+            application_layer=application_layer,
+            extra_environment={"DEPLOY_ENV": deploy_env},
         )
 
         assert import_dataset_task.lambda_function.role is not None
         import_dataset_task.lambda_function.role.add_to_policy(
             aws_iam.PolicyStatement(
-                resources=[self.import_dataset_role.role_arn],
+                resources=[import_dataset_role.role_arn],
                 actions=["iam:PassRole"],
             ),
         )
@@ -235,22 +234,22 @@ class ProcessingStack(Stack):
             self,
             "import asset file function arn",
             string_value=import_asset_file_function.function_arn,
-            description=f"Import asset file function ARN for {self.deploy_env}",
+            description=f"Import asset file function ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_ASSET_FILE_FUNCTION_TASK_ARN.value,
         )
         import_metadata_file_function_arn_parameter = aws_ssm.StringParameter(
             self,
             "import metadata file function arn",
             string_value=import_metadata_file_function.function_arn,
-            description=f"Import metadata file function ARN for {self.deploy_env}",
+            description=f"Import metadata file function ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_METADATA_FILE_FUNCTION_TASK_ARN.value,
         )
 
         import_dataset_role_arn_parameter = aws_ssm.StringParameter(
             self,
             "import dataset role arn",
-            string_value=self.import_dataset_role.role_arn,
-            description=f"Import dataset role ARN for {self.deploy_env}",
+            string_value=import_dataset_role.role_arn,
+            description=f"Import dataset role ARN for {deploy_env}",
             parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
         )
 
@@ -320,14 +319,14 @@ class ProcessingStack(Stack):
 
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            f"{self.deploy_env}-dataset-version-creation",
+            f"{deploy_env}-dataset-version-creation",
             definition=dataset_version_creation_definition,  # type: ignore[arg-type]
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(
             self,
             "state machine arn",
-            description=f"State machine ARN for {self.deploy_env}",
+            description=f"State machine ARN for {deploy_env}",
             parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
         )
