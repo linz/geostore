@@ -4,7 +4,7 @@ Data Lake AWS resources definitions.
 from os import environ
 from typing import Any
 
-from aws_cdk import aws_iam, aws_s3, aws_ssm, aws_stepfunctions
+from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Duration, Stack, Tags
 
 from backend.resources import ResourceName
@@ -28,6 +28,7 @@ class APIStack(Stack):
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -63,6 +64,7 @@ class APIStack(Stack):
             package_name="datasets",
             deploy_env=deploy_env,
             users_role=users_role,
+            botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
@@ -71,6 +73,7 @@ class APIStack(Stack):
             package_name="dataset_versions",
             deploy_env=deploy_env,
             users_role=users_role,
+            botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
@@ -88,6 +91,7 @@ class APIStack(Stack):
             package_name="import_status",
             deploy_env=deploy_env,
             users_role=users_role,
+            botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
         validation_results_table.grant_read_data(import_status_endpoint_lambda)

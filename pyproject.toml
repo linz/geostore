@@ -46,6 +46,7 @@ python = "^3.8,<3.9"
 "aws-cdk.aws-ecs" = {version = "*", optional = true}
 "aws-cdk.aws-iam" = {version = "*", optional = true}
 "aws-cdk.aws-lambda" = {version = "*", optional = true}
+"aws-cdk.aws-lambda-python" = {version = "*", optional = true}
 "aws-cdk.aws-s3" = {version = "*", optional = true}
 "aws-cdk.aws-stepfunctions" = {version = "*", optional = true}
 "aws-cdk.aws-stepfunctions_tasks" = {version = "*", optional = true}
@@ -76,7 +77,7 @@ shellcheck-py = "*"
 
 [tool.poetry.dev-dependencies.boto3-stubs]
 version = "*"
-extras = ["batch", "dynamodb", "lambda", "s3", "s3control", "ssm", "stepfunctions", "sts"]
+extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "ssm", "stepfunctions", "sts"]
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"
@@ -91,6 +92,7 @@ cdk = [
     "aws-cdk.aws-ecs",
     "aws-cdk.aws-iam",
     "aws-cdk.aws-lambda",
+    "aws-cdk.aws-lambda-python",
     "aws-cdk.aws-s3",
     "aws-cdk.aws-stepfunctions",
     "aws-cdk.aws-stepfunctions_tasks",

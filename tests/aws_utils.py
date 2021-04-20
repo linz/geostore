@@ -21,6 +21,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
@@ -72,6 +73,10 @@ def any_next_item_index() -> int:
 def any_item_count() -> int:
     """Arbitrary non-negative integer"""
     return randrange(3)
+
+
+def any_table_name() -> str:
+    return random_string(15)
 
 
 # IAM
@@ -184,7 +189,9 @@ class ValidationItem:
         url: str,
         check: str,
     ):
-        validation_results_model = validation_results_model_with_meta()
+        validation_results_model = validation_results_model_with_meta(
+            get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
+        )
         self._item = validation_results_model(
             pk=asset_id,
             sk=f"CHECK#{check}#URL#{url}",
