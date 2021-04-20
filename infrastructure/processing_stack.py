@@ -278,7 +278,7 @@ class ProcessingStack(Stack):
                     import_dataset_task.lambda_function,
                 ],
                 validation_results_table.name_parameter: [
-                   check_stac_metadata_task.lambda_function.role,
+                    check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
                     content_iterator_task.lambda_function,
                 ],
