@@ -27,10 +27,8 @@ def main() -> int:
     hash_key = f"DATASET#{arguments.dataset_id}#VERSION#{arguments.version_id}"
     range_key = f"{ProcessingAssetType.DATA.value}#{index}"
 
-    validation_result_factory = ValidationResultFactory(
-        hash_key,
-        arguments.results_table_name,
-    )
+    validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)
+
     checksum_validator = ChecksumValidator(
         arguments.assets_table_name, validation_result_factory, LOGGER
     )

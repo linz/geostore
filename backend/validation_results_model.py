@@ -78,10 +78,9 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(
         self,
         hash_key: str,
-        results_table_name: Optional[str] = None,
+        results_table_name: str,
     ):
-        if results_table_name is None:
-            results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
+
         self.hash_key = hash_key
         self.validation_results_model = validation_results_model_with_meta(results_table_name)
 

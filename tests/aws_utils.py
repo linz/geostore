@@ -76,7 +76,7 @@ def any_item_count() -> int:
 
 
 def any_table_name() -> str:
-    return f"{random_string(5)}_{random_string(5)}_{random_string(5)}"
+    return random_string(15)
 
 
 # IAM
