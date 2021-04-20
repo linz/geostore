@@ -4,7 +4,7 @@ Data Lake AWS resources definitions.
 from os import environ
 from typing import Any
 
-from aws_cdk import aws_iam, aws_ssm, aws_stepfunctions
+from aws_cdk import aws_iam, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Duration, Stack, Tags
 
 from backend.resources import ResourceName
@@ -26,6 +26,8 @@ class APIStack(Stack):
         deploy_env: str,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
+        storage_bucket: aws_s3.Bucket,
+        storage_bucket_parameter: aws_ssm.StringParameter,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -72,6 +74,9 @@ class APIStack(Stack):
         ).lambda_function
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
+
+        storage_bucket.grant_read(datasets_endpoint_lambda)
+        storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)

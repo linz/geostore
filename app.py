@@ -59,6 +59,8 @@ def main() -> None:
         validation_results_table=storage.validation_results_table,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
+        storage_bucket=storage.storage_bucket,
+        storage_bucket_parameter=storage.storage_bucket_parameter,
     )
 
     # tag all resources in stack
