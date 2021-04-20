@@ -38,13 +38,16 @@ class ChecksumMismatchError(Exception):
 class ChecksumValidator:
     def __init__(
         self,
+        processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
         self.logger = logger
 
-        self.processing_assets_model = processing_assets_model_with_meta()
+        self.processing_assets_model = processing_assets_model_with_meta(
+            processing_assets_table_name
+        )
 
     def log_failure(self, content: JsonObject) -> None:
         self.logger.error(dumps({"success": False, **content}))

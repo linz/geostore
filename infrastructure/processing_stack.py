@@ -96,6 +96,8 @@ class ProcessingStack(Stack):
             "version_id.$": "$.version_id",
             "metadata_url.$": "$.metadata_url",
             "first_item.$": "$.content.first_item",
+            "assets_table_name.$": "$.content.assets_table_name",
+            "results_table_name.$": "$.content.results_table_name",
         }
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
@@ -112,6 +114,10 @@ class ProcessingStack(Stack):
                 "Ref::version_id",
                 "--first-item",
                 "Ref::first_item",
+                "--assets-table-name",
+                "Ref::assets_table_name",
+                "--results-table-name",
+                "Ref::results_table_name",
             ],
         )
         array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
@@ -130,6 +136,10 @@ class ProcessingStack(Stack):
                 "Ref::version_id",
                 "--first-item",
                 "Ref::first_item",
+                "--assets-table-name",
+                "Ref::assets_table_name",
+                "--results-table-name",
+                "Ref::results_table_name",
             ],
             array_size=array_size,
         )
@@ -259,8 +269,6 @@ class ProcessingStack(Stack):
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 processing_assets_table.name_parameter: [
-                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
-                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
                     check_stac_metadata_task.lambda_function.role,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
@@ -269,10 +277,9 @@ class ProcessingStack(Stack):
                     import_dataset_task.lambda_function,
                 ],
                 validation_results_table.name_parameter: [
-                    check_files_checksums_array_task.job_role,  # type: ignore[list-item]
-                    check_files_checksums_single_task.job_role,  # type: ignore[list-item]
                     check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
+                    content_iterator_task.lambda_function,
                 ],
             }
         )

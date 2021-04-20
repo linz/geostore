@@ -11,6 +11,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from backend.error_response_keys import ERROR_KEY
+from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 
 from .general_generators import any_program_name
@@ -45,6 +46,8 @@ class TestLogging:
             any_program_name(),
             f"--dataset-id={dataset_id}",
             f"--version-id={version_id}",
+            f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
+            f"--results-table-name={get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)}",
             f"--first-item={index}",
         ]
 
