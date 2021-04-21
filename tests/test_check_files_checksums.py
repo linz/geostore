@@ -27,6 +27,7 @@ from .aws_utils import (
     MockValidationResultFactory,
     any_batch_job_array_index,
     any_s3_url,
+    any_table_name,
 )
 from .general_generators import any_program_name
 from .stac_generators import (
@@ -82,13 +83,19 @@ def should_validate_given_index(
 
     processing_assets_model_mock.return_value.get.side_effect = get_mock
     logger = logging.getLogger("backend.check_files_checksums.task")
-    expected_calls = [call(hash_key), call().save(url, Check.CHECKSUM, ValidationResult.PASSED)]
+    validation_results_table_name = any_table_name()
+    expected_calls = [
+        call(hash_key, validation_results_table_name),
+        call().save(url, Check.CHECKSUM, ValidationResult.PASSED),
+    ]
 
     # When
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--assets-table-name={any_table_name()}",
+        f"--results-table-name={validation_results_table_name}",
         "--first-item=0",
     ]
     with patch.object(logger, "info") as info_log_mock, patch.dict(
@@ -111,12 +118,13 @@ def should_validate_given_index(
 @patch("backend.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("backend.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("backend.check_files_checksums.task.ValidationResultFactory")
-def should_log_error_when_validation_fails(
+def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
+
     # Given
     actual_hex_digest = any_sha256_hex_digest()
     expected_hex_digest = any_sha256_hex_digest()
@@ -138,10 +146,14 @@ def should_log_error_when_validation_fails(
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("backend.check_files_checksums.task")
     # When
+
+    validation_results_table_name = any_table_name()
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={dataset_version_id}",
+        f"--assets-table-name={any_table_name()}",
+        f"--results-table-name={validation_results_table_name}",
         "--first-item=0",
     ]
 
@@ -157,7 +169,7 @@ def should_log_error_when_validation_fails(
 
     with subtests.test(msg="Validation result"):
         assert validation_results_factory_mock.mock_calls == [
-            call(hash_key),
+            call(hash_key, validation_results_table_name),
             call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
         ]
 
@@ -182,11 +194,14 @@ def should_save_staging_access_validation_results(
 
     array_index = "1"
 
+    validation_results_table_name = any_table_name()
     # When
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--assets-table-name={any_table_name()}",
+        f"--results-table-name={validation_results_table_name}",
         "--first-item=0",
     ]
 
@@ -206,7 +221,7 @@ def should_save_staging_access_validation_results(
         main()
 
     assert validation_results_factory_mock.mock_calls == [
-        call(hash_key),
+        call(hash_key, validation_results_table_name),
         call().save(
             s3_url,
             Check.STAGING_ACCESS,
@@ -228,9 +243,9 @@ class TestsWithLogger:
         get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
 
         with patch("backend.check_files_checksums.utils.processing_assets_model_with_meta"):
-            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
-                any_s3_url(), EMPTY_FILE_MULTIHASH
-            )
+            ChecksumValidator(
+                any_table_name(), MockValidationResultFactory(), self.logger
+            ).validate_url_multihash(any_s3_url(), EMPTY_FILE_MULTIHASH)
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_raise_exception_when_checksum_does_not_match(
@@ -244,6 +259,6 @@ class TestsWithLogger:
         with raises(ChecksumMismatchError), patch(
             "backend.check_files_checksums.utils.processing_assets_model_with_meta"
         ):
-            ChecksumValidator(MockValidationResultFactory(), self.logger).validate_url_multihash(
-                any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}"
-            )
+            ChecksumValidator(
+                any_table_name(), MockValidationResultFactory(), self.logger
+            ).validate_url_multihash(any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}")

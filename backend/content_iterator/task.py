@@ -1,5 +1,6 @@
 from jsonschema import validate  # type: ignore[import]
 
+from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
@@ -69,4 +70,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         "first_item": str(first_item_index),
         "iteration_size": iteration_size,
         "next_item": next_item_index,
+        "assets_table_name": get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME),
+        "results_table_name": get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME),
     }

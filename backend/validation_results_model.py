@@ -41,29 +41,33 @@ class ValidationResultsModelBase(Model):
     validation_outcome_index: ValidationOutcomeIdx
 
 
-class ValidationResultsModelMeta(MetaModel):
-    def __new__(
-        cls,
-        name: str,
-        bases: Tuple[Type[object], ...],
-        namespace: Dict[str, Any],
-        discriminator: Optional[Any] = None,
-    ) -> "ValidationResultsModelMeta":
-        namespace["Meta"] = type(
-            "Meta",
-            (),
-            {
-                "table_name": get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME),
-                "region": environ["AWS_DEFAULT_REGION"],
-            },
-        )
-        klass: "ValidationResultsModelMeta" = MetaModel.__new__(
-            cls, name, bases, namespace, discriminator=discriminator
-        )
-        return klass
+def validation_results_model_with_meta(
+    results_table_name: Optional[str] = None,
+) -> Type[ValidationResultsModelBase]:
+    if results_table_name is None:
+        results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
 
+    class ValidationResultsModelMeta(MetaModel):
+        def __new__(
+            cls,
+            name: str,
+            bases: Tuple[Type[object], ...],
+            namespace: Dict[str, Any],
+            discriminator: Optional[Any] = None,
+        ) -> "ValidationResultsModelMeta":
+            namespace["Meta"] = type(
+                "Meta",
+                (),
+                {
+                    "table_name": results_table_name,
+                    "region": environ["AWS_DEFAULT_REGION"],
+                },
+            )
+            klass: "ValidationResultsModelMeta" = MetaModel.__new__(
+                cls, name, bases, namespace, discriminator=discriminator
+            )
+            return klass
 
-def validation_results_model_with_meta() -> Type[ValidationResultsModelBase]:
     class ValidationResultsModel(ValidationResultsModelBase, metaclass=ValidationResultsModelMeta):
         validation_outcome_index = ValidationOutcomeIdx()
 
@@ -71,9 +75,14 @@ def validation_results_model_with_meta() -> Type[ValidationResultsModelBase]:
 
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
-    def __init__(self, hash_key: str):
+    def __init__(
+        self,
+        hash_key: str,
+        results_table_name: str,
+    ):
+
         self.hash_key = hash_key
-        self.validation_results_model = validation_results_model_with_meta()
+        self.validation_results_model = validation_results_model_with_meta(results_table_name)
 
     def save(
         self, url: str, check: Check, result: ValidationResult, details: Optional[JsonObject] = None

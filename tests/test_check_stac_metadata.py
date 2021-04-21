@@ -27,6 +27,7 @@ from .aws_utils import (
     S3Object,
     any_lambda_context,
     any_s3_url,
+    any_table_name,
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
@@ -66,10 +67,14 @@ def should_succeed_with_validation_failure(validate_url_mock: MagicMock) -> None
 
 
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("backend.check_stac_metadata.task.get_param")
 def should_save_non_s3_url_validation_results(
+    get_param_mock: MagicMock,
     validation_results_factory_mock: MagicMock,
 ) -> None:
 
+    validation_results_table_name = any_table_name()
+    get_param_mock.return_value = validation_results_table_name
     non_s3_url = any_https_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
@@ -86,7 +91,7 @@ def should_save_non_s3_url_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     assert validation_results_factory_mock.mock_calls == [
-        call(hash_key),
+        call(hash_key, validation_results_table_name),
         call().save(
             non_s3_url,
             Check.NON_S3_URL,
@@ -149,6 +154,7 @@ def should_save_staging_access_validation_results(
     get_object_mock: MagicMock,
 ) -> None:
 
+    validation_results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
     )
@@ -169,7 +175,7 @@ def should_save_staging_access_validation_results(
 
     hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
     assert validation_results_factory_mock.mock_calls == [
-        call(hash_key),
+        call(hash_key, validation_results_table_name),
         call().save(
             s3_url,
             Check.STAGING_ACCESS,

@@ -57,16 +57,14 @@ repos:
     stages: [commit]
     types: [toml]
 
-# Reintroduce once https://github.com/dependabot/dependabot-core/issues/3263 and/or
-# https://github.com/macisamuele/language-formatters-pre-commit-hooks/issues/53 have been resolved
-#  - id: pretty-format-yaml
-#    name: Pretty format YAML
-#    entry: pretty-format-yaml
-#    args: [--autofix]
-#    language: system
-#    stages: [commit]
-#    types: [yaml]
-#
+  - id: pretty-format-yaml
+    name: Pretty format YAML
+    entry: pretty-format-yaml
+    args: [--autofix, --preserve-quotes]
+    language: system
+    stages: [commit]
+    types: [yaml]
+
   - id: pylint
     name: pylint
     entry: pylint
