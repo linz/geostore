@@ -13,7 +13,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         construct_id: str,
         *,
         directory: str,
-        extra_environment: Optional[Mapping[str, str]] = None,
+        extra_environment: Optional[Mapping[str, str]],
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
         bundling_options = BundlingOptions(
