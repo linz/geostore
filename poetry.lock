@@ -16,11 +16,11 @@ python-versions = "*"
 
 [[package]]
 name = "arrow"
-version = "0.17.0"
+version = "1.0.3"
 description = "Better dates & times for Python"
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.6"
 
 [package.dependencies]
 python-dateutil = ">=2.7.0"
@@ -1558,14 +1558,14 @@ python-versions = "*"
 
 [[package]]
 name = "gitlint"
-version = "0.15.0"
+version = "0.15.1"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-arrow = "0.17.0"
+arrow = "1.0.3"
 Click = "7.1.2"
 sh = {version = "1.14.1", markers = "sys_platform != \"win32\""}
 
@@ -1951,7 +1951,7 @@ dev = ["pre-commit", "tox"]
 
 [[package]]
 name = "pre-commit"
-version = "2.12.0"
+version = "2.12.1"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
 optional = false
@@ -2238,11 +2238,11 @@ python-versions = "*"
 
 [[package]]
 name = "shellcheck-py"
-version = "0.7.1.1"
+version = "0.7.2.1"
 description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [[package]]
 name = "six"
@@ -2431,8 +2431,8 @@ appnope = [
     {file = "appnope-0.1.2.tar.gz", hash = "sha256:dd83cd4b5b460958838f6eb3000c660b1f9caf2a5b1de4264e941512f603258a"},
 ]
 arrow = [
-    {file = "arrow-0.17.0-py2.py3-none-any.whl", hash = "sha256:e098abbd9af3665aea81bdd6c869e93af4feb078e98468dd351c383af187aac5"},
-    {file = "arrow-0.17.0.tar.gz", hash = "sha256:ff08d10cda1d36c68657d6ad20d74fbea493d980f8b2d45344e00d6ed2bf6ed4"},
+    {file = "arrow-1.0.3-py3-none-any.whl", hash = "sha256:3515630f11a15c61dcb4cdd245883270dd334c83f3e639824e65a4b79cc48543"},
+    {file = "arrow-1.0.3.tar.gz", hash = "sha256:399c9c8ae732270e1aa58ead835a79a40d7be8aa109c579898eb41029b5a231d"},
 ]
 astroid = [
     {file = "astroid-2.5.2-py3-none-any.whl", hash = "sha256:cd80bf957c49765dce6d92c43163ff9d2abc43132ce64d4b1b47717c6d2522df"},
@@ -2789,8 +2789,8 @@ filelock = [
     {file = "filelock-3.0.12.tar.gz", hash = "sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59"},
 ]
 gitlint = [
-    {file = "gitlint-0.15.0-py2.py3-none-any.whl", hash = "sha256:cf4881764c503845e24b6d8ce0c3bb28f37209dffebb4a25b84374356d72736a"},
-    {file = "gitlint-0.15.0.tar.gz", hash = "sha256:aae7e966d765a818d941398f2d3aff6ec7f30a7251dd5c915846b7e82f4f7776"},
+    {file = "gitlint-0.15.1-py2.py3-none-any.whl", hash = "sha256:7ebdb8e7d333e577e956225cbc3ad8e0e96d05e638e6d461c9b66b784f9d2ac4"},
+    {file = "gitlint-0.15.1.tar.gz", hash = "sha256:4b22916dcbdca381244aee6cb8d8743756cfd98f27e7d1f02e78733f07c3c21c"},
 ]
 identify = [
     {file = "identify-2.1.1-py2.py3-none-any.whl", hash = "sha256:220169a38a0c977c8fef377dc808d6a3330641b5211ec7356c7bbe73cda487c7"},
@@ -2974,8 +2974,8 @@ pluggy = [
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
 ]
 pre-commit = [
-    {file = "pre_commit-2.12.0-py2.py3-none-any.whl", hash = "sha256:029d53cb83c241fe7d66eeee1e24db426f42c858f15a38d20bcefd8d8e05c9da"},
-    {file = "pre_commit-2.12.0.tar.gz", hash = "sha256:46b6ffbab37986c47d0a35e40906ae029376deed89a0eb2e446fb6e67b220427"},
+    {file = "pre_commit-2.12.1-py2.py3-none-any.whl", hash = "sha256:70c5ec1f30406250b706eda35e868b87e3e4ba099af8787e3e8b4b01e84f4712"},
+    {file = "pre_commit-2.12.1.tar.gz", hash = "sha256:900d3c7e1bf4cf0374bb2893c24c23304952181405b4d88c9c40b72bda1bb8a9"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.16-py3-none-any.whl", hash = "sha256:62c811e46bd09130fb11ab759012a4ae385ce4fb2073442d1898867a824183bd"},
@@ -3183,10 +3183,10 @@ sh = [
     {file = "sh-1.14.1.tar.gz", hash = "sha256:39aa9af22f6558a0c5d132881cf43e34828ca03e4ae11114852ca6a55c7c1d8e"},
 ]
 shellcheck-py = [
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:9f537613212aad5221a020dde3b86884cf4778688788ac26ddeb21fecf3ec2e0"},
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:0fca77ece2ba232ca2fdbe4f15dc4b0a30f3e38e896345b2dbf4dbe20e4bb8a9"},
-    {file = "shellcheck_py-0.7.1.1-py2.py3-none-win_amd64.whl", hash = "sha256:59c623567a1a7bd0a919b5009790b199b5457a78053b775de1886f01693533af"},
-    {file = "shellcheck_py-0.7.1.1.tar.gz", hash = "sha256:044fb62e44d549c49a712c6ac0a60d6f4ae2d1afebbc167d65ec62dc689b8f2b"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:8855607a09888a7fcc6d9289772a29847d19b9785fd57239993db487a861a977"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9f0e0a6498102bb8a72d1e268b34615f5f2f0abdbb70196261fd9c2ac75cbb08"},
+    {file = "shellcheck_py-0.7.2.1-py2.py3-none-win_amd64.whl", hash = "sha256:d594a9750e322b23894f0dd1447542078ad7da6ad4cd3628e6f22707352abd42"},
+    {file = "shellcheck_py-0.7.2.1.tar.gz", hash = "sha256:a45daaab5b3e60daca6c72935d847075aa1177f1d0e01a258268b17a88b5c7e0"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},

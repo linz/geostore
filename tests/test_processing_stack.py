@@ -15,7 +15,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.import_status.get import ValidationOutcome
+from backend.import_status.get import Outcome
 from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
@@ -243,7 +243,7 @@ class TestWithStagingBucket:
                 "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "Succeeded"},
-                    "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
+                    "validation": {"status": Outcome.PASSED.value, "errors": []},
                     "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                     "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
@@ -378,7 +378,7 @@ class TestWithStagingBucket:
                 "statusCode": HTTPStatus.OK,
                 "body": {
                     "step function": {"status": "Succeeded"},
-                    "validation": {"status": ValidationOutcome.PASSED.value, "errors": []},
+                    "validation": {"status": Outcome.PASSED.value, "errors": []},
                     "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                     "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
