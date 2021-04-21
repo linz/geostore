@@ -19,7 +19,7 @@ Checklist before submitting:
 
 ## How to Reproduce
 
-<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. --> 
+<!-- Steps, sample datasets, config and commands/or steps to reproduce the behavior. -->
 
 1. Do …
 1. Run `…`

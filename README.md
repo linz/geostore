@@ -1,12 +1,14 @@
 # Geospatial Data Lake
 
-[![Deploy](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml) [![CodeQL Analysis](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml) ![](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
+[![Deploy](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml)
+[![CodeQL Analysis](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml)
+![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
-LINZ central storage, management and access solution for important geospatial datasets.
-Developed by [Land Information New Zealand](https://github.com/linz).
-
+LINZ central storage, management and access solution for important geospatial datasets. Developed by
+[Land Information New Zealand](https://github.com/linz).
 
 # Prerequisites
+
 ## Data Lake VPC
 
 A Data Lake VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
@@ -19,7 +21,6 @@ to create a VPC with the following tags:
 You can achieve this by adding the `networking_stack` (`datalake/networking_stack.py)` into `app.py`
 before deployment as a dependency of `processing_stack` (`datalake/processing_stack.py`).
 
-
 # Development setup
 
 One-time setup, assuming you are in the project directory:
@@ -27,121 +28,152 @@ One-time setup, assuming you are in the project directory:
 1. Install and configure Docker:
    1. Install the package: `sudo apt install docker.io`
    1. Add yourself to the "docker" group: `sudo usermod --append --groups docker "$USER"`
-   1. Either log out and back in, or run `newgrp docker` to enable the new group for yourself in the current terminal.
+   1. Either log out and back in, or run `newgrp docker` to enable the new group for yourself in the
+      current terminal.
 1. [Install and enable `pyenv`](https://github.com/pyenv/pyenv#installation):
-    1. Install Python build environment:
 
-        ```bash
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
-        ```
+   1. Install Python build environment:
+
+      ```bash
+      sudo apt-get update
+      sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
+      ```
+
    1. `curl https://pyenv.run | bash`
-   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `pyenv` is not installed):
+   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `pyenv`
+      is not installed):
 
-       ```bash
-       # Pyenv <https://github.com/pyenv/pyenv>
-       if [[ -e "${HOME}/.pyenv" ]]
-       then
-           PATH="${HOME}/.pyenv/bin:${PATH}"
-           eval "$(pyenv init -)"
-           eval "$(pyenv virtualenv-init -)"
-       fi
-       ```
+      ```bash
+      # Pyenv <https://github.com/pyenv/pyenv>
+      if [[ -e "${HOME}/.pyenv" ]]
+      then
+          PATH="${HOME}/.pyenv/bin:${PATH}"
+          eval "$(pyenv init -)"
+          eval "$(pyenv virtualenv-init -)"
+      fi
+      ```
+
    1. Restart your shell: `exec "$SHELL"`.
    1. Install the Python version used in this project: `pyenv install`.
    1. Restart your shell again: `exec "$SHELL"`.
-   1. Verify setup: `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` - should produce no output.
+   1. Verify setup:
+      `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` -
+      should produce no output.
+
 1. [Install and enable Poetry](https://python-poetry.org/docs/#installation):
+
    1. Install:
 
-       ```bash
-       curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-       ```
+      ```bash
+      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      ```
+
    1. Add the following to ~/.bashrc:
 
-       ```bash
-       # Poetry <https://python-poetry.org/>
-       if [[ -e "${HOME}/.poetry" ]]
-       then
-           PATH="${HOME}/.poetry/bin:${PATH}"
-       fi
-       ```
+      ```bash
+      # Poetry <https://python-poetry.org/>
+      if [[ -e "${HOME}/.poetry" ]]
+      then
+          PATH="${HOME}/.poetry/bin:${PATH}"
+      fi
+      ```
+
    1. Restart your shell: `exec "$SHELL"`.
    1. Verify setup: `poetry --version`.
+
 1. [Install and enable `nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
+
    1. Install (change the version number if you want to install a different one):
 
-       ```bash
-       curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-       ```
-   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `nvm` is not installed):
+      ```bash
+      curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+      ```
 
-       ```bash
-       if [[ -d "${HOME}/.nvm" ]]
-       then
-           export NVM_DIR="${HOME}/.nvm"
-           # shellcheck source=/dev/null
-           [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
-           # shellcheck source=/dev/null
-           [[ -s "${NVM_DIR}/bash_completion" ]] && . "${NVM_DIR}/bash_completion"
-       fi
-       ```
+   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `nvm` is
+      not installed):
+
+      ```bash
+      if [[ -d "${HOME}/.nvm" ]]
+      then
+          export NVM_DIR="${HOME}/.nvm"
+          # shellcheck source=/dev/null
+          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          # shellcheck source=/dev/null
+          [[ -s "${NVM_DIR}/bash_completion" ]] && . "${NVM_DIR}/bash_completion"
+      fi
+      ```
+
    1. Restart your shell: `exec "$SHELL"`.
    1. Verify setup: `nvm --version`.
+
 1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
 1. Run `./reset-dev-env.bash` to install packages.
 1. Enable the virtualenv: `. .venv/bin/activate`.
 1. Enable Node.js executables:
-   1. Add the executables directory to your path in ~/.bashrc (replace the project path with the path to this directory):
 
-       ```bash
-       if [[ -d "${HOME}/dev/geospatial-data-lake" ]]
-       then
-           PATH="${HOME}/dev/geospatial-data-lake/node_modules/.bin:${PATH}"
-       fi
-       ```
+   1. Add the executables directory to your path in ~/.bashrc (replace the project path with the
+      path to this directory):
+
+      ```bash
+      if [[ -d "${HOME}/dev/geospatial-data-lake" ]]
+      then
+          PATH="${HOME}/dev/geospatial-data-lake/node_modules/.bin:${PATH}"
+      fi
+      ```
+
    1. Verify setup: `cdk --version`
-1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This is optional since it currently can't be set per repository or organisation, so it affects any repos where you have access to Dependabot alerts.)
+
+1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
+   is optional since it currently can't be set per repository or organisation, so it affects any
+   repos where you have access to Dependabot alerts.)
 
 Re-run `./reset-dev-env.bash` when packages change.
 
 Re-run `. .venv/bin/activate` in each shell.
-
 
 # AWS Infrastructure deployment
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
 
-    ```bash
-    aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
-    ```
+   ```bash
+   aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
+   ```
+
 1. Environment variables
-   * **`DEPLOY_ENV`:** set deployment environment.
-     For your personal development stack: set DEPLOY_ENV to your username.
+
+   - **`DEPLOY_ENV`:** set deployment environment. For your personal development stack: set
+     DEPLOY_ENV to your username.
 
      ```bash
      export DEPLOY_ENV="$USER"
      ```
-     Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces. Default: dev.
-   * **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
+
+     Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.
+     Default: dev.
+
+   - **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
+
 1. Bootstrap CDK (only once per profile)
 
-    ```bash
-    cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
-    ```
+   ```bash
+   cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+   ```
+
 1. Deploy CDK stack
 
-    ```bash
-    cdk --profile=<AWS-PROFILE-NAME> deploy --all
-    ```
-   Once comfortable with CDK you can add `--require-approval=never` above to deploy non-interactively.
+   ```bash
+   cdk --profile=<AWS-PROFILE-NAME> deploy --all
+   ```
+
+   Once comfortable with CDK you can add `--require-approval=never` above to deploy
+   non-interactively.
 
 If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>`
 arguments above.
 
-
 # Development
+
 ## Adding or updating Python dependencies
 
 To add a development-only package: `poetry add --dev PACKAGE='*'`
@@ -153,26 +185,39 @@ To add a production package:
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
    - When adding a new "extra", make sure to install it in `reset-dev-env.bash`.
 
-- Make sure to update packages separately from adding packages. Basically, follow this process before running `poetry add`, and do the equivalent when updating Node.js packages or changing Docker base images:
+- Make sure to update packages separately from adding packages. Basically, follow this process
+  before running `poetry add`, and do the equivalent when updating Node.js packages or changing
+  Docker base images:
 
-   1. Check out a new branch on top of origin/master: `git checkout -b update-python-packages origin/master`.
-   1. Update the Python packages: `poetry update`. The rest of the steps are only necessary if this step changes poetry.lock. Otherwise you can just change back to the original branch and delete "update-python-packages".
-   1. Commit, push and create pull request.
-   1. Check out the branch where you originally wanted to run `poetry add`.
-   1. Rebase the branch onto the package update branch: `git rebase update-python-packages`.
+  1.  Check out a new branch on top of origin/master:
+      `git checkout -b update-python-packages origin/master`.
+  1.  Update the Python packages: `poetry update`. The rest of the steps are only necessary if this
+      step changes poetry.lock. Otherwise you can just change back to the original branch and delete
+      "update-python-packages".
+  1.  Commit, push and create pull request.
+  1.  Check out the branch where you originally wanted to run `poetry add`.
+  1.  Rebase the branch onto the package update branch: `git rebase update-python-packages`.
 
-   At this point any `poetry add` commands should not result in any package updates other than those necessary to fulfil the new packages' dependencies.
+  At this point any `poetry add` commands should not result in any package updates other than those
+  necessary to fulfil the new packages' dependencies.
 
-   Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting history. It also makes code review easier.
-- When there's a merge conflict in poetry.lock, first check whether either or both commits contain a package upgrade:
-   - If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
-   - If one of them does, check out that file (`git checkout --ours -- poetry.lock` or `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate `poetry.lock` with the current package versions.
-   - If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
+  Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting
+  history. It also makes code review easier.
 
-   Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
+- When there's a merge conflict in poetry.lock, first check whether either or both commits contain a
+  package upgrade:
+
+  - If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
+  - If one of them does, check out that file (`git checkout --ours -- poetry.lock` or
+    `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate
+    `poetry.lock` with the current package versions.
+  - If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
+
+  Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
+
 - Update the code coverage minimum in pyproject.toml on branches which increase it.
 
-   Rationale: By updating this continuously we avoid missing test regressions in new branches.
+  Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
 ## Running tests
 
