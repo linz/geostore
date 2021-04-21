@@ -1,9 +1,10 @@
 from typing import Optional
 
 from aws_cdk import aws_dynamodb, aws_ssm
-from aws_cdk.core import Construct, RemovalPolicy, Tags
+from aws_cdk.core import Construct, Tags
 
 from backend.parameter_store import ParameterName
+from infrastructure.removal_policy import REMOVAL_POLICY
 
 
 class Table(aws_dynamodb.Table):
@@ -17,10 +18,6 @@ class Table(aws_dynamodb.Table):
         parameter_name: ParameterName,
         sort_key: Optional[aws_dynamodb.Attribute] = None,
     ):
-        if deploy_env == "prod":
-            resource_removal_policy = RemovalPolicy.RETAIN
-        else:
-            resource_removal_policy = RemovalPolicy.DESTROY
 
         super().__init__(
             scope,
@@ -28,7 +25,7 @@ class Table(aws_dynamodb.Table):
             partition_key=aws_dynamodb.Attribute(name="pk", type=aws_dynamodb.AttributeType.STRING),
             sort_key=sort_key,
             point_in_time_recovery=True,
-            removal_policy=resource_removal_policy,
+            removal_policy=REMOVAL_POLICY,
             billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
         )
 

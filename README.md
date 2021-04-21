@@ -152,6 +152,12 @@ Re-run `. .venv/bin/activate` in each shell.
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.
      Default: dev.
 
+   * **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Data Lake
+     Storage S3 bucket or application database tables will be preserved even if the are removed from
+     stack or stack is deleted. Supported values:
+     - DESTROY: destroy resource when removed from stack or stack is deleted (default)
+     - RETAIN: retain orphaned resource when removed from stack or stack is deleted
+
    - **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
 
 1. Bootstrap CDK (only once per profile)
