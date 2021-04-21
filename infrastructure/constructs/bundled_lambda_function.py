@@ -1,9 +1,10 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_lambda, aws_lambda_python
-from aws_cdk.core import BundlingOptions, Construct, Duration
+from aws_cdk.core import Construct, Duration
 
 from ..common import LOG_LEVEL
+from .bundled_code import bundled_code
 
 
 class BundledLambdaFunction(aws_lambda.Function):
@@ -16,13 +17,6 @@ class BundledLambdaFunction(aws_lambda.Function):
         extra_environment: Optional[Mapping[str, str]],
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
-        bundling_options = BundlingOptions(
-            # pylint:disable=no-member
-            image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-            command=["backend/bundle.bash", directory],
-        )
-        lambda_code = aws_lambda.Code.from_asset(path=".", bundling=bundling_options)
-
         environment = {"LOGLEVEL": LOG_LEVEL}
         if extra_environment is not None:
             environment.update(extra_environment)
@@ -30,7 +24,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         super().__init__(
             scope,
             construct_id,
-            code=lambda_code,
+            code=bundled_code(directory),
             handler=f"backend.{directory}.task.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             environment=environment,
