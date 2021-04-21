@@ -101,6 +101,7 @@ One-time setup, assuming you are in the project directory:
        fi
        ```
    1. Verify setup: `cdk --version`
+1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This is optional since it currently can't be set per repository or organisation, so it affects any repos where you have access to Dependabot alerts.)
 
 Re-run `./reset-dev-env.bash` when packages change.
 
