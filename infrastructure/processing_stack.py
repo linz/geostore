@@ -243,14 +243,14 @@ class ProcessingStack(Stack):
             "import asset file function arn",
             string_value=import_asset_file_function.function_arn,
             description=f"Import asset file function ARN for {deploy_env}",
-            parameter_name=ParameterName.IMPORT_ASSET_FILE_FUNCTION_TASK_ARN.value,
+            parameter_name=ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN.value,
         )
         import_metadata_file_function_arn_parameter = aws_ssm.StringParameter(
             self,
             "import metadata file function arn",
             string_value=import_metadata_file_function.function_arn,
             description=f"Import metadata file function ARN for {deploy_env}",
-            parameter_name=ParameterName.IMPORT_METADATA_FILE_FUNCTION_TASK_ARN.value,
+            parameter_name=ParameterName.PROCESSING_IMPORT_METADATA_FILE_FUNCTION_TASK_ARN.value,
         )
 
         import_dataset_role_arn_parameter = aws_ssm.StringParameter(
@@ -258,7 +258,7 @@ class ProcessingStack(Stack):
             "import dataset role arn",
             string_value=import_dataset_role.role_arn,
             description=f"Import dataset role ARN for {deploy_env}",
-            parameter_name=ParameterName.IMPORT_DATASET_ROLE_ARN.value,
+            parameter_name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value,
         )
 
         grant_parameter_read_access(
@@ -332,7 +332,7 @@ class ProcessingStack(Stack):
             self,
             "state machine arn",
             description=f"State machine ARN for {deploy_env}",
-            parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
+            parameter_name=ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,  # pylint:disable=line-too-long
             string_value=self.state_machine.state_machine_arn,
         )
 

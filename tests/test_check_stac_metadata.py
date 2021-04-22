@@ -154,7 +154,7 @@ def should_save_staging_access_validation_results(
     get_object_mock: MagicMock,
 ) -> None:
 
-    validation_results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
+    validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
     )
