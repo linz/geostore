@@ -4,13 +4,14 @@ Data Lake AWS resources definitions.
 from typing import Any
 
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
-from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
+from aws_cdk.core import Construct, Stack, Tags
 
 from backend.datasets_model import DatasetsTitleIdx
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
 from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
+from infrastructure.removal_policy import REMOVAL_POLICY
 
 from .constructs.table import Table
 
@@ -18,12 +19,6 @@ from .constructs.table import Table
 class StorageStack(Stack):
     def __init__(self, scope: Construct, stack_id: str, deploy_env: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
-
-        # set resources depending on deployment type
-        if deploy_env == "prod":
-            resource_removal_policy = RemovalPolicy.RETAIN
-        else:
-            resource_removal_policy = RemovalPolicy.DESTROY
 
         ############################################################################################
         # ### DEPLOYMENT VERSION ###################################################################
@@ -62,7 +57,7 @@ class StorageStack(Stack):
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
-            removal_policy=resource_removal_policy,
+            removal_policy=REMOVAL_POLICY,
         )
         Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 

@@ -21,7 +21,7 @@ jobs:
           submodules: 'true'
           fetch-depth: 0
 
-        # prod version detection
+      # prod version detection
       - name: Configure production AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -38,7 +38,7 @@ jobs:
       - name: Checkout to current production version
         run: git checkout ${{ env.PROD_VERSION }}
 
-        # dependencies installation
+      # dependencies installation
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
         with:
@@ -82,7 +82,7 @@ jobs:
       - name: Print CDK version
         run: poetry run cdk --version
 
-        # deployment
+      # deployment
       - name: Configure CI AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -96,6 +96,7 @@ jobs:
         run: |
           DEPLOY_ENV="ci${GITHUB_RUN_ID}"
           echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+          echo "RESOURCE_REMOVAL_POLICY=RETAIN" | tee -a $GITHUB_ENV
 
       - name: Deploy copy of production AWS stacks in to CI environment
         run: |
@@ -115,7 +116,7 @@ jobs:
         with:
           submodules: 'true'
 
-        # dependencies installation
+      # dependencies installation
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
         with:
@@ -159,7 +160,7 @@ jobs:
       - name: Print CDK version
         run: poetry run cdk --version
 
-        # deployment
+      # deployment
       - name: Configure CI AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -173,6 +174,7 @@ jobs:
         run: |
           DEPLOY_ENV="ci${GITHUB_RUN_ID}"
           echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+          echo "RESOURCE_REMOVAL_POLICY=RETAIN" | tee -a $GITHUB_ENV
 
       - name: Upgrade copy of production AWS stacks in CI environment
         run: |
@@ -239,7 +241,7 @@ jobs:
       - name: Print CDK version
         run: poetry run cdk --version
 
-        # NONPROD DEPLOYMENT - deploy all changes in master branch
+      # NONPROD DEPLOYMENT - deploy all changes in master branch
       - name: (NonProd) Configure AWS credentials
         if: >
           github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
@@ -262,7 +264,7 @@ jobs:
           DATALAKE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_NON_PROD }}
 
-        # PROD DEPLOYMENT - in release branch, deploy on tag, otherwise report stack changes only
+      # PROD DEPLOYMENT - in release branch, deploy on tag, otherwise report stack changes only
       - name: (Prod) Configure AWS credentials
         if: >
           startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref,
