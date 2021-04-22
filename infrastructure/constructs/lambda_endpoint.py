@@ -1,6 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda, aws_lambda_python
 from aws_cdk.core import Construct, Duration
 
+from ..runtime import PYTHON_RUNTIME
 from .bundled_code import bundled_code
 
 
@@ -22,7 +23,7 @@ class LambdaEndpoint(Construct):
             f"{deploy_env}-{construct_id}-function",
             function_name=f"{deploy_env}-{construct_id}",
             handler=f"backend.{package_name}.entrypoint.lambda_handler",
-            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            runtime=PYTHON_RUNTIME,
             timeout=Duration.seconds(60),
             code=bundled_code(package_name),
             layers=[botocore_lambda_layer],  # type: ignore[list-item]

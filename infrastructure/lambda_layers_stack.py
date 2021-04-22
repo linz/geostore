@@ -1,10 +1,11 @@
 from typing import Any, Optional
 
 import constructs
-from aws_cdk import aws_lambda, aws_lambda_python
+from aws_cdk import aws_lambda_python
 from aws_cdk.core import Stack
 
 from backend.environment import ENV
+from infrastructure.runtime import PYTHON_RUNTIME
 
 
 class LambdaLayersStack(Stack):
@@ -20,6 +21,6 @@ class LambdaLayersStack(Stack):
             self,
             f"{ENV}-botocore-lambda-layer",
             entry="infrastructure/lambda_layers/botocore",
-            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_8],
+            compatible_runtimes=[PYTHON_RUNTIME],
             description="botocore library",
         )
