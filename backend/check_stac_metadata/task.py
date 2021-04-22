@@ -50,7 +50,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     hash_key = f"DATASET#{event[DATASET_ID_KEY]}#VERSION#{event[VERSION_ID_KEY]}"
 
     validation_result_factory = ValidationResultFactory(
-        hash_key, get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
+        hash_key, get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     )
     validator = STACDatasetValidator(s3_url_reader, validation_result_factory)
 

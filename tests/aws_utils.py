@@ -190,7 +190,7 @@ class ValidationItem:
         check: str,
     ):
         validation_results_model = validation_results_model_with_meta(
-            get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
+            get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
         )
         self._item = validation_results_model(
             pk=asset_id,

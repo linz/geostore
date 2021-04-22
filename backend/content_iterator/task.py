@@ -71,5 +71,5 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         "iteration_size": iteration_size,
         "next_item": next_item_index,
         "assets_table_name": get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME),
-        "results_table_name": get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME),
+        "results_table_name": get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME),
     }
