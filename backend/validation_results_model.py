@@ -45,7 +45,7 @@ def validation_results_model_with_meta(
     results_table_name: Optional[str] = None,
 ) -> Type[ValidationResultsModelBase]:
     if results_table_name is None:
-        results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+        results_table_name = get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)
 
     class ValidationResultsModelMeta(MetaModel):
         def __new__(
