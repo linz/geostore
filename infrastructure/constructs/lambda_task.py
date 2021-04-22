@@ -14,7 +14,6 @@ class LambdaTask(Construct):
         construct_id: str,
         *,
         directory: str,
-        application_layer: str,
         result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
@@ -25,7 +24,6 @@ class LambdaTask(Construct):
             self,
             f"{construct_id}-bundled-lambda-function",
             directory=directory,
-            application_layer=application_layer,
             extra_environment=extra_environment,
             botocore_lambda_layer=botocore_lambda_layer,
         )

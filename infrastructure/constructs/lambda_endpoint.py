@@ -1,5 +1,5 @@
 from aws_cdk import aws_iam, aws_lambda, aws_lambda_python
-from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
+from aws_cdk.core import BundlingOptions, Construct, Duration
 
 
 class LambdaEndpoint(Construct):
@@ -35,5 +35,3 @@ class LambdaEndpoint(Construct):
 
         self.lambda_function.add_environment("DEPLOY_ENV", deploy_env)
         self.lambda_function.grant_invoke(users_role)  # type: ignore[arg-type]
-
-        Tags.of(self.lambda_function).add("ApplicationLayer", "api")
