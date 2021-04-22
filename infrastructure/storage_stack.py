@@ -75,7 +75,7 @@ class StorageStack(Stack):
             self,
             f"{ENV}-datasets",
             deploy_env=deploy_env,
-            parameter_name=ParameterName.DATASETS_TABLE_NAME,
+            parameter_name=ParameterName.STORAGE_DATASETS_TABLE_NAME,
         )
 
         self.datasets_table.add_global_secondary_index(
@@ -89,7 +89,7 @@ class StorageStack(Stack):
             self,
             f"{ENV}-validation-results",
             deploy_env=deploy_env,
-            parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
+            parameter_name=ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
 
