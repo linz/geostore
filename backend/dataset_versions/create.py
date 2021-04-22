@@ -58,9 +58,7 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         VERSION_ID_KEY: dataset_version_id,
         METADATA_URL_KEY: req_body["metadata-url"],
     }
-    state_machine_arn = get_param(
-        ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN
-    )
+    state_machine_arn = get_param(ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN)
 
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,
