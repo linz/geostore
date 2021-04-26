@@ -1,5 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda, aws_lambda_python
-from aws_cdk.core import BundlingOptions, Construct, Duration
+from aws_cdk.core import Construct, Duration
+
+from .bundled_code import bundled_code
 
 
 class LambdaEndpoint(Construct):
@@ -22,14 +24,7 @@ class LambdaEndpoint(Construct):
             handler=f"backend.{package_name}.entrypoint.lambda_handler",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             timeout=Duration.seconds(60),
-            code=aws_lambda.Code.from_asset(
-                path=".",
-                bundling=BundlingOptions(
-                    # pylint:disable=no-member
-                    image=aws_lambda.Runtime.PYTHON_3_8.bundling_docker_image,
-                    command=["backend/bundle.bash", package_name],
-                ),
-            ),
+            code=bundled_code(package_name),
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
         )
 
