@@ -21,7 +21,6 @@ class StagingStack(Stack):
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
         )
-        Tags.of(self.staging_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 
         self.staging_bucket_name_parameter = aws_ssm.StringParameter(
             self,
@@ -30,3 +29,5 @@ class StagingStack(Stack):
             parameter_name=ParameterName.STAGING_BUCKET_NAME.value,
             string_value=self.staging_bucket.bucket_name,
         )
+
+        Tags.of(self).add("ApplicationLayer", "staging")  # type: ignore[arg-type]

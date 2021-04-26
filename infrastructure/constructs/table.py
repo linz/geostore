@@ -1,7 +1,7 @@
 from typing import Optional
 
 from aws_cdk import aws_dynamodb, aws_ssm
-from aws_cdk.core import Construct, Tags
+from aws_cdk.core import Construct
 
 from backend.parameter_store import ParameterName
 from infrastructure.removal_policy import REMOVAL_POLICY
@@ -14,7 +14,6 @@ class Table(aws_dynamodb.Table):
         construct_id: str,
         *,
         deploy_env: str,
-        application_layer: str,
         parameter_name: ParameterName,
         sort_key: Optional[aws_dynamodb.Attribute] = None,
     ):
@@ -28,8 +27,6 @@ class Table(aws_dynamodb.Table):
             removal_policy=REMOVAL_POLICY,
             billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
         )
-
-        Tags.of(self).add("ApplicationLayer", application_layer)  # type: ignore[arg-type]
 
         self.name_parameter = aws_ssm.StringParameter(
             self,

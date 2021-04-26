@@ -59,7 +59,6 @@ class StorageStack(Stack):
             versioned=True,
             removal_policy=REMOVAL_POLICY,
         )
-        Tags.of(self.storage_bucket).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
 
         self.storage_bucket_parameter = aws_ssm.StringParameter(
             self,
@@ -72,12 +71,10 @@ class StorageStack(Stack):
         ############################################################################################
         # ### APPLICATION DB #######################################################################
         ############################################################################################
-        application_layer = "application-db"
         self.datasets_table = Table(
             self,
             f"{ENV}-datasets",
             deploy_env=deploy_env,
-            application_layer=application_layer,
             parameter_name=ParameterName.DATASETS_TABLE_NAME,
         )
 
@@ -92,7 +89,6 @@ class StorageStack(Stack):
             self,
             f"{ENV}-validation-results",
             deploy_env=deploy_env,
-            application_layer=application_layer,
             parameter_name=ParameterName.VALIDATION_RESULTS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
@@ -106,3 +102,5 @@ class StorageStack(Stack):
                 name=ValidationOutcomeIdx.result.attr_name, type=aws_dynamodb.AttributeType.STRING
             ),
         )
+
+        Tags.of(self).add("ApplicationLayer", "storage")  # type: ignore[arg-type]

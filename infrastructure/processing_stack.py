@@ -4,7 +4,7 @@ Data Lake processing stack.
 from typing import Any
 
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Stack
+from aws_cdk.core import Construct, Stack, Tags
 
 from backend.environment import ENV
 from backend.parameter_store import ParameterName
@@ -34,15 +34,12 @@ class ProcessingStack(Stack):
         # pylint: disable=too-many-locals
         super().__init__(scope, stack_id, **kwargs)
 
-        application_layer = "data-processing"
-
         ############################################################################################
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
             f"{ENV}-processing-assets",
             deploy_env=deploy_env,
-            application_layer=application_layer,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
@@ -67,7 +64,6 @@ class ProcessingStack(Stack):
             self,
             "check-stac-metadata-task",
             directory="check_stac_metadata",
-            application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -88,7 +84,6 @@ class ProcessingStack(Stack):
             "content-iterator-task",
             directory="content_iterator",
             result_path="$.content",
-            application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -171,7 +166,6 @@ class ProcessingStack(Stack):
             "validation-summary-task",
             directory="validation_summary",
             result_path="$.validation",
-            application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -185,7 +179,6 @@ class ProcessingStack(Stack):
             "validation-failure-task",
             directory="validation_failure",
             result_path=aws_stepfunctions.JsonPath.DISCARD,
-            application_layer=application_layer,
             botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_invoke
 
@@ -200,7 +193,6 @@ class ProcessingStack(Stack):
         import_asset_file_function = ImportFileFunction(
             self,
             directory="import_asset_file",
-            application_layer=application_layer,
             invoker=import_dataset_role,
             deploy_env=deploy_env,
             botocore_lambda_layer=botocore_lambda_layer,
@@ -208,7 +200,6 @@ class ProcessingStack(Stack):
         import_metadata_file_function = ImportFileFunction(
             self,
             directory="import_metadata_file",
-            application_layer=application_layer,
             invoker=import_dataset_role,
             deploy_env=deploy_env,
             botocore_lambda_layer=botocore_lambda_layer,
@@ -226,7 +217,6 @@ class ProcessingStack(Stack):
             "import-dataset-task",
             directory="import_dataset",
             result_path="$.import_dataset",
-            application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -345,3 +335,5 @@ class ProcessingStack(Stack):
             parameter_name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,
             string_value=self.state_machine.state_machine_arn,
         )
+
+        Tags.of(self).add("ApplicationLayer", "processing")  # type: ignore[arg-type]

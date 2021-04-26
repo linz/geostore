@@ -52,7 +52,6 @@ class APIStack(Stack):
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=Duration.hours(12),
         )
-        Tags.of(users_role).add("ApplicationLayer", "users")  # type: ignore[arg-type]
 
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
@@ -118,3 +117,5 @@ class APIStack(Stack):
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
             }
         )
+
+        Tags.of(self).add("ApplicationLayer", "api")  # type: ignore[arg-type]

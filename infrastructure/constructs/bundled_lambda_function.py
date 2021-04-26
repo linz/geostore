@@ -1,7 +1,7 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_lambda, aws_lambda_python
-from aws_cdk.core import BundlingOptions, Construct, Duration, Tags
+from aws_cdk.core import BundlingOptions, Construct, Duration
 
 from ..common import LOG_LEVEL
 
@@ -13,7 +13,6 @@ class BundledLambdaFunction(aws_lambda.Function):
         construct_id: str,
         *,
         directory: str,
-        application_layer: str,
         extra_environment: Optional[Mapping[str, str]] = None,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
@@ -38,5 +37,3 @@ class BundledLambdaFunction(aws_lambda.Function):
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
             timeout=Duration.seconds(60),
         )
-
-        Tags.of(self).add("ApplicationLayer", application_layer)

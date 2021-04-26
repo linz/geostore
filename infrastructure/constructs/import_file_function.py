@@ -10,7 +10,6 @@ class ImportFileFunction(BundledLambdaFunction):
         scope: Construct,
         *,
         directory: str,
-        application_layer: str,
         invoker: aws_iam.Role,
         deploy_env: str,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
@@ -19,7 +18,6 @@ class ImportFileFunction(BundledLambdaFunction):
             scope,
             directory.replace("_", "-"),
             directory=directory,
-            application_layer=application_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
             botocore_lambda_layer=botocore_lambda_layer,
         )
