@@ -49,11 +49,11 @@ LOGGER = logging.getLogger(__name__)
 def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake State Machine ARN Parameter was created"""
     parameter_response = ssm_client.get_parameter(
-        Name=ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
+        Name=ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
     )
     assert (
         parameter_response["Parameter"]["Name"]
-        == ParameterName.DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
+        == ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
     )
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "stateMachine" in parameter_response["Parameter"]["Value"]
@@ -62,8 +62,13 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
 @mark.infrastructure
 def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) -> None:
     """Test if Data Lake S3 Batch Copy Role ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=ParameterName.IMPORT_DATASET_ROLE_ARN.value)
-    assert parameter_response["Parameter"]["Name"] == ParameterName.IMPORT_DATASET_ROLE_ARN.value
+    parameter_response = ssm_client.get_parameter(
+        Name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value
+    )
+    assert (
+        parameter_response["Parameter"]["Name"]
+        == ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value
+    )
     assert "arn" in parameter_response["Parameter"]["Value"]
     assert "iam" in parameter_response["Parameter"]["Value"]
 

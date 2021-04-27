@@ -73,7 +73,7 @@ class DatasetsModelMeta(MetaModel):
             "Meta",
             (),
             {
-                "table_name": get_param(ParameterName.DATASETS_TABLE_NAME),
+                "table_name": get_param(ParameterName.STORAGE_DATASETS_TABLE_NAME),
                 "region": environ["AWS_DEFAULT_REGION"],
             },
         )

@@ -47,7 +47,7 @@ class TestLogging:
             f"--dataset-id={dataset_id}",
             f"--version-id={version_id}",
             f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
-            f"--results-table-name={get_param(ParameterName.VALIDATION_RESULTS_TABLE_NAME)}",
+            f"--results-table-name={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}",  # pylint:disable=line-too-long
             f"--first-item={index}",
         ]
 
