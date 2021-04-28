@@ -5,13 +5,14 @@ from os import environ
 from typing import Any
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Duration, Stack, Tags
+from aws_cdk.core import Construct, Stack, Tags
 
 from backend.resources import ResourceName
 
 from .common import grant_parameter_read_access
 from .constructs.lambda_endpoint import LambdaEndpoint
 from .constructs.table import Table
+from .roles import MAX_SESSION_DURATION
 
 
 class APIStack(Stack):
@@ -50,7 +51,7 @@ class APIStack(Stack):
             "users-role",
             role_name=ResourceName.USERS_ROLE_NAME.value,
             assumed_by=principal,  # type: ignore[arg-type]
-            max_session_duration=Duration.hours(12),
+            max_session_duration=MAX_SESSION_DURATION,
         )
 
         ############################################################################################

@@ -11,6 +11,7 @@ from backend.environment import ENV
 from infrastructure.api_stack import APIStack
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from infrastructure.lambda_layers_stack import LambdaLayersStack
+from infrastructure.lds import LDSStack
 from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
@@ -72,6 +73,16 @@ def main() -> None:
         storage_bucket_parameter=storage.storage_bucket_parameter,
         botocore_lambda_layer=lambda_layers.botocore,
     )
+
+    if app.node.try_get_context("enableLDSAccess"):
+        LDSStack(
+            app,
+            "lds",
+            stack_name=f"{ENV}-geospatial-data-lake-lds",
+            env=environment,
+            deploy_env=ENV,
+            storage_bucket=storage.storage_bucket,
+        )
 
     # tag all resources in stack
     Tag.add(app, "CostCentre", "100005")
