@@ -36,7 +36,7 @@ class DatasetsModelBase(Model):
         hash_key=True, attr_name="pk", default=lambda: f"DATASET#{uuid.uuid1().hex}"
     )
     title = UnicodeAttribute()
-    created_at = UTCDateTimeAttribute(default=datetime.now(timezone.utc))
+    created_at = UTCDateTimeAttribute(default=lambda: datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()
 
     datasets_title_idx: DatasetsTitleIdx
