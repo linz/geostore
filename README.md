@@ -21,6 +21,14 @@ to create a VPC with the following tags:
 You can achieve this by adding the `networking_stack` (`datalake/networking_stack.py)` into `app.py`
 before deployment as a dependency of `processing_stack` (`datalake/processing_stack.py`).
 
+## Verify infrastructure settings
+
+This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific parts, controlled by
+settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
+The settings are:
+
+- `enableLDSAccess`: if true, gives the LINZ Data Service/Koordinates access to the storage bucket.
+
 # Development setup
 
 One-time setup, assuming you are in the project directory:
