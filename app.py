@@ -5,7 +5,7 @@ CDK application entry point file.
 """
 from os import environ
 
-from aws_cdk.core import App, Environment, Tag
+from aws_cdk.core import App, Environment, Stack, Tag
 
 from backend.environment import ENV
 from infrastructure.api_stack import APIStack
@@ -24,34 +24,28 @@ def main() -> None:
         account=environ["CDK_DEFAULT_ACCOUNT"], region=environ["CDK_DEFAULT_REGION"]
     )
 
+    datalake = Stack(app, "datalake", env=environment)
+
     storage = StorageStack(
-        app,
+        datalake,
         "storage",
-        stack_name=f"{ENV}-geospatial-data-lake-storage",
-        env=environment,
         deploy_env=ENV,
     )
 
     StagingStack(
-        app,
+        datalake,
         "staging",
         deploy_env=ENV,
-        stack_name=f"{ENV}-geospatial-data-lake-staging",
-        env=environment,
     )
 
     lambda_layers = LambdaLayersStack(
-        app,
+        datalake,
         "lambda-layers",
-        stack_name=f"{ENV}-geospatial-data-lake-lambda-layers",
-        env=environment,
     )
 
     processing = ProcessingStack(
-        app,
+        storage,
         "processing",
-        stack_name=f"{ENV}-geospatial-data-lake-processing",
-        env=environment,
         deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
@@ -60,10 +54,8 @@ def main() -> None:
     )
 
     APIStack(
-        app,
+        storage,
         "api",
-        stack_name=f"{ENV}-geospatial-data-lake-api",
-        env=environment,
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
         validation_results_table=storage.validation_results_table,
@@ -76,10 +68,8 @@ def main() -> None:
 
     if app.node.try_get_context("enableLDSAccess"):
         LDSStack(
-            app,
+            storage,
             "lds",
-            stack_name=f"{ENV}-geospatial-data-lake-lds",
-            env=environment,
             deploy_env=ENV,
             storage_bucket=storage.storage_bucket,
         )

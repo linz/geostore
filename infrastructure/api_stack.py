@@ -5,7 +5,7 @@ from os import environ
 from typing import Any
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, Tags
 
 from backend.resources import ResourceName
 
@@ -15,7 +15,7 @@ from .constructs.table import Table
 from .roles import MAX_SESSION_DURATION
 
 
-class APIStack(Stack):
+class APIStack(NestedStack):
     """Data Lake stack definition."""
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals

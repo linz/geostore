@@ -4,7 +4,7 @@ Data Lake AWS resources definitions.
 from typing import Any
 
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, PhysicalName, Tags
 
 from backend.datasets_model import DatasetsTitleIdx
 from backend.environment import ENV
@@ -16,7 +16,7 @@ from infrastructure.removal_policy import REMOVAL_POLICY
 from .constructs.table import Table
 
 
-class StorageStack(Stack):
+class StorageStack(NestedStack):
     def __init__(self, scope: Construct, stack_id: str, deploy_env: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
@@ -54,6 +54,7 @@ class StorageStack(Stack):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
+            bucket_name=PhysicalName.GENERATE_IF_NEEDED,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
