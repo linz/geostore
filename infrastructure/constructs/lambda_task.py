@@ -14,9 +14,9 @@ class LambdaTask(Construct):
         construct_id: str,
         *,
         directory: str,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
         super().__init__(scope, construct_id)
 
