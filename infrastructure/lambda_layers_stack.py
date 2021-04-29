@@ -5,7 +5,8 @@ from aws_cdk import aws_lambda_python
 from aws_cdk.core import Stack
 
 from backend.environment import ENV
-from infrastructure.runtime import PYTHON_RUNTIME
+
+from .runtime import PYTHON_RUNTIME
 
 
 class LambdaLayersStack(Stack):

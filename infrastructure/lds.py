@@ -3,7 +3,7 @@ from typing import Any
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, Stack, Tags
 
-from infrastructure.roles import MAX_SESSION_DURATION
+from .roles import MAX_SESSION_DURATION
 
 
 class LDSStack(Stack):

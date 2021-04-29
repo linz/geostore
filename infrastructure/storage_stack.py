@@ -11,9 +11,9 @@ from backend.environment import ENV
 from backend.parameter_store import ParameterName
 from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
-from infrastructure.removal_policy import REMOVAL_POLICY
 
 from .constructs.table import Table
+from .removal_policy import REMOVAL_POLICY
 
 
 class StorageStack(Stack):
