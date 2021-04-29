@@ -22,7 +22,7 @@ class LDSStack(Stack):
         role = aws_iam.Role(
             self,
             "koordinates-read-role",
-            role_name=f"koordinates-s3-access-read-role-{deploy_env}",
+            role_name=f"koordinates-s3-access-read-{deploy_env}",
             assumed_by=account_principal,  # type: ignore[arg-type]
             external_id={"prod": "koordinates-jAddR"}.get(deploy_env, "koordinates-4BnJQ"),
             max_session_duration=MAX_SESSION_DURATION,
