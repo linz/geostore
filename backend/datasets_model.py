@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timezone
 from os import environ
 from typing import Any, Dict, Optional, Tuple, Type
@@ -8,6 +7,7 @@ from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
 from pynamodb.settings import OperationSettings
+from ulid import ULID  # type: ignore[import]
 
 from .parameter_store import ParameterName, get_param
 
@@ -32,9 +32,7 @@ class DatasetsTitleIdx(
 class DatasetsModelBase(Model):
     """Dataset model."""
 
-    id = UnicodeAttribute(
-        hash_key=True, attr_name="pk", default=lambda: f"DATASET#{uuid.uuid1().hex}"
-    )
+    id = UnicodeAttribute(hash_key=True, attr_name="pk", default=lambda: f"DATASET#{ULID()}")
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default=lambda: datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()

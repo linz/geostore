@@ -2142,6 +2142,14 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
+name = "python-ulid"
+version = "1.0.2"
+description = "Universally Unique Lexicographically Sortable Identifier"
+category = "main"
+optional = true
+python-versions = "*"
+
+[[package]]
 name = "pyyaml"
 version = "5.4.1"
 description = "YAML parser and emitter for Python"
@@ -2410,8 +2418,8 @@ cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aw
 check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
-dataset_versions = ["jsonschema", "pynamodb"]
-datasets = ["jsonschema", "pynamodb"]
+dataset_versions = ["jsonschema", "pynamodb", "python-ulid"]
+datasets = ["jsonschema", "pynamodb", "python-ulid"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
 validation_summary = ["jsonschema", "pynamodb"]
@@ -2419,7 +2427,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "0798951be533670d9920271604364004f8447dbe4a5e017e2fe99ebfcba078dd"
+content-hash = "6f2e5550835d3e4dec2f70ec23e74792ff8e3b2795386b821a7bc869cb56fc83"
 
 [metadata.files]
 appdirs = [
@@ -3050,6 +3058,10 @@ pytest-timeout = [
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
+]
+python-ulid = [
+    {file = "python-ulid-1.0.2.tar.gz", hash = "sha256:f3772388eeb9a90b0004c706ac965d92210fb0b59ce413dae17e1f1a93bdcf14"},
+    {file = "python_ulid-1.0.2-py3-none-any.whl", hash = "sha256:e7ec6449227d7f700b5636254fb05fbf35d5c1a456acda00c712cefb9258e65c"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
