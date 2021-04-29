@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, Stack, Tags
@@ -9,8 +9,8 @@ from infrastructure.roles import MAX_SESSION_DURATION
 class LDSStack(Stack):
     def __init__(
         self,
-        scope: Optional[Construct] = None,
-        stack_id: Optional[str] = None,
+        scope: Construct,
+        stack_id: str,
         *,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,

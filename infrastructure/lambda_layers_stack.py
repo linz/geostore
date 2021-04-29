@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import constructs
 from aws_cdk import aws_lambda_python
@@ -11,8 +11,8 @@ from infrastructure.runtime import PYTHON_RUNTIME
 class LambdaLayersStack(Stack):
     def __init__(
         self,
-        scope: Optional[constructs.Construct] = None,
-        stack_id: Optional[str] = None,
+        scope: constructs.Construct,
+        stack_id: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
