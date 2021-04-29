@@ -27,7 +27,6 @@ def main() -> None:
     storage = StorageStack(
         app,
         "storage",
-        stack_name=f"{ENV}-geospatial-data-lake-storage",
         env=environment,
         deploy_env=ENV,
     )
@@ -36,21 +35,18 @@ def main() -> None:
         app,
         "staging",
         deploy_env=ENV,
-        stack_name=f"{ENV}-geospatial-data-lake-staging",
         env=environment,
     )
 
     lambda_layers = LambdaLayersStack(
         app,
         "lambda-layers",
-        stack_name=f"{ENV}-geospatial-data-lake-lambda-layers",
         env=environment,
     )
 
     processing = ProcessingStack(
         app,
         "processing",
-        stack_name=f"{ENV}-geospatial-data-lake-processing",
         env=environment,
         deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
@@ -62,7 +58,6 @@ def main() -> None:
     APIStack(
         app,
         "api",
-        stack_name=f"{ENV}-geospatial-data-lake-api",
         env=environment,
         deploy_env=ENV,
         datasets_table=storage.datasets_table,
@@ -78,7 +73,6 @@ def main() -> None:
         LDSStack(
             app,
             "lds",
-            stack_name=f"{ENV}-geospatial-data-lake-lds",
             env=environment,
             deploy_env=ENV,
             storage_bucket=storage.storage_bucket,
