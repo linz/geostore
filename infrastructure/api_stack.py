@@ -22,14 +22,15 @@ class APIStack(Stack):
         self,
         scope: Construct,
         stack_id: str,
+        *,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
-        validation_results_table: Table,
         deploy_env: str,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        validation_results_table: Table,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
