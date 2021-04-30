@@ -35,7 +35,7 @@ class APIStack(Stack):
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
-        self.storage = StorageStack(self, "storage", deploy_env=deploy_env)
+        storage = StorageStack(self, "storage", deploy_env=deploy_env)
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
@@ -85,7 +85,7 @@ class APIStack(Stack):
             policy=s3_read_only_access_policy
         )
 
-        for table in [processing_assets_table, self.storage.validation_results_table]:
+        for table in [processing_assets_table, storage.validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
                 check_stac_metadata_task.lambda_function,
@@ -169,10 +169,8 @@ class APIStack(Stack):
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            self.storage.validation_results_table.grant_read_write_data(
-                writer  # type: ignore[arg-type]
-            )
-            self.storage.validation_results_table.grant(
+            storage.validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
+            storage.validation_results_table.grant(
                 writer, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
@@ -184,10 +182,8 @@ class APIStack(Stack):
             result_path="$.validation",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
-        self.storage.validation_results_table.grant_read_data(
-            validation_summary_task.lambda_function
-        )
-        self.storage.validation_results_table.grant(
+        storage.validation_results_table.grant_read_data(validation_summary_task.lambda_function)
+        storage.validation_results_table.grant(
             validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
@@ -227,7 +223,7 @@ class APIStack(Stack):
             import_asset_file_function.role,
             import_metadata_file_function.role,
         ]:
-            self.storage.storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
+            storage.storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
         import_dataset_task = LambdaTask(
             self,
@@ -249,7 +245,7 @@ class APIStack(Stack):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        self.storage.storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        storage.storage_bucket.grant_read_write(import_dataset_task.lambda_function)
 
         processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
         processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
@@ -288,10 +284,10 @@ class APIStack(Stack):
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
-                self.storage.storage_bucket_parameter: [
+                storage.storage_bucket_parameter: [
                     import_dataset_task.lambda_function,
                 ],
-                self.storage.validation_results_table.name_parameter: [
+                storage.validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
                     content_iterator_task.lambda_function,
@@ -401,14 +397,12 @@ class APIStack(Stack):
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
-        self.storage.storage_bucket.grant_read(datasets_endpoint_lambda)
-        self.storage.storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
+        storage.storage_bucket.grant_read(datasets_endpoint_lambda)
+        storage.storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
-            self.storage.datasets_table.grant_read_write_data(function)
-            self.storage.datasets_table.grant(
-                function, "dynamodb:DescribeTable"
-            )  # required by pynamodb
+            storage.datasets_table.grant_read_write_data(function)
+            storage.datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,
@@ -419,8 +413,8 @@ class APIStack(Stack):
             botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
-        self.storage.validation_results_table.grant_read_data(import_status_endpoint_lambda)
-        self.storage.validation_results_table.grant(
+        storage.validation_results_table.grant_read_data(import_status_endpoint_lambda)
+        storage.validation_results_table.grant(
             import_status_endpoint_lambda, "dynamodb:DescribeTable"
         )  # required by pynamodb
 
@@ -435,13 +429,11 @@ class APIStack(Stack):
 
         grant_parameter_read_access(
             {
-                self.storage.datasets_table.name_parameter: [
+                storage.datasets_table.name_parameter: [
                     datasets_endpoint_lambda,
                     dataset_versions_endpoint_lambda,
                 ],
-                self.storage.validation_results_table.name_parameter: [
-                    import_status_endpoint_lambda
-                ],
+                storage.validation_results_table.name_parameter: [import_status_endpoint_lambda],
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
             }
         )

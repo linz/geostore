@@ -12,6 +12,7 @@ from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 from .constructs.table import Table
+from .lds import LDSStack
 from .removal_policy import REMOVAL_POLICY
 
 
@@ -103,3 +104,11 @@ class StorageStack(NestedStack):
         )
 
         Tags.of(self).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
+
+        if self.node.try_get_context("enableLDSAccess"):
+            LDSStack(
+                self,
+                "lds",
+                deploy_env=deploy_env,
+                storage_bucket=self.storage_bucket,
+            )
