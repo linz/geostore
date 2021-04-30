@@ -6,7 +6,6 @@ from typing import Any
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Stack, Tags
 
-from backend.environment import ENV
 from backend.parameter_store import ParameterName
 
 from .common import grant_parameter_read_access
@@ -39,7 +38,7 @@ class ProcessingStack(Stack):
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
-            f"{ENV}-processing-assets",
+            f"{deploy_env}-processing-assets",
             deploy_env=deploy_env,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
