@@ -213,7 +213,7 @@ class TestWithStagingBucket:
 
                     assert execution["status"] == "SUCCEEDED", execution
 
-                assert (execution_output := execution.get("output")) , execution
+                assert (execution_output := execution.get("output")), execution
 
                 account_id = sts_client.get_caller_identity()["Account"]
 
@@ -352,7 +352,7 @@ class TestWithStagingBucket:
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
                         time.sleep(5)
 
-                assert (execution_output := execution.get("output")) , execution
+                assert (execution_output := execution.get("output")), execution
 
                 account_id = sts_client.get_caller_identity()["Account"]
 
