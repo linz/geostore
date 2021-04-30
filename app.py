@@ -43,6 +43,7 @@ def main() -> None:
     lambda_layers = LambdaLayersStack(
         app,
         "lambda-layers",
+        deploy_env=ENV,
         env=environment,
         stack_name=f"{ENV}-geospatial-data-lake-lambda-layers",
     )
