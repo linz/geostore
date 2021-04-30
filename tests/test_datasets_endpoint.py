@@ -12,6 +12,7 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.datasets import entrypoint
+from backend.datasets.create import TITLE_PATTERN
 from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
@@ -44,7 +45,7 @@ def should_create_dataset(subtests: SubTests) -> None:
 
 @mark.infrastructure
 def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
-    dataset_title = "Dataset ABC"
+    dataset_title = any_dataset_title()
     body = {"title": dataset_title}
 
     with Dataset(title=dataset_title):
@@ -56,6 +57,22 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
         "statusCode": HTTPStatus.CONFLICT,
         "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
+
+
+@mark.infrastructure
+def should_return_client_error_when_title_contains_unsupported_characters(
+    subtests: SubTests,
+) -> None:
+    for character in "!@#$%^&*(){}?+| /=":
+        with subtests.test(msg=character):
+            response = entrypoint.lambda_handler(
+                {"httpMethod": "POST", "body": {"title": character}}, any_lambda_context()
+            )
+
+            assert response == {
+                "statusCode": HTTPStatus.BAD_REQUEST,
+                "body": {"message": f"Bad Request: '{character}' does not match '{TITLE_PATTERN}'"},
+            }
 
 
 @mark.infrastructure
