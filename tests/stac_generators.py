@@ -4,7 +4,9 @@ from uuid import uuid4
 
 from multihash import SHA2_256  # type: ignore[import]
 
-from .general_generators import random_string
+from backend.datasets.create import TITLE_CHARACTERS
+
+from .general_generators import _random_string_choices, random_string
 
 
 def any_hex_multihash() -> str:
@@ -30,8 +32,8 @@ def any_dataset_version_id() -> str:
 
 
 def any_dataset_title() -> str:
-    """Arbitrary-length string"""
-    return random_string(20)
+    """Arbitrary-length string of valid dataset title characters"""
+    return _random_string_choices(TITLE_CHARACTERS, 20)
 
 
 def any_asset_name() -> str:

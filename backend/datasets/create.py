@@ -1,5 +1,6 @@
 """Create dataset function."""
 from http import HTTPStatus
+from string import ascii_letters, digits
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
@@ -7,13 +8,16 @@ from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
 from ..types import JsonObject
 
+TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
+TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
+
 
 def create_dataset(payload: JsonObject) -> JsonObject:
     """POST: Create Dataset."""
 
     body_schema = {
         "type": "object",
-        "properties": {"title": {"type": "string"}},
+        "properties": {"title": {"type": "string", "pattern": TITLE_PATTERN}},
         "required": ["title"],
     }
 
