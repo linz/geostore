@@ -1,10 +1,11 @@
 """
 Data Lake processing stack.
 """
+from dataclasses import dataclass
 from typing import Any
 
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, NestedStackProps, Tags
 
 from backend.parameter_store import ParameterName
 
@@ -16,7 +17,16 @@ from .constructs.lambda_task import LambdaTask
 from .constructs.table import Table
 
 
-class ProcessingStack(Stack):
+@dataclass
+class ProcessingStackProps(NestedStackProps):
+    botocore_lambda_layer: aws_lambda_python.PythonLayerVersion
+    datasets_table: Table
+    storage_bucket: aws_s3.Bucket
+    storage_bucket_parameter: aws_ssm.StringParameter
+    validation_results_table: Table
+
+
+class ProcessingStack(NestedStack):
     """Data Lake processing stack definition."""
 
     def __init__(  # pylint: disable=too-many-arguments
@@ -24,12 +34,8 @@ class ProcessingStack(Stack):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
-        datasets_table: Table,
         deploy_env: str,
-        storage_bucket: aws_s3.Bucket,
-        storage_bucket_parameter: aws_ssm.StringParameter,
-        validation_results_table: Table,
+        props: ProcessingStackProps,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
@@ -65,7 +71,7 @@ class ProcessingStack(Stack):
             self,
             "check-stac-metadata-task",
             directory="check_stac_metadata",
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
         assert check_stac_metadata_task.lambda_function.role
@@ -73,7 +79,7 @@ class ProcessingStack(Stack):
             policy=s3_read_only_access_policy
         )
 
-        for table in [processing_assets_table, validation_results_table]:
+        for table in [processing_assets_table, props.validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
                 check_stac_metadata_task.lambda_function,
@@ -84,7 +90,7 @@ class ProcessingStack(Stack):
             self,
             "content-iterator-task",
             directory="content_iterator",
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
             result_path="$.content",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
@@ -157,8 +163,8 @@ class ProcessingStack(Stack):
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
-            validation_results_table.grant(
+            props.validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
+            props.validation_results_table.grant(
                 writer, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
@@ -166,12 +172,12 @@ class ProcessingStack(Stack):
             self,
             "validation-summary-task",
             directory="validation_summary",
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
             result_path="$.validation",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
-        validation_results_table.grant_read_data(validation_summary_task.lambda_function)
-        validation_results_table.grant(
+        props.validation_results_table.grant_read_data(validation_summary_task.lambda_function)
+        props.validation_results_table.grant(
             validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
@@ -179,7 +185,7 @@ class ProcessingStack(Stack):
             self,
             "validation-failure-task",
             directory="validation_failure",
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
             result_path=aws_stepfunctions.JsonPath.DISCARD,
         ).lambda_invoke
 
@@ -196,14 +202,14 @@ class ProcessingStack(Stack):
             directory="import_asset_file",
             invoker=import_dataset_role,
             deploy_env=deploy_env,
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
         )
         import_metadata_file_function = ImportFileFunction(
             self,
             directory="import_metadata_file",
             invoker=import_dataset_role,
             deploy_env=deploy_env,
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
         )
 
         for storage_writer in [
@@ -211,13 +217,13 @@ class ProcessingStack(Stack):
             import_asset_file_function.role,
             import_metadata_file_function.role,
         ]:
-            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
+            props.storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
         import_dataset_task = LambdaTask(
             self,
             "import-dataset-task",
             directory="import_dataset",
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
             result_path="$.import_dataset",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
@@ -233,9 +239,9 @@ class ProcessingStack(Stack):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        props.storage_bucket.grant_read_write(import_dataset_task.lambda_function)
 
-        for table in [datasets_table, processing_assets_table]:
+        for table in [props.datasets_table, processing_assets_table]:
             table.grant_read_data(import_dataset_task.lambda_function)
             table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
@@ -265,7 +271,7 @@ class ProcessingStack(Stack):
 
         grant_parameter_read_access(
             {
-                datasets_table.name_parameter: [import_dataset_task.lambda_function],
+                props.datasets_table.name_parameter: [import_dataset_task.lambda_function],
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
@@ -274,10 +280,10 @@ class ProcessingStack(Stack):
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
-                storage_bucket_parameter: [
+                props.storage_bucket_parameter: [
                     import_dataset_task.lambda_function,
                 ],
-                validation_results_table.name_parameter: [
+                props.validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function.role,
                     validation_summary_task.lambda_function,
                     content_iterator_task.lambda_function,

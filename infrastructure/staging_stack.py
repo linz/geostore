@@ -1,13 +1,20 @@
 from typing import Any
 
 from aws_cdk import aws_s3, aws_ssm
-from aws_cdk.core import Construct, RemovalPolicy, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, RemovalPolicy, Tags
 
 from backend.parameter_store import ParameterName
 
 
-class StagingStack(Stack):
-    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str, **kwargs: Any) -> None:
+class StagingStack(NestedStack):
+    def __init__(
+        self,
+        scope: Construct,
+        stack_id: str,
+        *,
+        deploy_env: str,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################

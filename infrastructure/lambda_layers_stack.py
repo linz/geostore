@@ -2,12 +2,12 @@ from typing import Any
 
 import constructs
 from aws_cdk import aws_lambda_python
-from aws_cdk.core import Stack
+from aws_cdk.core import NestedStack
 
 from .runtime import PYTHON_RUNTIME
 
 
-class LambdaLayersStack(Stack):
+class LambdaLayersStack(NestedStack):
     def __init__(
         self,
         scope: constructs.Construct,

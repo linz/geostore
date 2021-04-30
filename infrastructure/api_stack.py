@@ -1,11 +1,12 @@
 """
 Data Lake AWS resources definitions.
 """
+from dataclasses import dataclass
 from os import environ
 from typing import Any
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, NestedStackProps, Tags
 
 from backend.resources import ResourceName
 
@@ -15,7 +16,18 @@ from .constructs.table import Table
 from .roles import MAX_SESSION_DURATION
 
 
-class APIStack(Stack):
+@dataclass
+class APIStackProps(NestedStackProps):
+    botocore_lambda_layer: aws_lambda_python.PythonLayerVersion
+    datasets_table: Table
+    state_machine: aws_stepfunctions.StateMachine
+    state_machine_parameter: aws_ssm.StringParameter
+    storage_bucket: aws_s3.Bucket
+    storage_bucket_parameter: aws_ssm.StringParameter
+    validation_results_table: Table
+
+
+class APIStack(NestedStack):
     """Data Lake stack definition."""
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -23,14 +35,8 @@ class APIStack(Stack):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
-        datasets_table: Table,
         deploy_env: str,
-        state_machine: aws_stepfunctions.StateMachine,
-        state_machine_parameter: aws_ssm.StringParameter,
-        storage_bucket: aws_s3.Bucket,
-        storage_bucket_parameter: aws_ssm.StringParameter,
-        validation_results_table: Table,
+        props: APIStackProps,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -62,7 +68,7 @@ class APIStack(Stack):
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
         )
-        storage_bucket.grant_read(read_only_role)  # type: ignore[arg-type]
+        props.storage_bucket.grant_read(read_only_role)  # type: ignore[arg-type]
 
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
@@ -74,7 +80,7 @@ class APIStack(Stack):
             package_name="datasets",
             deploy_env=deploy_env,
             users_role=users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
         ).lambda_function
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
@@ -83,17 +89,17 @@ class APIStack(Stack):
             package_name="dataset_versions",
             deploy_env=deploy_env,
             users_role=users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
         ).lambda_function
 
-        state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
+        props.state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
-        storage_bucket.grant_read(datasets_endpoint_lambda)
-        storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
+        props.storage_bucket.grant_read(datasets_endpoint_lambda)
+        props.storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
-            datasets_table.grant_read_write_data(function)
-            datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
+            props.datasets_table.grant_read_write_data(function)
+            props.datasets_table.grant(function, "dynamodb:DescribeTable")  # required by pynamodb
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,
@@ -101,15 +107,15 @@ class APIStack(Stack):
             package_name="import_status",
             deploy_env=deploy_env,
             users_role=users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
+            botocore_lambda_layer=props.botocore_lambda_layer,
         ).lambda_function
 
-        validation_results_table.grant_read_data(import_status_endpoint_lambda)
-        validation_results_table.grant(
+        props.validation_results_table.grant_read_data(import_status_endpoint_lambda)
+        props.validation_results_table.grant(
             import_status_endpoint_lambda, "dynamodb:DescribeTable"
         )  # required by pynamodb
 
-        state_machine.grant_read(import_status_endpoint_lambda)
+        props.state_machine.grant_read(import_status_endpoint_lambda)
         assert import_status_endpoint_lambda.role is not None
         import_status_endpoint_lambda.role.add_to_policy(
             aws_iam.PolicyStatement(
@@ -120,12 +126,12 @@ class APIStack(Stack):
 
         grant_parameter_read_access(
             {
-                datasets_table.name_parameter: [
+                props.datasets_table.name_parameter: [
                     datasets_endpoint_lambda,
                     dataset_versions_endpoint_lambda,
                 ],
-                validation_results_table.name_parameter: [import_status_endpoint_lambda],
-                state_machine_parameter: [dataset_versions_endpoint_lambda],
+                props.validation_results_table.name_parameter: [import_status_endpoint_lambda],
+                props.state_machine_parameter: [dataset_versions_endpoint_lambda],
             }
         )
 
