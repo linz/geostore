@@ -24,6 +24,7 @@ class ProcessingStack(Stack):
         self,
         scope: Construct,
         stack_id: str,
+        *,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,

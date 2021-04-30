@@ -22,6 +22,7 @@ class APIStack(Stack):
         self,
         scope: Construct,
         stack_id: str,
+        *,
         datasets_table: Table,
         validation_results_table: Table,
         deploy_env: str,
