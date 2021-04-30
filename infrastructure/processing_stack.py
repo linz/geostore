@@ -25,11 +25,11 @@ class ProcessingStack(Stack):
         scope: Construct,
         stack_id: str,
         *,
+        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
         validation_results_table: Table,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
