@@ -32,9 +32,11 @@ class DatasetsTitleIdx(
 class DatasetsModelBase(Model):
     """Dataset model."""
 
-    id = UnicodeAttribute(hash_key=True, attr_name="pk", default=lambda: f"DATASET#{ULID()}")
+    id = UnicodeAttribute(
+        hash_key=True, attr_name="pk", default_for_new=lambda: f"DATASET#{ULID()}"
+    )
     title = UnicodeAttribute()
-    created_at = UTCDateTimeAttribute(default=lambda: datetime.now(timezone.utc))
+    created_at = UTCDateTimeAttribute(default_for_new=lambda: datetime.now(timezone.utc))
     updated_at = UTCDateTimeAttribute()
 
     datasets_title_idx: DatasetsTitleIdx
