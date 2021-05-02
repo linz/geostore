@@ -1,14 +1,12 @@
-from datetime import datetime, timezone
 from os import environ
 from typing import Any, Dict, Optional, Tuple, Type
 
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
-from pynamodb.expressions.condition import Condition
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
-from pynamodb.settings import OperationSettings
 from ulid import ULID  # type: ignore[import]
 
+from .clock import now
 from .parameter_store import ParameterName, get_param
 
 
@@ -36,18 +34,10 @@ class DatasetsModelBase(Model):
         hash_key=True, attr_name="pk", default_for_new=lambda: f"DATASET#{ULID()}"
     )
     title = UnicodeAttribute()
-    created_at = UTCDateTimeAttribute(default_for_new=lambda: datetime.now(timezone.utc))
-    updated_at = UTCDateTimeAttribute()
+    created_at = UTCDateTimeAttribute(default_for_new=now)
+    updated_at = UTCDateTimeAttribute(default=now)
 
     datasets_title_idx: DatasetsTitleIdx
-
-    def save(
-        self,
-        condition: Optional[Condition] = None,
-        settings: OperationSettings = OperationSettings.default,
-    ) -> Dict[str, Any]:
-        self.updated_at = datetime.now(timezone.utc)
-        return super().save(condition, settings)
 
     def as_dict(self) -> Dict[str, Any]:
         serialized = self.serialize()
