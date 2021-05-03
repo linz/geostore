@@ -11,9 +11,9 @@ from backend.error_response_keys import ERROR_KEY
 from backend.import_dataset.task import EVENT_KEY, lambda_handler
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
-from .aws_utils import ProcessingAsset, any_lambda_context, any_s3_url
+from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_s3_url
 from .general_generators import any_etag
-from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
+from .stac_generators import any_dataset_version_id, any_hex_multihash
 
 
 class TestLogging:
@@ -32,18 +32,17 @@ class TestLogging:
         create_job_mock: MagicMock,  # pylint:disable=unused-argument
     ) -> None:
         # Given
-
-        event = {
-            DATASET_ID_KEY: any_dataset_id(),
-            METADATA_URL_KEY: any_s3_url(),
-            VERSION_ID_KEY: any_dataset_version_id(),
-        }
         head_object_mock.return_value = {"ETag": any_etag()}
-        expected_payload_log = dumps({EVENT_KEY: event})
 
-        with patch.object(self.logger, "debug") as logger_mock, patch(
+        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
         ), patch("backend.import_dataset.task.smart_open"):
+            event = {
+                DATASET_ID_KEY: dataset.dataset_id,
+                METADATA_URL_KEY: any_s3_url(),
+                VERSION_ID_KEY: any_dataset_version_id(),
+            }
+            expected_payload_log = dumps({EVENT_KEY: event})
 
             # When
             lambda_handler(event, any_lambda_context())
@@ -79,31 +78,32 @@ class TestLogging:
         subtests: SubTests,
     ) -> None:
         # Given
-        dataset_id = any_dataset_id()
-        version_id = any_dataset_version_id()
-        asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
-        head_object_mock.return_value = {"ETag": any_etag()}
+        with Dataset() as dataset:
+            version_id = any_dataset_version_id()
+            asset_id = f"DATASET#{dataset.dataset_id}#VERSION#{version_id}"
+            head_object_mock.return_value = {"ETag": any_etag()}
 
-        with ProcessingAsset(
-            asset_id=asset_id, multihash=None, url=any_s3_url()
-        ) as metadata_processing_asset, ProcessingAsset(
-            asset_id=asset_id,
-            multihash=any_hex_multihash(),
-            url=any_s3_url(),
-        ) as processing_asset:
-
-            expected_asset_log = dumps({"Adding file to manifest": processing_asset.url})
-            expected_metadata_log = dumps(
-                {"Adding file to manifest": metadata_processing_asset.url}
-            )
-
-            with patch.object(self.logger, "debug") as logger_mock, patch(
+            with ProcessingAsset(
+                asset_id=asset_id, multihash=None, url=any_s3_url()
+            ) as metadata_processing_asset, ProcessingAsset(
+                asset_id=asset_id,
+                multihash=any_hex_multihash(),
+                url=any_s3_url(),
+            ) as processing_asset, patch.object(
+                self.logger, "debug"
+            ) as logger_mock, patch(
                 "backend.import_dataset.task.smart_open"
             ):
+
+                expected_asset_log = dumps({"Adding file to manifest": processing_asset.url})
+                expected_metadata_log = dumps(
+                    {"Adding file to manifest": metadata_processing_asset.url}
+                )
+
                 # When
                 lambda_handler(
                     {
-                        DATASET_ID_KEY: dataset_id,
+                        DATASET_ID_KEY: dataset.dataset_id,
                         METADATA_URL_KEY: any_s3_url(),
                         VERSION_ID_KEY: version_id,
                     },
@@ -128,14 +128,14 @@ class TestLogging:
         expected_response_log = json.dumps({"s3 batch response": response})
         head_object_mock.return_value = {"ETag": any_etag()}
 
-        with patch.object(self.logger, "debug") as logger_mock, patch(
+        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.smart_open"
         ):
 
             # When
             lambda_handler(
                 {
-                    DATASET_ID_KEY: any_dataset_id(),
+                    DATASET_ID_KEY: dataset.dataset_id,
                     METADATA_URL_KEY: any_s3_url(),
                     VERSION_ID_KEY: any_dataset_version_id(),
                 },

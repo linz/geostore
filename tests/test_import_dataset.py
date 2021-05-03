@@ -12,11 +12,12 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
 from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.import_dataset.task import lambda_handler
+from backend.import_dataset.task import DATASET_KEY_SEPARATOR, lambda_handler
 from backend.parameter_store import ParameterName, get_param
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
+    Dataset,
     ProcessingAsset,
     S3Object,
     any_lambda_context,
@@ -90,10 +91,6 @@ def should_batch_copy_files_to_storage(
     root_metadata_filename = any_safe_filename()
     child_metadata_filename = any_safe_filename()
 
-    dataset_id = any_dataset_id()
-    version_id = any_dataset_version_id()
-    asset_id = f"DATASET#{dataset_id}#VERSION#{version_id}"
-
     staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
     storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
 
@@ -138,95 +135,100 @@ def should_batch_copy_files_to_storage(
         ),
         staging_bucket_name,
         f"{original_prefix}/{root_metadata_filename}",
-    ) as root_metadata_s3_object, ProcessingAsset(
-        asset_id=asset_id, url=root_metadata_s3_object.url
-    ), ProcessingAsset(
-        asset_id=asset_id, url=child_metadata_s3_object.url
-    ), ProcessingAsset(
-        asset_id=asset_id, url=root_asset_s3_object.url, multihash=root_asset_multihash
-    ), ProcessingAsset(
-        asset_id=asset_id, url=child_asset_s3_object.url, multihash=child_asset_multihash
-    ):
+    ) as root_metadata_s3_object, Dataset() as dataset:
+        version_id = any_dataset_version_id()
+        asset_id = f"DATASET#{dataset.dataset_id}#VERSION#{version_id}"
 
-        # When
-        try:
-            response = lambda_handler(
-                {
-                    DATASET_ID_KEY: dataset_id,
-                    VERSION_ID_KEY: version_id,
-                    METADATA_URL_KEY: root_metadata_s3_object.url,
-                },
-                any_lambda_context(),
-            )
-
-            account_id = sts_client.get_caller_identity()["Account"]
-
-            metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
-                response,
-                account_id,
-                s3_control_client,
-                subtests,
-            )
-        finally:
-            # Then
-            new_prefix = f"{dataset_id}/{version_id}"
-
-            new_root_metadata_key = f"{new_prefix}/{root_metadata_filename}"
-            expected_root_metadata = dumps(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
-                        root_asset_name: {
-                            "href": root_asset_filename,
-                            "file:checksum": root_asset_multihash,
-                        },
+        with ProcessingAsset(asset_id=asset_id, url=root_metadata_s3_object.url), ProcessingAsset(
+            asset_id=asset_id, url=child_metadata_s3_object.url
+        ), ProcessingAsset(
+            asset_id=asset_id, url=root_asset_s3_object.url, multihash=root_asset_multihash
+        ), ProcessingAsset(
+            asset_id=asset_id, url=child_asset_s3_object.url, multihash=child_asset_multihash
+        ):
+            # When
+            try:
+                response = lambda_handler(
+                    {
+                        DATASET_ID_KEY: dataset.dataset_id,
+                        VERSION_ID_KEY: version_id,
+                        METADATA_URL_KEY: root_metadata_s3_object.url,
                     },
-                    "links": [{"href": child_metadata_filename, "rel": "child"}],
-                }
-            ).encode()
-            with subtests.test(msg="Root metadata content"), smart_open(
-                f"s3://{storage_bucket_name}/{new_root_metadata_key}"
-            ) as new_root_metadata_file:
-                assert expected_root_metadata == new_root_metadata_file.read()
-
-            with subtests.test(msg="Delete root metadata object"):
-                delete_s3_key(storage_bucket_name, new_root_metadata_key, s3_client)
-
-            new_child_metadata_key = f"{new_prefix}/{child_metadata_filename}"
-            expected_child_metadata = dumps(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
-                        child_asset_name: {
-                            "href": child_asset_filename,
-                            "file:checksum": child_asset_multihash,
-                        }
-                    },
-                }
-            ).encode()
-            with subtests.test(msg="Child metadata content"), smart_open(
-                f"s3://{storage_bucket_name}/{new_child_metadata_key}"
-            ) as new_child_metadata_file:
-                assert expected_child_metadata == new_child_metadata_file.read()
-
-            with subtests.test(msg="Delete child metadata object"):
-                delete_s3_key(storage_bucket_name, new_child_metadata_key, s3_client)
-
-            # Then the root asset file is in the root prefix
-            with subtests.test(msg="Delete root asset object"):
-                delete_s3_key(storage_bucket_name, f"{new_prefix}/{root_asset_filename}", s3_client)
-
-            # Then the child asset file is in the root prefix
-            with subtests.test(msg="Delete child asset object"):
-                delete_s3_key(
-                    storage_bucket_name, f"{new_prefix}/{child_asset_filename}", s3_client
+                    any_lambda_context(),
                 )
 
-            # Cleanup
-            delete_copy_job_files(
-                metadata_copy_job_result,
-                asset_copy_job_result,
-                storage_bucket_name,
-                s3_client,
-                subtests,
-            )
+                account_id = sts_client.get_caller_identity()["Account"]
+
+                metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
+                    response,
+                    account_id,
+                    s3_control_client,
+                    subtests,
+                )
+            finally:
+                # Then
+                new_prefix = (
+                    f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}/{version_id}"
+                )
+
+                new_root_metadata_key = f"{new_prefix}/{root_metadata_filename}"
+                expected_root_metadata = dumps(
+                    {
+                        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                        "assets": {
+                            root_asset_name: {
+                                "href": root_asset_filename,
+                                "file:checksum": root_asset_multihash,
+                            },
+                        },
+                        "links": [{"href": child_metadata_filename, "rel": "child"}],
+                    }
+                ).encode()
+                with subtests.test(msg="Root metadata content"), smart_open(
+                    f"s3://{storage_bucket_name}/{new_root_metadata_key}"
+                ) as new_root_metadata_file:
+                    assert expected_root_metadata == new_root_metadata_file.read()
+
+                with subtests.test(msg="Delete root metadata object"):
+                    delete_s3_key(storage_bucket_name, new_root_metadata_key, s3_client)
+
+                new_child_metadata_key = f"{new_prefix}/{child_metadata_filename}"
+                expected_child_metadata = dumps(
+                    {
+                        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                        "assets": {
+                            child_asset_name: {
+                                "href": child_asset_filename,
+                                "file:checksum": child_asset_multihash,
+                            }
+                        },
+                    }
+                ).encode()
+                with subtests.test(msg="Child metadata content"), smart_open(
+                    f"s3://{storage_bucket_name}/{new_child_metadata_key}"
+                ) as new_child_metadata_file:
+                    assert expected_child_metadata == new_child_metadata_file.read()
+
+                with subtests.test(msg="Delete child metadata object"):
+                    delete_s3_key(storage_bucket_name, new_child_metadata_key, s3_client)
+
+                # Then the root asset file is in the root prefix
+                with subtests.test(msg="Delete root asset object"):
+                    delete_s3_key(
+                        storage_bucket_name, f"{new_prefix}/{root_asset_filename}", s3_client
+                    )
+
+                # Then the child asset file is in the root prefix
+                with subtests.test(msg="Delete child asset object"):
+                    delete_s3_key(
+                        storage_bucket_name, f"{new_prefix}/{child_asset_filename}", s3_client
+                    )
+
+                # Cleanup
+                delete_copy_job_files(
+                    metadata_copy_job_result,
+                    asset_copy_job_result,
+                    storage_bucket_name,
+                    s3_client,
+                    subtests,
+                )

@@ -52,6 +52,7 @@ def main() -> None:
         app,
         "processing",
         botocore_lambda_layer=lambda_layers.botocore,
+        datasets_table=storage.datasets_table,
         deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,

@@ -15,6 +15,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.import_dataset.task import DATASET_KEY_SEPARATOR
 from backend.import_status.get import Outcome
 from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
@@ -217,6 +218,7 @@ class TestWithStagingBucket:
                 )
             finally:
                 # Cleanup
+                dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 for filename in [
                     catalog_metadata_filename,
                     collection_metadata_filename,
@@ -224,9 +226,7 @@ class TestWithStagingBucket:
                     first_asset_filename,
                     second_asset_filename,
                 ]:
-                    new_key = (
-                        f"{dataset.dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
-                    )
+                    new_key = f"{dataset_prefix}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -360,10 +360,9 @@ class TestWithStagingBucket:
                 )
             finally:
                 # Cleanup
+                dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                    new_key = (
-                        f"{dataset.dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
-                    )
+                    new_key = f"{dataset_prefix}/{json_resp['body']['dataset_version']}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -462,10 +461,11 @@ class TestWithStagingBucket:
 
         # Then the files should not be copied
         dataset_version = response_payload["body"]["dataset_version"]
+        dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
         for filename in [metadata_filename, asset_filename]:
             with subtests.test(msg=filename), raises(AssertionError):
                 delete_s3_key(
                     self.storage_bucket_name,
-                    f"{dataset.dataset_id}/{dataset_version}/{filename}",
+                    f"{dataset_prefix}/{dataset_version}/{filename}",
                     s3_client,
                 )
