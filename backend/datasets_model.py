@@ -1,10 +1,10 @@
 from os import environ
 from typing import Any, Dict, Optional, Tuple, Type
 
+import ulid
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
-from ulid import ULID  # type: ignore[import]
 
 from .clock import now
 from .parameter_store import ParameterName, get_param
@@ -31,7 +31,7 @@ class DatasetsModelBase(Model):
     """Dataset model."""
 
     id = UnicodeAttribute(
-        hash_key=True, attr_name="pk", default_for_new=lambda: f"DATASET#{ULID()}"
+        hash_key=True, attr_name="pk", default_for_new=lambda: f"DATASET#{ulid.new()}"
     )
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)
