@@ -29,12 +29,7 @@ from .aws_utils import (
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import any_file_contents, any_safe_file_path, any_safe_filename
-from .stac_generators import (
-    any_asset_name,
-    any_dataset_id,
-    any_hex_multihash,
-    sha256_hex_digest_to_multihash,
-)
+from .stac_generators import any_asset_name, any_hex_multihash, sha256_hex_digest_to_multihash
 from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
@@ -114,8 +109,6 @@ class TestWithStagingBucket:
         second_asset_contents = any_file_contents()
         second_asset_filename = any_safe_filename()
 
-        dataset_id = any_dataset_id()
-
         with S3Object(
             file_object=BytesIO(initial_bytes=first_asset_contents),
             bucket_name=self.staging_bucket_name,
@@ -178,9 +171,7 @@ class TestWithStagingBucket:
             ),
             bucket_name=self.staging_bucket_name,
             key=f"{key_prefix}/{item_metadata_filename}",
-        ), Dataset(
-            dataset_id=dataset_id
-        ):
+        ), Dataset() as dataset:
 
             # When
             try:
@@ -189,7 +180,10 @@ class TestWithStagingBucket:
                     Payload=json.dumps(
                         {
                             "httpMethod": "POST",
-                            "body": {"id": dataset_id, "metadata-url": catalog_metadata_file.url},
+                            "body": {
+                                "id": dataset.dataset_id,
+                                "metadata-url": catalog_metadata_file.url,
+                            },
                         }
                     ).encode(),
                 )
@@ -230,7 +224,9 @@ class TestWithStagingBucket:
                     first_asset_filename,
                     second_asset_filename,
                 ]:
-                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
+                    new_key = (
+                        f"{dataset.dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
+                    )
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -286,8 +282,6 @@ class TestWithStagingBucket:
         asset_contents = any_file_contents()
         asset_filename = any_safe_filename()
 
-        dataset_id = any_dataset_id()
-
         with S3Object(
             file_object=BytesIO(initial_bytes=asset_contents),
             bucket_name=self.staging_bucket_name,
@@ -319,9 +313,7 @@ class TestWithStagingBucket:
             ),
             bucket_name=self.staging_bucket_name,
             key=("{}/{}".format(key_prefix, root_metadata_filename)),
-        ) as root_metadata_file, Dataset(
-            dataset_id=dataset_id
-        ):
+        ) as root_metadata_file, Dataset() as dataset:
 
             # When
             try:
@@ -330,7 +322,10 @@ class TestWithStagingBucket:
                     Payload=json.dumps(
                         {
                             "httpMethod": "POST",
-                            "body": {"id": dataset_id, "metadata-url": root_metadata_file.url},
+                            "body": {
+                                "id": dataset.dataset_id,
+                                "metadata-url": root_metadata_file.url,
+                            },
                         }
                     ).encode(),
                 )
@@ -366,7 +361,9 @@ class TestWithStagingBucket:
             finally:
                 # Cleanup
                 for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                    new_key = f"{dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
+                    new_key = (
+                        f"{dataset.dataset_id}/{json_resp['body']['dataset_version']}/{filename}"
+                    )
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -410,8 +407,6 @@ class TestWithStagingBucket:
     ) -> None:
         # pylint:disable=too-many-locals
         # Given an asset with an invalid checksum
-        dataset_id = any_dataset_id()
-
         key_prefix = any_safe_file_path()
 
         metadata_filename = any_safe_filename()
@@ -435,9 +430,7 @@ class TestWithStagingBucket:
             ),
             bucket_name=self.staging_bucket_name,
             key=f"{key_prefix}/{metadata_filename}",
-        ) as s3_metadata_file, Dataset(
-            dataset_id=dataset_id
-        ):
+        ) as s3_metadata_file, Dataset() as dataset:
 
             # When creating a dataset version
             dataset_version_creation_response = lambda_client.invoke(
@@ -445,7 +438,7 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         "httpMethod": "POST",
-                        "body": {"id": dataset_id, "metadata-url": s3_metadata_file.url},
+                        "body": {"id": dataset.dataset_id, "metadata-url": s3_metadata_file.url},
                     }
                 ).encode(),
             )
@@ -468,10 +461,11 @@ class TestWithStagingBucket:
                 assert execution["status"] == "SUCCEEDED", execution
 
         # Then the files should not be copied
+        dataset_version = response_payload["body"]["dataset_version"]
         for filename in [metadata_filename, asset_filename]:
             with subtests.test(msg=filename), raises(AssertionError):
                 delete_s3_key(
                     self.storage_bucket_name,
-                    f"{dataset_id}/{response_payload['body']['dataset_version']}/{filename}",
+                    f"{dataset.dataset_id}/{dataset_version}/{filename}",
                     s3_client,
                 )

@@ -26,13 +26,13 @@ class TestLogging:
         self, start_execution_mock: MagicMock  # pylint:disable=unused-argument
     ) -> None:
         # Given
-        dataset_id = any_dataset_id()
-        metadata_url = any_s3_url()
-        event = {"httpMethod": "POST", "body": {"metadata-url": metadata_url, "id": dataset_id}}
+        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
+            event = {
+                "httpMethod": "POST",
+                "body": {"metadata-url": any_s3_url(), "id": dataset.dataset_id},
+            }
+            expected_payload_log = dumps({"event": event})
 
-        expected_payload_log = dumps({"event": event})
-
-        with Dataset(dataset_id=dataset_id), patch.object(self.logger, "debug") as logger_mock:
             # When
             create_dataset_version(event)
 
@@ -45,17 +45,18 @@ class TestLogging:
         self, start_execution_mock: MagicMock
     ) -> None:
         # Given
-        dataset_id = any_dataset_id()
-        metadata_url = any_s3_url()
-        event = {"httpMethod": "POST", "body": {"metadata-url": metadata_url, "id": dataset_id}}
-
         start_execution_mock.return_value = step_function_response = {
             "executionArn": "Some Response"
         }
 
         expected_execution_log = dumps({"response": step_function_response})
 
-        with Dataset(dataset_id=dataset_id), patch.object(self.logger, "debug") as logger_mock:
+        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
+            event = {
+                "httpMethod": "POST",
+                "body": {"metadata-url": any_s3_url(), "id": dataset.dataset_id},
+            }
+
             # When
             create_dataset_version(event)
 

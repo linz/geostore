@@ -119,12 +119,11 @@ def any_job_id() -> str:
 
 
 class Dataset:
-    def __init__(self, dataset_id: Optional[str] = None, title: Optional[str] = None):
-        if dataset_id is None:
-            dataset_id = any_dataset_id()
-
+    def __init__(self, title: Optional[str] = None):
         if title is None:
             title = any_dataset_title()
+
+        dataset_id = any_dataset_id()
 
         datasets_model_class = datasets_model_with_meta()
         self._item = datasets_model_class(
