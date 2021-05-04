@@ -2,13 +2,13 @@ name: Deployment
 on:
   push:
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize]
 
 jobs:
   test-prod-copy-deploy:
     if:
       startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref, 'refs/tags/release-')
-      || github.event.label.name == 'automerge' || contains(github.event.pull_request.labels.*.name,
+      || github.event.label.name == 'automerge' || contains(github.event.*.labels.*.name,
       'automerge')
     runs-on: ubuntu-20.04
     strategy:
