@@ -78,10 +78,9 @@ def should_return_client_error_when_title_contains_unsupported_characters(
 @mark.infrastructure
 def should_return_single_dataset(subtests: SubTests) -> None:
     # Given a dataset instance
-    dataset_id = any_dataset_id()
-    body = {"id": dataset_id}
+    with Dataset() as dataset:
+        body = {"id": dataset.dataset_id}
 
-    with Dataset(dataset_id=dataset_id):
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
             {"httpMethod": "GET", "body": body}, any_lambda_context()
@@ -93,7 +92,7 @@ def should_return_single_dataset(subtests: SubTests) -> None:
         assert response["statusCode"] == 200
 
     with subtests.test(msg="ID"):
-        assert response["body"]["id"] == dataset_id
+        assert response["body"]["id"] == dataset.dataset_id
 
 
 @mark.infrastructure
@@ -156,11 +155,10 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
 
 @mark.infrastructure
 def should_update_dataset(subtests: SubTests) -> None:
-    dataset_id = any_dataset_id()
     new_dataset_title = any_dataset_title()
-    body = {"id": dataset_id, "title": new_dataset_title}
 
-    with Dataset(dataset_id=dataset_id):
+    with Dataset() as dataset:
+        body = {"id": dataset.dataset_id, "title": new_dataset_title}
         response = entrypoint.lambda_handler(
             {
                 "httpMethod": "PATCH",
@@ -210,10 +208,8 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
 @mark.infrastructure
 def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
-    dataset_id = any_dataset_id()
-    body = {"id": dataset_id}
-
-    with Dataset(dataset_id=dataset_id):
+    with Dataset() as dataset:
+        body = {"id": dataset.dataset_id}
         raw_response = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
             Payload=json.dumps({"httpMethod": "DELETE", "body": body}).encode(),

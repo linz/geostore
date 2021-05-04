@@ -64,10 +64,8 @@ def should_return_success_if_dataset_exists(
     start_execution_mock: MagicMock,  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance
-    dataset_id = any_dataset_id()
-    body = {"id": dataset_id, "metadata-url": any_s3_url()}
-
-    with Dataset(dataset_id=dataset_id):
+    with Dataset() as dataset:
+        body = {"id": dataset.dataset_id, "metadata-url": any_s3_url()}
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
             {"httpMethod": "POST", "body": body}, any_lambda_context()
