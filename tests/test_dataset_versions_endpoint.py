@@ -3,12 +3,15 @@ Dataset Versions endpoint Lambda function tests.
 """
 
 import logging
+from datetime import datetime, timezone
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
+from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.dataset_versions import entrypoint
+from backend.dataset_versions.create import create_dataset_version
 
 from .aws_utils import Dataset, any_lambda_context, any_s3_url
 from .stac_generators import any_dataset_id
@@ -61,16 +64,21 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 @mark.infrastructure
 @patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
 def should_return_success_if_dataset_exists(
-    start_execution_mock: MagicMock,  # pylint:disable=unused-argument
+    start_execution_mock: MagicMock, subtests: SubTests  # pylint:disable=unused-argument
 ) -> None:
     # Given a dataset instance
+    now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
+
     with Dataset() as dataset:
-        body = {"id": dataset.dataset_id, "metadata-url": any_s3_url()}
+        body = {"id": dataset.dataset_id, "metadata-url": any_s3_url(), "now": now.isoformat()}
+
         # When requesting the dataset by ID and type
-        response = entrypoint.lambda_handler(
-            {"httpMethod": "POST", "body": body}, any_lambda_context()
-        )
+        response = create_dataset_version({"body": body})
     logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
-    assert response["statusCode"] == HTTPStatus.CREATED
+    with subtests.test(msg="Status code"):
+        assert response["statusCode"] == HTTPStatus.CREATED
+
+    with subtests.test(msg="ID"):
+        assert response["body"]["dataset_version"].startswith("2001-02-03T04-05-06-789Z_")

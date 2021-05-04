@@ -1,14 +1,15 @@
 """Dataset versions handler function."""
 import json
-import uuid
+from datetime import datetime
 from http import HTTPStatus
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
+from ulid import from_timestamp
 
 from ..api_responses import error_response, success_response
-from ..datasets_model import datasets_model_with_meta
+from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
@@ -25,7 +26,11 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {"id": {"type": "string"}, "metadata-url": {"type": "string"}},
+        "properties": {
+            "id": {"type": "string"},
+            "metadata-url": {"type": "string"},
+            "now": {"type": "string", "format": "date-time"},
+        },
         "required": ["id", "metadata-url"],
     }
 
@@ -50,7 +55,8 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
             HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' could not be found"
         )
 
-    dataset_version_id = uuid.uuid1().hex
+    now = datetime.fromisoformat(req_body.get("now", datetime.utcnow().isoformat()))
+    dataset_version_id = human_readable_ulid(from_timestamp(now))
 
     # execute step function
     step_functions_input = {
