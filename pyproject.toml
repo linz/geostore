@@ -129,12 +129,13 @@ import_dataset = [
     "boto3",
     "jsonschema",
     "pynamodb",
-    "smart-open"
+    "smart-open",
+    "ulid-py",
 ]
 import_status = [
     "boto3",
     "jsonschema",
-    "pynamodb"
+    "pynamodb",
 ]
 validation_summary = [
     "jsonschema",

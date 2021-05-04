@@ -25,6 +25,7 @@ class ProcessingStack(Stack):
         stack_id: str,
         *,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        datasets_table: Table,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
         storage_bucket_parameter: aws_ssm.StringParameter,
@@ -234,8 +235,9 @@ class ProcessingStack(Stack):
 
         storage_bucket.grant_read_write(import_dataset_task.lambda_function)
 
-        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
-        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
+        for table in [datasets_table, processing_assets_table]:
+            table.grant_read_data(import_dataset_task.lambda_function)
+            table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
         # Parameters
         import_asset_file_function_arn_parameter = aws_ssm.StringParameter(
@@ -263,6 +265,7 @@ class ProcessingStack(Stack):
 
         grant_parameter_read_access(
             {
+                datasets_table.name_parameter: [import_dataset_task.lambda_function],
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
