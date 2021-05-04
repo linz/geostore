@@ -37,7 +37,7 @@ def should_create_dataset(subtests: SubTests) -> None:
         assert response["statusCode"] == 201
 
     with subtests.test(msg="ID length"):
-        assert len(response["body"]["id"]) == 26  # ULID
+        assert len(response["body"]["id"]) == 41
 
     with subtests.test(msg="title"):
         assert response["body"]["title"] == dataset_title

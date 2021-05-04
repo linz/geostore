@@ -4,10 +4,23 @@ from typing import Any, Dict, Optional, Tuple, Type
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
-from ulid import ULID  # type: ignore[import]
+from ulid import ULID, new
 
 from .clock import now
 from .parameter_store import ParameterName, get_param
+
+
+def human_readable_ulid(ulid: ULID) -> "str":
+    """
+    Formats the timestamp part of the ULID as a human readable datetime. Uses "T" as the date/time
+    separator as per RFC3339, hyphen as the datetime field separator to ensure broad filesystem
+    compatibility, and underscore as the datetime/randomness separator.
+
+    ULIDs have millisecond timestamps, but strftime can only format microseconds, so we need to chop
+    off the last three characters.
+    """
+    datetime_string = ulid.timestamp().datetime.strftime("%Y-%m-%dT%H-%M-%S-%f")[:-3]
+    return f"{datetime_string}Z_{ulid.randomness()}"
 
 
 # TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
@@ -31,7 +44,9 @@ class DatasetsModelBase(Model):
     """Dataset model."""
 
     id = UnicodeAttribute(
-        hash_key=True, attr_name="pk", default_for_new=lambda: f"DATASET#{ULID()}"
+        hash_key=True,
+        attr_name="pk",
+        default_for_new=lambda: f"DATASET#{human_readable_ulid(new())}",
     )
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)

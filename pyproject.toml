@@ -56,9 +56,9 @@ cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
-python-ulid = {version = "*", optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
+ulid-py = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -118,12 +118,12 @@ content_iterator = [
 datasets = [
     "jsonschema",
     "pynamodb",
-    "python-ulid",
+    "ulid-py",
 ]
 dataset_versions = [
     "jsonschema",
     "pynamodb",
-    "python-ulid",
+    "ulid-py",
 ]
 import_dataset = [
     "boto3",
