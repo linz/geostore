@@ -8,4 +8,4 @@ class ResourceName(Enum):
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset-versions"
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import-status"
     USERS_ROLE_NAME = f"{ENV}-data-lake-users"
-    LINZ_READ_ONLY_ROLE_NAME = f"{ENV}-data-lake-linz-readonly"
+    READ_ONLY_ROLE_NAME = f"{ENV}-data-lake-readonly"
