@@ -9,6 +9,7 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -53,6 +54,8 @@ S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_
 
 EVENT_KEY = "event"
 
+DATASET_KEY_SEPARATOR = "-"
+
 
 class Importer:
     # pylint:disable=too-few-public-methods
@@ -60,6 +63,10 @@ class Importer:
         self.dataset_id = dataset_id
         self.version_id = version_id
         self.source_bucket_name = source_bucket_name
+        dataset = datasets_model_with_meta().get(
+            hash_key=f"DATASET#{self.dataset_id}", consistent_read=True
+        )
+        self.dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{self.dataset_id}"
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
@@ -77,7 +84,7 @@ class Importer:
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: STORAGE_BUCKET_NAME,
                     ORIGINAL_KEY_KEY: key,
-                    NEW_KEY_KEY: f"{self.dataset_id}/{self.version_id}/{basename(key)}",
+                    NEW_KEY_KEY: f"{self.dataset_prefix}/{self.version_id}/{basename(key)}",
                 }
                 row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
                 s3_manifest.write(f"{row}\n")
