@@ -5,7 +5,7 @@ CDK application entry point file.
 """
 from os import environ
 
-from aws_cdk.core import App, Environment, Tag
+from aws_cdk.core import App, Environment, Stack, Tag
 
 from backend.environment import ENV
 from infrastructure.api_stack import APIStack
@@ -24,32 +24,20 @@ def main() -> None:
         account=environ["CDK_DEFAULT_ACCOUNT"], region=environ["CDK_DEFAULT_REGION"]
     )
 
+    datalake = Stack(app, "datalake", env=environment, stack_name=f"{ENV}-geospatial-data-lake")
+
     storage = StorageStack(
-        app,
+        datalake,
         "storage",
         deploy_env=ENV,
-        env=environment,
-        stack_name=f"{ENV}-geospatial-data-lake-storage",
     )
 
-    StagingStack(
-        app,
-        "staging",
-        deploy_env=ENV,
-        env=environment,
-        stack_name=f"{ENV}-geospatial-data-lake-staging",
-    )
+    StagingStack(datalake, "staging", deploy_env=ENV)
 
-    lambda_layers = LambdaLayersStack(
-        app,
-        "lambda-layers",
-        deploy_env=ENV,
-        env=environment,
-        stack_name=f"{ENV}-geospatial-data-lake-lambda-layers",
-    )
+    lambda_layers = LambdaLayersStack(datalake, "lambda-layers", deploy_env=ENV)
 
     processing = ProcessingStack(
-        app,
+        storage,
         "processing",
         botocore_lambda_layer=lambda_layers.botocore,
         datasets_table=storage.datasets_table,
@@ -57,12 +45,10 @@ def main() -> None:
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
-        env=environment,
-        stack_name=f"{ENV}-geospatial-data-lake-processing",
     )
 
     APIStack(
-        app,
+        processing,
         "api",
         botocore_lambda_layer=lambda_layers.botocore,
         datasets_table=storage.datasets_table,
@@ -72,18 +58,14 @@ def main() -> None:
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
-        env=environment,
-        stack_name=f"{ENV}-geospatial-data-lake-api",
     )
 
     if app.node.try_get_context("enableLDSAccess"):
         LDSStack(
-            app,
+            storage,
             "lds",
             deploy_env=ENV,
             storage_bucket=storage.storage_bucket,
-            env=environment,
-            stack_name=f"{ENV}-geospatial-data-lake-lds",
         )
 
     # tag all resources in stack
