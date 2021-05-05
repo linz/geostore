@@ -1,12 +1,12 @@
 from typing import Any
 
 from aws_cdk import aws_iam, aws_s3
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk.core import Construct, NestedStack, Tags
 
 from .roles import MAX_SESSION_DURATION
 
 
-class LDSStack(Stack):
+class LDSStack(NestedStack):
     def __init__(
         self,
         scope: Construct,
