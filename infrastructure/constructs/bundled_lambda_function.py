@@ -5,6 +5,7 @@ from aws_cdk.core import Construct, Duration
 
 from ..common import LOG_LEVEL
 from ..runtime import PYTHON_RUNTIME
+from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
 
 
@@ -26,7 +27,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             scope,
             construct_id,
             code=bundled_code(directory),
-            handler=f"backend.{directory}.task.lambda_handler",
+            handler=f"{BACKEND_DIRECTORY}.{directory}.task.lambda_handler",
             runtime=PYTHON_RUNTIME,
             environment=environment,
             layers=[botocore_lambda_layer],  # type: ignore[list-item]

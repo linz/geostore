@@ -1,5 +1,9 @@
+from os.path import join
+
 from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
+
+from .backend import BACKEND_DIRECTORY
 
 
 class TaskJobDefinition(aws_batch.JobDefinition):
@@ -20,7 +24,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
         image = aws_ecs.ContainerImage.from_asset(
             directory=".",
             build_args={"task": directory},
-            file="backend/Dockerfile",
+            file=join(BACKEND_DIRECTORY, "Dockerfile"),
         )
 
         container = aws_batch.JobDefinitionContainer(
