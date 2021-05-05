@@ -191,7 +191,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("statusCode") == 201, json_resp
+                    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -332,7 +332,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("statusCode") == 201, json_resp
+                    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -444,7 +444,7 @@ class TestWithStagingBucket:
 
             response_payload = json.load(dataset_version_creation_response["Payload"])
             with subtests.test(msg="Dataset Versions endpoint status code"):
-                assert response_payload.get("statusCode") == 201, response_payload
+                assert response_payload.get("statusCode") == HTTPStatus.CREATED, response_payload
 
             with subtests.test(msg="Step function result"):
                 # Then poll for State Machine State
