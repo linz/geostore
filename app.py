@@ -8,11 +8,11 @@ from os import environ
 from aws_cdk.core import App, Environment, Stack, Tag
 
 from backend.environment import ENV
-from infrastructure.api_stack import APIStack, APIStackProps
+from infrastructure.api_stack import APIStack
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from infrastructure.lambda_layers_stack import LambdaLayersStack
-from infrastructure.lds import LDSStack, LDSStackProps
-from infrastructure.processing_stack import ProcessingStack, ProcessingStackProps
+from infrastructure.lds import LDSStack
+from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
 
@@ -36,48 +36,36 @@ def main() -> None:
 
     lambda_layers = LambdaLayersStack(datalake, "lambda-layers", deploy_env=ENV)
 
-    # can't get pylint working with Python dataclass
-    processing_props = ProcessingStackProps(  # pylint:disable=unexpected-keyword-arg
+    processing = ProcessingStack(
+        storage,
+        "processing",
         botocore_lambda_layer=lambda_layers.botocore,
         datasets_table=storage.datasets_table,
+        deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
     )
-    processing = ProcessingStack(
-        storage,
-        "processing",
-        deploy_env=ENV,
-        props=processing_props,
-    )
 
-    # can't get pylint working with Python dataclass
-    api_props = APIStackProps(  # pylint:disable=unexpected-keyword-arg
+    APIStack(
+        processing,
+        "api",
         botocore_lambda_layer=lambda_layers.botocore,
         datasets_table=storage.datasets_table,
+        deploy_env=ENV,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
         storage_bucket=storage.storage_bucket,
         storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
     )
-    APIStack(
-        processing,
-        "api",
-        deploy_env=ENV,
-        props=api_props,
-    )
 
-    # can't get pylint working with Python dataclass
-    lds_props = LDSStackProps(  # pylint:disable=unexpected-keyword-arg
-        storage_bucket=storage.storage_bucket,
-    )
     if app.node.try_get_context("enableLDSAccess"):
         LDSStack(
             storage,
             "lds",
             deploy_env=ENV,
-            props=lds_props,
+            storage_bucket=storage.storage_bucket,
         )
 
     # tag all resources in stack

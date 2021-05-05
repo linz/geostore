@@ -1,15 +1,9 @@
-from dataclasses import dataclass
 from typing import Any
 
 from aws_cdk import aws_iam, aws_s3
-from aws_cdk.core import Construct, NestedStack, NestedStackProps, Tags
+from aws_cdk.core import Construct, NestedStack, Tags
 
 from .roles import MAX_SESSION_DURATION
-
-
-@dataclass
-class LDSStackProps(NestedStackProps):
-    storage_bucket: aws_s3.Bucket
 
 
 class LDSStack(NestedStack):
@@ -19,7 +13,7 @@ class LDSStack(NestedStack):
         stack_id: str,
         *,
         deploy_env: str,
-        props: LDSStackProps,
+        storage_bucket: aws_s3.Bucket,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, stack_id, **kwargs)
@@ -33,6 +27,6 @@ class LDSStack(NestedStack):
             external_id={"prod": "koordinates-jAddR"}.get(deploy_env, "koordinates-4BnJQ"),
             max_session_duration=MAX_SESSION_DURATION,
         )
-        props.storage_bucket.grant_read(role)  # type: ignore[arg-type]
+        storage_bucket.grant_read(role)  # type: ignore[arg-type]
 
         Tags.of(self).add("ApplicationLayer", "lds")  # type: ignore[arg-type]
