@@ -7,14 +7,7 @@ from backend.parameter_store import ParameterName
 
 
 class StagingStack(NestedStack):
-    def __init__(
-        self,
-        scope: Construct,
-        stack_id: str,
-        *,
-        deploy_env: str,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################

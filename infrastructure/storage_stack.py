@@ -16,14 +16,7 @@ from .removal_policy import REMOVAL_POLICY
 
 
 class StorageStack(NestedStack):
-    def __init__(
-        self,
-        scope: Construct,
-        stack_id: str,
-        *,
-        deploy_env: str,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str, **kwargs: Any) -> None:
         super().__init__(scope, stack_id, **kwargs)
 
         ############################################################################################
