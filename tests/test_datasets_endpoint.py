@@ -34,7 +34,7 @@ def should_create_dataset(subtests: SubTests) -> None:
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == 201
+        assert response["statusCode"] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID length"):
         assert len(response["body"]["id"]) == 41
@@ -89,7 +89,7 @@ def should_return_single_dataset(subtests: SubTests) -> None:
 
     # Then we should get the dataset in return
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == 200
+        assert response["statusCode"] == HTTPStatus.OK
 
     with subtests.test(msg="ID"):
         assert response["body"]["id"] == dataset.dataset_id
@@ -107,7 +107,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
 
         # Then we should get both datasets in return
         with subtests.test(msg="status code"):
-            assert response["statusCode"] == 200
+            assert response["statusCode"] == HTTPStatus.OK
 
         actual_dataset_ids = [entry["id"] for entry in response["body"]]
         for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
@@ -133,7 +133,7 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
         assert response["body"][0]["id"] == matching_dataset.dataset_id
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == 200
+        assert response["statusCode"] == HTTPStatus.OK
 
     with subtests.test(msg="body length"):
         assert len(response["body"]) == 1
@@ -169,7 +169,7 @@ def should_update_dataset(subtests: SubTests) -> None:
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == 200
+        assert response["statusCode"] == HTTPStatus.OK
 
     with subtests.test(msg="title"):
         assert response["body"]["title"] == new_dataset_title
@@ -272,4 +272,4 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     )
     json_resp = json.load(resp["Payload"])
 
-    assert json_resp.get("statusCode") == 201, json_resp
+    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp

@@ -73,4 +73,4 @@ def should_return_success_if_dataset_exists(
     logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
-    assert response["statusCode"] == 201
+    assert response["statusCode"] == HTTPStatus.CREATED
