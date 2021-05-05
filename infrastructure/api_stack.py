@@ -55,6 +55,15 @@ class APIStack(Stack):
             max_session_duration=MAX_SESSION_DURATION,
         )
 
+        read_only_role = aws_iam.Role(
+            self,
+            "linz-read-only-role",
+            role_name=ResourceName.READ_ONLY_ROLE_NAME.value,
+            assumed_by=principal,  # type: ignore[arg-type]
+            max_session_duration=MAX_SESSION_DURATION,
+        )
+        storage_bucket.grant_read(read_only_role)  # type: ignore[arg-type]
+
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
         ############################################################################################
