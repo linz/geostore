@@ -1,0 +1,33 @@
+{
+  "vpc-provider:account=702361495692:filter.tag:ApplicationLayer=networking:filter.tag:ApplicationName=geospatial-data-lake:region=ap-southeast-2:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-0f4380be6c48d94dc",
+    "vpcCidrBlock": "10.193.112.0/20",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "Private",
+        "type": "Private",
+        "subnets": [
+          {
+            "subnetId": "subnet-08f8bd7126e2f07f3",
+            "cidr": "10.193.118.0/24",
+            "availabilityZone": "ap-southeast-2a",
+            "routeTableId": "rtb-0ed1df53a87ae49bc"
+          },
+          {
+            "subnetId": "subnet-006d60e96bc86be4f",
+            "cidr": "10.193.116.0/24",
+            "availabilityZone": "ap-southeast-2b",
+            "routeTableId": "rtb-06f148ea77db69783"
+          },
+          {
+            "subnetId": "subnet-05cc1e89a9ada7443",
+            "cidr": "10.193.119.0/24",
+            "availabilityZone": "ap-southeast-2c",
+            "routeTableId": "rtb-024c05701fbbe8069"
+          }
+        ]
+      }
+    ]
+  }
+}
