@@ -23,20 +23,19 @@ class TestLogging:
     def setup_class(cls) -> None:
         cls.logger = logging.getLogger("backend.import_dataset.task")
 
-    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
-    def should_log_payload(
-        self,
-        head_object_mock: MagicMock,
-        create_job_mock: MagicMock,  # pylint:disable=unused-argument
-    ) -> None:
+    def should_log_payload(self, head_object_mock: MagicMock) -> None:
         # Given
         head_object_mock.return_value = {"ETag": any_etag()}
 
-        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
+        with patch(
+            "backend.import_dataset.task.S3CONTROL_CLIENT.create_job"
+        ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
-        ), patch("backend.import_dataset.task.smart_open"):
+        ), patch(
+            "backend.import_dataset.task.smart_open"
+        ):
             event = {
                 DATASET_ID_KEY: dataset.dataset_id,
                 METADATA_URL_KEY: any_s3_url(),
@@ -68,13 +67,11 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
     @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_assets_added_to_manifest(
         self,
         head_object_mock: MagicMock,
-        create_job_mock: MagicMock,  # pylint:disable=unused-argument
         subtests: SubTests,
     ) -> None:
         # Given
@@ -93,6 +90,8 @@ class TestLogging:
                 self.logger, "debug"
             ) as logger_mock, patch(
                 "backend.import_dataset.task.smart_open"
+            ), patch(
+                "backend.import_dataset.task.S3CONTROL_CLIENT.create_job"
             ):
 
                 expected_asset_log = dumps({"Adding file to manifest": processing_asset.url})
