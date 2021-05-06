@@ -1,4 +1,4 @@
-name: Production Deployment
+name: Deployment to NonProd/Prod
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
       - release-*
 
 jobs:
-  prod-deploy:
+  deploy:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
