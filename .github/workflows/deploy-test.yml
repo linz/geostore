@@ -176,7 +176,6 @@ jobs:
         if: always() # clean-up AWS stack after failure
 
   test-deploy:
-    needs: test-prod-upgrade
     runs-on: ubuntu-20.04
     strategy:
       matrix:
