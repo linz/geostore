@@ -15,6 +15,7 @@ from infrastructure.lds_stack import LDSStack
 from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
+from infrastructure.users_stack import UsersStack
 
 
 def main() -> None:
@@ -34,6 +35,8 @@ def main() -> None:
 
     StagingStack(datalake, "staging")
 
+    users = UsersStack(datalake, "users")
+
     lambda_layers = LambdaLayersStack(datalake, "lambda-layers", deploy_env=ENV)
 
     processing = ProcessingStack(
@@ -49,9 +52,11 @@ def main() -> None:
     APIStack(
         processing,
         "api",
+        api_users_role=users.api_users_role,
         botocore_lambda_layer=lambda_layers.botocore,
         datasets_table=storage.datasets_table,
         deploy_env=ENV,
+        s3_users_role=users.s3_users_role,
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
         storage_bucket=storage.storage_bucket,

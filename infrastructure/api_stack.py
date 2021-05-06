@@ -6,12 +6,9 @@ from os import environ
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, NestedStack, Tags
 
-from backend.resources import ResourceName
-
 from .common import grant_parameter_read_access
 from .constructs.lambda_endpoint import LambdaEndpoint
 from .constructs.table import Table
-from .roles import MAX_SESSION_DURATION
 
 
 class APIStack(NestedStack):
@@ -22,44 +19,17 @@ class APIStack(NestedStack):
         scope: Construct,
         stack_id: str,
         *,
+        api_users_role: aws_iam.Role,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
         deploy_env: str,
+        s3_users_role: aws_iam.Role,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
         super().__init__(scope, stack_id)
-
-        if saml_provider_arn := environ.get("DATALAKE_SAML_IDENTITY_PROVIDER_ARN"):
-            principal = aws_iam.FederatedPrincipal(
-                federated=saml_provider_arn,
-                assume_role_action="sts:AssumeRoleWithSAML",
-                conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
-            )
-
-        else:
-            principal = aws_iam.AccountPrincipal(  # type: ignore[assignment]
-                account_id=aws_iam.AccountRootPrincipal().account_id
-            )
-
-        users_role = aws_iam.Role(
-            self,
-            "users-role",
-            role_name=ResourceName.USERS_ROLE_NAME.value,
-            assumed_by=principal,  # type: ignore[arg-type]
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-
-        read_only_role = aws_iam.Role(
-            self,
-            "linz-read-only-role",
-            role_name=ResourceName.READ_ONLY_ROLE_NAME.value,
-            assumed_by=principal,  # type: ignore[arg-type]
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-        storage_bucket.grant_read(read_only_role)  # type: ignore[arg-type]
 
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
@@ -70,7 +40,7 @@ class APIStack(NestedStack):
             "datasets",
             package_name="datasets",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
@@ -79,7 +49,7 @@ class APIStack(NestedStack):
             "dataset-versions",
             package_name="dataset_versions",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
@@ -96,7 +66,7 @@ class APIStack(NestedStack):
             "import-status",
             package_name="import_status",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         ).lambda_function
 
@@ -124,5 +94,11 @@ class APIStack(NestedStack):
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
             }
         )
+
+        ############################################################################################
+        # ### RAW S3 API ###########################################################################
+        ############################################################################################
+
+        storage_bucket.grant_read(s3_users_role)  # type: ignore[arg-type]
 
         Tags.of(self).add("ApplicationLayer", "api")  # type: ignore[arg-type]
