@@ -13,7 +13,6 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
-from backend.parameter_store import ParameterName, get_param
 from backend.resources import ResourceName
 
 from .aws_utils import Dataset, S3Object, any_lambda_context
@@ -221,10 +220,9 @@ def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
 
 @mark.infrastructure
 def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
-    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     with Dataset() as dataset, S3Object(
         file_object=BytesIO(),
-        bucket_name=storage_bucket_name,
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
         key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
     ):
         response = entrypoint.lambda_handler(

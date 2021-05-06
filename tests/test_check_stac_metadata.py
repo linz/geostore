@@ -18,6 +18,7 @@ from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import STACDatasetValidator
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from backend.resources import ResourceName
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -187,8 +188,7 @@ def should_save_staging_access_validation_results(
 
 @mark.infrastructure
 def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> None:
-    staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
-    base_url = f"s3://{staging_bucket_name}/"
+    base_url = f"s3://{ResourceName.STAGING_BUCKET_NAME.value}/"
     valid_child_key = any_safe_filename()
     invalid_child_key = any_safe_filename()
     invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
@@ -207,15 +207,15 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
                 ],
             }
         ),
-        bucket_name=staging_bucket_name,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as root_s3_object, S3Object(
         file_object=json_dict_to_file_object(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
-        bucket_name=staging_bucket_name,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=valid_child_key,
     ) as valid_child_s3_object, S3Object(
         file_object=json_dict_to_file_object(invalid_stac_object),
-        bucket_name=staging_bucket_name,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=invalid_child_key,
     ) as invalid_child_s3_object:
 
@@ -276,14 +276,13 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
 
-    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_content),
-        bucket_name=storage_bucket_name,
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_content),
-        bucket_name=storage_bucket_name,
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
@@ -302,7 +301,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
             file_object=BytesIO(initial_bytes=metadata_content),
-            bucket_name=storage_bucket_name,
+            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             key=any_safe_filename(),
         ) as metadata_s3_object:
             # When

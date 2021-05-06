@@ -32,7 +32,7 @@ def main() -> None:
         deploy_env=ENV,
     )
 
-    StagingStack(datalake, "staging", deploy_env=ENV)
+    StagingStack(datalake, "staging")
 
     lambda_layers = LambdaLayersStack(datalake, "lambda-layers", deploy_env=ENV)
 
@@ -43,7 +43,6 @@ def main() -> None:
         datasets_table=storage.datasets_table,
         deploy_env=ENV,
         storage_bucket=storage.storage_bucket,
-        storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
     )
 
@@ -56,7 +55,6 @@ def main() -> None:
         state_machine=processing.state_machine,
         state_machine_parameter=processing.state_machine_parameter,
         storage_bucket=storage.storage_bucket,
-        storage_bucket_parameter=storage.storage_bucket_parameter,
         validation_results_table=storage.validation_results_table,
     )
 
