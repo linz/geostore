@@ -11,7 +11,7 @@ from backend.environment import ENV
 from infrastructure.api_stack import APIStack
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 from infrastructure.lambda_layers_stack import LambdaLayersStack
-from infrastructure.lds import LDSStack
+from infrastructure.lds_stack import LDSStack
 from infrastructure.processing_stack import ProcessingStack
 from infrastructure.staging_stack import StagingStack
 from infrastructure.storage_stack import StorageStack
