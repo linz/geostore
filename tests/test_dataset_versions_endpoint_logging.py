@@ -21,12 +21,11 @@ class TestLogging:
         cls.logger = logging.getLogger("backend.dataset_versions.create")
 
     @mark.infrastructure
-    @patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
-    def should_log_payload(
-        self, start_execution_mock: MagicMock  # pylint:disable=unused-argument
-    ) -> None:
+    def should_log_payload(self) -> None:
         # Given
-        with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
+        with patch(
+            "backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
+        ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
             event = {
                 "httpMethod": "POST",
                 "body": {"metadata-url": any_s3_url(), "id": dataset.dataset_id},
