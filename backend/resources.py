@@ -8,6 +8,6 @@ class ResourceName(Enum):
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset-versions"
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import-status"
     READ_ONLY_ROLE_NAME = f"{ENV}-data-lake-readonly"
-    USERS_ROLE_NAME = f"{ENV}-data-lake-users"
     STORAGE_BUCKET_NAME = f"{ENV}-geospatial-data-lake"
     STAGING_BUCKET_NAME = f"{ENV}-geospatial-data-lake-staging"
+    USERS_ROLE_NAME = f"{ENV}-data-lake-users"
