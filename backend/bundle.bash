@@ -2,11 +2,11 @@
 
 set -o errexit -o noclobber -o nounset
 
-if [[ "$#" -lt 1 ]]
+if [[ "$#" -ne 2 ]]
 then
     cat >&2 <<'EOF'
-Synopsis: ./bundle.bash DIRECTORY
-Example: ./bundle.bash datasets
+Synopsis: ./bundle.bash DIRECTORY ASSET_ROOT
+Example: ./bundle.bash datasets asset_root
 EOF
     exit 1
 fi
@@ -20,8 +20,8 @@ python -m venv "${work_dir}/.venv"
 python -m pip install --quiet --cache-dir="$work_dir" --upgrade pip
 python -m pip install --quiet --cache-dir="$work_dir" poetry wheel
 
-asset_root='/asset-output'
-task_directory="$(basename "$1")"
+task_directory="$1"
+asset_root="$2"
 requirements_file="${work_dir}/requirements.txt"
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
 poetry export --extras="$task_directory" --without-hashes | grep --invert-match '^botocore==' > "$requirements_file"
