@@ -1,5 +1,3 @@
-from typing import Any
-
 import constructs
 from aws_cdk import aws_lambda_python
 from aws_cdk.core import NestedStack
@@ -14,9 +12,8 @@ class LambdaLayersStack(NestedStack):
         stack_id: str,
         *,
         deploy_env: str,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(scope, stack_id, **kwargs)
+        super().__init__(scope, stack_id)
 
         self.botocore = aws_lambda_python.PythonLayerVersion(
             self,

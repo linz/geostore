@@ -1,5 +1,3 @@
-from typing import Any
-
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, NestedStack, Tags
 
@@ -14,9 +12,8 @@ class LDSStack(NestedStack):
         *,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(scope, stack_id, **kwargs)
+        super().__init__(scope, stack_id)
 
         account_principal = aws_iam.AccountPrincipal(account_id=276514628126)
         role = aws_iam.Role(
