@@ -29,7 +29,6 @@ class APIStack(NestedStack):
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
-        storage_bucket_parameter: aws_ssm.StringParameter,
         validation_results_table: Table,
         **kwargs: Any,
     ) -> None:
@@ -89,7 +88,6 @@ class APIStack(NestedStack):
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
         storage_bucket.grant_read(datasets_endpoint_lambda)
-        storage_bucket_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)

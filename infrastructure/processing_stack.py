@@ -28,7 +28,6 @@ class ProcessingStack(NestedStack):
         datasets_table: Table,
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
-        storage_bucket_parameter: aws_ssm.StringParameter,
         validation_results_table: Table,
         **kwargs: Any,
     ) -> None:
@@ -272,9 +271,6 @@ class ProcessingStack(NestedStack):
                 processing_assets_table.name_parameter: [
                     check_stac_metadata_task.lambda_function.role,
                     content_iterator_task.lambda_function,
-                    import_dataset_task.lambda_function,
-                ],
-                storage_bucket_parameter: [
                     import_dataset_task.lambda_function,
                 ],
                 validation_results_table.name_parameter: [

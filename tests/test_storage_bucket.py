@@ -3,10 +3,9 @@ Data Lake Storage Bucket tests.
 """
 
 from mypy_boto3_s3 import S3Client
-from mypy_boto3_ssm import SSMClient
 from pytest import mark
 
-from backend.parameter_store import ParameterName, get_param
+from backend.resources import ResourceName
 
 
 class TestWithStorageBucket:
@@ -14,7 +13,7 @@ class TestWithStorageBucket:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+        cls.storage_bucket_name = ResourceName.STORAGE_BUCKET_NAME.value
 
     @mark.infrastructure
     def should_create_storage_bucket_location_constraint(self, s3_client: S3Client) -> None:
@@ -36,10 +35,3 @@ class TestWithStorageBucket:
         assert response["PublicAccessBlockConfiguration"]["IgnorePublicAcls"] is True
         assert response["PublicAccessBlockConfiguration"]["BlockPublicPolicy"] is True
         assert response["PublicAccessBlockConfiguration"]["RestrictPublicBuckets"] is True
-
-
-@mark.infrastructure
-def should_create_storage_bucket_name_parameter(ssm_client: SSMClient) -> None:
-    """Test if Data Lake Storage Bucket ARN Parameter was created"""
-    parameter_response = ssm_client.get_parameter(Name=ParameterName.STORAGE_BUCKET_NAME.value)
-    assert parameter_response["Parameter"]["Name"] == ParameterName.STORAGE_BUCKET_NAME.value

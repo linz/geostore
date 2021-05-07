@@ -7,7 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
-from ..parameter_store import ParameterName, get_param
+from ..resources import ResourceName
 from ..types import JsonObject
 
 BOTO3_CLIENT = boto3.client("s3")
@@ -35,9 +35,8 @@ def delete_dataset(payload: JsonObject) -> JsonObject:
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' does not exist")
 
     # Verify that the dataset is empty
-    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
     list_objects_response = BOTO3_CLIENT.list_objects_v2(
-        Bucket=storage_bucket_name, MaxKeys=1, Prefix=f"{dataset_id}/"
+        Bucket=ResourceName.STORAGE_BUCKET_NAME.value, MaxKeys=1, Prefix=f"{dataset_id}/"
     )
     if list_objects_response["KeyCount"]:
         return error_response(

@@ -13,7 +13,7 @@ from smart_open import smart_open  # type: ignore[import]
 
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.import_dataset.task import DATASET_KEY_SEPARATOR, lambda_handler
-from backend.parameter_store import ParameterName, get_param
+from backend.resources import ResourceName
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
@@ -91,16 +91,13 @@ def should_batch_copy_files_to_storage(
     root_metadata_filename = any_safe_filename()
     child_metadata_filename = any_safe_filename()
 
-    staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
-    storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
-
     with S3Object(
         BytesIO(initial_bytes=root_asset_content),
-        staging_bucket_name,
+        ResourceName.STAGING_BUCKET_NAME.value,
         f"{original_prefix}/{root_asset_filename}",
     ) as root_asset_s3_object, S3Object(
         BytesIO(initial_bytes=child_asset_content),
-        staging_bucket_name,
+        ResourceName.STAGING_BUCKET_NAME.value,
         f"{original_prefix}/{child_asset_filename}",
     ) as child_asset_s3_object, S3Object(
         BytesIO(
@@ -116,7 +113,7 @@ def should_batch_copy_files_to_storage(
                 }
             ).encode()
         ),
-        staging_bucket_name,
+        ResourceName.STAGING_BUCKET_NAME.value,
         f"{original_prefix}/{child_metadata_filename}",
     ) as child_metadata_s3_object, S3Object(
         BytesIO(
@@ -133,7 +130,7 @@ def should_batch_copy_files_to_storage(
                 }
             ).encode()
         ),
-        staging_bucket_name,
+        ResourceName.STAGING_BUCKET_NAME.value,
         f"{original_prefix}/{root_metadata_filename}",
     ) as root_metadata_s3_object, Dataset() as dataset:
         version_id = any_dataset_version_id()
@@ -185,12 +182,14 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open(
-                    f"s3://{storage_bucket_name}/{new_root_metadata_key}"
+                    f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{new_root_metadata_key}"
                 ) as new_root_metadata_file:
                     assert expected_root_metadata == new_root_metadata_file.read()
 
                 with subtests.test(msg="Delete root metadata object"):
-                    delete_s3_key(storage_bucket_name, new_root_metadata_key, s3_client)
+                    delete_s3_key(
+                        ResourceName.STORAGE_BUCKET_NAME.value, new_root_metadata_key, s3_client
+                    )
 
                 new_child_metadata_key = f"{new_prefix}/{child_metadata_filename}"
                 expected_child_metadata = dumps(
@@ -205,30 +204,36 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Child metadata content"), smart_open(
-                    f"s3://{storage_bucket_name}/{new_child_metadata_key}"
+                    f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{new_child_metadata_key}"
                 ) as new_child_metadata_file:
                     assert expected_child_metadata == new_child_metadata_file.read()
 
                 with subtests.test(msg="Delete child metadata object"):
-                    delete_s3_key(storage_bucket_name, new_child_metadata_key, s3_client)
+                    delete_s3_key(
+                        ResourceName.STORAGE_BUCKET_NAME.value, new_child_metadata_key, s3_client
+                    )
 
                 # Then the root asset file is in the root prefix
                 with subtests.test(msg="Delete root asset object"):
                     delete_s3_key(
-                        storage_bucket_name, f"{new_prefix}/{root_asset_filename}", s3_client
+                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        f"{new_prefix}/{root_asset_filename}",
+                        s3_client,
                     )
 
                 # Then the child asset file is in the root prefix
                 with subtests.test(msg="Delete child asset object"):
                     delete_s3_key(
-                        storage_bucket_name, f"{new_prefix}/{child_asset_filename}", s3_client
+                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        f"{new_prefix}/{child_asset_filename}",
+                        s3_client,
                     )
 
                 # Cleanup
                 delete_copy_job_files(
                     metadata_copy_job_result,
                     asset_copy_job_result,
-                    storage_bucket_name,
+                    ResourceName.STORAGE_BUCKET_NAME.value,
                     s3_client,
                     subtests,
                 )

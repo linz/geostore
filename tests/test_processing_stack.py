@@ -17,7 +17,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.import_dataset.task import DATASET_KEY_SEPARATOR
 from backend.import_status.get import Outcome
-from backend.parameter_store import ParameterName, get_param
+from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
 from .aws_utils import (
@@ -75,8 +75,8 @@ class TestWithStagingBucket:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.staging_bucket_name = get_param(ParameterName.STAGING_BUCKET_NAME)
-        cls.storage_bucket_name = get_param(ParameterName.STORAGE_BUCKET_NAME)
+        cls.staging_bucket_name = ResourceName.STAGING_BUCKET_NAME.value
+        cls.storage_bucket_name = ResourceName.STORAGE_BUCKET_NAME.value
 
     @mark.timeout(1200)
     @mark.infrastructure

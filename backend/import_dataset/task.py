@@ -16,6 +16,7 @@ from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KE
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..resources import ResourceName
 from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
@@ -47,8 +48,7 @@ IMPORT_METADATA_FILE_TASK_ARN = get_param(
     ParameterName.PROCESSING_IMPORT_METADATA_FILE_FUNCTION_TASK_ARN
 )
 
-STORAGE_BUCKET_NAME = get_param(ParameterName.STORAGE_BUCKET_NAME)
-STORAGE_BUCKET_ARN = f"arn:aws:s3:::{STORAGE_BUCKET_NAME}"
+STORAGE_BUCKET_ARN = f"arn:aws:s3:::{ResourceName.STORAGE_BUCKET_NAME.value}"
 
 S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN)
 
@@ -70,7 +70,9 @@ class Importer:
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
-        with smart_open(f"s3://{STORAGE_BUCKET_NAME}/{manifest_key}", "w") as s3_manifest:
+        with smart_open(
+            f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{manifest_key}", "w"
+        ) as s3_manifest:
             processing_assets_model = processing_assets_model_with_meta()
 
             for item in processing_assets_model.query(
@@ -82,14 +84,16 @@ class Importer:
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))
                 key = s3_url_to_key(item.url)
                 task_parameters = {
-                    TARGET_BUCKET_NAME_KEY: STORAGE_BUCKET_NAME,
+                    TARGET_BUCKET_NAME_KEY: ResourceName.STORAGE_BUCKET_NAME.value,
                     ORIGINAL_KEY_KEY: key,
                     NEW_KEY_KEY: f"{self.dataset_prefix}/{self.version_id}/{basename(key)}",
                 }
                 row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
                 s3_manifest.write(f"{row}\n")
 
-        manifest_s3_object = S3_CLIENT.head_object(Bucket=STORAGE_BUCKET_NAME, Key=manifest_key)
+        manifest_s3_object = S3_CLIENT.head_object(
+            Bucket=ResourceName.STORAGE_BUCKET_NAME.value, Key=manifest_key
+        )
         assert "ETag" in manifest_s3_object, manifest_s3_object
         manifest_s3_etag = manifest_s3_object["ETag"]
         manifest_location_spec = JobManifestLocationTypeDef(

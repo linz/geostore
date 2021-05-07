@@ -8,6 +8,7 @@ from aws_cdk.core import Construct, NestedStack, Tags
 
 from backend.datasets_model import DatasetsTitleIdx
 from backend.parameter_store import ParameterName
+from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
@@ -53,18 +54,11 @@ class StorageStack(NestedStack):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
+            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=REMOVAL_POLICY,
-        )
-
-        self.storage_bucket_parameter = aws_ssm.StringParameter(
-            self,
-            "storage bucket name",
-            description=f"Storage bucket name for {deploy_env}",
-            parameter_name=ParameterName.STORAGE_BUCKET_NAME.value,
-            string_value=self.storage_bucket.bucket_name,
         )
 
         ############################################################################################
