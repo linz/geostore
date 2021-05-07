@@ -1,8 +1,6 @@
 """
 Data Lake AWS resources definitions.
 """
-from typing import Any
-
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, NestedStack, Tags
 
@@ -17,8 +15,8 @@ from .removal_policy import REMOVAL_POLICY
 
 
 class StorageStack(NestedStack):
-    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str, **kwargs: Any) -> None:
-        super().__init__(scope, stack_id, **kwargs)
+    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str) -> None:
+        super().__init__(scope, stack_id)
 
         ############################################################################################
         # ### DEPLOYMENT VERSION ###################################################################

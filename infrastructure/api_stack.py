@@ -2,7 +2,6 @@
 Data Lake AWS resources definitions.
 """
 from os import environ
-from typing import Any
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, NestedStack, Tags
@@ -30,9 +29,8 @@ class APIStack(NestedStack):
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(scope, stack_id, **kwargs)
+        super().__init__(scope, stack_id)
 
         if saml_provider_arn := environ.get("DATALAKE_SAML_IDENTITY_PROVIDER_ARN"):
             principal = aws_iam.FederatedPrincipal(
