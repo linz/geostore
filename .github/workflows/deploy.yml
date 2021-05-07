@@ -83,6 +83,7 @@ jobs:
           DEPLOY_ENV: nonprod
           DATALAKE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_NON_PROD }}
+          RESOURCE_REMOVAL_POLICY: RETAIN
 
       # PROD DEPLOYMENT - in release branch, deploy on tag, otherwise report stack changes only
       - name: (Prod) Configure AWS credentials
@@ -119,3 +120,4 @@ jobs:
           DEPLOY_ENV: prod
           DATALAKE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.DATALAKE_SAML_IDENTITY_PROVIDER_ARN_PROD }}
+          RESOURCE_REMOVAL_POLICY: RETAIN
