@@ -6,12 +6,7 @@ from .roles import MAX_SESSION_DURATION
 
 class LDSStack(NestedStack):
     def __init__(
-        self,
-        scope: Construct,
-        stack_id: str,
-        *,
-        deploy_env: str,
-        storage_bucket: aws_s3.Bucket,
+        self, scope: Construct, stack_id: str, *, deploy_env: str, storage_bucket: aws_s3.Bucket
     ) -> None:
         super().__init__(scope, stack_id)
 

@@ -6,13 +6,7 @@ from .runtime import PYTHON_RUNTIME
 
 
 class LambdaLayersStack(NestedStack):
-    def __init__(
-        self,
-        scope: constructs.Construct,
-        stack_id: str,
-        *,
-        deploy_env: str,
-    ) -> None:
+    def __init__(self, scope: constructs.Construct, stack_id: str, *, deploy_env: str) -> None:
         super().__init__(scope, stack_id)
 
         self.botocore = aws_lambda_python.PythonLayerVersion(
