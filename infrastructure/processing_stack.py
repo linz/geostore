@@ -299,26 +299,26 @@ class ProcessingStack(NestedStack):
                 .afterwards()
             )
             .next(
-                aws_stepfunctions.Choice(self, "content_iteration_finished")
+                aws_stepfunctions.Choice(  # type: ignore[arg-type]
+                    self, "content_iteration_finished"
+                )
                 .when(
                     aws_stepfunctions.Condition.number_equals("$.content.next_item", -1),
-                    validation_summary_task.lambda_invoke.next(
-                        aws_stepfunctions.Choice(  # type: ignore[arg-type]
-                            self, "validation_successful"
-                        )
-                        .when(
-                            aws_stepfunctions.Condition.boolean_equals(
-                                "$.validation.success", True
-                            ),
-                            import_dataset_task.lambda_invoke.next(
-                                success_task  # type: ignore[arg-type]
-                            ),
-                        )
-                        .otherwise(validation_failure_lambda_invoke)
-                    ),
+                    validation_summary_task.lambda_invoke,
                 )
                 .otherwise(content_iterator_task.lambda_invoke)
+                .afterwards()
             )
+            .next(
+                aws_stepfunctions.Choice(self, "validation_successful")  # type: ignore[arg-type]
+                .when(
+                    aws_stepfunctions.Condition.boolean_equals("$.validation.success", True),
+                    import_dataset_task.lambda_invoke,
+                )
+                .otherwise(validation_failure_lambda_invoke)
+                .afterwards()
+            )
+            .next(success_task)  # type: ignore[arg-type]
         )
 
         self.state_machine = aws_stepfunctions.StateMachine(
