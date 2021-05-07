@@ -1,8 +1,6 @@
 """
 Data Lake processing stack.
 """
-from typing import Any
-
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, NestedStack, Tags
 
@@ -29,10 +27,9 @@ class ProcessingStack(NestedStack):
         deploy_env: str,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
-        **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-locals
-        super().__init__(scope, stack_id, **kwargs)
+        super().__init__(scope, stack_id)
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
