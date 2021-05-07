@@ -1,7 +1,7 @@
 from functools import lru_cache
 from json import dumps
 from os.path import basename
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from urllib.parse import quote, urlparse
 from uuid import uuid4
 
@@ -21,6 +21,12 @@ from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION
 from ..types import JsonObject
 
 if TYPE_CHECKING:
+    from mypy_boto3_s3control.literals import (
+        JobManifestFieldName,
+        JobManifestFormat,
+        JobReportFormat,
+        JobReportScope,
+    )
     from mypy_boto3_s3control.type_defs import (
         JobManifestLocationTypeDef,
         JobManifestSpecTypeDef,
@@ -36,6 +42,10 @@ else:
     JobOperationTypeDef = dict
     JobReportTypeDef = dict
     LambdaInvokeOperationTypeDef = dict
+    JobManifestFieldName = str
+    JobManifestFormat = str
+    JobReportFormat = str
+    JobReportScope = str
 
 LOGGER = set_up_logging(__name__)
 
@@ -55,6 +65,11 @@ S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_
 EVENT_KEY = "event"
 
 DATASET_KEY_SEPARATOR = "-"
+
+JOB_MANIFEST_FORMAT: JobManifestFormat = "S3BatchOperations_CSV_20180820"
+JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldName] = ["Bucket", "Key"]
+JOB_REPORT_FORMAT: JobReportFormat = "Report_CSV_20180820"
+JOB_REPORT_SCOPE: JobReportScope = "AllTasks"
 
 
 class Importer:
@@ -111,16 +126,16 @@ class Importer:
             ),
             Manifest=JobManifestTypeDef(
                 Spec=JobManifestSpecTypeDef(
-                    Format="S3BatchOperations_CSV_20180820", Fields=["Bucket", "Key"]
+                    Format=JOB_MANIFEST_FORMAT, Fields=JOB_MANIFEST_FIELD_NAMES
                 ),
                 Location=manifest_location_spec,
             ),
             Report=JobReportTypeDef(
                 Enabled=True,
                 Bucket=STORAGE_BUCKET_ARN,
-                Format="Report_CSV_20180820",
+                Format=JOB_REPORT_FORMAT,
                 Prefix=f"reports/{self.version_id}",
-                ReportScope="AllTasks",
+                ReportScope=JOB_REPORT_SCOPE,
             ),
             Priority=1,
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
