@@ -13,7 +13,12 @@ from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
-from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function_event_keys import (
+    DATASET_ID_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
@@ -81,6 +86,6 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         HTTPStatus.CREATED,
         {
             "dataset_version": dataset_version_id,
-            "execution_arn": step_functions_response["executionArn"],
+            EXECUTION_ARN_KEY: step_functions_response["executionArn"],
         },
     )

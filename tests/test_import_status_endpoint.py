@@ -10,7 +10,7 @@ from pytest import mark
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.import_status.get import Outcome
-from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from backend.step_function_event_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -25,13 +25,13 @@ from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 def should_return_required_property_error_when_missing_mandatory_execution_arn() -> None:
-    # Given a missing "execution_arn" attribute in the body
+    # Given an empty body
     response = entrypoint.lambda_handler({"httpMethod": "GET", "body": {}}, any_lambda_context())
 
     # Then the API should return an error message
     assert response == {
         "statusCode": HTTPStatus.BAD_REQUEST,
-        "body": {"message": "Bad Request: 'execution_arn' is a required property"},
+        "body": {"message": f"Bad Request: '{EXECUTION_ARN_KEY}' is a required property"},
     }
 
 
@@ -61,7 +61,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         validation_mock.return_value = []
         # When attempting to create the instance
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+            {"httpMethod": "GET", "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()}},
             any_lambda_context(),
         )
 
@@ -115,7 +115,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
     ):
         # When
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+            {"httpMethod": "GET", "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()}},
             any_lambda_context(),
         )
 
@@ -176,7 +176,7 @@ def should_report_s3_batch_upload_failures(
 
         # When
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+            {"httpMethod": "GET", "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()}},
             any_lambda_context(),
         )
 
@@ -214,7 +214,7 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+        {"httpMethod": "GET", "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()}},
         any_lambda_context(),
     )
 
@@ -253,7 +253,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
 
     # When
     response = entrypoint.lambda_handler(
-        {"httpMethod": "GET", "body": {"execution_arn": any_arn_formatted_string()}},
+        {"httpMethod": "GET", "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()}},
         any_lambda_context(),
     )
 

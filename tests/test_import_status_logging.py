@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.error_response_keys import ERROR_KEY
-from backend.import_status.get import get_import_status, get_s3_batch_copy_status
+from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status, get_s3_batch_copy_status
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_account_id, any_arn_formatted_string
@@ -25,7 +25,7 @@ class TestLogging:
         # Given
         event = {
             "httpMethod": "GET",
-            "body": {"execution_arn": any_arn_formatted_string()},
+            "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
         }
 
         expected_payload_log = dumps({"event": event})
@@ -93,7 +93,7 @@ class TestLogging:
             get_import_status(
                 {
                     "httpMethod": "GET",
-                    "body": {"execution_arn": any_arn_formatted_string()},
+                    "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
                 }
             )
 

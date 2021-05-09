@@ -19,6 +19,7 @@ from backend.import_dataset.task import DATASET_KEY_SEPARATOR
 from backend.import_status.get import Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
+from backend.step_function_event_keys import EXECUTION_ARN_KEY
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
@@ -200,7 +201,7 @@ class TestWithStagingBucket:
                     # Then poll for State Machine State
                     while (
                         execution := step_functions_client.describe_execution(
-                            executionArn=json_resp["body"]["execution_arn"]
+                            executionArn=json_resp["body"][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
@@ -254,7 +255,7 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         "httpMethod": "GET",
-                        "body": {"execution_arn": execution["executionArn"]},
+                        "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
             )
@@ -341,7 +342,7 @@ class TestWithStagingBucket:
                     # Then poll for State Machine State
                     while (
                         execution := step_functions_client.describe_execution(
-                            executionArn=json_resp["body"]["execution_arn"]
+                            executionArn=json_resp["body"][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
@@ -389,7 +390,7 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         "httpMethod": "GET",
-                        "body": {"execution_arn": execution["executionArn"]},
+                        "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
             )
@@ -448,7 +449,7 @@ class TestWithStagingBucket:
 
             with subtests.test(msg="Step function result"):
                 # Then poll for State Machine State
-                state_machine_arn = response_payload["body"]["execution_arn"]
+                state_machine_arn = response_payload["body"][EXECUTION_ARN_KEY]
                 while (
                     execution := step_functions_client.describe_execution(
                         executionArn=state_machine_arn
