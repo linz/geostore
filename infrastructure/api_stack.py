@@ -72,7 +72,7 @@ class APIStack(NestedStack):
             deploy_env=deploy_env,
             users_role=users_role,
             botocore_lambda_layer=botocore_lambda_layer,
-        ).lambda_function
+        )
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
             self,
@@ -81,7 +81,7 @@ class APIStack(NestedStack):
             deploy_env=deploy_env,
             users_role=users_role,
             botocore_lambda_layer=botocore_lambda_layer,
-        ).lambda_function
+        )
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
@@ -98,7 +98,7 @@ class APIStack(NestedStack):
             deploy_env=deploy_env,
             users_role=users_role,
             botocore_lambda_layer=botocore_lambda_layer,
-        ).lambda_function
+        )
 
         validation_results_table.grant_read_data(import_status_endpoint_lambda)
         validation_results_table.grant(
