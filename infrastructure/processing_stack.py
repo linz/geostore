@@ -204,8 +204,8 @@ class ProcessingStack(NestedStack):
 
         for storage_writer in [
             import_dataset_role,
-            import_asset_file_function.role,
-            import_metadata_file_function.role,
+            import_asset_file_function,
+            import_metadata_file_function,
         ]:
             storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
@@ -266,12 +266,12 @@ class ProcessingStack(NestedStack):
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 processing_assets_table.name_parameter: [
-                    check_stac_metadata_task.lambda_function.role,
+                    check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
                 validation_results_table.name_parameter: [
-                    check_stac_metadata_task.lambda_function.role,
+                    check_stac_metadata_task.lambda_function,
                     validation_summary_task.lambda_function,
                     content_iterator_task.lambda_function,
                 ],
