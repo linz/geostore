@@ -60,8 +60,8 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         "body": {
             STEP_FUNCTION_KEY: {"status": "Running"},
             VALIDATION_KEY: {"status": Outcome.PENDING.value, "errors": []},
-            METADATA_UPLOAD_KEY: {"status": "Pending", "errors": []},
-            ASSET_UPLOAD_KEY: {"status": "Pending", "errors": []},
+            METADATA_UPLOAD_KEY: {"status": Outcome.PENDING.value, "errors": []},
+            ASSET_UPLOAD_KEY: {"status": Outcome.PENDING.value, "errors": []},
         },
     }
 
@@ -253,7 +253,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
         "statusCode": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Failed"},
-            VALIDATION_KEY: {"status": "Failed", "errors": [validation_error]},
+            VALIDATION_KEY: {"status": Outcome.FAILED.value, "errors": [validation_error]},
             METADATA_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
             ASSET_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
         },
