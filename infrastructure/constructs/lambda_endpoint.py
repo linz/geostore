@@ -6,7 +6,7 @@ from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
 
 
-class LambdaEndpoint(Construct):
+class LambdaEndpoint(aws_lambda.Function):
     def __init__(
         self,
         scope: Construct,
@@ -17,10 +17,8 @@ class LambdaEndpoint(Construct):
         package_name: str,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
-        super().__init__(scope, construct_id)
-
-        self.lambda_function = aws_lambda.Function(
-            self,
+        super().__init__(
+            scope,
             f"{deploy_env}-{construct_id}-function",
             function_name=f"{deploy_env}-{construct_id}",
             handler=f"{BACKEND_DIRECTORY}.{package_name}.entrypoint.lambda_handler",
@@ -30,5 +28,5 @@ class LambdaEndpoint(Construct):
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
         )
 
-        self.lambda_function.add_environment("DEPLOY_ENV", deploy_env)
-        self.lambda_function.grant_invoke(users_role)  # type: ignore[arg-type]
+        self.add_environment("DEPLOY_ENV", deploy_env)
+        self.grant_invoke(users_role)  # type: ignore[arg-type]
