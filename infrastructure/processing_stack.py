@@ -218,14 +218,13 @@ class ProcessingStack(NestedStack):
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
 
-        assert import_dataset_task.lambda_function.role is not None
-        import_dataset_task.lambda_function.role.add_to_policy(
+        import_dataset_task.lambda_function.add_to_role_policy(
             aws_iam.PolicyStatement(
                 resources=[import_dataset_role.role_arn],
                 actions=["iam:PassRole"],
             ),
         )
-        import_dataset_task.lambda_function.role.add_to_policy(
+        import_dataset_task.lambda_function.add_to_role_policy(
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
