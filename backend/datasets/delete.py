@@ -13,21 +13,21 @@ from ..types import JsonObject
 BOTO3_CLIENT = boto3.client("s3")
 
 
-def delete_dataset(req_body: JsonObject) -> JsonObject:
+def delete_dataset(body: JsonObject) -> JsonObject:
     """DELETE: Delete Dataset."""
 
     body_schema = {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}
 
     # request body validation
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
 
     # get dataset to delete
-    dataset_id = req_body["id"]
+    dataset_id = body["id"]
     try:
         dataset = datasets_model_class.get(hash_key=f"DATASET#{dataset_id}", consistent_read=True)
     except DoesNotExist:

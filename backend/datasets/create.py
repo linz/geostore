@@ -12,7 +12,7 @@ TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
 
 
-def create_dataset(req_body: JsonObject) -> JsonObject:
+def create_dataset(body: JsonObject) -> JsonObject:
     """POST: Create Dataset."""
 
     body_schema = {
@@ -23,17 +23,17 @@ def create_dataset(req_body: JsonObject) -> JsonObject:
 
     # request body validation
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(hash_key=req_body["title"]):
-        return error_response(HTTPStatus.CONFLICT, f"dataset '{req_body['title']}' already exists")
+    if datasets_model_class.datasets_title_idx.count(hash_key=body["title"]):
+        return error_response(HTTPStatus.CONFLICT, f"dataset '{body['title']}' already exists")
 
     # create dataset
-    dataset = datasets_model_class(title=req_body["title"])
+    dataset = datasets_model_class(title=body["title"])
     dataset.save()
     dataset.refresh(consistent_read=True)
 

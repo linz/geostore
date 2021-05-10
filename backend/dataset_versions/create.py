@@ -24,10 +24,10 @@ from ..types import JsonObject
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 
 
-def create_dataset_version(req_body: JsonObject) -> JsonObject:
+def create_dataset_version(body: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(json.dumps({"event": req_body}))
+    logger.debug(json.dumps({"event": body}))
 
     body_schema = {
         "type": "object",
@@ -41,7 +41,7 @@ def create_dataset_version(req_body: JsonObject) -> JsonObject:
 
     # validate input
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
@@ -50,23 +50,19 @@ def create_dataset_version(req_body: JsonObject) -> JsonObject:
 
     # validate dataset exists
     try:
-        dataset = datasets_model_class.get(
-            hash_key=f"DATASET#{req_body['id']}", consistent_read=True
-        )
+        dataset = datasets_model_class.get(hash_key=f"DATASET#{body['id']}", consistent_read=True)
     except DoesNotExist as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
-        return error_response(
-            HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' could not be found"
-        )
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' could not be found")
 
-    now = datetime.fromisoformat(req_body.get("now", datetime.utcnow().isoformat()))
+    now = datetime.fromisoformat(body.get("now", datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
 
     # execute step function
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
         VERSION_ID_KEY: dataset_version_id,
-        METADATA_URL_KEY: req_body["metadata-url"],
+        METADATA_URL_KEY: body["metadata-url"],
     }
     state_machine_arn = get_param(
         ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN

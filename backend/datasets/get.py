@@ -10,14 +10,14 @@ from ..types import JsonObject
 from .list import list_datasets
 
 
-def handle_get(req_body: JsonObject) -> JsonObject:
-    if "id" in req_body:
-        return get_dataset_single(req_body)
+def handle_get(body: JsonObject) -> JsonObject:
+    if "id" in body:
+        return get_dataset_single(body)
 
-    if "title" in req_body:
-        return get_dataset_filter(req_body)
+    if "title" in body:
+        return get_dataset_filter(body)
 
-    if req_body == {}:
+    if body == {}:
         return list_datasets()
 
     return error_response(HTTPStatus.BAD_REQUEST, "Unhandled request")
