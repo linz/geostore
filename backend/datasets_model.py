@@ -65,6 +65,11 @@ class DatasetsModelBase(Model):
         """Dataset ID value."""
         return str(self.id).split("#")[1]
 
+    @property
+    def dataset_prefix(self) -> str:
+        """Dataset prefix value."""
+        return f"{self.title}{DATASET_KEY_SEPARATOR}{self.dataset_id}"
+
 
 class DatasetsModelMeta(MetaModel):
     def __new__(
@@ -93,3 +98,6 @@ def datasets_model_with_meta() -> Type[DatasetsModelBase]:
         datasets_title_idx = DatasetsTitleIdx()
 
     return DatasetModel
+
+
+DATASET_KEY_SEPARATOR = "-"

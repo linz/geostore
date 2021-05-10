@@ -71,7 +71,7 @@ class APIStack(NestedStack):
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
-        storage_bucket.grant_read(datasets_endpoint_lambda)
+        storage_bucket.grant_read_write(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)

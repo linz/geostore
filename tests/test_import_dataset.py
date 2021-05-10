@@ -11,8 +11,9 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
+from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.import_dataset.task import DATASET_KEY_SEPARATOR, lambda_handler
+from backend.import_dataset.task import lambda_handler
 from backend.resources import ResourceName
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
