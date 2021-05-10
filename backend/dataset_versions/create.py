@@ -24,10 +24,10 @@ from ..types import JsonObject
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 
 
-def create_dataset_version(event: JsonObject) -> JsonObject:
+def create_dataset_version(req_body: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(json.dumps({"event": event}))
+    logger.debug(json.dumps({"event": req_body}))
 
     body_schema = {
         "type": "object",
@@ -40,7 +40,6 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
     }
 
     # validate input
-    req_body = event["body"]
     try:
         validate(req_body, body_schema)
     except ValidationError as err:

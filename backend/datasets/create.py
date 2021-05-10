@@ -12,7 +12,7 @@ TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
 
 
-def create_dataset(payload: JsonObject) -> JsonObject:
+def create_dataset(req_body: JsonObject) -> JsonObject:
     """POST: Create Dataset."""
 
     body_schema = {
@@ -22,7 +22,6 @@ def create_dataset(payload: JsonObject) -> JsonObject:
     }
 
     # request body validation
-    req_body = payload["body"]
     try:
         validate(req_body, body_schema)
     except ValidationError as err:

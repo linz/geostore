@@ -9,7 +9,7 @@ from ..datasets_model import DatasetsModelBase, datasets_model_with_meta
 from ..types import JsonObject
 
 
-def update_dataset(payload: JsonObject) -> JsonObject:
+def update_dataset(req_body: JsonObject) -> JsonObject:
     """PATCH: Update Dataset."""
 
     body_schema = {
@@ -19,7 +19,6 @@ def update_dataset(payload: JsonObject) -> JsonObject:
     }
 
     # request body validation
-    req_body = payload["body"]
     try:
         validate(req_body, body_schema)
     except ValidationError as err:

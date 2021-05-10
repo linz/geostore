@@ -36,12 +36,12 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 }
 
 
-def get_import_status(event: JsonObject) -> JsonObject:
-    LOGGER.debug(json.dumps({"event": event}))
+def get_import_status(req_body: JsonObject) -> JsonObject:
+    LOGGER.debug(json.dumps({"event": req_body}))
 
     try:
         validate(
-            event["body"],
+            req_body,
             {
                 "type": "object",
                 "properties": {EXECUTION_ARN_KEY: {"type": "string"}},
@@ -53,7 +53,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
-        executionArn=event["body"][EXECUTION_ARN_KEY]
+        executionArn=req_body[EXECUTION_ARN_KEY]
     )
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))

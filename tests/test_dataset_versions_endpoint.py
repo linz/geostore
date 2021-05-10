@@ -72,7 +72,7 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
         body = {"id": dataset.dataset_id, "metadata-url": any_s3_url(), "now": now.isoformat()}
 
         # When requesting the dataset by ID and type
-        response = create_dataset_version({"body": body})
+        response = create_dataset_version(body)
     logger.info("Response: %s", response)
 
     # Then we should get the dataset in return

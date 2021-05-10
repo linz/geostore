@@ -90,12 +90,7 @@ class TestLogging:
         ) as validation_mock:
             validation_mock.return_value = []
             # When
-            get_import_status(
-                {
-                    "httpMethod": "GET",
-                    "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
-                }
-            )
+            get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
 
             # Then
             logger_mock.assert_any_call(expected_response_log)

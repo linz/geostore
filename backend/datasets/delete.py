@@ -13,13 +13,12 @@ from ..types import JsonObject
 BOTO3_CLIENT = boto3.client("s3")
 
 
-def delete_dataset(payload: JsonObject) -> JsonObject:
+def delete_dataset(req_body: JsonObject) -> JsonObject:
     """DELETE: Delete Dataset."""
 
     body_schema = {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}
 
     # request body validation
-    req_body = payload["body"]
     try:
         validate(req_body, body_schema)
     except ValidationError as err:
