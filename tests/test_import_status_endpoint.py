@@ -10,7 +10,15 @@ from pytest import mark
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.import_status.get import Outcome
-from backend.step_function_event_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
+from backend.step_function_event_keys import (
+    ASSET_UPLOAD_KEY,
+    DATASET_ID_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_UPLOAD_KEY,
+    STEP_FUNCTION_KEY,
+    VALIDATION_KEY,
+    VERSION_ID_KEY,
+)
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -50,10 +58,10 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "Running"},
-            "validation": {"status": Outcome.PENDING.value, "errors": []},
-            "metadata upload": {"status": "Pending", "errors": []},
-            "asset upload": {"status": "Pending", "errors": []},
+            STEP_FUNCTION_KEY: {"status": "Running"},
+            VALIDATION_KEY: {"status": Outcome.PENDING.value, "errors": []},
+            METADATA_UPLOAD_KEY: {"status": "Pending", "errors": []},
+            ASSET_UPLOAD_KEY: {"status": "Pending", "errors": []},
         },
     }
 
@@ -90,8 +98,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "Succeeded"},
-            "validation": {
+            STEP_FUNCTION_KEY: {"status": "Succeeded"},
+            VALIDATION_KEY: {
                 "status": Outcome.FAILED.value,
                 "errors": [
                     {
@@ -102,8 +110,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
                     }
                 ],
             },
-            "metadata upload": {"status": Outcome.SKIPPED.value, "errors": []},
-            "asset upload": {"status": Outcome.SKIPPED.value, "errors": []},
+            METADATA_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
+            ASSET_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
         },
     }
     with ValidationItem(
@@ -156,13 +164,13 @@ def should_report_s3_batch_upload_failures(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "Succeeded"},
-            "validation": {"status": Outcome.PASSED.value, "errors": []},
-            "metadata upload": {
+            STEP_FUNCTION_KEY: {"status": "Succeeded"},
+            VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
+            METADATA_UPLOAD_KEY: {
                 "status": "Completed",
                 "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             },
-            "asset upload": {
+            ASSET_UPLOAD_KEY: {
                 "status": "Completed",
                 "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             },
@@ -205,10 +213,10 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "Failed"},
-            "validation": {"status": Outcome.SKIPPED.value, "errors": []},
-            "metadata upload": {"status": Outcome.SKIPPED.value, "errors": []},
-            "asset upload": {"status": Outcome.SKIPPED.value, "errors": []},
+            STEP_FUNCTION_KEY: {"status": "Failed"},
+            VALIDATION_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
+            METADATA_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
+            ASSET_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
         },
     }
 
@@ -244,10 +252,10 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
     expected_response = {
         "statusCode": HTTPStatus.OK,
         "body": {
-            "step function": {"status": "Failed"},
-            "validation": {"status": "Failed", "errors": [validation_error]},
-            "metadata upload": {"status": Outcome.SKIPPED.value, "errors": []},
-            "asset upload": {"status": Outcome.SKIPPED.value, "errors": []},
+            STEP_FUNCTION_KEY: {"status": "Failed"},
+            VALIDATION_KEY: {"status": "Failed", "errors": [validation_error]},
+            METADATA_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
+            ASSET_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
         },
     }
 

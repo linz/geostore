@@ -1,4 +1,8 @@
+ASSET_UPLOAD_KEY = "asset upload"
 DATASET_ID_KEY = "dataset_id"
 EXECUTION_ARN_KEY = "execution_arn"
+METADATA_UPLOAD_KEY = "metadata upload"
 METADATA_URL_KEY = "metadata_url"
+STEP_FUNCTION_KEY = "step function"
+VALIDATION_KEY = "validation"
 VERSION_ID_KEY = "version_id"

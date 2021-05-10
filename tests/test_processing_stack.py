@@ -19,7 +19,13 @@ from backend.import_dataset.task import DATASET_KEY_SEPARATOR
 from backend.import_status.get import Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
-from backend.step_function_event_keys import EXECUTION_ARN_KEY
+from backend.step_function_event_keys import (
+    ASSET_UPLOAD_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_UPLOAD_KEY,
+    STEP_FUNCTION_KEY,
+    VALIDATION_KEY,
+)
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
@@ -244,10 +250,10 @@ class TestWithStagingBucket:
             expected_response = {
                 "statusCode": HTTPStatus.OK,
                 "body": {
-                    "step function": {"status": "Succeeded"},
-                    "validation": {"status": Outcome.PASSED.value, "errors": []},
-                    "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
-                    "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    STEP_FUNCTION_KEY: {"status": "Succeeded"},
+                    VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
+                    METADATA_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    ASSET_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
             }
             status_resp = lambda_client.invoke(
@@ -379,10 +385,10 @@ class TestWithStagingBucket:
             expected_response = {
                 "statusCode": HTTPStatus.OK,
                 "body": {
-                    "step function": {"status": "Succeeded"},
-                    "validation": {"status": Outcome.PASSED.value, "errors": []},
-                    "metadata upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
-                    "asset upload": {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    STEP_FUNCTION_KEY: {"status": "Succeeded"},
+                    VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
+                    METADATA_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                    ASSET_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
                 },
             }
             status_resp = lambda_client.invoke(
