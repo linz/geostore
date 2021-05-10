@@ -10,28 +10,27 @@ from ..types import JsonObject
 from .list import list_datasets
 
 
-def handle_get(event: JsonObject) -> JsonObject:
-    if "id" in event["body"]:
-        return get_dataset_single(event)
+def handle_get(body: JsonObject) -> JsonObject:
+    if "id" in body:
+        return get_dataset_single(body)
 
-    if "title" in event["body"]:
-        return get_dataset_filter(event)
+    if "title" in body:
+        return get_dataset_filter(body)
 
-    if event["body"] == {}:
+    if body == {}:
         return list_datasets()
 
     return error_response(HTTPStatus.BAD_REQUEST, "Unhandled request")
 
 
-def get_dataset_single(payload: JsonObject) -> JsonObject:
+def get_dataset_single(body: JsonObject) -> JsonObject:
     """GET: Get single Dataset."""
 
     body_schema = {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}
 
     # request body validation
-    req_body = payload["body"]
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
@@ -39,11 +38,9 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
 
     # get dataset
     try:
-        dataset = datasets_model_class.get(
-            hash_key=f"DATASET#{req_body['id']}", consistent_read=True
-        )
+        dataset = datasets_model_class.get(hash_key=f"DATASET#{body['id']}", consistent_read=True)
     except DoesNotExist:
-        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' does not exist")
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' does not exist")
 
     # return response
     resp_body = dataset.as_dict()
@@ -51,7 +48,7 @@ def get_dataset_single(payload: JsonObject) -> JsonObject:
     return success_response(HTTPStatus.OK, resp_body)
 
 
-def get_dataset_filter(payload: JsonObject) -> JsonObject:
+def get_dataset_filter(body: JsonObject) -> JsonObject:
     """GET: Get Datasets by filter."""
 
     body_schema = {
@@ -62,15 +59,14 @@ def get_dataset_filter(payload: JsonObject) -> JsonObject:
     }
 
     # request body validation
-    req_body = payload["body"]
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     # dataset query by filter
     datasets_model_class = datasets_model_with_meta()
-    datasets = datasets_model_class.datasets_title_idx.query(hash_key=req_body["title"])
+    datasets = datasets_model_class.datasets_title_idx.query(hash_key=body["title"])
 
     # return response
     resp_body = []

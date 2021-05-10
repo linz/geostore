@@ -51,10 +51,7 @@ class TestLogging:
         expected_execution_log = dumps({"response": step_function_response})
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
-            event = {
-                "httpMethod": "POST",
-                "body": {"metadata-url": any_s3_url(), "id": dataset.dataset_id},
-            }
+            event = {"metadata-url": any_s3_url(), "id": dataset.dataset_id}
 
             # When
             create_dataset_version(event)
@@ -88,7 +85,7 @@ class TestLogging:
         error_message = "Some error message"
         datasets_model_mock.return_value.get.side_effect = DoesNotExist(error_message)
 
-        payload = {"httpMethod": "POST", "body": {"metadata-url": metadata_url, "id": dataset_id}}
+        payload = {"metadata-url": metadata_url, "id": dataset_id}
 
         expected_log = dumps({ERROR_KEY: error_message})
 

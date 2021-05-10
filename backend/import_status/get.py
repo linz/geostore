@@ -12,7 +12,15 @@ from ..api_responses import error_response, success_response
 from ..error_response_keys import ERROR_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
-from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from ..step_function_event_keys import (
+    ASSET_UPLOAD_KEY,
+    DATASET_ID_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_UPLOAD_KEY,
+    STEP_FUNCTION_KEY,
+    VALIDATION_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonList, JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -36,18 +44,16 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 }
 
 
-def get_import_status(event: JsonObject) -> JsonObject:
-    LOGGER.debug(json.dumps({"event": event}))
+def get_import_status(body: JsonObject) -> JsonObject:
+    LOGGER.debug(json.dumps({"event": body}))
 
     try:
         validate(
-            event["body"],
+            body,
             {
                 "type": "object",
-                "properties": {
-                    "execution_arn": {"type": "string"},
-                },
-                "required": ["execution_arn"],
+                "properties": {EXECUTION_ARN_KEY: {"type": "string"}},
+                "required": [EXECUTION_ARN_KEY],
             },
         )
     except ValidationError as err:
@@ -55,7 +61,7 @@ def get_import_status(event: JsonObject) -> JsonObject:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
-        executionArn=event["body"]["execution_arn"]
+        executionArn=body[EXECUTION_ARN_KEY]
     )
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))
@@ -85,10 +91,10 @@ def get_import_status(event: JsonObject) -> JsonObject:
         metadata_upload_status["status"] = asset_upload_status["status"] = Outcome.SKIPPED.value
 
     response_body = {
-        "step function": {"status": step_function_status.title()},
-        "validation": {"status": validation_outcome.value, "errors": validation_errors},
-        "metadata upload": metadata_upload_status,
-        "asset upload": asset_upload_status,
+        STEP_FUNCTION_KEY: {"status": step_function_status.title()},
+        VALIDATION_KEY: {"status": validation_outcome.value, "errors": validation_errors},
+        METADATA_UPLOAD_KEY: metadata_upload_status,
+        ASSET_UPLOAD_KEY: asset_upload_status,
     }
 
     return success_response(HTTPStatus.OK, response_body)

@@ -37,4 +37,4 @@ def handle_request(
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     method = event["httpMethod"]
-    return request_handlers[method](event)
+    return request_handlers[method](event["body"])

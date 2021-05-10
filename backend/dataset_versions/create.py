@@ -13,16 +13,21 @@ from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
-from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function_event_keys import (
+    DATASET_ID_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
 
 
-def create_dataset_version(event: JsonObject) -> JsonObject:
+def create_dataset_version(body: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(json.dumps({"event": event}))
+    logger.debug(json.dumps({"event": body}))
 
     body_schema = {
         "type": "object",
@@ -35,9 +40,8 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
     }
 
     # validate input
-    req_body = event["body"]
     try:
-        validate(req_body, body_schema)
+        validate(body, body_schema)
     except ValidationError as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
@@ -46,23 +50,19 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
 
     # validate dataset exists
     try:
-        dataset = datasets_model_class.get(
-            hash_key=f"DATASET#{req_body['id']}", consistent_read=True
-        )
+        dataset = datasets_model_class.get(hash_key=f"DATASET#{body['id']}", consistent_read=True)
     except DoesNotExist as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
-        return error_response(
-            HTTPStatus.NOT_FOUND, f"dataset '{req_body['id']}' could not be found"
-        )
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' could not be found")
 
-    now = datetime.fromisoformat(req_body.get("now", datetime.utcnow().isoformat()))
+    now = datetime.fromisoformat(body.get("now", datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
 
     # execute step function
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
         VERSION_ID_KEY: dataset_version_id,
-        METADATA_URL_KEY: req_body["metadata-url"],
+        METADATA_URL_KEY: body["metadata-url"],
     }
     state_machine_arn = get_param(
         ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN
@@ -81,6 +81,6 @@ def create_dataset_version(event: JsonObject) -> JsonObject:
         HTTPStatus.CREATED,
         {
             "dataset_version": dataset_version_id,
-            "execution_arn": step_functions_response["executionArn"],
+            EXECUTION_ARN_KEY: step_functions_response["executionArn"],
         },
     )
