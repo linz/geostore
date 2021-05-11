@@ -29,6 +29,8 @@ S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
+IMPORT_DATASET_KEY = "import_dataset"
+
 
 class Outcome(Enum):
     PASSED = "Passed"
@@ -114,7 +116,7 @@ def get_validation_outcome(
 
 
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
-    if s3_job_id := step_function_output.get("import_dataset", {}).get(job_id_key):
+    if s3_job_id := step_function_output.get(IMPORT_DATASET_KEY, {}).get(job_id_key):
         return get_s3_batch_copy_status(s3_job_id, LOGGER)
     return {"status": Outcome.PENDING.value, "errors": []}
 

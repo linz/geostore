@@ -9,7 +9,7 @@ from pytest import mark
 
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
-from backend.import_status.get import Outcome
+from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -146,7 +146,7 @@ def should_report_s3_batch_upload_failures(
         "output": json.dumps(
             {
                 "validation": {"success": True},
-                "import_dataset": {
+                IMPORT_DATASET_KEY: {
                     METADATA_JOB_ID_KEY: any_job_id(),
                     ASSET_JOB_ID_KEY: any_job_id(),
                 },
