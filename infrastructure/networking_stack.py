@@ -1,13 +1,8 @@
-"""
-Data Lake networking stack.
-"""
 from aws_cdk import aws_ec2
 from aws_cdk.core import Construct, Stack, Tags
 
 
 class NetworkingStack(Stack):
-    """Data Lake networking stack definition."""
-
     def __init__(self, scope: Construct, stack_id: str, deploy_env: str) -> None:
         super().__init__(scope, stack_id)
 
