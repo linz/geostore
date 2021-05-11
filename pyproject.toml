@@ -94,7 +94,6 @@ cdk = [
     "aws-cdk.aws-ecs",
     "aws-cdk.aws-iam",
     "aws-cdk.aws-lambda",
-    "aws-cdk.aws_lambda_event_sources",
     "aws-cdk.aws-lambda-python",
     "aws-cdk.aws-s3",
     "aws-cdk.aws-stepfunctions",
