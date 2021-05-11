@@ -7,7 +7,7 @@ from aws_cdk.core import Construct
 from .bundled_lambda_function import BundledLambdaFunction
 
 
-class LambdaTask(Construct):
+class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
     def __init__(
         self,
         scope: Construct,
@@ -18,17 +18,15 @@ class LambdaTask(Construct):
         result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
     ):
-        super().__init__(scope, construct_id)
-
         self.lambda_function = BundledLambdaFunction(
-            self,
+            scope,
             f"{construct_id}-bundled-lambda-function",
             directory=directory,
             extra_environment=extra_environment,
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
-        self.lambda_invoke = aws_stepfunctions_tasks.LambdaInvoke(
+        super().__init__(
             scope,
             f"{construct_id}-lambda-invoke",
             lambda_function=self.lambda_function,
