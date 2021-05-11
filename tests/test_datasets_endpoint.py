@@ -2,21 +2,29 @@
 Dataset endpoint Lambda function tests. Working Data Lake AWS environment is
 required (run '$ cdk deploy' before running tests).
 """
-import json
 import logging
 from http import HTTPStatus
 from io import BytesIO
+from json import dumps, load, loads
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
+from pystac.validation import validate_dict  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
+from smart_open import smart_open  # type: ignore[import]
 
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
 
-from .aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_prefix
+from .aws_utils import (
+    Dataset,
+    S3Object,
+    any_lambda_context,
+    delete_s3_prefix,
+    get_s3_prefix_versions,
+)
 from .general_generators import any_safe_filename
 from .stac_generators import (
     any_dataset_description,
@@ -32,6 +40,7 @@ logger = logging.getLogger(__name__)
 @mark.infrastructure
 def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
     dataset_title = any_dataset_title()
+    dataset_description = any_dataset_description()
     body = {"title": dataset_title, "description": any_dataset_description()}
 
     try:
@@ -49,6 +58,25 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 
             with subtests.test(msg="title"):
                 assert response["body"]["title"] == dataset_title
+
+        catalog = get_s3_prefix_versions(
+            ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client
+        )[0]
+
+        with smart_open(
+            f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
+        ) as new_root_metadata_file:
+
+            catalog_json = loads(new_root_metadata_file.read().decode("utf-8"))
+
+            with subtests.test(msg="catalog title"):
+                assert catalog_json["title"] == dataset_title
+
+            with subtests.test(msg="catalog description"):
+                assert catalog_json["description"] == dataset_description
+
+            with subtests.test(msg="catalog valid"):
+                validate_dict(catalog_json)
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)
@@ -227,9 +255,9 @@ def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
         body = {"id": dataset.dataset_id}
         raw_response = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps({"http_method": "DELETE", "body": body}).encode(),
+            Payload=dumps({"http_method": "DELETE", "body": body}).encode(),
         )
-        response_payload = json.load(raw_response["Payload"])
+        response_payload = load(raw_response["Payload"])
 
     assert response_payload == {"status_code": HTTPStatus.NO_CONTENT, "body": {}}
 
@@ -285,9 +313,9 @@ def should_launch_datasets_endpoint_lambda_function(
 
         resp = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps({"http_method": "POST", "body": body}).encode(),
+            Payload=dumps({"http_method": "POST", "body": body}).encode(),
         )
-        json_resp = json.load(resp["Payload"])
+        json_resp = load(resp["Payload"])
 
         assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
 
