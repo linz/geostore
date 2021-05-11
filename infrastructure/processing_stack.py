@@ -177,7 +177,7 @@ class ProcessingStack(NestedStack):
             directory="validation_failure",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=aws_stepfunctions.JsonPath.DISCARD,
-        ).lambda_invoke
+        )
 
         import_dataset_role = aws_iam.Role(
             self,
@@ -282,7 +282,7 @@ class ProcessingStack(NestedStack):
         ############################################################################################
         # STATE MACHINE
         dataset_version_creation_definition = (
-            check_stac_metadata_task.lambda_invoke.next(content_iterator_task.lambda_invoke)
+            check_stac_metadata_task.next(content_iterator_task)
             .next(
                 aws_stepfunctions.Choice(  # type: ignore[arg-type]
                     self, "check_files_checksums_maybe_array"
@@ -298,7 +298,7 @@ class ProcessingStack(NestedStack):
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
                     aws_stepfunctions.Condition.number_equals("$.content.next_item", -1),
-                    validation_summary_task.lambda_invoke.next(
+                    validation_summary_task.next(
                         aws_stepfunctions.Choice(  # type: ignore[arg-type]
                             self, "validation_successful"
                         )
@@ -306,14 +306,12 @@ class ProcessingStack(NestedStack):
                             aws_stepfunctions.Condition.boolean_equals(
                                 "$.validation.success", True
                             ),
-                            import_dataset_task.lambda_invoke.next(
-                                success_task  # type: ignore[arg-type]
-                            ),
+                            import_dataset_task.next(success_task),  # type: ignore[arg-type]
                         )
                         .otherwise(validation_failure_lambda_invoke)
                     ),
                 )
-                .otherwise(content_iterator_task.lambda_invoke)
+                .otherwise(content_iterator_task)
             )
         )
 
