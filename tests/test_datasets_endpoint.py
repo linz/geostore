@@ -29,7 +29,9 @@ def should_create_dataset(subtests: SubTests) -> None:
 
     body = {"title": dataset_title}
 
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler(
+        {"http_method": "POST", "body": body}, any_lambda_context()
+    )
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
@@ -49,7 +51,7 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
-            {"httpMethod": "POST", "body": body}, any_lambda_context()
+            {"http_method": "POST", "body": body}, any_lambda_context()
         )
 
     assert response == {
@@ -65,7 +67,7 @@ def should_return_client_error_when_title_contains_unsupported_characters(
     for character in "!@#$%^&*(){}?+| /=":
         with subtests.test(msg=character):
             response = entrypoint.lambda_handler(
-                {"httpMethod": "POST", "body": {"title": character}}, any_lambda_context()
+                {"http_method": "POST", "body": {"title": character}}, any_lambda_context()
             )
 
             assert response == {
@@ -82,7 +84,7 @@ def should_return_single_dataset(subtests: SubTests) -> None:
 
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": body}, any_lambda_context()
+            {"http_method": "GET", "body": body}, any_lambda_context()
         )
     logger.info("Response: %s", response)
 
@@ -100,7 +102,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
     with Dataset() as first_dataset, Dataset() as second_dataset:
         # When requesting all datasets
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": {}}, any_lambda_context()
+            {"http_method": "GET", "body": {}}, any_lambda_context()
         )
         logger.info("Response: %s", response)
 
@@ -123,7 +125,7 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
         response = entrypoint.lambda_handler(
-            {"httpMethod": "GET", "body": body}, any_lambda_context()
+            {"http_method": "GET", "body": body}, any_lambda_context()
         )
         logger.info("Response: %s", response)
 
@@ -144,7 +146,7 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
 
     body = {"id": dataset_id}
 
-    response = entrypoint.lambda_handler({"httpMethod": "GET", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler({"http_method": "GET", "body": body}, any_lambda_context())
 
     assert response == {
         "statusCode": HTTPStatus.NOT_FOUND,
@@ -160,7 +162,7 @@ def should_update_dataset(subtests: SubTests) -> None:
         body = {"id": dataset.dataset_id, "title": new_dataset_title}
         response = entrypoint.lambda_handler(
             {
-                "httpMethod": "PATCH",
+                "http_method": "PATCH",
                 "body": body,
             },
             any_lambda_context(),
@@ -181,7 +183,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
-            {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+            {"http_method": "PATCH", "body": body}, any_lambda_context()
         )
 
     assert response == {
@@ -196,7 +198,7 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
     body = {"id": dataset_id, "title": any_dataset_title()}
     response = entrypoint.lambda_handler(
-        {"httpMethod": "PATCH", "body": body}, any_lambda_context()
+        {"http_method": "PATCH", "body": body}, any_lambda_context()
     )
 
     assert response == {
@@ -211,7 +213,7 @@ def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
         body = {"id": dataset.dataset_id}
         raw_response = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps({"httpMethod": "DELETE", "body": body}).encode(),
+            Payload=json.dumps({"http_method": "DELETE", "body": body}).encode(),
         )
         response_payload = json.load(raw_response["Payload"])
 
@@ -226,7 +228,7 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
         key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
     ):
         response = entrypoint.lambda_handler(
-            {"httpMethod": "DELETE", "body": {"id": dataset.dataset_id}}, any_lambda_context()
+            {"http_method": "DELETE", "body": {"id": dataset.dataset_id}}, any_lambda_context()
         )
 
     expected_message = (
@@ -245,7 +247,7 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
     body = {"id": dataset_id, "title": any_dataset_title()}
 
     response = entrypoint.lambda_handler(
-        {"httpMethod": "DELETE", "body": body}, any_lambda_context()
+        {"http_method": "DELETE", "body": body}, any_lambda_context()
     )
 
     assert response == {
@@ -266,7 +268,7 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
 
     resp = lambda_client.invoke(
         FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-        Payload=json.dumps({"httpMethod": method, "body": body}).encode(),
+        Payload=json.dumps({"http_method": method, "body": body}).encode(),
     )
     json_resp = json.load(resp["Payload"])
 

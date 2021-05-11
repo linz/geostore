@@ -27,14 +27,14 @@ def handle_request(
             {
                 "type": "object",
                 "properties": {
-                    "httpMethod": {"type": "string", "enum": list(request_handlers.keys())},
+                    "http_method": {"type": "string", "enum": list(request_handlers.keys())},
                     "body": {"type": "object"},
                 },
-                "required": ["httpMethod", "body"],
+                "required": ["http_method", "body"],
             },
         )
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
-    method = event["httpMethod"]
+    method = event["http_method"]
     return request_handlers[method](event["body"])

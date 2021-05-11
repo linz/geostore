@@ -25,7 +25,9 @@ def should_return_required_property_error_when_missing_mandatory_metadata_url() 
     body = {"id": any_dataset_id()}
 
     # When attempting to create the instance
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler(
+        {"http_method": "POST", "body": body}, any_lambda_context()
+    )
 
     # Then the API should return an error message
     assert response == {
@@ -39,7 +41,9 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
     body = {"metadata-url": any_s3_url()}
 
     # When attempting to create the instance
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler(
+        {"http_method": "POST", "body": body}, any_lambda_context()
+    )
 
     # Then the API should return an error message
     assert response == {
@@ -52,7 +56,9 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
 def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     body = {"id": any_dataset_id(), "metadata-url": any_s3_url()}
 
-    response = entrypoint.lambda_handler({"httpMethod": "POST", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler(
+        {"http_method": "POST", "body": body}, any_lambda_context()
+    )
     logger.info("Response: %s", response)
 
     assert response == {

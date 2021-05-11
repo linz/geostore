@@ -27,7 +27,7 @@ class TestLogging:
             "backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
         ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
             event = {
-                "httpMethod": "POST",
+                "http_method": "POST",
                 "body": {"metadata-url": any_s3_url(), "id": dataset.dataset_id},
             }
             expected_payload_log = dumps({"event": event})
@@ -66,7 +66,7 @@ class TestLogging:
         error_message = "Some error message"
         validate_schema_mock.side_effect = ValidationError(error_message)
 
-        payload = {"httpMethod": "POST", "body": {"metadata-url": metadata_url}}
+        payload = {"http_method": "POST", "body": {"metadata-url": metadata_url}}
 
         expected_log = dumps({ERROR_KEY: error_message})
 

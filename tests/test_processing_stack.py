@@ -187,7 +187,7 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "httpMethod": "POST",
+                            "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
                                 "metadata-url": catalog_metadata_file.url,
@@ -260,7 +260,7 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "GET",
+                        "http_method": "GET",
                         "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
@@ -328,7 +328,7 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "httpMethod": "POST",
+                            "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
                                 "metadata-url": root_metadata_file.url,
@@ -395,7 +395,7 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "GET",
+                        "http_method": "GET",
                         "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
@@ -443,7 +443,7 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "POST",
+                        "http_method": "POST",
                         "body": {"id": dataset.dataset_id, "metadata-url": s3_metadata_file.url},
                     }
                 ).encode(),

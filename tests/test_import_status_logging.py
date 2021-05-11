@@ -23,7 +23,7 @@ class TestLogging:
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
         event = {
-            "httpMethod": "GET",
+            "http_method": "GET",
             "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
         }
 
@@ -60,7 +60,7 @@ class TestLogging:
             # When
             get_import_status(
                 {
-                    "httpMethod": "GET",
+                    "http_method": "GET",
                     "body": {},
                 }
             )

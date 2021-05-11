@@ -128,7 +128,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
       --function-name "${ENV}-datasets" \
-      --payload '{"httpMethod": "POST", "body": {"title": "Auckland 2020"}}' \
+      --payload '{"http_method": "POST", "body": {"title": "Auckland 2020"}}' \
       /dev/stdout
 
   {"statusCode": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
@@ -139,7 +139,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
       --function-name "${ENV}-datasets" \
-      --payload '{"httpMethod": "GET", "body": {}}' \
+      --payload '{"http_method": "GET", "body": {}}' \
       /dev/stdout
 
   {"statusCode": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
@@ -150,7 +150,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
       --function-name "${ENV}-datasets" \
-      --payload '{"httpMethod": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
+      --payload '{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
       /dev/stdout
 
   {"statusCode": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
@@ -161,7 +161,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
       --function-name "${ENV}-datasets" \
-      --payload '{"httpMethod": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
+      --payload '{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
       /dev/stdout
 
   {"statusCode": 204, "body": {}}
@@ -174,7 +174,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
      --function-name "${ENV}-dataset-versions" \
-     --payload '{"httpMethod": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata-url": "s3://example-s3-url"}}' \
+     --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata-url": "s3://example-s3-url"}}' \
      /dev/stdout
 
   {"statusCode": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
@@ -187,7 +187,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
      --function-name "${ENV}-import-status" \
-     --payload '{"httpMethod": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
+     --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
      /dev/stdout
 
   {"statusCode": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata upload":{"status": "Pending", "errors":[]}, "asset upload":{"status": "Pending", "errors":[]}}}
