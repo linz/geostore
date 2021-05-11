@@ -1,6 +1,3 @@
-"""
-Data Lake AWS resources definitions.
-"""
 from os import environ
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
@@ -15,8 +12,6 @@ from .roles import MAX_SESSION_DURATION
 
 
 class APIStack(NestedStack):
-    """Data Lake stack definition."""
-
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         scope: Construct,

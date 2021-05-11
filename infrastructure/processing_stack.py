@@ -1,6 +1,3 @@
-"""
-Data Lake processing stack.
-"""
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, NestedStack, Tags
 
@@ -15,8 +12,6 @@ from .constructs.table import Table
 
 
 class ProcessingStack(NestedStack):
-    """Data Lake processing stack definition."""
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: Construct,
