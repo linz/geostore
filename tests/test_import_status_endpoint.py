@@ -38,7 +38,7 @@ def should_return_required_property_error_when_missing_mandatory_execution_arn()
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": HTTPStatus.BAD_REQUEST,
+        "status_code": HTTPStatus.BAD_REQUEST,
         "body": {"message": f"Bad Request: '{EXECUTION_ARN_KEY}' is a required property"},
     }
 
@@ -56,7 +56,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     }
 
     expected_response = {
-        "statusCode": HTTPStatus.OK,
+        "status_code": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Running"},
             VALIDATION_KEY: {"status": Outcome.PENDING.value, "errors": []},
@@ -96,7 +96,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
     check = "example"
 
     expected_response = {
-        "statusCode": HTTPStatus.OK,
+        "status_code": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Succeeded"},
             VALIDATION_KEY: {
@@ -162,7 +162,7 @@ def should_report_s3_batch_upload_failures(
     }
 
     expected_response = {
-        "statusCode": HTTPStatus.OK,
+        "status_code": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Succeeded"},
             VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
@@ -211,7 +211,7 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     get_step_function_validation_results_mock.return_value = []
 
     expected_response = {
-        "statusCode": HTTPStatus.OK,
+        "status_code": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Failed"},
             VALIDATION_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
@@ -250,7 +250,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
     validation_error = {"result": ValidationResult.FAILED.value}
     get_step_function_validation_results_mock.return_value = [validation_error]
     expected_response = {
-        "statusCode": HTTPStatus.OK,
+        "status_code": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Failed"},
             VALIDATION_KEY: {"status": Outcome.FAILED.value, "errors": [validation_error]},

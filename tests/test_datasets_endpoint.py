@@ -35,7 +35,7 @@ def should_create_dataset(subtests: SubTests) -> None:
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == HTTPStatus.CREATED
+        assert response["status_code"] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID length"):
         assert len(response["body"]["id"]) == 41
@@ -55,7 +55,7 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
         )
 
     assert response == {
-        "statusCode": HTTPStatus.CONFLICT,
+        "status_code": HTTPStatus.CONFLICT,
         "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
@@ -71,7 +71,7 @@ def should_return_client_error_when_title_contains_unsupported_characters(
             )
 
             assert response == {
-                "statusCode": HTTPStatus.BAD_REQUEST,
+                "status_code": HTTPStatus.BAD_REQUEST,
                 "body": {"message": f"Bad Request: '{character}' does not match '{TITLE_PATTERN}'"},
             }
 
@@ -90,7 +90,7 @@ def should_return_single_dataset(subtests: SubTests) -> None:
 
     # Then we should get the dataset in return
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == HTTPStatus.OK
+        assert response["status_code"] == HTTPStatus.OK
 
     with subtests.test(msg="ID"):
         assert response["body"]["id"] == dataset.dataset_id
@@ -108,7 +108,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
 
         # Then we should get both datasets in return
         with subtests.test(msg="status code"):
-            assert response["statusCode"] == HTTPStatus.OK
+            assert response["status_code"] == HTTPStatus.OK
 
         actual_dataset_ids = [entry["id"] for entry in response["body"]]
         for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
@@ -134,7 +134,7 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
         assert response["body"][0]["id"] == matching_dataset.dataset_id
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == HTTPStatus.OK
+        assert response["status_code"] == HTTPStatus.OK
 
     with subtests.test(msg="body length"):
         assert len(response["body"]) == 1
@@ -149,7 +149,7 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     response = entrypoint.lambda_handler({"http_method": "GET", "body": body}, any_lambda_context())
 
     assert response == {
-        "statusCode": HTTPStatus.NOT_FOUND,
+        "status_code": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
@@ -170,7 +170,7 @@ def should_update_dataset(subtests: SubTests) -> None:
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
-        assert response["statusCode"] == HTTPStatus.OK
+        assert response["status_code"] == HTTPStatus.OK
 
     with subtests.test(msg="title"):
         assert response["body"]["title"] == new_dataset_title
@@ -187,7 +187,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
         )
 
     assert response == {
-        "statusCode": HTTPStatus.CONFLICT,
+        "status_code": HTTPStatus.CONFLICT,
         "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
@@ -202,7 +202,7 @@ def should_fail_if_updating_not_existing_dataset() -> None:
     )
 
     assert response == {
-        "statusCode": HTTPStatus.NOT_FOUND,
+        "status_code": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
@@ -217,7 +217,7 @@ def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
         )
         response_payload = json.load(raw_response["Payload"])
 
-    assert response_payload == {"statusCode": HTTPStatus.NO_CONTENT, "body": {}}
+    assert response_payload == {"status_code": HTTPStatus.NO_CONTENT, "body": {}}
 
 
 @mark.infrastructure
@@ -235,7 +235,7 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
         f"Conflict: Can’t delete dataset “{dataset.dataset_id}”: dataset versions still exist"
     )
     assert response == {
-        "statusCode": HTTPStatus.CONFLICT,
+        "status_code": HTTPStatus.CONFLICT,
         "body": {"message": expected_message},
     }
 
@@ -251,7 +251,7 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
     )
 
     assert response == {
-        "statusCode": HTTPStatus.NOT_FOUND,
+        "status_code": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
@@ -272,4 +272,4 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     )
     json_resp = json.load(resp["Payload"])
 
-    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp
+    assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp

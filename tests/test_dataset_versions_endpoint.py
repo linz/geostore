@@ -31,7 +31,7 @@ def should_return_required_property_error_when_missing_mandatory_metadata_url() 
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": HTTPStatus.BAD_REQUEST,
+        "status_code": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'metadata-url' is a required property"},
     }
 
@@ -47,7 +47,7 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
 
     # Then the API should return an error message
     assert response == {
-        "statusCode": HTTPStatus.BAD_REQUEST,
+        "status_code": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'id' is a required property"},
     }
 
@@ -62,7 +62,7 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     logger.info("Response: %s", response)
 
     assert response == {
-        "statusCode": HTTPStatus.NOT_FOUND,
+        "status_code": HTTPStatus.NOT_FOUND,
         "body": {"message": f"Not Found: dataset '{body['id']}' could not be found"},
     }
 
@@ -83,7 +83,7 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
 
     # Then we should get the dataset in return
     with subtests.test(msg="Status code"):
-        assert response["statusCode"] == HTTPStatus.CREATED
+        assert response["status_code"] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID"):
         assert response["body"]["dataset_version"].startswith("2001-02-03T04-05-06-789Z_")

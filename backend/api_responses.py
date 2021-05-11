@@ -8,11 +8,11 @@ from .types import JsonList, JsonObject
 
 
 def error_response(code: int, message: str) -> JsonObject:
-    return {"statusCode": code, "body": {"message": f"{http_responses[code]}: {message}"}}
+    return {"status_code": code, "body": {"message": f"{http_responses[code]}: {message}"}}
 
 
 def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
-    return {"statusCode": code, "body": body}
+    return {"status_code": code, "body": body}
 
 
 def handle_request(
