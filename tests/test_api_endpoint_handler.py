@@ -13,16 +13,16 @@ def should_return_required_property_error_when_missing_http_method() -> None:
     response = handle_request({"body": {}}, MagicMock())
 
     assert response == {
-        "statusCode": HTTPStatus.BAD_REQUEST,
-        "body": {"message": "Bad Request: 'httpMethod' is a required property"},
+        "status_code": HTTPStatus.BAD_REQUEST,
+        "body": {"message": "Bad Request: 'http_method' is a required property"},
     }
 
 
 def should_return_required_property_error_when_missing_body() -> None:
-    response = handle_request({"httpMethod": "GET"}, MagicMock())
+    response = handle_request({"http_method": "GET"}, MagicMock())
 
     assert response == {
-        "statusCode": HTTPStatus.BAD_REQUEST,
+        "status_code": HTTPStatus.BAD_REQUEST,
         "body": {"message": "Bad Request: 'body' is a required property"},
     }
 
@@ -38,7 +38,7 @@ def should_call_relevant_http_method(subtests: SubTests) -> None:
         "GET": get_mock,
     }
 
-    response = handle_request({"httpMethod": "GET", "body": {}}, request_handlers)
+    response = handle_request({"http_method": "GET", "body": {}}, request_handlers)
 
     with subtests.test("Should return response"):
         assert response == expected_response

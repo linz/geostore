@@ -187,10 +187,10 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "httpMethod": "POST",
+                            "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
-                                "metadata-url": catalog_metadata_file.url,
+                                "metadata_url": catalog_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -198,7 +198,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp
+                    assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -248,7 +248,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": HTTPStatus.OK,
+                "status_code": HTTPStatus.OK,
                 "body": {
                     STEP_FUNCTION_KEY: {"status": "Succeeded"},
                     VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
@@ -260,7 +260,7 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "GET",
+                        "http_method": "GET",
                         "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
@@ -328,10 +328,10 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "httpMethod": "POST",
+                            "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
-                                "metadata-url": root_metadata_file.url,
+                                "metadata_url": root_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -339,7 +339,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("statusCode") == HTTPStatus.CREATED, json_resp
+                    assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -383,7 +383,7 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "statusCode": HTTPStatus.OK,
+                "status_code": HTTPStatus.OK,
                 "body": {
                     STEP_FUNCTION_KEY: {"status": "Succeeded"},
                     VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
@@ -395,7 +395,7 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "GET",
+                        "http_method": "GET",
                         "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
@@ -443,15 +443,15 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "httpMethod": "POST",
-                        "body": {"id": dataset.dataset_id, "metadata-url": s3_metadata_file.url},
+                        "http_method": "POST",
+                        "body": {"id": dataset.dataset_id, "metadata_url": s3_metadata_file.url},
                     }
                 ).encode(),
             )
 
             response_payload = json.load(dataset_version_creation_response["Payload"])
             with subtests.test(msg="Dataset Versions endpoint status code"):
-                assert response_payload.get("statusCode") == HTTPStatus.CREATED, response_payload
+                assert response_payload.get("status_code") == HTTPStatus.CREATED, response_payload
 
             with subtests.test(msg="Step function result"):
                 # Then poll for State Machine State
