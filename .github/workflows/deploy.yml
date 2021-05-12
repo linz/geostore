@@ -65,7 +65,7 @@ jobs:
       - name: (NonProd) Configure AWS credentials
         if: >
           github.ref == 'refs/heads/master' && github.repository == 'linz/geospatial-data-lake'
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.5.9
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -90,7 +90,7 @@ jobs:
         if: >
           startsWith(github.ref, 'refs/heads/release-') || startsWith(github.ref,
           'refs/tags/release-') && github.repository == 'linz/geospatial-data-lake'
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.5.9
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
