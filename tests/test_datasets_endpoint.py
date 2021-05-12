@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
     dataset_title = any_dataset_title()
     dataset_description = any_dataset_description()
-    body = {"title": dataset_title, "description": any_dataset_description()}
+    body = {"title": dataset_title, "description": dataset_description}
 
     try:
 
