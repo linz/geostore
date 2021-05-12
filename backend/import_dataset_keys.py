@@ -1,3 +1,3 @@
-ORIGINAL_KEY_KEY = "originalKey"
-NEW_KEY_KEY = "newKey"
-TARGET_BUCKET_NAME_KEY = "targetBucketName"
+ORIGINAL_KEY_KEY = "original_key"
+NEW_KEY_KEY = "new_key"
+TARGET_BUCKET_NAME_KEY = "target_bucket_name"
