@@ -190,5 +190,5 @@ aws lambda invoke \
      --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
      /dev/stdout
 
-  {"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata upload":{"status": "Pending", "errors":[]}, "asset upload":{"status": "Pending", "errors":[]}}}
+  {"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
   ```
