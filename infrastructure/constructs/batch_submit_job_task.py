@@ -3,7 +3,7 @@ from typing import List, Mapping, Optional
 from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks
 from aws_cdk.core import Construct
 
-from ..common import LOG_LEVEL
+from .common import LOG_LEVEL
 from .task_job_definition import TaskJobDefinition
 
 

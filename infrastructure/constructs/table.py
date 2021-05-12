@@ -5,7 +5,7 @@ from aws_cdk.core import Construct
 
 from backend.parameter_store import ParameterName
 
-from ..removal_policy import REMOVAL_POLICY
+from .removal_policy import REMOVAL_POLICY
 
 
 class Table(aws_dynamodb.Table):

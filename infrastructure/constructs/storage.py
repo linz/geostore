@@ -2,7 +2,7 @@
 Data Lake AWS resources definitions.
 """
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
-from aws_cdk.core import Construct, NestedStack, Tags
+from aws_cdk.core import Construct, Tags
 
 from backend.datasets_model import DatasetsTitleIdx
 from backend.parameter_store import ParameterName
@@ -10,11 +10,11 @@ from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
 from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
-from .constructs.table import Table
 from .removal_policy import REMOVAL_POLICY
+from .table import Table
 
 
-class StorageStack(NestedStack):
+class Storage(Construct):
     def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str) -> None:
         super().__init__(scope, stack_id)
 
