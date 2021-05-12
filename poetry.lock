@@ -2430,7 +2430,7 @@ check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
 dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
-datasets = ["jsonschema", "pynamodb", "ulid-py"]
+datasets = ["jsonschema", "pynamodb", "pystac", "ulid-py"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
 validation_summary = ["jsonschema", "pynamodb"]
@@ -2438,7 +2438,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "6e2f94d93938e9996f74eb3cbf71cb9fda95bd842b1ed577e4a6e53936f02b90"
+content-hash = "0315923cc69a822a13d2d5fb3a352de4d374dd4a5e8f75c4211f5bd434ab9eb9"
 
 [metadata.files]
 appdirs = [
