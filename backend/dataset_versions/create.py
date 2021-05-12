@@ -33,10 +33,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         "type": "object",
         "properties": {
             "id": {"type": "string"},
-            "metadata-url": {"type": "string"},
+            "metadata_url": {"type": "string"},
             "now": {"type": "string", "format": "date-time"},
         },
-        "required": ["id", "metadata-url"],
+        "required": ["id", "metadata_url"],
     }
 
     # validate input
@@ -62,7 +62,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
         VERSION_ID_KEY: dataset_version_id,
-        METADATA_URL_KEY: body["metadata-url"],
+        METADATA_URL_KEY: body["metadata_url"],
     }
     state_machine_arn = get_param(
         ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN

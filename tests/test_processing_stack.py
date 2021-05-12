@@ -190,7 +190,7 @@ class TestWithStagingBucket:
                             "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
-                                "metadata-url": catalog_metadata_file.url,
+                                "metadata_url": catalog_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -331,7 +331,7 @@ class TestWithStagingBucket:
                             "http_method": "POST",
                             "body": {
                                 "id": dataset.dataset_id,
-                                "metadata-url": root_metadata_file.url,
+                                "metadata_url": root_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -444,7 +444,7 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         "http_method": "POST",
-                        "body": {"id": dataset.dataset_id, "metadata-url": s3_metadata_file.url},
+                        "body": {"id": dataset.dataset_id, "metadata_url": s3_metadata_file.url},
                     }
                 ).encode(),
             )

@@ -174,7 +174,7 @@ aws lambda invoke \
   ```console
   $ aws lambda invoke \
      --function-name "${ENV}-dataset-versions" \
-     --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata-url": "s3://example-s3-url"}}' \
+     --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata_url": "s3://example-s3-url"}}' \
      /dev/stdout
 
   {"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
