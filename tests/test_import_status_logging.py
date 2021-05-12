@@ -1,4 +1,3 @@
-import json
 import logging
 from json import dumps
 from unittest.mock import MagicMock, patch
@@ -32,7 +31,7 @@ class TestLogging:
 
         describe_step_function_mock.return_value = {
             "status": "RUNNING",
-            "input": json.dumps(
+            "input": dumps(
                 {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
             ),
         }
@@ -77,11 +76,11 @@ class TestLogging:
         # Given
         describe_execution_mock.return_value = describe_execution_response = {
             "status": "Some Response",
-            "input": json.dumps(
+            "input": dumps(
                 {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
             ),
         }
-        expected_response_log = json.dumps({"step function response": describe_execution_response})
+        expected_response_log = dumps({"step function response": describe_execution_response})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"
@@ -102,7 +101,7 @@ class TestLogging:
     ) -> None:
         # Given
         describe_s3_job_mock.return_value = s3_batch_response = {"Job": {"Status": "Some Response"}}
-        expected_response_log = json.dumps({"s3 batch response": s3_batch_response})
+        expected_response_log = dumps({"s3 batch response": s3_batch_response})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_status.get.STS_CLIENT.get_caller_identity"

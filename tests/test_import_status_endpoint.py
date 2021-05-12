@@ -9,7 +9,7 @@ from pytest import mark
 
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
-from backend.import_status.get import Outcome
+from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -60,8 +60,8 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         "body": {
             STEP_FUNCTION_KEY: {"status": "Running"},
             VALIDATION_KEY: {"status": Outcome.PENDING.value, "errors": []},
-            METADATA_UPLOAD_KEY: {"status": "Pending", "errors": []},
-            ASSET_UPLOAD_KEY: {"status": "Pending", "errors": []},
+            METADATA_UPLOAD_KEY: {"status": Outcome.PENDING.value, "errors": []},
+            ASSET_UPLOAD_KEY: {"status": Outcome.PENDING.value, "errors": []},
         },
     }
 
@@ -146,7 +146,7 @@ def should_report_s3_batch_upload_failures(
         "output": json.dumps(
             {
                 "validation": {"success": True},
-                "import_dataset": {
+                IMPORT_DATASET_KEY: {
                     METADATA_JOB_ID_KEY: any_job_id(),
                     ASSET_JOB_ID_KEY: any_job_id(),
                 },
@@ -253,7 +253,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
         "statusCode": HTTPStatus.OK,
         "body": {
             STEP_FUNCTION_KEY: {"status": "Failed"},
-            VALIDATION_KEY: {"status": "Failed", "errors": [validation_error]},
+            VALIDATION_KEY: {"status": Outcome.FAILED.value, "errors": [validation_error]},
             METADATA_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
             ASSET_UPLOAD_KEY: {"status": Outcome.SKIPPED.value, "errors": []},
         },

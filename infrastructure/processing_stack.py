@@ -1,9 +1,7 @@
-"""
-Data Lake processing stack.
-"""
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, NestedStack, Tags
 
+from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
 
 from .common import grant_parameter_read_access
@@ -15,8 +13,6 @@ from .constructs.table import Table
 
 
 class ProcessingStack(NestedStack):
-    """Data Lake processing stack definition."""
-
     def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: Construct,
@@ -214,7 +210,7 @@ class ProcessingStack(NestedStack):
             "import-dataset-task",
             directory="import_dataset",
             botocore_lambda_layer=botocore_lambda_layer,
-            result_path="$.import_dataset",
+            result_path=f"$.{IMPORT_DATASET_KEY}",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
 
