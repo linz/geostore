@@ -39,33 +39,24 @@ class APIStack(NestedStack):
                 account_id=aws_iam.AccountRootPrincipal().account_id
             )
 
-        users_role = aws_iam.Role(
-            self,
-            "users-role",
-            role_name=ResourceName.USERS_ROLE_NAME.value,
-            assumed_by=principal,  # type: ignore[arg-type]
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-
-        read_only_role = aws_iam.Role(
-            self,
-            "linz-read-only-role",
-            role_name=ResourceName.READ_ONLY_ROLE_NAME.value,
-            assumed_by=principal,  # type: ignore[arg-type]
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-        storage_bucket.grant_read(read_only_role)  # type: ignore[arg-type]
-
         ############################################################################################
         # ### API ENDPOINTS ########################################################################
         ############################################################################################
+
+        api_users_role = aws_iam.Role(
+            self,
+            "api-users-role",
+            role_name=ResourceName.API_USERS_ROLE_NAME.value,
+            assumed_by=principal,  # type: ignore[arg-type]
+            max_session_duration=MAX_SESSION_DURATION,
+        )
 
         datasets_endpoint_lambda = LambdaEndpoint(
             self,
             "datasets",
             package_name="datasets",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
@@ -74,7 +65,7 @@ class APIStack(NestedStack):
             "dataset-versions",
             package_name="dataset_versions",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
@@ -91,7 +82,7 @@ class APIStack(NestedStack):
             "import-status",
             package_name="import_status",
             deploy_env=deploy_env,
-            users_role=users_role,
+            users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
@@ -119,5 +110,18 @@ class APIStack(NestedStack):
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
             }
         )
+
+        ############################################################################################
+        # ### S3 API ###############################################################################
+        ############################################################################################
+
+        s3_users_role = aws_iam.Role(
+            self,
+            "s3-users-role",
+            role_name=ResourceName.S3_USERS_ROLE_NAME.value,
+            assumed_by=principal,  # type: ignore[arg-type]
+            max_session_duration=MAX_SESSION_DURATION,
+        )
+        storage_bucket.grant_read(s3_users_role)  # type: ignore[arg-type]
 
         Tags.of(self).add("ApplicationLayer", "api")  # type: ignore[arg-type]
