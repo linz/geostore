@@ -5,11 +5,10 @@ required (run '$ cdk deploy' before running tests).
 import logging
 from http import HTTPStatus
 from io import BytesIO
-from json import dumps, load, loads
+from json import dumps, load
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
-from pystac.validation import validate_dict  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
@@ -67,16 +66,13 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
         ) as new_root_metadata_file:
 
-            catalog_json = loads(new_root_metadata_file.read().decode("utf-8"))
+            catalog_json = load(new_root_metadata_file)
 
             with subtests.test(msg="catalog title"):
                 assert catalog_json["title"] == dataset_title
 
             with subtests.test(msg="catalog description"):
                 assert catalog_json["description"] == dataset_description
-
-            with subtests.test(msg="catalog valid"):
-                validate_dict(catalog_json)
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)

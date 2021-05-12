@@ -56,10 +56,10 @@ cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
-pystac = {version = "*", optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 ulid-py = {version = "*", optional = true}
+pystac = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -119,9 +119,8 @@ content_iterator = [
 datasets = [
     "jsonschema",
     "pynamodb",
-    "ulid-py",
     "pystac",
-    "boto3",
+    "ulid-py",
 ]
 dataset_versions = [
     "jsonschema",

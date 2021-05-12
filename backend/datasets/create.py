@@ -46,12 +46,15 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # create dataset catalog
     dataset_catalog = Catalog(
-        id=dataset.dataset_id, description=body["description"], title=body["title"]
+        id=dataset.dataset_id,
+        description=body["description"],
+        title=body["title"],
+        catalog_type=CatalogType.SELF_CONTAINED,
     )
     dataset_catalog.normalize_hrefs(
         f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset.dataset_prefix}"
     )
-    dataset_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
+    dataset_catalog.save()
 
     # return response
     resp_body = dataset.as_dict()
