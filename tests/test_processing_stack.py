@@ -16,7 +16,7 @@ from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.import_dataset.task import DATASET_KEY_SEPARATOR
-from backend.import_status.get import Outcome
+from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.step_function_event_keys import (
@@ -219,7 +219,7 @@ class TestWithStagingBucket:
 
                 account_id = sts_client.get_caller_identity()["Account"]
 
-                import_dataset_response = json.loads(execution_output)["import_dataset"]
+                import_dataset_response = json.loads(execution_output)[IMPORT_DATASET_KEY]
                 metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                     import_dataset_response, account_id, s3_control_client, subtests
                 )
@@ -358,7 +358,7 @@ class TestWithStagingBucket:
 
                 account_id = sts_client.get_caller_identity()["Account"]
 
-                import_dataset_response = json.loads(execution_output)["import_dataset"]
+                import_dataset_response = json.loads(execution_output)[IMPORT_DATASET_KEY]
                 metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                     import_dataset_response,
                     account_id,
