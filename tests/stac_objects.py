@@ -15,7 +15,7 @@ from .stac_generators import (
     any_hex_multihash,
 )
 
-STAC_VERSION = "1.0.0-rc.3"
+STAC_VERSION = "1.0.0-rc.4"
 
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     "description": any_dataset_description(),
