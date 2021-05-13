@@ -30,6 +30,7 @@ S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
+ERRORS_KEY = "errors"
 IMPORT_DATASET_KEY = "import_dataset"
 
 
@@ -95,7 +96,7 @@ def get_import_status(body: JsonObject) -> JsonObject:
 
     response_body = {
         STEP_FUNCTION_KEY: {STATUS_KEY: step_function_status.title()},
-        VALIDATION_KEY: {STATUS_KEY: validation_outcome.value, "errors": validation_errors},
+        VALIDATION_KEY: {STATUS_KEY: validation_outcome.value, ERRORS_KEY: validation_errors},
         METADATA_UPLOAD_KEY: metadata_upload_status,
         ASSET_UPLOAD_KEY: asset_upload_status,
     }
@@ -119,7 +120,7 @@ def get_validation_outcome(
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
     if s3_job_id := step_function_output.get(IMPORT_DATASET_KEY, {}).get(job_id_key):
         return get_s3_batch_copy_status(s3_job_id, LOGGER)
-    return {STATUS_KEY: Outcome.PENDING.value, "errors": []}
+    return {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []}
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
@@ -161,4 +162,4 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) 
 
     upload_errors = s3_batch_copy_resp["Job"].get("FailureReasons", [])
 
-    return {STATUS_KEY: s3_batch_copy_status, "errors": upload_errors}
+    return {STATUS_KEY: s3_batch_copy_status, ERRORS_KEY: upload_errors}

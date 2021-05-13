@@ -11,7 +11,7 @@ from backend.api_keys import MESSAGE_KEY, STATUS_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
-from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
+from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -63,9 +63,9 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         STATUS_CODE_KEY: HTTPStatus.OK,
         BODY_KEY: {
             STEP_FUNCTION_KEY: {STATUS_KEY: "Running"},
-            VALIDATION_KEY: {STATUS_KEY: Outcome.PENDING.value, "errors": []},
-            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.PENDING.value, "errors": []},
-            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.PENDING.value, "errors": []},
+            VALIDATION_KEY: {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []},
+            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []},
+            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []},
         },
     }
 
@@ -105,7 +105,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
             STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
             VALIDATION_KEY: {
                 STATUS_KEY: Outcome.FAILED.value,
-                "errors": [
+                ERRORS_KEY: [
                     {
                         "check": check,
                         "details": error_details,
@@ -114,8 +114,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
                     }
                 ],
             },
-            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
-            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
+            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
+            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
         },
     }
     with ValidationItem(
@@ -169,14 +169,14 @@ def should_report_s3_batch_upload_failures(
         STATUS_CODE_KEY: HTTPStatus.OK,
         BODY_KEY: {
             STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
-            VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, "errors": []},
+            VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
             METADATA_UPLOAD_KEY: {
                 STATUS_KEY: "Completed",
-                "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+                ERRORS_KEY: [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             },
             ASSET_UPLOAD_KEY: {
                 STATUS_KEY: "Completed",
-                "errors": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+                ERRORS_KEY: [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
             },
         },
     }
@@ -218,9 +218,9 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
         STATUS_CODE_KEY: HTTPStatus.OK,
         BODY_KEY: {
             STEP_FUNCTION_KEY: {STATUS_KEY: "Failed"},
-            VALIDATION_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
-            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
-            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
+            VALIDATION_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
+            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
+            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
         },
     }
 
@@ -257,9 +257,9 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
         STATUS_CODE_KEY: HTTPStatus.OK,
         BODY_KEY: {
             STEP_FUNCTION_KEY: {STATUS_KEY: "Failed"},
-            VALIDATION_KEY: {STATUS_KEY: Outcome.FAILED.value, "errors": [validation_error]},
-            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
-            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, "errors": []},
+            VALIDATION_KEY: {STATUS_KEY: Outcome.FAILED.value, ERRORS_KEY: [validation_error]},
+            METADATA_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
+            ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
         },
     }
 
