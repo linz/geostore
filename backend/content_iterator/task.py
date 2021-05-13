@@ -7,25 +7,32 @@ from ..types import JsonObject
 
 MAX_ITERATION_SIZE = 10_000
 
+ASSETS_TABLE_NAME_KEY = "assets_table_name"
+CONTENT_KEY = "content"
+FIRST_ITEM_KEY = "first_item"
+ITERATION_SIZE_KEY = "iteration_size"
+NEXT_ITEM_KEY = "next_item"
+RESULTS_TABLE_NAME_KEY = "results_table_name"
+
 EVENT_SCHEMA = {
     "type": "object",
     "properties": {
-        "content": {
+        CONTENT_KEY: {
             "type": "object",
             "properties": {
-                "first_item": {"type": "string", "pattern": r"^\d+$"},
-                "iteration_size": {
+                FIRST_ITEM_KEY: {"type": "string", "pattern": r"^\d+$"},
+                ITERATION_SIZE_KEY: {
                     "type": "integer",
                     "minimum": 1,
                     "maximum": MAX_ITERATION_SIZE,
                 },
-                "next_item": {
+                NEXT_ITEM_KEY: {
                     "type": "integer",
                     "minimum": MAX_ITERATION_SIZE,
                     "multipleOf": MAX_ITERATION_SIZE,
                 },
             },
-            "required": ["first_item", "iteration_size", "next_item"],
+            "required": [FIRST_ITEM_KEY, ITERATION_SIZE_KEY, NEXT_ITEM_KEY],
             "additionalProperties": False,
         },
         DATASET_ID_KEY: {"type": "string"},
@@ -40,9 +47,9 @@ EVENT_SCHEMA = {
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     validate(event, EVENT_SCHEMA)
 
-    if "content" in event.keys():
-        assert int(event["content"]["first_item"]) % MAX_ITERATION_SIZE == 0
-        first_item_index = event["content"]["next_item"]
+    if CONTENT_KEY in event.keys():
+        assert int(event[CONTENT_KEY][FIRST_ITEM_KEY]) % MAX_ITERATION_SIZE == 0
+        first_item_index = event[CONTENT_KEY][NEXT_ITEM_KEY]
     else:
         first_item_index = 0
 
@@ -67,9 +74,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         iteration_size = remaining_assets
 
     return {
-        "first_item": str(first_item_index),
-        "iteration_size": iteration_size,
-        "next_item": next_item_index,
-        "assets_table_name": get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME),
-        "results_table_name": get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME),
+        FIRST_ITEM_KEY: str(first_item_index),
+        ITERATION_SIZE_KEY: iteration_size,
+        NEXT_ITEM_KEY: next_item_index,
+        ASSETS_TABLE_NAME_KEY: get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME),
+        RESULTS_TABLE_NAME_KEY: get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME),
     }

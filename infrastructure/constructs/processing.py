@@ -2,6 +2,14 @@ from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, a
 from aws_cdk.core import Construct, Tags
 
 from backend.api_keys import SUCCESS_KEY
+from backend.content_iterator.task import (
+    ASSETS_TABLE_NAME_KEY,
+    CONTENT_KEY,
+    FIRST_ITEM_KEY,
+    ITERATION_SIZE_KEY,
+    NEXT_ITEM_KEY,
+    RESULTS_TABLE_NAME_KEY,
+)
 from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
 from backend.step_function_event_keys import (
@@ -84,7 +92,7 @@ class Processing(Construct):
             "content-iterator-task",
             directory="content_iterator",
             botocore_lambda_layer=botocore_lambda_layer,
-            result_path="$.content",
+            result_path=f"$.{CONTENT_KEY}",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
 
@@ -93,9 +101,9 @@ class Processing(Construct):
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
             f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
-            "first_item.$": "$.content.first_item",
-            "assets_table_name.$": "$.content.assets_table_name",
-            "results_table_name.$": "$.content.results_table_name",
+            f"{FIRST_ITEM_KEY}.$": f"$.{CONTENT_KEY}.{FIRST_ITEM_KEY}",
+            f"{ASSETS_TABLE_NAME_KEY}.$": f"$.{CONTENT_KEY}.{ASSETS_TABLE_NAME_KEY}",
+            f"{RESULTS_TABLE_NAME_KEY}.$": f"$.{CONTENT_KEY}.{RESULTS_TABLE_NAME_KEY}",
         }
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
@@ -109,16 +117,18 @@ class Processing(Construct):
                 "--dataset-id",
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
-                "Ref::version_id",
+                f"Ref::{VERSION_ID_KEY}",
                 "--first-item",
-                "Ref::first_item",
+                f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",
-                "Ref::assets_table_name",
+                f"Ref::{ASSETS_TABLE_NAME_KEY}",
                 "--results-table-name",
-                "Ref::results_table_name",
+                f"Ref::{RESULTS_TABLE_NAME_KEY}",
             ],
         )
-        array_size = int(aws_stepfunctions.JsonPath.number_at("$.content.iteration_size"))
+        array_size = int(
+            aws_stepfunctions.JsonPath.number_at(f"$.{CONTENT_KEY}.{ITERATION_SIZE_KEY}")
+        )
         check_files_checksums_array_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-array-task",
@@ -131,13 +141,13 @@ class Processing(Construct):
                 "--dataset-id",
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
-                "Ref::version_id",
+                f"Ref::{VERSION_ID_KEY}",
                 "--first-item",
-                "Ref::first_item",
+                f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",
-                "Ref::assets_table_name",
+                f"Ref::{ASSETS_TABLE_NAME_KEY}",
                 "--results-table-name",
-                "Ref::results_table_name",
+                f"Ref::{RESULTS_TABLE_NAME_KEY}",
             ],
             array_size=array_size,
         )
@@ -291,7 +301,9 @@ class Processing(Construct):
                     self, "check_files_checksums_maybe_array"
                 )
                 .when(
-                    aws_stepfunctions.Condition.number_equals("$.content.iteration_size", 1),
+                    aws_stepfunctions.Condition.number_equals(
+                        f"$.{CONTENT_KEY}.{ITERATION_SIZE_KEY}", 1
+                    ),
                     check_files_checksums_single_task.batch_submit_job,
                 )
                 .otherwise(check_files_checksums_array_task.batch_submit_job)
@@ -300,7 +312,9 @@ class Processing(Construct):
             .next(
                 aws_stepfunctions.Choice(self, "content_iteration_finished")
                 .when(
-                    aws_stepfunctions.Condition.number_equals("$.content.next_item", -1),
+                    aws_stepfunctions.Condition.number_equals(
+                        f"$.{CONTENT_KEY}.{NEXT_ITEM_KEY}", -1
+                    ),
                     validation_summary_task.next(
                         aws_stepfunctions.Choice(  # type: ignore[arg-type]
                             self, "validation_successful"
