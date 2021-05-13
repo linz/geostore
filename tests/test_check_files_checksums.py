@@ -11,7 +11,7 @@ from multihash import SHA2_256  # type: ignore[import]
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.api_responses import MESSAGE_KEY
+from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check import Check
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import (
@@ -107,7 +107,7 @@ def should_validate_given_index(
             assert main() == 0
 
         with subtests.test(msg="Log message"):
-            info_log_mock.assert_any_call(dumps({"success": True, MESSAGE_KEY: ""}))
+            info_log_mock.assert_any_call(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
 
     with subtests.test(msg="Validate checksums"):
         assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
@@ -143,7 +143,7 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     expected_details = {
         MESSAGE_KEY: f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
     }
-    expected_log = dumps({"success": False, **expected_details})
+    expected_log = dumps({SUCCESS_KEY: False, **expected_details})
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     logger = logging.getLogger("backend.check_files_checksums.task")
     # When

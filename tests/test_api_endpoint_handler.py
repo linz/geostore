@@ -4,13 +4,8 @@ from unittest.mock import MagicMock
 
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.api_responses import (
-    BODY_KEY,
-    HTTP_METHOD_KEY,
-    MESSAGE_KEY,
-    STATUS_CODE_KEY,
-    handle_request,
-)
+from backend.api_keys import MESSAGE_KEY
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY, handle_request
 from backend.types import JsonObject
 
 

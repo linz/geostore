@@ -10,7 +10,8 @@ from unittest.mock import patch
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, MESSAGE_KEY, STATUS_CODE_KEY
+from backend.api_keys import MESSAGE_KEY
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.dataset_versions import entrypoint
 from backend.dataset_versions.create import create_dataset_version
 

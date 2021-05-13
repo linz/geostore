@@ -8,7 +8,7 @@ import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
-from ..api_responses import MESSAGE_KEY
+from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
 from ..processing_assets_model import processing_assets_model_with_meta
@@ -51,7 +51,7 @@ class ChecksumValidator:
         )
 
     def log_failure(self, content: JsonObject) -> None:
-        self.logger.error(dumps({"success": False, **content}))
+        self.logger.error(dumps({SUCCESS_KEY: False, **content}))
 
     def validate(self, hash_key: str, range_key: str) -> None:
 
@@ -78,7 +78,7 @@ class ChecksumValidator:
                 item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
         else:
-            self.logger.info(dumps({"success": True, MESSAGE_KEY: ""}))
+            self.logger.info(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:

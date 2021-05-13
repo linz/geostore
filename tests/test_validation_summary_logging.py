@@ -2,6 +2,7 @@ from json import dumps
 from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
+from backend.api_keys import SUCCESS_KEY
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_summary import task
 
@@ -34,7 +35,7 @@ class TestLogging:
     def should_log_failure_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
-        expected_log = dumps({"success": False})
+        expected_log = dumps({SUCCESS_KEY: False})
         validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 1
 
         with patch.object(self.logger, "debug") as logger_mock:
@@ -48,7 +49,7 @@ class TestLogging:
     def should_log_success_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
-        expected_log = dumps({"success": True})
+        expected_log = dumps({SUCCESS_KEY: True})
         validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 0
 
         with patch.object(self.logger, "debug") as logger_mock:

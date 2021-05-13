@@ -12,7 +12,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.api_responses import MESSAGE_KEY
+from backend.api_keys import MESSAGE_KEY
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler

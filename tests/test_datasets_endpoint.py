@@ -13,7 +13,8 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, MESSAGE_KEY, STATUS_CODE_KEY
+from backend.api_keys import MESSAGE_KEY
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName

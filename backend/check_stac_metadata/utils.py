@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
-from ..api_responses import MESSAGE_KEY
+from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -73,13 +73,13 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={MESSAGE_KEY: error_message},
             )
-            LOGGER.error(dumps({"success": False, MESSAGE_KEY: error_message}))
+            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: error_message}))
             return
 
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(dumps({"success": False, MESSAGE_KEY: str(error)}))
+            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(error)}))
             return
 
         for index, metadata_file in enumerate(self.dataset_metadata):

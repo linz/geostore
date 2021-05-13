@@ -4,11 +4,11 @@ from typing import Callable, Mapping, Union
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from .api_keys import MESSAGE_KEY
 from .types import JsonList, JsonObject
 
 BODY_KEY = "body"
 HTTP_METHOD_KEY = "http_method"
-MESSAGE_KEY = "message"
 STATUS_CODE_KEY = "status_code"
 
 

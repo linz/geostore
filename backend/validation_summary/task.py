@@ -2,6 +2,7 @@ from json import dumps
 
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..log import set_up_logging
 from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
@@ -38,6 +39,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         )
     )
 
-    result = {"success": success}
+    result = {SUCCESS_KEY: success}
     LOGGER.debug(dumps(result))
     return result
