@@ -15,7 +15,7 @@ from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.import_dataset.task import DATASET_KEY_SEPARATOR
+from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName

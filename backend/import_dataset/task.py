@@ -64,8 +64,6 @@ S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_
 
 EVENT_KEY = "event"
 
-DATASET_KEY_SEPARATOR = "-"
-
 JOB_MANIFEST_FORMAT: JobManifestFormat = "S3BatchOperations_CSV_20180820"
 JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldName] = ["Bucket", "Key"]
 JOB_REPORT_FORMAT: JobReportFormat = "Report_CSV_20180820"
@@ -81,7 +79,7 @@ class Importer:
         dataset = datasets_model_with_meta().get(
             hash_key=f"DATASET#{self.dataset_id}", consistent_read=True
         )
-        self.dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{self.dataset_id}"
+        self.dataset_prefix = dataset.dataset_prefix
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"

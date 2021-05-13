@@ -2062,6 +2062,20 @@ optional = true
 python-versions = ">=3.5"
 
 [[package]]
+name = "pystac"
+version = "0.5.6"
+description = "Python library for working with Spatiotemporal Asset Catalog (STAC)."
+category = "main"
+optional = true
+python-versions = "*"
+
+[package.dependencies]
+python-dateutil = ">=2.7.0"
+
+[package.extras]
+validation = ["jsonschema (==3.2.0)"]
+
+[[package]]
 name = "pytest"
 version = "6.2.3"
 description = "pytest: simple powerful testing with Python"
@@ -2416,7 +2430,7 @@ check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
 dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
-datasets = ["jsonschema", "pynamodb", "ulid-py"]
+datasets = ["jsonschema", "pynamodb", "pystac", "ulid-py"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
 validation_summary = ["jsonschema", "pynamodb"]
@@ -2424,7 +2438,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "ec98eb0c02beee95fc572d4e468753ca92684cd181057c00f982a68186afb22a"
+content-hash = "0315923cc69a822a13d2d5fb3a352de4d374dd4a5e8f75c4211f5bd434ab9eb9"
 
 [metadata.files]
 appdirs = [
@@ -3032,6 +3046,10 @@ pyparsing = [
 ]
 pyrsistent = [
     {file = "pyrsistent-0.17.3.tar.gz", hash = "sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e"},
+]
+pystac = [
+    {file = "pystac-0.5.6-py3-none-any.whl", hash = "sha256:3dfb9068169570714276e54a80832e555a136595a4d5316e6998bcc55cc2d639"},
+    {file = "pystac-0.5.6.tar.gz", hash = "sha256:ee0da32e65e93b240dcdcf68f5a16fa2f3f9e937477161f574b04fc48682e84a"},
 ]
 pytest = [
     {file = "pytest-6.2.3-py3-none-any.whl", hash = "sha256:6ad9c7bdf517a808242b998ac20063c41532a570d088d77eec1ee12b0b5574bc"},
