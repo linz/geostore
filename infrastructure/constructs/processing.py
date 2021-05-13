@@ -1,8 +1,15 @@
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Tags
 
+from backend.api_keys import SUCCESS_KEY
 from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
+from backend.step_function_event_keys import (
+    DATASET_ID_KEY,
+    METADATA_URL_KEY,
+    VALIDATION_KEY,
+    VERSION_ID_KEY,
+)
 
 from .batch_job_queue import BatchJobQueue
 from .batch_submit_job_task import BatchSubmitJobTask
@@ -83,9 +90,9 @@ class Processing(Construct):
 
         check_files_checksums_directory = "check_files_checksums"
         check_files_checksums_default_payload_object = {
-            "dataset_id.$": "$.dataset_id",
-            "version_id.$": "$.version_id",
-            "metadata_url.$": "$.metadata_url",
+            f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
+            f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
+            f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
             "first_item.$": "$.content.first_item",
             "assets_table_name.$": "$.content.assets_table_name",
             "results_table_name.$": "$.content.results_table_name",
@@ -100,7 +107,7 @@ class Processing(Construct):
             payload_object=check_files_checksums_default_payload_object,
             container_overrides_command=[
                 "--dataset-id",
-                "Ref::dataset_id",
+                f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 "Ref::version_id",
                 "--first-item",
@@ -122,7 +129,7 @@ class Processing(Construct):
             payload_object=check_files_checksums_default_payload_object,
             container_overrides_command=[
                 "--dataset-id",
-                "Ref::dataset_id",
+                f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 "Ref::version_id",
                 "--first-item",
@@ -159,7 +166,7 @@ class Processing(Construct):
             "validation-summary-task",
             directory="validation_summary",
             botocore_lambda_layer=botocore_lambda_layer,
-            result_path="$.validation",
+            result_path=f"$.{VALIDATION_KEY}",
             extra_environment={"DEPLOY_ENV": deploy_env},
         )
         validation_results_table.grant_read_data(validation_summary_task.lambda_function)
@@ -300,7 +307,7 @@ class Processing(Construct):
                         )
                         .when(
                             aws_stepfunctions.Condition.boolean_equals(
-                                "$.validation.success", True
+                                f"$.{VALIDATION_KEY}.{SUCCESS_KEY}", True
                             ),
                             import_dataset_task.next(success_task),  # type: ignore[arg-type]
                         )
