@@ -1,5 +1,17 @@
-from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
+"""
+Data Lake processing stack.
+"""
+from aws_cdk import (
+    aws_dynamodb,
+    aws_iam,
+    aws_lambda_python,
+    aws_s3,
+    aws_sqs,
+    aws_ssm,
+    aws_stepfunctions,
+)
 from aws_cdk.aws_stepfunctions import Wait, WaitTime
+from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.core import Construct, Duration, Tags
 
 from backend.api_keys import SUCCESS_KEY
@@ -25,6 +37,7 @@ from backend.step_function import (
 
 from .batch_job_queue import BatchJobQueue
 from .batch_submit_job_task import BatchSubmitJobTask
+from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
 from .lambda_task import LambdaTask
@@ -68,6 +81,33 @@ class Processing(Construct):
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
             "AmazonS3ReadOnlyAccess"
+        )
+
+        ############################################################################################
+        # ROOT CATALOG UPDATE MESSAGE QUEUE
+
+        self.message_queue = aws_sqs.Queue(
+            self, "root-catalog-message-queue", visibility_timeout=Duration.seconds(60)
+        )
+        self.message_queue_name_parameter = aws_ssm.StringParameter(
+            self,
+            "root catalog message queue name",
+            string_value=self.message_queue.queue_name,
+            description=f"Root Catalog Message Queue Name for {deploy_env}",
+            parameter_name=ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME.value,
+        )
+
+        write_catalog_lambda = BundledLambdaFunction(
+            self,
+            "write-catalog-bundled-lambda-function",
+            directory="write_to_catalog",
+            extra_environment={"DEPLOY_ENV": deploy_env},
+            botocore_lambda_layer=botocore_lambda_layer,
+        )
+
+        self.message_queue.grant_consume_messages(write_catalog_lambda)
+        write_catalog_lambda.add_event_source(
+            SqsEventSource(self.message_queue, batch_size=1)  # type: ignore[arg-type]
         )
 
         ############################################################################################

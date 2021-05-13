@@ -1,6 +1,6 @@
 from os import environ
 
-from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
+from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Tags
 
 from backend.resources import ResourceName
@@ -23,6 +23,8 @@ class API(Construct):
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
+        sqs_queue: aws_sqs.Queue,
+        sqs_queue_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
@@ -73,6 +75,9 @@ class API(Construct):
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
         storage_bucket.grant_read_write(datasets_endpoint_lambda)
+
+        sqs_queue.grant_send_messages(datasets_endpoint_lambda)
+        sqs_queue_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)

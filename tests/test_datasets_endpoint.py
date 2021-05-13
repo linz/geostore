@@ -24,6 +24,7 @@ from .aws_utils import (
     Dataset,
     S3Object,
     any_lambda_context,
+    delete_s3_key,
     delete_s3_prefix,
     get_s3_prefix_versions,
 )
@@ -79,6 +80,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)
+        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, "catalog.json", s3_client)
 
 
 @mark.infrastructure

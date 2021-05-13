@@ -80,7 +80,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           python -m poetry install \
-              --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status validation_summary'
+              --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status write_to_catalog validation_summary'
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -121,7 +121,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           python -m poetry install \
-              --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status validation_summary' \
+              --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status write_to_catalog validation_summary' \
               --remove-untracked
 
       # deployment

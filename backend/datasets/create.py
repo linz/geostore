@@ -2,11 +2,13 @@
 from http import HTTPStatus
 from string import ascii_letters, digits
 
+import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
+from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
@@ -59,6 +61,14 @@ def create_dataset(body: JsonObject) -> JsonObject:
         f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset.dataset_prefix}"
     )
     dataset_catalog.save()
+
+    # add reference to root catalog
+    queue = boto3.resource("sqs").get_queue_by_name(
+        QueueName=get_param(ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME)
+    )
+    queue.send_message(
+        MessageBody={"dataset_title": dataset},
+    )
 
     # return response
     resp_body = dataset.as_dict()
