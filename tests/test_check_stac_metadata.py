@@ -12,6 +12,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.api_responses import MESSAGE_KEY
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
@@ -97,7 +98,7 @@ def should_save_non_s3_url_validation_results(
             non_s3_url,
             Check.NON_S3_URL,
             ValidationResult.FAILED,
-            details={"message": f"URL doesn't start with “s3://”: “{non_s3_url}”"},
+            details={MESSAGE_KEY: f"URL doesn't start with “s3://”: “{non_s3_url}”"},
         ),
     ]
 
@@ -143,7 +144,7 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         metadata_url,
         Check.DUPLICATE_OBJECT_KEY,
         ValidationResult.FAILED,
-        details={"message": f"Found duplicate object name “{asset_name}” in “{metadata_url}”"},
+        details={MESSAGE_KEY: f"Found duplicate object name “{asset_name}” in “{metadata_url}”"},
     )
 
 
@@ -181,7 +182,7 @@ def should_save_staging_access_validation_results(
             s3_url,
             Check.STAGING_ACCESS,
             ValidationResult.FAILED,
-            details={"message": str(expected_error)},
+            details={MESSAGE_KEY: str(expected_error)},
         ),
     ]
 
@@ -542,7 +543,7 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
             Check.JSON_PARSE,
             ValidationResult.FAILED,
             details={
-                "message": "Expecting property name enclosed in double quotes:"
+                MESSAGE_KEY: "Expecting property name enclosed in double quotes:"
                 " line 1 column 2 (char 1)"
             },
         ),

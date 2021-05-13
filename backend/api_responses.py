@@ -6,13 +6,18 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from .types import JsonList, JsonObject
 
+BODY_KEY = "body"
+HTTP_METHOD_KEY = "http_method"
+MESSAGE_KEY = "message"
+STATUS_CODE_KEY = "status_code"
+
 
 def error_response(code: int, message: str) -> JsonObject:
-    return {"status_code": code, "body": {"message": f"{http_responses[code]}: {message}"}}
+    return {STATUS_CODE_KEY: code, BODY_KEY: {MESSAGE_KEY: f"{http_responses[code]}: {message}"}}
 
 
 def success_response(code: int, body: Union[JsonList, JsonObject]) -> JsonObject:
-    return {"status_code": code, "body": body}
+    return {STATUS_CODE_KEY: code, BODY_KEY: body}
 
 
 def handle_request(
@@ -27,14 +32,14 @@ def handle_request(
             {
                 "type": "object",
                 "properties": {
-                    "http_method": {"type": "string", "enum": list(request_handlers.keys())},
-                    "body": {"type": "object"},
+                    HTTP_METHOD_KEY: {"type": "string", "enum": list(request_handlers.keys())},
+                    BODY_KEY: {"type": "object"},
                 },
-                "required": ["http_method", "body"],
+                "required": [HTTP_METHOD_KEY, BODY_KEY],
             },
         )
     except ValidationError as err:
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
-    method = event["http_method"]
-    return request_handlers[method](event["body"])
+    method = event[HTTP_METHOD_KEY]
+    return request_handlers[method](event[BODY_KEY])

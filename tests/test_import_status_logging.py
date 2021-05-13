@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY
 from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status, get_s3_batch_copy_status
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
@@ -23,8 +24,8 @@ class TestLogging:
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
         event = {
-            "http_method": "GET",
-            "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
+            HTTP_METHOD_KEY: "GET",
+            BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
         }
 
         expected_payload_log = dumps({"event": event})
@@ -60,8 +61,8 @@ class TestLogging:
             # When
             get_import_status(
                 {
-                    "http_method": "GET",
-                    "body": {},
+                    HTTP_METHOD_KEY: "GET",
+                    BODY_KEY: {},
                 }
             )
 

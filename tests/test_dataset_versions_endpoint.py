@@ -10,6 +10,7 @@ from unittest.mock import patch
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, MESSAGE_KEY, STATUS_CODE_KEY
 from backend.dataset_versions import entrypoint
 from backend.dataset_versions.create import create_dataset_version
 
@@ -26,13 +27,13 @@ def should_return_required_property_error_when_missing_mandatory_metadata_url() 
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
-        {"http_method": "POST", "body": body}, any_lambda_context()
+        {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
     )
 
     # Then the API should return an error message
     assert response == {
-        "status_code": HTTPStatus.BAD_REQUEST,
-        "body": {"message": "Bad Request: 'metadata_url' is a required property"},
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'metadata_url' is a required property"},
     }
 
 
@@ -42,13 +43,13 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
-        {"http_method": "POST", "body": body}, any_lambda_context()
+        {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
     )
 
     # Then the API should return an error message
     assert response == {
-        "status_code": HTTPStatus.BAD_REQUEST,
-        "body": {"message": "Bad Request: 'id' is a required property"},
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
     }
 
 
@@ -57,13 +58,13 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     body = {"id": any_dataset_id(), "metadata_url": any_s3_url()}
 
     response = entrypoint.lambda_handler(
-        {"http_method": "POST", "body": body}, any_lambda_context()
+        {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
     )
     logger.info("Response: %s", response)
 
     assert response == {
-        "status_code": HTTPStatus.NOT_FOUND,
-        "body": {"message": f"Not Found: dataset '{body['id']}' could not be found"},
+        STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
+        BODY_KEY: {MESSAGE_KEY: f"Not Found: dataset '{body['id']}' could not be found"},
     }
 
 
@@ -83,7 +84,7 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
 
     # Then we should get the dataset in return
     with subtests.test(msg="Status code"):
-        assert response["status_code"] == HTTPStatus.CREATED
+        assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID"):
-        assert response["body"]["dataset_version"].startswith("2001-02-03T04-05-06-789Z_")
+        assert response[BODY_KEY]["dataset_version"].startswith("2001-02-03T04-05-06-789Z_")

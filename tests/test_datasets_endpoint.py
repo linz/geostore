@@ -13,6 +13,7 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, MESSAGE_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
@@ -45,18 +46,18 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
     try:
 
         response = entrypoint.lambda_handler(
-            {"http_method": "POST", "body": body}, any_lambda_context()
+            {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
         )
         logger.info("Response: %s", response)
 
         with subtests.test(msg="status code"):
-            assert response["status_code"] == HTTPStatus.CREATED
+            assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
-            with subtests.test(msg="ID length"):
-                assert len(response["body"]["id"]) == 41
+        with subtests.test(msg="ID length"):
+            assert len(response[BODY_KEY]["id"]) == 41
 
-            with subtests.test(msg="title"):
-                assert response["body"]["title"] == dataset_title
+        with subtests.test(msg="title"):
+            assert response[BODY_KEY]["title"] == dataset_title
 
         catalog = get_s3_prefix_versions(
             ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client
@@ -85,12 +86,12 @@ def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
-            {"http_method": "POST", "body": body}, any_lambda_context()
+            {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
         )
 
     assert response == {
-        "status_code": HTTPStatus.CONFLICT,
-        "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
+        STATUS_CODE_KEY: HTTPStatus.CONFLICT,
+        BODY_KEY: {MESSAGE_KEY: f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
 
@@ -102,15 +103,17 @@ def should_return_client_error_when_title_contains_unsupported_characters(
         with subtests.test(msg=character):
             response = entrypoint.lambda_handler(
                 {
-                    "http_method": "POST",
-                    "body": {"title": character, "description": any_dataset_description()},
+                    HTTP_METHOD_KEY: "POST",
+                    BODY_KEY: {"title": character, "description": any_dataset_description()},
                 },
                 any_lambda_context(),
             )
 
             assert response == {
-                "status_code": HTTPStatus.BAD_REQUEST,
-                "body": {"message": f"Bad Request: '{character}' does not match '{TITLE_PATTERN}'"},
+                STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+                BODY_KEY: {
+                    MESSAGE_KEY: f"Bad Request: '{character}' does not match '{TITLE_PATTERN}'"
+                },
             }
 
 
@@ -122,16 +125,16 @@ def should_return_single_dataset(subtests: SubTests) -> None:
 
         # When requesting the dataset by ID and type
         response = entrypoint.lambda_handler(
-            {"http_method": "GET", "body": body}, any_lambda_context()
+            {HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context()
         )
     logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
     with subtests.test(msg="status code"):
-        assert response["status_code"] == HTTPStatus.OK
+        assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="ID"):
-        assert response["body"]["id"] == dataset.dataset_id
+        assert response[BODY_KEY]["id"] == dataset.dataset_id
 
 
 @mark.infrastructure
@@ -140,15 +143,15 @@ def should_return_all_datasets(subtests: SubTests) -> None:
     with Dataset() as first_dataset, Dataset() as second_dataset:
         # When requesting all datasets
         response = entrypoint.lambda_handler(
-            {"http_method": "GET", "body": {}}, any_lambda_context()
+            {HTTP_METHOD_KEY: "GET", BODY_KEY: {}}, any_lambda_context()
         )
         logger.info("Response: %s", response)
 
         # Then we should get both datasets in return
         with subtests.test(msg="status code"):
-            assert response["status_code"] == HTTPStatus.OK
+            assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
-        actual_dataset_ids = [entry["id"] for entry in response["body"]]
+        actual_dataset_ids = [entry["id"] for entry in response[BODY_KEY]]
         for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
             with subtests.test(msg=f"ID {dataset_id}"):
                 assert dataset_id in actual_dataset_ids
@@ -163,19 +166,19 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
         response = entrypoint.lambda_handler(
-            {"http_method": "GET", "body": body}, any_lambda_context()
+            {HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context()
         )
         logger.info("Response: %s", response)
 
     with subtests.test(msg="ID"):
         # Then only the matching dataset should be returned
-        assert response["body"][0]["id"] == matching_dataset.dataset_id
+        assert response[BODY_KEY][0]["id"] == matching_dataset.dataset_id
 
     with subtests.test(msg="status code"):
-        assert response["status_code"] == HTTPStatus.OK
+        assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="body length"):
-        assert len(response["body"]) == 1
+        assert len(response[BODY_KEY]) == 1
 
 
 @mark.infrastructure
@@ -184,11 +187,13 @@ def should_fail_if_get_request_requests_not_existing_dataset() -> None:
 
     body = {"id": dataset_id}
 
-    response = entrypoint.lambda_handler({"http_method": "GET", "body": body}, any_lambda_context())
+    response = entrypoint.lambda_handler(
+        {HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context()
+    )
 
     assert response == {
-        "status_code": HTTPStatus.NOT_FOUND,
-        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
+        STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
+        BODY_KEY: {MESSAGE_KEY: f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
@@ -200,18 +205,18 @@ def should_update_dataset(subtests: SubTests) -> None:
         body = {"id": dataset.dataset_id, "title": new_dataset_title}
         response = entrypoint.lambda_handler(
             {
-                "http_method": "PATCH",
-                "body": body,
+                HTTP_METHOD_KEY: "PATCH",
+                BODY_KEY: body,
             },
             any_lambda_context(),
         )
     logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
-        assert response["status_code"] == HTTPStatus.OK
+        assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="title"):
-        assert response["body"]["title"] == new_dataset_title
+        assert response[BODY_KEY]["title"] == new_dataset_title
 
 
 @mark.infrastructure
@@ -221,12 +226,12 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
 
     with Dataset(title=dataset_title):
         response = entrypoint.lambda_handler(
-            {"http_method": "PATCH", "body": body}, any_lambda_context()
+            {HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context()
         )
 
     assert response == {
-        "status_code": HTTPStatus.CONFLICT,
-        "body": {"message": f"Conflict: dataset '{dataset_title}' already exists"},
+        STATUS_CODE_KEY: HTTPStatus.CONFLICT,
+        BODY_KEY: {MESSAGE_KEY: f"Conflict: dataset '{dataset_title}' already exists"},
     }
 
 
@@ -236,12 +241,12 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 
     body = {"id": dataset_id, "title": any_dataset_title()}
     response = entrypoint.lambda_handler(
-        {"http_method": "PATCH", "body": body}, any_lambda_context()
+        {HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context()
     )
 
     assert response == {
-        "status_code": HTTPStatus.NOT_FOUND,
-        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
+        STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
+        BODY_KEY: {MESSAGE_KEY: f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
@@ -251,11 +256,11 @@ def should_delete_dataset_with_no_versions(lambda_client: LambdaClient) -> None:
         body = {"id": dataset.dataset_id}
         raw_response = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=dumps({"http_method": "DELETE", "body": body}).encode(),
+            Payload=dumps({HTTP_METHOD_KEY: "DELETE", BODY_KEY: body}).encode(),
         )
         response_payload = load(raw_response["Payload"])
 
-    assert response_payload == {"status_code": HTTPStatus.NO_CONTENT, "body": {}}
+    assert response_payload == {STATUS_CODE_KEY: HTTPStatus.NO_CONTENT, BODY_KEY: {}}
 
 
 @mark.infrastructure
@@ -266,15 +271,15 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
         key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
     ):
         response = entrypoint.lambda_handler(
-            {"http_method": "DELETE", "body": {"id": dataset.dataset_id}}, any_lambda_context()
+            {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {"id": dataset.dataset_id}}, any_lambda_context()
         )
 
     expected_message = (
         f"Conflict: Can’t delete dataset “{dataset.dataset_id}”: dataset versions still exist"
     )
     assert response == {
-        "status_code": HTTPStatus.CONFLICT,
-        "body": {"message": expected_message},
+        STATUS_CODE_KEY: HTTPStatus.CONFLICT,
+        BODY_KEY: {MESSAGE_KEY: expected_message},
     }
 
 
@@ -285,12 +290,12 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
     body = {"id": dataset_id, "title": any_dataset_title()}
 
     response = entrypoint.lambda_handler(
-        {"http_method": "DELETE", "body": body}, any_lambda_context()
+        {HTTP_METHOD_KEY: "DELETE", BODY_KEY: body}, any_lambda_context()
     )
 
     assert response == {
-        "status_code": HTTPStatus.NOT_FOUND,
-        "body": {"message": f"Not Found: dataset '{dataset_id}' does not exist"},
+        STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
+        BODY_KEY: {MESSAGE_KEY: f"Not Found: dataset '{dataset_id}' does not exist"},
     }
 
 
@@ -309,11 +314,11 @@ def should_launch_datasets_endpoint_lambda_function(
 
         resp = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=dumps({"http_method": "POST", "body": body}).encode(),
+            Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
         )
         json_resp = load(resp["Payload"])
 
-        assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
+        assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, title, s3_client)
