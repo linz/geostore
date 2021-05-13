@@ -139,6 +139,11 @@ import_status = [
     "jsonschema",
     "pynamodb",
 ]
+upload_status = [
+    "boto3",
+    "jsonschema",
+    "pynamodb",
+]
 validation_summary = [
     "jsonschema",
     "pynamodb",
