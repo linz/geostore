@@ -1,18 +1,18 @@
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, NestedStack, Tags
+from aws_cdk.core import Construct, Tags
 
 from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
 
+from .batch_job_queue import BatchJobQueue
+from .batch_submit_job_task import BatchSubmitJobTask
 from .common import grant_parameter_read_access
-from .constructs.batch_job_queue import BatchJobQueue
-from .constructs.batch_submit_job_task import BatchSubmitJobTask
-from .constructs.import_file_function import ImportFileFunction
-from .constructs.lambda_task import LambdaTask
-from .constructs.table import Table
+from .import_file_function import ImportFileFunction
+from .lambda_task import LambdaTask
+from .table import Table
 
 
-class ProcessingStack(NestedStack):
+class Processing(Construct):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         scope: Construct,

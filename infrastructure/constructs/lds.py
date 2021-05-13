@@ -1,10 +1,10 @@
 from aws_cdk import aws_iam, aws_s3
-from aws_cdk.core import Construct, NestedStack, Tags
+from aws_cdk.core import Construct, Tags
 
 from .roles import MAX_SESSION_DURATION
 
 
-class LDSStack(NestedStack):
+class LDS(Construct):
     def __init__(
         self, scope: Construct, stack_id: str, *, deploy_env: str, storage_bucket: aws_s3.Bucket
     ) -> None:

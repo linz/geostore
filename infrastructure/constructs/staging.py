@@ -1,10 +1,10 @@
 from aws_cdk import aws_s3
-from aws_cdk.core import Construct, NestedStack, RemovalPolicy, Tags
+from aws_cdk.core import Construct, RemovalPolicy, Tags
 
 from backend.resources import ResourceName
 
 
-class StagingStack(NestedStack):
+class Staging(Construct):
     def __init__(self, scope: Construct, stack_id: str) -> None:
         super().__init__(scope, stack_id)
 

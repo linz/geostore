@@ -1,17 +1,17 @@
 from os import environ
 
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, NestedStack, Tags
+from aws_cdk.core import Construct, Tags
 
 from backend.resources import ResourceName
 
 from .common import grant_parameter_read_access
-from .constructs.lambda_endpoint import LambdaEndpoint
-from .constructs.table import Table
+from .lambda_endpoint import LambdaEndpoint
 from .roles import MAX_SESSION_DURATION
+from .table import Table
 
 
-class APIStack(NestedStack):
+class API(Construct):
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         scope: Construct,

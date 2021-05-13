@@ -3,68 +3,17 @@
 """
 CDK application entry point file.
 """
-from os import environ
-
-from aws_cdk.core import App, Environment, Stack, Tag
+from aws_cdk.core import App, Tag
 
 from backend.environment import ENV
-from infrastructure.api_stack import APIStack
+from infrastructure.application_stack import Application
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
-from infrastructure.lambda_layers_stack import LambdaLayersStack
-from infrastructure.lds_stack import LDSStack
-from infrastructure.processing_stack import ProcessingStack
-from infrastructure.staging_stack import StagingStack
-from infrastructure.storage_stack import StorageStack
 
 
 def main() -> None:
     app = App()
 
-    environment = Environment(
-        account=environ["CDK_DEFAULT_ACCOUNT"], region=environ["CDK_DEFAULT_REGION"]
-    )
-
-    datalake = Stack(app, "datalake", env=environment, stack_name=f"{ENV}-geospatial-data-lake")
-
-    storage = StorageStack(
-        datalake,
-        "storage",
-        deploy_env=ENV,
-    )
-
-    StagingStack(datalake, "staging")
-
-    lambda_layers = LambdaLayersStack(datalake, "lambda-layers", deploy_env=ENV)
-
-    processing = ProcessingStack(
-        storage,
-        "processing",
-        botocore_lambda_layer=lambda_layers.botocore,
-        datasets_table=storage.datasets_table,
-        deploy_env=ENV,
-        storage_bucket=storage.storage_bucket,
-        validation_results_table=storage.validation_results_table,
-    )
-
-    APIStack(
-        processing,
-        "api",
-        botocore_lambda_layer=lambda_layers.botocore,
-        datasets_table=storage.datasets_table,
-        deploy_env=ENV,
-        state_machine=processing.state_machine,
-        state_machine_parameter=processing.state_machine_parameter,
-        storage_bucket=storage.storage_bucket,
-        validation_results_table=storage.validation_results_table,
-    )
-
-    if app.node.try_get_context("enableLDSAccess"):
-        LDSStack(
-            storage,
-            "lds",
-            deploy_env=ENV,
-            storage_bucket=storage.storage_bucket,
-        )
+    Application(app, f"{ENV}-datalake")
 
     # tag all resources in stack
     Tag.add(app, "CostCentre", "100005")
