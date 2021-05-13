@@ -12,7 +12,7 @@ from backend.import_dataset.task import EVENT_KEY, lambda_handler
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_s3_url
-from .general_generators import any_etag
+from .general_generators import any_error_message, any_etag
 from .stac_generators import any_dataset_version_id, any_hex_multihash
 
 
@@ -53,7 +53,7 @@ class TestLogging:
     def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
-        error_message = "Some error message"
+        error_message = any_error_message()
         validate_schema_mock.side_effect = ValidationError(error_message)
         expected_log = dumps({ERROR_KEY: error_message})
 

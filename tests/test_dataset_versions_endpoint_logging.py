@@ -11,6 +11,7 @@ from backend.dataset_versions.create import create_dataset_version
 from backend.error_response_keys import ERROR_KEY
 
 from .aws_utils import Dataset, any_s3_url
+from .general_generators import any_error_message
 from .stac_generators import any_dataset_id
 
 
@@ -64,7 +65,7 @@ class TestLogging:
     def should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
         # given
         metadata_url = any_s3_url()
-        error_message = "Some error message"
+        error_message = any_error_message()
         validate_schema_mock.side_effect = ValidationError(error_message)
 
         payload = {HTTP_METHOD_KEY: "POST", BODY_KEY: {"metadata_url": metadata_url}}
@@ -83,7 +84,7 @@ class TestLogging:
         # given
         dataset_id = any_dataset_id()
         metadata_url = any_s3_url()
-        error_message = "Some error message"
+        error_message = any_error_message()
         datasets_model_mock.return_value.get.side_effect = DoesNotExist(error_message)
 
         payload = {"metadata_url": metadata_url, "id": dataset_id}
