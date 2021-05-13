@@ -7,6 +7,7 @@ from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
 
 from .check import Check
+from .models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from .parameter_store import ParameterName, get_param
 from .types import JsonObject
 
@@ -89,7 +90,7 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     ) -> None:
         self.validation_results_model(
             pk=self.hash_key,
-            sk=f"CHECK#{check.value}#URL#{url}",
+            sk=f"{CHECK_ID_PREFIX}{check.value}{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{url}",
             result=result.value,
             details=details,
         ).save()

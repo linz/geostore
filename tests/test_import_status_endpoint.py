@@ -12,6 +12,7 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -119,7 +120,9 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
         },
     }
     with ValidationItem(
-        asset_id=f"DATASET#{dataset_id}#VERSION#{version_id}",
+        asset_id=(
+            f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+        ),
         result=ValidationResult.FAILED,
         details=error_details,
         url=url,

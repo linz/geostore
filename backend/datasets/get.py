@@ -6,6 +6,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
+from ..models import DATASET_ID_PREFIX
 from ..types import JsonObject
 from .list import list_datasets
 
@@ -38,7 +39,9 @@ def get_dataset_single(body: JsonObject) -> JsonObject:
 
     # get dataset
     try:
-        dataset = datasets_model_class.get(hash_key=f"DATASET#{body['id']}", consistent_read=True)
+        dataset = datasets_model_class.get(
+            hash_key=f"{DATASET_ID_PREFIX}{body['id']}", consistent_read=True
+        )
     except DoesNotExist:
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' does not exist")
 

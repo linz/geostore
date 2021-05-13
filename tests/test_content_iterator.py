@@ -16,6 +16,7 @@ from backend.content_iterator.task import (
     RESULTS_TABLE_NAME_KEY,
     lambda_handler,
 )
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
@@ -255,16 +256,19 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
 def should_count_only_asset_files() -> None:
     # Given a single metadata and asset entry in the database
     event = deepcopy(INITIAL_EVENT)
-    hash_key = f"DATASET#{event['dataset_id']}#VERSION#{event['version_id']}"
+    hash_key = (
+        f"{DATASET_ID_PREFIX}{event['dataset_id']}"
+        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
+    )
     processing_assets_model = processing_assets_model_with_meta()
     processing_assets_model(
         hash_key=hash_key,
-        range_key=f"{ProcessingAssetType.METADATA.value}#0",
+        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
         url=any_s3_url(),
     ).save()
     processing_assets_model(
         hash_key=hash_key,
-        range_key=f"{ProcessingAssetType.DATA.value}#0",
+        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
         url=any_s3_url(),
         multihash=any_hex_multihash(),
     ).save()

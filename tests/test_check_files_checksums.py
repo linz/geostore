@@ -20,6 +20,7 @@ from backend.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from backend.validation_results_model import ValidationResult
 
@@ -65,7 +66,7 @@ def should_validate_given_index(
     # Given
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
 
     url = any_s3_url()
     hex_multihash = any_hex_multihash()
@@ -74,10 +75,10 @@ def should_validate_given_index(
 
     def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
         assert given_hash_key == hash_key
-        assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
+        assert range_key == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{array_index}"
         return ProcessingAssetsModelBase(
             hash_key=given_hash_key,
-            range_key="{ProcessingAssetType.DATA.value}#1",
+            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
             url=url,
             multihash=hex_multihash,
         )
@@ -132,11 +133,13 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     expected_hex_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
     dataset_id = any_dataset_id()
     dataset_version_id = any_dataset_version_id()
-    hash_key = f"DATASET#{dataset_id}#VERSION#{dataset_version_id}"
+    hash_key = (
+        f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{dataset_version_id}"
+    )
     url = any_s3_url()
     processing_assets_model_mock.return_value.get.return_value = ProcessingAssetsModelBase(
         hash_key=hash_key,
-        range_key=f"{ProcessingAssetType.DATA.value}#0",
+        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
         url=url,
         multihash=expected_hex_multihash,
     )
@@ -191,7 +194,7 @@ def should_save_staging_access_validation_results(
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
 
     array_index = "1"
 
@@ -208,10 +211,10 @@ def should_save_staging_access_validation_results(
 
     def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
         assert given_hash_key == hash_key
-        assert range_key == f"{ProcessingAssetType.DATA.value}#{array_index}"
+        assert range_key == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{array_index}"
         return ProcessingAssetsModelBase(
             hash_key=given_hash_key,
-            range_key="{ProcessingAssetType.DATA.value}#1",
+            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
             url=s3_url,
             multihash=any_hex_multihash(),
         )

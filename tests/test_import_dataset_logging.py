@@ -9,6 +9,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.error_response_keys import ERROR_KEY
 from backend.import_dataset.task import EVENT_KEY, lambda_handler
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_s3_url
@@ -77,7 +78,10 @@ class TestLogging:
         # Given
         with Dataset() as dataset:
             version_id = any_dataset_version_id()
-            asset_id = f"DATASET#{dataset.dataset_id}#VERSION#{version_id}"
+            asset_id = (
+                f"{DATASET_ID_PREFIX}{dataset.dataset_id}"
+                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+            )
             head_object_mock.return_value = {"ETag": any_etag()}
 
             with ProcessingAsset(

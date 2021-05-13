@@ -14,6 +14,7 @@ from smart_open import smart_open  # type: ignore[import]
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.import_dataset.task import lambda_handler
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.resources import ResourceName
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
@@ -135,7 +136,10 @@ def should_batch_copy_files_to_storage(
         f"{original_prefix}/{root_metadata_filename}",
     ) as root_metadata_s3_object, Dataset() as dataset:
         version_id = any_dataset_version_id()
-        asset_id = f"DATASET#{dataset.dataset_id}#VERSION#{version_id}"
+        asset_id = (
+            f"{DATASET_ID_PREFIX}{dataset.dataset_id}"
+            f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+        )
 
         with ProcessingAsset(asset_id=asset_id, url=root_metadata_s3_object.url), ProcessingAsset(
             asset_id=asset_id, url=child_metadata_s3_object.url

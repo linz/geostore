@@ -12,6 +12,7 @@ from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
+from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function_event_keys import (
     DATASET_ID_KEY,
@@ -50,7 +51,9 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
 
     # validate dataset exists
     try:
-        dataset = datasets_model_class.get(hash_key=f"DATASET#{body['id']}", consistent_read=True)
+        dataset = datasets_model_class.get(
+            hash_key=f"{DATASET_ID_PREFIX}{body['id']}", consistent_read=True
+        )
     except DoesNotExist as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' could not be found")
