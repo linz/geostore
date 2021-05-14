@@ -8,6 +8,7 @@ import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 from multihash import FUNCS, decode  # type: ignore[import]
 
+from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
 from ..processing_assets_model import processing_assets_model_with_meta
@@ -50,7 +51,7 @@ class ChecksumValidator:
         )
 
     def log_failure(self, content: JsonObject) -> None:
-        self.logger.error(dumps({"success": False, **content}))
+        self.logger.error(dumps({SUCCESS_KEY: False, **content}))
 
     def validate(self, hash_key: str, range_key: str) -> None:
 
@@ -59,7 +60,7 @@ class ChecksumValidator:
         except self.processing_assets_model.DoesNotExist:
             self.log_failure(
                 {
-                    ERROR_KEY: {"message": "Item does not exist"},
+                    ERROR_KEY: {MESSAGE_KEY: "Item does not exist"},
                     "parameters": {"hash_key": hash_key, "range_key": range_key},
                 }
             )
@@ -69,7 +70,7 @@ class ChecksumValidator:
             self.validate_url_multihash(item.url, item.multihash)
         except ChecksumMismatchError as error:
             content = {
-                "message": f"Checksum mismatch: expected {item.multihash[4:]},"
+                MESSAGE_KEY: f"Checksum mismatch: expected {item.multihash[4:]},"
                 f" got {error.actual_hex_digest}"
             }
             self.log_failure(content)
@@ -77,7 +78,7 @@ class ChecksumValidator:
                 item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
         else:
-            self.logger.info(dumps({"success": True, "message": ""}))
+            self.logger.info(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
@@ -91,7 +92,7 @@ class ChecksumValidator:
                 url,
                 Check.STAGING_ACCESS,
                 ValidationResult.FAILED,
-                details={"message": str(error)},
+                details={MESSAGE_KEY: str(error)},
             )
             raise
 

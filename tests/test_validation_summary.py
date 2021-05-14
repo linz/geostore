@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+from backend.api_keys import SUCCESS_KEY
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_summary.task import lambda_handler
@@ -32,4 +33,4 @@ def should_return_success_false_if_any_validation_results_are_unsuccessful(
         any_lambda_context(),
     )
 
-    assert response == {"success": False}
+    assert response == {SUCCESS_KEY: False}

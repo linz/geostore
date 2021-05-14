@@ -6,7 +6,16 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.content_iterator.task import MAX_ITERATION_SIZE, lambda_handler
+from backend.content_iterator.task import (
+    ASSETS_TABLE_NAME_KEY,
+    CONTENT_KEY,
+    FIRST_ITEM_KEY,
+    ITERATION_SIZE_KEY,
+    MAX_ITERATION_SIZE,
+    NEXT_ITEM_KEY,
+    RESULTS_TABLE_NAME_KEY,
+    lambda_handler,
+)
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
@@ -27,10 +36,10 @@ INITIAL_EVENT: Dict[str, Any] = {
 }
 
 SUBSEQUENT_EVENT: Dict[str, Any] = {
-    "content": {
-        "first_item": str(any_next_item_index()),
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": any_next_item_index(),
+    CONTENT_KEY: {
+        FIRST_ITEM_KEY: str(any_next_item_index()),
+        ITERATION_SIZE_KEY: MAX_ITERATION_SIZE,
+        NEXT_ITEM_KEY: any_next_item_index(),
     },
     DATASET_ID_KEY: any_dataset_id(),
     METADATA_URL_KEY: any_s3_url(),
@@ -59,9 +68,9 @@ def should_raise_exception_if_event_has_unknown_top_level_property() -> None:
 
 
 def should_raise_exception_if_content_is_missing_any_property(subtests: SubTests) -> None:
-    for property_name in ["first_item", "iteration_size", "next_item"]:
+    for property_name in [FIRST_ITEM_KEY, ITERATION_SIZE_KEY, NEXT_ITEM_KEY]:
         event = deepcopy(SUBSEQUENT_EVENT)
-        del event["content"][property_name]
+        del event[CONTENT_KEY][property_name]
         expected_message = f"'{property_name}' is a required property"
 
         with subtests.test(msg=property_name), raises(ValidationError, match=expected_message):
@@ -70,7 +79,7 @@ def should_raise_exception_if_content_is_missing_any_property(subtests: SubTests
 
 def should_raise_exception_if_content_has_unknown_property() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"][any_dictionary_key()] = 1
+    event[CONTENT_KEY][any_dictionary_key()] = 1
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -78,7 +87,7 @@ def should_raise_exception_if_content_has_unknown_property() -> None:
 
 def should_raise_exception_if_next_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = -1
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = -1
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -86,7 +95,7 @@ def should_raise_exception_if_next_item_is_negative() -> None:
 
 def should_raise_exception_if_next_item_is_zero() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = 0
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = 0
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -94,7 +103,7 @@ def should_raise_exception_if_next_item_is_zero() -> None:
 
 def should_raise_exception_if_iteration_size_is_not_positive() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["iteration_size"] = 0
+    event[CONTENT_KEY][ITERATION_SIZE_KEY] = 0
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -102,7 +111,7 @@ def should_raise_exception_if_iteration_size_is_not_positive() -> None:
 
 def should_raise_exception_if_iteration_size_is_more_than_production_iteration_size() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["iteration_size"] = MAX_ITERATION_SIZE + 1
+    event[CONTENT_KEY][ITERATION_SIZE_KEY] = MAX_ITERATION_SIZE + 1
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -110,7 +119,7 @@ def should_raise_exception_if_iteration_size_is_more_than_production_iteration_s
 
 def should_raise_exception_if_first_item_is_negative() -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["first_item"] = "-1"
+    event[CONTENT_KEY][FIRST_ITEM_KEY] = "-1"
 
     with raises(ValidationError):
         lambda_handler(event, any_lambda_context())
@@ -119,7 +128,7 @@ def should_raise_exception_if_first_item_is_negative() -> None:
 def should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_size() -> None:
     """Assumes iteration size is not 1"""
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["first_item"] = str(MAX_ITERATION_SIZE - 1)
+    event[CONTENT_KEY][FIRST_ITEM_KEY] = str(MAX_ITERATION_SIZE - 1)
 
     with raises(AssertionError):
         lambda_handler(event, any_lambda_context())
@@ -134,19 +143,19 @@ def should_return_zero_as_first_item_if_no_content(
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["first_item"] == "0", response
+    assert response[FIRST_ITEM_KEY] == "0", response
 
 
 @patch("backend.content_iterator.task.processing_assets_model_with_meta")
 def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     next_item_index = any_next_item_index()
-    event["content"]["next_item"] = next_item_index
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = next_item_index
     processing_assets_model_mock.return_value.count.return_value = any_item_count()
 
     response = lambda_handler(event, any_lambda_context())
 
-    assert response["first_item"] == str(next_item_index), response
+    assert response[FIRST_ITEM_KEY] == str(next_item_index), response
 
 
 @patch("backend.content_iterator.task.processing_assets_model_with_meta")
@@ -163,16 +172,16 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
     remaining_item_count = MAX_ITERATION_SIZE - 1
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = next_item_index
     processing_assets_model_mock.return_value.count.return_value = (
         next_item_index + remaining_item_count
     )
     expected_response = {
-        "first_item": str(next_item_index),
-        "iteration_size": remaining_item_count,
-        "next_item": -1,
-        "assets_table_name": assets_table_name,
-        "results_table_name": results_table_name,
+        FIRST_ITEM_KEY: str(next_item_index),
+        ITERATION_SIZE_KEY: remaining_item_count,
+        NEXT_ITEM_KEY: -1,
+        ASSETS_TABLE_NAME_KEY: assets_table_name,
+        RESULTS_TABLE_NAME_KEY: results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -194,16 +203,16 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
     remaining_item_count = MAX_ITERATION_SIZE
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = next_item_index
     processing_assets_model_mock.return_value.count.return_value = (
         next_item_index + remaining_item_count
     )
     expected_response = {
-        "first_item": str(next_item_index),
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": -1,
-        "assets_table_name": assets_table_name,
-        "results_table_name": results_table_name,
+        FIRST_ITEM_KEY: str(next_item_index),
+        ITERATION_SIZE_KEY: MAX_ITERATION_SIZE,
+        NEXT_ITEM_KEY: -1,
+        ASSETS_TABLE_NAME_KEY: assets_table_name,
+        RESULTS_TABLE_NAME_KEY: results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -225,16 +234,16 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     remaining_item_count = MAX_ITERATION_SIZE + 1
     next_item_index = any_next_item_index()
     event = deepcopy(SUBSEQUENT_EVENT)
-    event["content"]["next_item"] = next_item_index
+    event[CONTENT_KEY][NEXT_ITEM_KEY] = next_item_index
     processing_assets_model_mock.return_value.count.return_value = (
         next_item_index + remaining_item_count
     )
     expected_response = {
-        "first_item": str(next_item_index),
-        "iteration_size": MAX_ITERATION_SIZE,
-        "next_item": next_item_index + MAX_ITERATION_SIZE,
-        "assets_table_name": assets_table_name,
-        "results_table_name": results_table_name,
+        FIRST_ITEM_KEY: str(next_item_index),
+        ITERATION_SIZE_KEY: MAX_ITERATION_SIZE,
+        NEXT_ITEM_KEY: next_item_index + MAX_ITERATION_SIZE,
+        ASSETS_TABLE_NAME_KEY: assets_table_name,
+        RESULTS_TABLE_NAME_KEY: results_table_name,
     }
 
     response = lambda_handler(event, any_lambda_context())
@@ -264,4 +273,4 @@ def should_count_only_asset_files() -> None:
     response = lambda_handler(event, any_lambda_context())
 
     # Then the iteration size should be one
-    assert response["iteration_size"] == 1
+    assert response[ITERATION_SIZE_KEY] == 1

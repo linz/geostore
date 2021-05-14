@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
+from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check_stac_metadata.utils import S3_URL_PREFIX, STACDatasetValidator
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
@@ -51,7 +52,10 @@ def should_log_non_s3_url_prefix_validation() -> None:
     hash_key = f"DATASET#{any_dataset_id()}#VERSION#{any_dataset_version_id()}"
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
     expected_message = dumps(
-        {"success": False, "message": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"}
+        {
+            SUCCESS_KEY: False,
+            MESSAGE_KEY: f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
+        }
     )
 
     with patch.object(LOGGER, "error") as logger_mock, patch(
@@ -74,7 +78,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
 
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
 
-    expected_message = dumps({"success": False, "message": str(expected_error)})
+    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
 
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -94,7 +98,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
 
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
 
-    expected_message = dumps({"success": False, "message": expected_error.message})
+    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: expected_error.message})
 
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -114,7 +118,7 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     expected_error = JSONDecodeError(any_error_message(), "", 0)
     validate_mock.side_effect = expected_error
 
-    expected_message = dumps({"success": False, "message": str(expected_error)})
+    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
 
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"

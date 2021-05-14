@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
+from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
 from ..log import set_up_logging
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -70,15 +71,15 @@ class STACDatasetValidator:
                 metadata_url,
                 Check.NON_S3_URL,
                 ValidationResult.FAILED,
-                details={"message": error_message},
+                details={MESSAGE_KEY: error_message},
             )
-            LOGGER.error(dumps({"success": False, "message": error_message}))
+            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: error_message}))
             return
 
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(dumps({"success": False, "message": str(error)}))
+            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(error)}))
             return
 
         for index, metadata_file in enumerate(self.dataset_metadata):
@@ -110,7 +111,7 @@ class STACDatasetValidator:
                 url,
                 Check.JSON_SCHEMA,
                 ValidationResult.FAILED,
-                details={"message": str(error)},
+                details={MESSAGE_KEY: str(error)},
             )
             raise
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
@@ -137,7 +138,7 @@ class STACDatasetValidator:
                 url,
                 Check.STAGING_ACCESS,
                 ValidationResult.FAILED,
-                details={"message": str(error)},
+                details={MESSAGE_KEY: str(error)},
             )
             raise
         try:
@@ -146,7 +147,7 @@ class STACDatasetValidator:
             )
         except JSONDecodeError as error:
             self.validation_result_factory.save(
-                url, Check.JSON_PARSE, ValidationResult.FAILED, details={"message": str(error)}
+                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
             )
             raise
         return json_object
@@ -162,7 +163,7 @@ class STACDatasetValidator:
                         url,
                         Check.DUPLICATE_OBJECT_KEY,
                         ValidationResult.FAILED,
-                        details={"message": f"Found duplicate object name “{key}” in “{url}”"},
+                        details={MESSAGE_KEY: f"Found duplicate object name “{key}” in “{url}”"},
                     )
                 else:
                     result[key] = value

@@ -8,6 +8,7 @@ from pynamodb.exceptions import DoesNotExist
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from backend.error_response_keys import ERROR_KEY
@@ -33,8 +34,8 @@ class TestLogging:
         index = 0
         expected_log = dumps(
             {
-                "success": False,
-                ERROR_KEY: {"message": ProcessingAssetsModelBase.DoesNotExist.msg},
+                SUCCESS_KEY: False,
+                ERROR_KEY: {MESSAGE_KEY: ProcessingAssetsModelBase.DoesNotExist.msg},
                 "parameters": {
                     "hash_key": f"DATASET#{dataset_id}#VERSION#{version_id}",
                     "range_key": f"{ProcessingAssetType.DATA.value}#{index}",

@@ -15,8 +15,10 @@ from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.api_keys import STATUS_KEY
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.import_status.get import IMPORT_DATASET_KEY, Outcome
+from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.step_function_event_keys import (
@@ -187,8 +189,8 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "http_method": "POST",
-                            "body": {
+                            HTTP_METHOD_KEY: "POST",
+                            BODY_KEY: {
                                 "id": dataset.dataset_id,
                                 "metadata_url": catalog_metadata_file.url,
                             },
@@ -198,7 +200,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
+                    assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -207,7 +209,7 @@ class TestWithStagingBucket:
                     # Then poll for State Machine State
                     while (
                         execution := step_functions_client.describe_execution(
-                            executionArn=json_resp["body"][EXECUTION_ARN_KEY]
+                            executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
@@ -248,20 +250,20 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "status_code": HTTPStatus.OK,
-                "body": {
-                    STEP_FUNCTION_KEY: {"status": "Succeeded"},
-                    VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
-                    METADATA_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
-                    ASSET_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                STATUS_CODE_KEY: HTTPStatus.OK,
+                BODY_KEY: {
+                    STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
+                    VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
+                    METADATA_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
+                    ASSET_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
                 },
             }
             status_resp = lambda_client.invoke(
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "http_method": "GET",
-                        "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
+                        HTTP_METHOD_KEY: "GET",
+                        BODY_KEY: {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
             )
@@ -328,8 +330,8 @@ class TestWithStagingBucket:
                     FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                     Payload=json.dumps(
                         {
-                            "http_method": "POST",
-                            "body": {
+                            HTTP_METHOD_KEY: "POST",
+                            BODY_KEY: {
                                 "id": dataset.dataset_id,
                                 "metadata_url": root_metadata_file.url,
                             },
@@ -339,7 +341,7 @@ class TestWithStagingBucket:
                 json_resp = json.load(resp["Payload"])
 
                 with subtests.test(msg="Dataset Versions endpoint returns success"):
-                    assert json_resp.get("status_code") == HTTPStatus.CREATED, json_resp
+                    assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
                 with subtests.test(msg="Should complete Step Function successfully"):
 
@@ -348,7 +350,7 @@ class TestWithStagingBucket:
                     # Then poll for State Machine State
                     while (
                         execution := step_functions_client.describe_execution(
-                            executionArn=json_resp["body"][EXECUTION_ARN_KEY]
+                            executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
                         LOGGER.info("Polling for State Machine state %s", "." * 6)
@@ -383,20 +385,20 @@ class TestWithStagingBucket:
 
         with subtests.test(msg="Should report import status after success"):
             expected_response = {
-                "status_code": HTTPStatus.OK,
-                "body": {
-                    STEP_FUNCTION_KEY: {"status": "Succeeded"},
-                    VALIDATION_KEY: {"status": Outcome.PASSED.value, "errors": []},
-                    METADATA_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
-                    ASSET_UPLOAD_KEY: {"status": S3_BATCH_JOB_COMPLETED_STATE, "errors": []},
+                STATUS_CODE_KEY: HTTPStatus.OK,
+                BODY_KEY: {
+                    STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
+                    VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
+                    METADATA_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
+                    ASSET_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
                 },
             }
             status_resp = lambda_client.invoke(
                 FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "http_method": "GET",
-                        "body": {EXECUTION_ARN_KEY: execution["executionArn"]},
+                        HTTP_METHOD_KEY: "GET",
+                        BODY_KEY: {EXECUTION_ARN_KEY: execution["executionArn"]},
                     }
                 ).encode(),
             )
@@ -443,19 +445,19 @@ class TestWithStagingBucket:
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=json.dumps(
                     {
-                        "http_method": "POST",
-                        "body": {"id": dataset.dataset_id, "metadata_url": s3_metadata_file.url},
+                        HTTP_METHOD_KEY: "POST",
+                        BODY_KEY: {"id": dataset.dataset_id, "metadata_url": s3_metadata_file.url},
                     }
                 ).encode(),
             )
 
             response_payload = json.load(dataset_version_creation_response["Payload"])
             with subtests.test(msg="Dataset Versions endpoint status code"):
-                assert response_payload.get("status_code") == HTTPStatus.CREATED, response_payload
+                assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
 
             with subtests.test(msg="Step function result"):
                 # Then poll for State Machine State
-                state_machine_arn = response_payload["body"][EXECUTION_ARN_KEY]
+                state_machine_arn = response_payload[BODY_KEY][EXECUTION_ARN_KEY]
                 while (
                     execution := step_functions_client.describe_execution(
                         executionArn=state_machine_arn
@@ -467,7 +469,7 @@ class TestWithStagingBucket:
                 assert execution["status"] == "SUCCEEDED", execution
 
         # Then the files should not be copied
-        dataset_version = response_payload["body"]["dataset_version"]
+        dataset_version = response_payload[BODY_KEY]["dataset_version"]
         dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
         for filename in [metadata_filename, asset_filename]:
             with subtests.test(msg=filename), raises(AssertionError):

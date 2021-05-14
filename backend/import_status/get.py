@@ -8,6 +8,7 @@ from typing import Optional
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from ..api_keys import STATUS_KEY
 from ..api_responses import error_response, success_response
 from ..error_response_keys import ERROR_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -29,6 +30,7 @@ S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
+ERRORS_KEY = "errors"
 IMPORT_DATASET_KEY = "import_dataset"
 
 
@@ -86,15 +88,15 @@ def get_import_status(body: JsonObject) -> JsonObject:
 
     # Failed validation implies uploads will never happen
     if (
-        metadata_upload_status["status"] == Outcome.PENDING.value
-        and asset_upload_status["status"] == Outcome.PENDING.value
+        metadata_upload_status[STATUS_KEY] == Outcome.PENDING.value
+        and asset_upload_status[STATUS_KEY] == Outcome.PENDING.value
         and validation_outcome in [Outcome.FAILED, Outcome.SKIPPED]
     ):
-        metadata_upload_status["status"] = asset_upload_status["status"] = Outcome.SKIPPED.value
+        metadata_upload_status[STATUS_KEY] = asset_upload_status[STATUS_KEY] = Outcome.SKIPPED.value
 
     response_body = {
-        STEP_FUNCTION_KEY: {"status": step_function_status.title()},
-        VALIDATION_KEY: {"status": validation_outcome.value, "errors": validation_errors},
+        STEP_FUNCTION_KEY: {STATUS_KEY: step_function_status.title()},
+        VALIDATION_KEY: {STATUS_KEY: validation_outcome.value, ERRORS_KEY: validation_errors},
         METADATA_UPLOAD_KEY: metadata_upload_status,
         ASSET_UPLOAD_KEY: asset_upload_status,
     }
@@ -118,7 +120,7 @@ def get_validation_outcome(
 def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
     if s3_job_id := step_function_output.get(IMPORT_DATASET_KEY, {}).get(job_id_key):
         return get_s3_batch_copy_status(s3_job_id, LOGGER)
-    return {"status": Outcome.PENDING.value, "errors": []}
+    return {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []}
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
@@ -160,4 +162,4 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) 
 
     upload_errors = s3_batch_copy_resp["Job"].get("FailureReasons", [])
 
-    return {"status": s3_batch_copy_status, "errors": upload_errors}
+    return {STATUS_KEY: s3_batch_copy_status, ERRORS_KEY: upload_errors}

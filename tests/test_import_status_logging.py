@@ -4,11 +4,13 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
 
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY
 from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status, get_s3_batch_copy_status
 from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_account_id, any_arn_formatted_string
+from .general_generators import any_error_message
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
@@ -23,8 +25,8 @@ class TestLogging:
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
         event = {
-            "http_method": "GET",
-            "body": {EXECUTION_ARN_KEY: any_arn_formatted_string()},
+            HTTP_METHOD_KEY: "GET",
+            BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
         }
 
         expected_payload_log = dumps({"event": event})
@@ -51,7 +53,7 @@ class TestLogging:
     def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
-        error_message = "Some error message"
+        error_message = any_error_message()
         validate_schema_mock.side_effect = ValidationError(error_message)
         expected_log = dumps({ERROR_KEY: error_message})
 
@@ -60,8 +62,8 @@ class TestLogging:
             # When
             get_import_status(
                 {
-                    "http_method": "GET",
-                    "body": {},
+                    HTTP_METHOD_KEY: "GET",
+                    BODY_KEY: {},
                 }
             )
 
