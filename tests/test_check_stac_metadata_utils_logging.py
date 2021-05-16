@@ -13,12 +13,10 @@ from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     S3_URL_PREFIX,
-    STAC_ASSETS_KEY,
-    STAC_FILE_CHECKSUM_KEY,
-    STAC_HREF_KEY,
     STACDatasetValidator,
 )
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from backend.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
 from .general_generators import any_error_message, any_https_url, any_safe_filename

@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from backend.check_stac_metadata.utils import (
+from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_CATALOG_TYPE,
     STAC_COLLECTION_TYPE,

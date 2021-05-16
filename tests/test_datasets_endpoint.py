@@ -15,10 +15,10 @@ from smart_open import smart_open  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.check_stac_metadata.utils import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
+from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 
 from .aws_utils import (
     Dataset,

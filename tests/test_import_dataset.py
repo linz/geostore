@@ -11,17 +11,17 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.check_stac_metadata.utils import (
-    STAC_ASSETS_KEY,
-    STAC_FILE_CHECKSUM_KEY,
-    STAC_HREF_KEY,
-    STAC_LINKS_KEY,
-)
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.import_dataset.task import lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.resources import ResourceName
+from backend.stac_format import (
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+    STAC_LINKS_KEY,
+)
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (

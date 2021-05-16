@@ -17,16 +17,16 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.api_keys import STATUS_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.check_stac_metadata.utils import (
+from backend.datasets_model import DATASET_KEY_SEPARATOR
+from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
+from backend.parameter_store import ParameterName
+from backend.resources import ResourceName
+from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
 )
-from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
-from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     EXECUTION_ARN_KEY,

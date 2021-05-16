@@ -6,10 +6,10 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
-from ..check_stac_metadata.utils import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..datasets_model import datasets_model_with_meta
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
+from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..types import JsonObject
 
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"

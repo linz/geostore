@@ -19,6 +19,19 @@ from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    STACDatasetValidator,
+)
+from backend.models import (
+    CHECK_ID_PREFIX,
+    DATASET_ID_PREFIX,
+    DB_KEY_SEPARATOR,
+    URL_ID_PREFIX,
+    VERSION_ID_PREFIX,
+)
+from backend.parameter_store import ParameterName, get_param
+from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from backend.resources import ResourceName
+from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_COLLECTION_TYPE,
     STAC_DESCRIPTION_KEY,
@@ -34,18 +47,7 @@ from backend.check_stac_metadata.utils import (
     STAC_LINKS_KEY,
     STAC_TYPE_KEY,
     STAC_VERSION_KEY,
-    STACDatasetValidator,
 )
-from backend.models import (
-    CHECK_ID_PREFIX,
-    DATASET_ID_PREFIX,
-    DB_KEY_SEPARATOR,
-    URL_ID_PREFIX,
-    VERSION_ID_PREFIX,
-)
-from backend.parameter_store import ParameterName, get_param
-from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.resources import ResourceName
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
