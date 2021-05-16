@@ -15,6 +15,7 @@ from smart_open import smart_open  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from backend.check_stac_metadata.utils import STAC_DESCRIPTION_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
@@ -74,7 +75,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
                 assert catalog_json["title"] == dataset_title
 
             with subtests.test(msg="catalog description"):
-                assert catalog_json["description"] == dataset_description
+                assert catalog_json[STAC_DESCRIPTION_KEY] == dataset_description
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)

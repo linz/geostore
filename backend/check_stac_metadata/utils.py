@@ -23,10 +23,22 @@ from .stac_validators import (
 LOGGER = set_up_logging(__name__)
 
 STAC_ASSETS_KEY = "assets"
+STAC_DESCRIPTION_KEY = "description"
+STAC_EXTENT_BBOX_KEY = "bbox"
+STAC_EXTENT_KEY = "extent"
+STAC_EXTENT_SPATIAL_KEY = "spatial"
+STAC_EXTENT_TEMPORAL_INTERVAL_KEY = "interval"
+STAC_EXTENT_TEMPORAL_KEY = "temporal"
 STAC_FILE_CHECKSUM_KEY = "file:checksum"
+STAC_GEOMETRY_KEY = "geometry"
 STAC_HREF_KEY = "href"
+STAC_ID_KEY = "id"
+STAC_LICENSE_KEY = "license"
 STAC_LINKS_KEY = "links"
+STAC_PROPERTIES_DATETIME_KEY = "datetime"
+STAC_PROPERTIES_KEY = "properties"
 STAC_TYPE_KEY = "type"
+STAC_VERSION_KEY = "stac_version"
 
 STAC_COLLECTION_TYPE = "Collection"
 STAC_ITEM_TYPE = "Feature"
