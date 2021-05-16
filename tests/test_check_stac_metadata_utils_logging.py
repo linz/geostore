@@ -13,6 +13,9 @@ from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     S3_URL_PREFIX,
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
     STACDatasetValidator,
 )
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
@@ -36,10 +39,10 @@ def should_log_assets() -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     asset_url = f"{base_url}/{any_safe_filename()}"
     asset_multihash = any_hex_multihash()
-    stac_object["assets"] = {
+    stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
-            "href": asset_url,
-            "file:checksum": asset_multihash,
+            STAC_HREF_KEY: asset_url,
+            STAC_FILE_CHECKSUM_KEY: asset_multihash,
         },
     }
 

@@ -19,6 +19,11 @@ from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+    STAC_LINKS_KEY,
+    STAC_TYPE_KEY,
     STACDatasetValidator,
 )
 from backend.models import (
@@ -120,9 +125,9 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     asset_name = "name"
     metadata = (
         "{"
-        '"assets": {'
-        f'"{asset_name}": {{"href": "s3://bucket/foo", "file:checksum": ""}},'
-        f'"{asset_name}": {{"href": "s3://bucket/bar", "file:checksum": ""}}'
+        f'"{STAC_ASSETS_KEY}": {{'
+        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/foo", "{STAC_FILE_CHECKSUM_KEY}": ""}},'
+        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
         "},"
         '"description": "any description",'
         ' "extent": {'
@@ -131,9 +136,9 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         "},"
         f' "id": "{any_dataset_id()}",'
         ' "license": "MIT",'
-        ' "links": [],'
+        f' "{STAC_LINKS_KEY}": [],'
         f' "stac_version": "{STAC_VERSION}",'
-        ' "type": "Collection"'
+        f' "{STAC_TYPE_KEY}": "Collection"'
         "}"
     )
     metadata_url = any_s3_url()
@@ -213,9 +218,9 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                "links": [
-                    {"href": f"{base_url}{valid_child_key}", "rel": "child"},
-                    {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: f"{base_url}{valid_child_key}", "rel": "child"},
+                    {STAC_HREF_KEY: f"{base_url}{invalid_child_key}", "rel": "child"},
                 ],
             }
         ),
@@ -311,14 +316,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         )
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-        metadata_stac_object["assets"] = {
+        metadata_stac_object[STAC_ASSETS_KEY] = {
             any_asset_name(): {
-                "href": first_asset_s3_object.url,
-                "file:checksum": first_asset_multihash,
+                STAC_HREF_KEY: first_asset_s3_object.url,
+                STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
             },
             any_asset_name(): {
-                "href": second_asset_s3_object.url,
-                "file:checksum": second_asset_multihash,
+                STAC_HREF_KEY: second_asset_s3_object.url,
+                STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
             },
         }
         metadata_content = dumps(metadata_stac_object).encode()
@@ -412,7 +417,7 @@ def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> Non
         MINIMAL_VALID_STAC_CATALOG_OBJECT,
     ]:
         for key in stac_object:
-            with subtests.test(msg=f"{stac_object['type']} {key}"):
+            with subtests.test(msg=f"{stac_object[STAC_TYPE_KEY]} {key}"):
                 stac_object = deepcopy(stac_object)
                 stac_object.pop(key)
 
@@ -433,7 +438,7 @@ def should_validate_metadata_files_recursively() -> None:
     child_url = f"{base_url}/{any_safe_filename()}"
 
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    stac_object["links"].append({"href": child_url, "rel": "child"})
+    stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, "rel": "child"})
     url_reader = MockJSONURLReader(
         {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
     )
@@ -454,21 +459,21 @@ def should_only_validate_each_file_once() -> None:
     leaf_url = f"{base_url}/{any_safe_filename()}"
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
-    root_stac_object["links"] = [
-        {"href": child_url, "rel": "child"},
-        {"href": root_url, "rel": "root"},
-        {"href": root_url, "rel": "self"},
+    root_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: child_url, "rel": "child"},
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: root_url, "rel": "self"},
     ]
     child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    child_stac_object["links"] = [
-        {"href": leaf_url, "rel": "child"},
-        {"href": root_url, "rel": "root"},
-        {"href": child_filename, "rel": "self"},
+    child_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: leaf_url, "rel": "child"},
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: child_filename, "rel": "self"},
     ]
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
-    leaf_stac_object["links"] = [
-        {"href": root_url, "rel": "root"},
-        {"href": leaf_url, "rel": "self"},
+    leaf_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: leaf_url, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
         {root_url: root_stac_object, child_url: child_stac_object, leaf_url: leaf_stac_object},
@@ -491,11 +496,14 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_filename = any_safe_filename()
     second_asset_url = f"{base_url}/{second_asset_filename}"
     second_asset_multihash = any_hex_multihash()
-    stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
+    stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
-            "href": second_asset_filename,
-            "file:checksum": second_asset_multihash,
+            STAC_HREF_KEY: first_asset_url,
+            STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
+        },
+        any_asset_name(): {
+            STAC_HREF_KEY: second_asset_filename,
+            STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },
     }
     expected_assets = [
@@ -532,11 +540,14 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     first_asset_multihash = any_hex_multihash()
     second_asset_filename = any_safe_filename()
     second_asset_multihash = any_hex_multihash()
-    stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
+    stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
-            "href": second_asset_filename,
-            "file:checksum": second_asset_multihash,
+            STAC_HREF_KEY: first_asset_url,
+            STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
+        },
+        any_asset_name(): {
+            STAC_HREF_KEY: second_asset_filename,
+            STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },
     }
     expected_assets = [

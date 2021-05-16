@@ -11,6 +11,12 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
+from backend.check_stac_metadata.utils import (
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+    STAC_LINKS_KEY,
+)
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.import_dataset.task import lambda_handler
@@ -106,10 +112,10 @@ def should_batch_copy_files_to_storage(
             initial_bytes=dumps(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         child_asset_name: {
-                            "href": child_asset_s3_object.url,
-                            "file:checksum": child_asset_multihash,
+                            STAC_HREF_KEY: child_asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: child_asset_multihash,
                         }
                     },
                 }
@@ -122,13 +128,13 @@ def should_batch_copy_files_to_storage(
             initial_bytes=dumps(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         root_asset_name: {
-                            "href": root_asset_s3_object.url,
-                            "file:checksum": root_asset_multihash,
+                            STAC_HREF_KEY: root_asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                         },
                     },
-                    "links": [{"href": child_metadata_s3_object.url, "rel": "child"}],
+                    STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_s3_object.url, "rel": "child"}],
                 }
             ).encode()
         ),
@@ -177,13 +183,13 @@ def should_batch_copy_files_to_storage(
                 expected_root_metadata = dumps(
                     {
                         **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                        "assets": {
+                        STAC_ASSETS_KEY: {
                             root_asset_name: {
-                                "href": root_asset_filename,
-                                "file:checksum": root_asset_multihash,
+                                STAC_HREF_KEY: root_asset_filename,
+                                STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                             },
                         },
-                        "links": [{"href": child_metadata_filename, "rel": "child"}],
+                        STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_filename, "rel": "child"}],
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open(
@@ -200,10 +206,10 @@ def should_batch_copy_files_to_storage(
                 expected_child_metadata = dumps(
                     {
                         **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                        "assets": {
+                        STAC_ASSETS_KEY: {
                             child_asset_name: {
-                                "href": child_asset_filename,
-                                "file:checksum": child_asset_multihash,
+                                STAC_HREF_KEY: child_asset_filename,
+                                STAC_FILE_CHECKSUM_KEY: child_asset_multihash,
                             }
                         },
                     }

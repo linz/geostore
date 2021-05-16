@@ -22,6 +22,12 @@ from .stac_validators import (
 
 LOGGER = set_up_logging(__name__)
 
+STAC_ASSETS_KEY = "assets"
+STAC_FILE_CHECKSUM_KEY = "file:checksum"
+STAC_HREF_KEY = "href"
+STAC_LINKS_KEY = "links"
+STAC_TYPE_KEY = "type"
+
 STAC_COLLECTION_TYPE = "Collection"
 STAC_ITEM_TYPE = "Feature"
 STAC_CATALOG_TYPE = "Catalog"
@@ -106,7 +112,7 @@ class STACDatasetValidator:
         self.traversed_urls.append(url)
         object_json = self.get_object(url)
 
-        stac_type = object_json["type"]
+        stac_type = object_json[STAC_TYPE_KEY]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
 
         try:
@@ -122,18 +128,18 @@ class STACDatasetValidator:
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
         self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})
 
-        for asset in object_json.get("assets", {}).values():
-            asset_url = maybe_convert_relative_url_to_absolute(asset["href"], url)
+        for asset in object_json.get(STAC_ASSETS_KEY, {}).values():
+            asset_url = maybe_convert_relative_url_to_absolute(asset[STAC_HREF_KEY], url)
 
             asset_dict = {
                 PROCESSING_ASSET_URL_KEY: asset_url,
-                PROCESSING_ASSET_MULTIHASH_KEY: asset["file:checksum"],
+                PROCESSING_ASSET_MULTIHASH_KEY: asset[STAC_FILE_CHECKSUM_KEY],
             }
             LOGGER.debug(dumps({PROCESSING_ASSET_ASSET_KEY: asset_dict}))
             self.dataset_assets.append(asset_dict)
 
-        for link_object in object_json["links"]:
-            next_url = maybe_convert_relative_url_to_absolute(link_object["href"], url)
+        for link_object in object_json[STAC_LINKS_KEY]:
+            next_url = maybe_convert_relative_url_to_absolute(link_object[STAC_HREF_KEY], url)
 
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
