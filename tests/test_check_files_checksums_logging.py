@@ -12,6 +12,7 @@ from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from backend.error_response_keys import ERROR_KEY
+from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 
@@ -37,8 +38,11 @@ class TestLogging:
                 SUCCESS_KEY: False,
                 ERROR_KEY: {MESSAGE_KEY: ProcessingAssetsModelBase.DoesNotExist.msg},
                 "parameters": {
-                    "hash_key": f"DATASET#{dataset_id}#VERSION#{version_id}",
-                    "range_key": f"{ProcessingAssetType.DATA.value}#{index}",
+                    "hash_key": (
+                        f"{DATASET_ID_PREFIX}{dataset_id}"
+                        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+                    ),
+                    "range_key": f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
                 },
             }
         )
@@ -48,7 +52,10 @@ class TestLogging:
             f"--dataset-id={dataset_id}",
             f"--version-id={version_id}",
             f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
-            f"--results-table-name={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}",  # pylint:disable=line-too-long
+            (
+                "--results-table-name"
+                f"={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}"
+            ),
             f"--first-item={index}",
         ]
 

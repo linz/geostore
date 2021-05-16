@@ -1,5 +1,6 @@
 from jsonschema import validate  # type: ignore[import]
 
+from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
@@ -59,9 +60,11 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     processing_assets_model = processing_assets_model_with_meta()
 
     asset_count = processing_assets_model.count(
-        hash_key=f"DATASET#{dataset_id}#VERSION#{version_id}",
+        hash_key=(
+            f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+        ),
         range_key_condition=processing_assets_model.sk.startswith(
-            f"{ProcessingAssetType.DATA.value}#"
+            f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
         ),
     )
 

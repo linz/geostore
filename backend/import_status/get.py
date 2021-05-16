@@ -13,6 +13,7 @@ from ..api_responses import error_response, success_response
 from ..error_response_keys import ERROR_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
+from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -124,7 +125,7 @@ def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> 
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
 
     errors = []
     validation_results_model = validation_results_model_with_meta()
@@ -134,7 +135,7 @@ def get_step_function_validation_results(dataset_id: str, version_id: str) -> Js
         hash_key=hash_key,
         range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
     ):
-        _, check_type, _, url = validation_item.sk.split("#", maxsplit=4)
+        _, check_type, _, url = validation_item.sk.split(DB_KEY_SEPARATOR, maxsplit=4)
         errors.append(
             {
                 "check": check_type,

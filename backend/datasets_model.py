@@ -7,6 +7,7 @@ from pynamodb.models import MetaModel, Model
 from ulid import ULID, new
 
 from .clock import now
+from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from .parameter_store import ParameterName, get_param
 
 
@@ -46,7 +47,7 @@ class DatasetsModelBase(Model):
     id = UnicodeAttribute(
         hash_key=True,
         attr_name="pk",
-        default_for_new=lambda: f"DATASET#{human_readable_ulid(new())}",
+        default_for_new=lambda: f"{DATASET_ID_PREFIX}{human_readable_ulid(new())}",
     )
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)
@@ -63,7 +64,7 @@ class DatasetsModelBase(Model):
     @property
     def dataset_id(self) -> str:
         """Dataset ID value."""
-        return str(self.id).split("#")[1]
+        return str(self.id).split(DB_KEY_SEPARATOR)[1]
 
     @property
     def dataset_prefix(self) -> str:

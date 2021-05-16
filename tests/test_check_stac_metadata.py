@@ -17,6 +17,13 @@ from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import STACDatasetValidator
+from backend.models import (
+    CHECK_ID_PREFIX,
+    DATASET_ID_PREFIX,
+    DB_KEY_SEPARATOR,
+    URL_ID_PREFIX,
+    VERSION_ID_PREFIX,
+)
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.resources import ResourceName
@@ -91,7 +98,7 @@ def should_save_non_s3_url_validation_results(
             any_lambda_context(),
         )
 
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
     assert validation_results_factory_mock.mock_calls == [
         call(hash_key, validation_results_table_name),
         call().save(
@@ -175,7 +182,7 @@ def should_save_staging_access_validation_results(
         any_lambda_context(),
     )
 
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
     assert validation_results_factory_mock.mock_calls == [
         call(hash_key, validation_results_table_name),
         call().save(
@@ -230,13 +237,16 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             any_lambda_context(),
         )
 
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
     validation_results_model = validation_results_model_with_meta()
     with subtests.test(msg="Root validation results"):
         assert (
             validation_results_model.get(
                 hash_key=hash_key,
-                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{root_s3_object.url}",
+                range_key=(
+                    f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                    f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{root_s3_object.url}"
+                ),
                 consistent_read=True,
             ).result
             == ValidationResult.PASSED.value
@@ -246,7 +256,10 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         assert (
             validation_results_model.get(
                 hash_key=hash_key,
-                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{valid_child_s3_object.url}",
+                range_key=(
+                    f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                    f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{valid_child_s3_object.url}"
+                ),
                 consistent_read=True,
             ).result
             == ValidationResult.PASSED.value
@@ -256,7 +269,10 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         assert (
             validation_results_model.get(
                 hash_key=hash_key,
-                range_key=f"CHECK#{Check.JSON_SCHEMA.value}#URL#{invalid_child_s3_object.url}",
+                range_key=(
+                    f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                    f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{invalid_child_s3_object.url}"
+                ),
                 consistent_read=True,
             ).result
             == ValidationResult.FAILED.value
@@ -286,7 +302,9 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
-        expected_hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+        expected_hash_key = (
+            f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+        )
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
         metadata_stac_object["assets"] = {
@@ -311,13 +329,13 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_asset_items = [
                 processing_assets_model(
                     hash_key=expected_hash_key,
-                    range_key=f"{ProcessingAssetType.DATA.value}#0",
+                    range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
                     url=first_asset_s3_object.url,
                     multihash=first_asset_multihash,
                 ),
                 processing_assets_model(
                     hash_key=expected_hash_key,
-                    range_key=f"{ProcessingAssetType.DATA.value}#1",
+                    range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
                     url=second_asset_s3_object.url,
                     multihash=second_asset_multihash,
                 ),
@@ -326,7 +344,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             expected_metadata_items = [
                 processing_assets_model(
                     hash_key=expected_hash_key,
-                    range_key=f"{ProcessingAssetType.METADATA.value}#0",
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                     url=metadata_s3_object.url,
                 ),
             ]
@@ -343,7 +361,9 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             # Then
             actual_items = processing_assets_model.query(
                 expected_hash_key,
-                processing_assets_model.sk.startswith(f"{ProcessingAssetType.DATA.value}#"),
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
+                ),
             )
             for actual_item, expected_item in zip(actual_items, expected_asset_items):
                 with subtests.test():
@@ -351,7 +371,9 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 
             actual_items = processing_assets_model.query(
                 expected_hash_key,
-                processing_assets_model.sk.startswith(f"{ProcessingAssetType.METADATA.value}#"),
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+                ),
             )
             for actual_item, expected_item in zip(actual_items, expected_metadata_items):
                 with subtests.test():

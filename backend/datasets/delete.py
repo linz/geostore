@@ -7,6 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
+from ..models import DATASET_ID_PREFIX
 from ..resources import ResourceName
 from ..types import JsonObject
 
@@ -29,7 +30,9 @@ def delete_dataset(body: JsonObject) -> JsonObject:
     # get dataset to delete
     dataset_id = body["id"]
     try:
-        dataset = datasets_model_class.get(hash_key=f"DATASET#{dataset_id}", consistent_read=True)
+        dataset = datasets_model_class.get(
+            hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
+        )
     except DoesNotExist:
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' does not exist")
 

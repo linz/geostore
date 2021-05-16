@@ -14,6 +14,7 @@ from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
+from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..resources import ResourceName
@@ -77,7 +78,7 @@ class Importer:
         self.version_id = version_id
         self.source_bucket_name = source_bucket_name
         dataset = datasets_model_with_meta().get(
-            hash_key=f"DATASET#{self.dataset_id}", consistent_read=True
+            hash_key=f"{DATASET_ID_PREFIX}{self.dataset_id}", consistent_read=True
         )
         self.dataset_prefix = dataset.dataset_prefix
 
@@ -89,9 +90,12 @@ class Importer:
             processing_assets_model = processing_assets_model_with_meta()
 
             for item in processing_assets_model.query(
-                f"DATASET#{self.dataset_id}#VERSION#{self.version_id}",
+                (
+                    f"{DATASET_ID_PREFIX}{self.dataset_id}"
+                    f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{self.version_id}"
+                ),
                 range_key_condition=processing_assets_model.sk.startswith(
-                    f"{processing_asset_type.value}#"
+                    f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
                 ),
             ):
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))

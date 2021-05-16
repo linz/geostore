@@ -315,9 +315,7 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "links": [
-                        {"href": f"{child_metadata_file.url}", "rel": "child"},
-                    ],
+                    "links": [{"href": child_metadata_file.url, "rel": "child"}],
                 }
             ),
             bucket_name=self.staging_bucket_name,

@@ -10,6 +10,7 @@ from jsonschema import ValidationError  # type: ignore[import]
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
 from ..log import set_up_logging
+from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
@@ -85,14 +86,14 @@ class STACDatasetValidator:
         for index, metadata_file in enumerate(self.dataset_metadata):
             self.processing_assets_model(
                 hash_key=hash_key,
-                range_key=f"{ProcessingAssetType.METADATA.value}#{index}",
+                range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}{index}",
                 url=metadata_file["url"],
             ).save()
 
         for index, asset in enumerate(self.dataset_assets):
             self.processing_assets_model(
                 hash_key=hash_key,
-                range_key=f"{ProcessingAssetType.DATA.value}#{index}",
+                range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
                 url=asset["url"],
                 multihash=asset["multihash"],
             ).save()

@@ -5,6 +5,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..log import set_up_logging
+from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
@@ -33,7 +34,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     validation_results_model = validation_results_model_with_meta()
     success = not bool(
         validation_results_model.validation_outcome_index.count(  # pylint: disable=no-member
-            f"DATASET#{event['dataset_id']}#VERSION#{event['version_id']}",
+            (
+                f"{DATASET_ID_PREFIX}{event['dataset_id']}"
+                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
+            ),
             range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
             limit=1,
         )

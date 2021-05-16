@@ -21,6 +21,7 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from backend.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
@@ -127,7 +128,7 @@ class Dataset:
 
         datasets_model_class = datasets_model_with_meta()
         self._item = datasets_model_class(
-            id=f"DATASET#{dataset_id}",
+            id=f"{DATASET_ID_PREFIX}{dataset_id}",
             title=title,
             created_at=any_past_datetime(),
             updated_at=any_past_datetime(),
@@ -160,7 +161,7 @@ class ProcessingAsset:
         processing_assets_model = processing_assets_model_with_meta()
         self._item = processing_assets_model(
             hash_key=asset_id,
-            range_key=f"{prefix}_ITEM_INDEX#{self.index}",
+            range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
             url=url,
             multihash=multihash,
         )
@@ -193,7 +194,7 @@ class ValidationItem:
         )
         self._item = validation_results_model(
             pk=asset_id,
-            sk=f"CHECK#{check}#URL#{url}",
+            sk=f"{CHECK_ID_PREFIX}{check}{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{url}",
             result=result.value,
             details=details,
         )
