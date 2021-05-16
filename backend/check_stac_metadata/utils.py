@@ -37,6 +37,7 @@ STAC_LICENSE_KEY = "license"
 STAC_LINKS_KEY = "links"
 STAC_PROPERTIES_DATETIME_KEY = "datetime"
 STAC_PROPERTIES_KEY = "properties"
+STAC_TITLE_KEY = "title"
 STAC_TYPE_KEY = "type"
 STAC_VERSION_KEY = "stac_version"
 

@@ -6,6 +6,7 @@ from jsonschema import ValidationError, validate  # type: ignore[import]
 from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
 
 from ..api_responses import error_response, success_response
+from ..check_stac_metadata.utils import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..datasets_model import datasets_model_with_meta
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
@@ -46,9 +47,11 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # create dataset catalog
     dataset_catalog = Catalog(
-        id=dataset.dataset_id,
-        description=body["description"],
-        title=body["title"],
+        **{
+            STAC_ID_KEY: dataset.dataset_id,
+            STAC_DESCRIPTION_KEY: body["description"],
+            STAC_TITLE_KEY: body["title"],
+        },
         catalog_type=CatalogType.SELF_CONTAINED,
     )
     dataset_catalog.normalize_hrefs(
