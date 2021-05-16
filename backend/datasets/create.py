@@ -37,11 +37,12 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(hash_key=body["title"]):
-        return error_response(HTTPStatus.CONFLICT, f"dataset '{body['title']}' already exists")
+    dataset_title = body["title"]
+    if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
+        return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 
     # create dataset
-    dataset = datasets_model_class(title=body["title"])
+    dataset = datasets_model_class(title=dataset_title)
     dataset.save()
     dataset.refresh(consistent_read=True)
 
@@ -50,7 +51,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
         **{
             STAC_ID_KEY: dataset.dataset_id,
             STAC_DESCRIPTION_KEY: body["description"],
-            STAC_TITLE_KEY: body["title"],
+            STAC_TITLE_KEY: dataset_title,
         },
         catalog_type=CatalogType.SELF_CONTAINED,
     )
