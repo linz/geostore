@@ -8,7 +8,13 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.check_stac_metadata.utils import S3_URL_PREFIX, STACDatasetValidator
+from backend.check_stac_metadata.utils import (
+    PROCESSING_ASSET_ASSET_KEY,
+    PROCESSING_ASSET_MULTIHASH_KEY,
+    PROCESSING_ASSET_URL_KEY,
+    S3_URL_PREFIX,
+    STACDatasetValidator,
+)
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
@@ -38,7 +44,14 @@ def should_log_assets() -> None:
     }
 
     url_reader = MockJSONURLReader({metadata_url: stac_object})
-    expected_message = dumps({"asset": {"url": asset_url, "multihash": asset_multihash}})
+    expected_message = dumps(
+        {
+            PROCESSING_ASSET_ASSET_KEY: {
+                PROCESSING_ASSET_URL_KEY: asset_url,
+                PROCESSING_ASSET_MULTIHASH_KEY: asset_multihash,
+            }
+        }
+    )
 
     with patch.object(LOGGER, "debug") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"

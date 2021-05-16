@@ -11,7 +11,15 @@ from backend.api_keys import MESSAGE_KEY, STATUS_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
-from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
+from backend.import_status.get import (
+    CHECK_KEY,
+    DETAILS_KEY,
+    ERRORS_KEY,
+    IMPORT_DATASET_KEY,
+    RESULT_KEY,
+    URL_KEY,
+    Outcome,
+)
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
@@ -108,10 +116,10 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
                 STATUS_KEY: Outcome.FAILED.value,
                 ERRORS_KEY: [
                     {
-                        "check": check,
-                        "details": error_details,
-                        "result": ValidationResult.FAILED.value,
-                        "url": url,
+                        CHECK_KEY: check,
+                        DETAILS_KEY: error_details,
+                        RESULT_KEY: ValidationResult.FAILED.value,
+                        URL_KEY: url,
                     }
                 ],
             },
@@ -254,7 +262,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
         ),
         "output": json.dumps({}),
     }
-    validation_error = {"result": ValidationResult.FAILED.value}
+    validation_error = {RESULT_KEY: ValidationResult.FAILED.value}
     get_step_function_validation_results_mock.return_value = [validation_error]
     expected_response = {
         STATUS_CODE_KEY: HTTPStatus.OK,

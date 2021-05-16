@@ -31,8 +31,12 @@ S3CONTROL_CLIENT = boto3.client("s3control")
 STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
+CHECK_KEY = "check"
+DETAILS_KEY = "details"
 ERRORS_KEY = "errors"
 IMPORT_DATASET_KEY = "import_dataset"
+RESULT_KEY = "result"
+URL_KEY = "url"
 
 
 class Outcome(Enum):
@@ -138,10 +142,10 @@ def get_step_function_validation_results(dataset_id: str, version_id: str) -> Js
         _, check_type, _, url = validation_item.sk.split(DB_KEY_SEPARATOR, maxsplit=4)
         errors.append(
             {
-                "check": check_type,
-                "result": validation_item.result,
-                "url": url,
-                "details": validation_item.details.attribute_values,
+                CHECK_KEY: check_type,
+                RESULT_KEY: validation_item.result,
+                URL_KEY: url,
+                DETAILS_KEY: validation_item.details.attribute_values,
             }
         )
 

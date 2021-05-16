@@ -41,6 +41,10 @@ STAC_TYPE_VALIDATION_MAP: Dict[
 
 S3_URL_PREFIX = "s3://"
 
+PROCESSING_ASSET_ASSET_KEY = "asset"
+PROCESSING_ASSET_MULTIHASH_KEY = "multihash"
+PROCESSING_ASSET_URL_KEY = "url"
+
 
 @lru_cache
 def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
@@ -87,15 +91,15 @@ class STACDatasetValidator:
             self.processing_assets_model(
                 hash_key=hash_key,
                 range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}{index}",
-                url=metadata_file["url"],
+                url=metadata_file[PROCESSING_ASSET_URL_KEY],
             ).save()
 
         for index, asset in enumerate(self.dataset_assets):
             self.processing_assets_model(
                 hash_key=hash_key,
                 range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
-                url=asset["url"],
-                multihash=asset["multihash"],
+                url=asset[PROCESSING_ASSET_URL_KEY],
+                multihash=asset[PROCESSING_ASSET_MULTIHASH_KEY],
             ).save()
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
@@ -116,13 +120,16 @@ class STACDatasetValidator:
             )
             raise
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
-        self.dataset_metadata.append({"url": url})
+        self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})
 
         for asset in object_json.get("assets", {}).values():
             asset_url = maybe_convert_relative_url_to_absolute(asset["href"], url)
 
-            asset_dict = {"url": asset_url, "multihash": asset["file:checksum"]}
-            LOGGER.debug(dumps({"asset": asset_dict}))
+            asset_dict = {
+                PROCESSING_ASSET_URL_KEY: asset_url,
+                PROCESSING_ASSET_MULTIHASH_KEY: asset["file:checksum"],
+            }
+            LOGGER.debug(dumps({PROCESSING_ASSET_ASSET_KEY: asset_dict}))
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json["links"]:

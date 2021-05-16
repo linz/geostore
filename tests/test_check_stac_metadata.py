@@ -16,7 +16,11 @@ from backend.api_keys import MESSAGE_KEY
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
-from backend.check_stac_metadata.utils import STACDatasetValidator
+from backend.check_stac_metadata.utils import (
+    PROCESSING_ASSET_MULTIHASH_KEY,
+    PROCESSING_ASSET_URL_KEY,
+    STACDatasetValidator,
+)
 from backend.models import (
     CHECK_ID_PREFIX,
     DATASET_ID_PREFIX,
@@ -495,10 +499,16 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
         },
     }
     expected_assets = [
-        {"multihash": first_asset_multihash, "url": first_asset_url},
-        {"multihash": second_asset_multihash, "url": second_asset_url},
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: first_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: first_asset_url,
+        },
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: second_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: second_asset_url,
+        },
     ]
-    expected_metadata = [{"url": metadata_url}]
+    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -530,10 +540,16 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         },
     }
     expected_assets = [
-        {"multihash": first_asset_multihash, "url": first_asset_url},
-        {"multihash": second_asset_multihash, "url": f"{base_url}/{second_asset_filename}"},
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: first_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: first_asset_url,
+        },
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: second_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: f"{base_url}/{second_asset_filename}",
+        },
     ]
-    expected_metadata = [{"url": metadata_url}]
+    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -573,4 +589,4 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    return sorted(assets, key=lambda entry: entry["url"])
+    return sorted(assets, key=lambda entry: entry[PROCESSING_ASSET_URL_KEY])
