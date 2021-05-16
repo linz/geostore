@@ -20,10 +20,20 @@ from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     STAC_ASSETS_KEY,
+    STAC_COLLECTION_TYPE,
+    STAC_DESCRIPTION_KEY,
+    STAC_EXTENT_BBOX_KEY,
+    STAC_EXTENT_KEY,
+    STAC_EXTENT_SPATIAL_KEY,
+    STAC_EXTENT_TEMPORAL_INTERVAL_KEY,
+    STAC_EXTENT_TEMPORAL_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
+    STAC_ID_KEY,
+    STAC_LICENSE_KEY,
     STAC_LINKS_KEY,
     STAC_TYPE_KEY,
+    STAC_VERSION_KEY,
     STACDatasetValidator,
 )
 from backend.models import (
@@ -129,16 +139,17 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/foo", "{STAC_FILE_CHECKSUM_KEY}": ""}},'
         f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
         "},"
-        '"description": "any description",'
-        ' "extent": {'
-        '"spatial": {"bbox": [[-180, -90, 180, 90]]},'
-        ' "temporal": {"interval": [["2000-01-01T00:00:00+00:00", null]]}'
+        f'"{STAC_DESCRIPTION_KEY}": "any description",'
+        f' "{STAC_EXTENT_KEY}": {{'
+        f'"{STAC_EXTENT_SPATIAL_KEY}": {{"{STAC_EXTENT_BBOX_KEY}": [[-180, -90, 180, 90]]}},'
+        f' "{STAC_EXTENT_TEMPORAL_KEY}":'
+        f' {{"{STAC_EXTENT_TEMPORAL_INTERVAL_KEY}": [["2000-01-01T00:00:00+00:00", null]]}}'
         "},"
-        f' "id": "{any_dataset_id()}",'
-        ' "license": "MIT",'
+        f' "{STAC_ID_KEY}": "{any_dataset_id()}",'
+        f' "{STAC_LICENSE_KEY}": "MIT",'
         f' "{STAC_LINKS_KEY}": [],'
-        f' "stac_version": "{STAC_VERSION}",'
-        f' "{STAC_TYPE_KEY}": "Collection"'
+        f' "{STAC_VERSION_KEY}": "{STAC_VERSION}",'
+        f' "{STAC_TYPE_KEY}": "{STAC_COLLECTION_TYPE}"'
         "}"
     )
     metadata_url = any_s3_url()
