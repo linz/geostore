@@ -16,7 +16,11 @@ from backend.api_keys import MESSAGE_KEY
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
-from backend.check_stac_metadata.utils import STACDatasetValidator
+from backend.check_stac_metadata.utils import (
+    PROCESSING_ASSET_MULTIHASH_KEY,
+    PROCESSING_ASSET_URL_KEY,
+    STACDatasetValidator,
+)
 from backend.models import (
     CHECK_ID_PREFIX,
     DATASET_ID_PREFIX,
@@ -27,6 +31,23 @@ from backend.models import (
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.resources import ResourceName
+from backend.stac_format import (
+    STAC_ASSETS_KEY,
+    STAC_COLLECTION_TYPE,
+    STAC_DESCRIPTION_KEY,
+    STAC_EXTENT_BBOX_KEY,
+    STAC_EXTENT_KEY,
+    STAC_EXTENT_SPATIAL_KEY,
+    STAC_EXTENT_TEMPORAL_INTERVAL_KEY,
+    STAC_EXTENT_TEMPORAL_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+    STAC_ID_KEY,
+    STAC_LICENSE_KEY,
+    STAC_LINKS_KEY,
+    STAC_TYPE_KEY,
+    STAC_VERSION_KEY,
+)
 from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -116,20 +137,21 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     asset_name = "name"
     metadata = (
         "{"
-        '"assets": {'
-        f'"{asset_name}": {{"href": "s3://bucket/foo", "file:checksum": ""}},'
-        f'"{asset_name}": {{"href": "s3://bucket/bar", "file:checksum": ""}}'
+        f'"{STAC_ASSETS_KEY}": {{'
+        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/foo", "{STAC_FILE_CHECKSUM_KEY}": ""}},'
+        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
         "},"
-        '"description": "any description",'
-        ' "extent": {'
-        '"spatial": {"bbox": [[-180, -90, 180, 90]]},'
-        ' "temporal": {"interval": [["2000-01-01T00:00:00+00:00", null]]}'
+        f'"{STAC_DESCRIPTION_KEY}": "any description",'
+        f' "{STAC_EXTENT_KEY}": {{'
+        f'"{STAC_EXTENT_SPATIAL_KEY}": {{"{STAC_EXTENT_BBOX_KEY}": [[-180, -90, 180, 90]]}},'
+        f' "{STAC_EXTENT_TEMPORAL_KEY}":'
+        f' {{"{STAC_EXTENT_TEMPORAL_INTERVAL_KEY}": [["2000-01-01T00:00:00+00:00", null]]}}'
         "},"
-        f' "id": "{any_dataset_id()}",'
-        ' "license": "MIT",'
-        ' "links": [],'
-        f' "stac_version": "{STAC_VERSION}",'
-        ' "type": "Collection"'
+        f' "{STAC_ID_KEY}": "{any_dataset_id()}",'
+        f' "{STAC_LICENSE_KEY}": "MIT",'
+        f' "{STAC_LINKS_KEY}": [],'
+        f' "{STAC_VERSION_KEY}": "{STAC_VERSION}",'
+        f' "{STAC_TYPE_KEY}": "{STAC_COLLECTION_TYPE}"'
         "}"
     )
     metadata_url = any_s3_url()
@@ -209,9 +231,9 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                "links": [
-                    {"href": f"{base_url}{valid_child_key}", "rel": "child"},
-                    {"href": f"{base_url}{invalid_child_key}", "rel": "child"},
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: f"{base_url}{valid_child_key}", "rel": "child"},
+                    {STAC_HREF_KEY: f"{base_url}{invalid_child_key}", "rel": "child"},
                 ],
             }
         ),
@@ -307,14 +329,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         )
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-        metadata_stac_object["assets"] = {
+        metadata_stac_object[STAC_ASSETS_KEY] = {
             any_asset_name(): {
-                "href": first_asset_s3_object.url,
-                "file:checksum": first_asset_multihash,
+                STAC_HREF_KEY: first_asset_s3_object.url,
+                STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
             },
             any_asset_name(): {
-                "href": second_asset_s3_object.url,
-                "file:checksum": second_asset_multihash,
+                STAC_HREF_KEY: second_asset_s3_object.url,
+                STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
             },
         }
         metadata_content = dumps(metadata_stac_object).encode()
@@ -408,7 +430,7 @@ def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> Non
         MINIMAL_VALID_STAC_CATALOG_OBJECT,
     ]:
         for key in stac_object:
-            with subtests.test(msg=f"{stac_object['type']} {key}"):
+            with subtests.test(msg=f"{stac_object[STAC_TYPE_KEY]} {key}"):
                 stac_object = deepcopy(stac_object)
                 stac_object.pop(key)
 
@@ -429,7 +451,7 @@ def should_validate_metadata_files_recursively() -> None:
     child_url = f"{base_url}/{any_safe_filename()}"
 
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    stac_object["links"].append({"href": child_url, "rel": "child"})
+    stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, "rel": "child"})
     url_reader = MockJSONURLReader(
         {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
     )
@@ -450,21 +472,21 @@ def should_only_validate_each_file_once() -> None:
     leaf_url = f"{base_url}/{any_safe_filename()}"
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
-    root_stac_object["links"] = [
-        {"href": child_url, "rel": "child"},
-        {"href": root_url, "rel": "root"},
-        {"href": root_url, "rel": "self"},
+    root_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: child_url, "rel": "child"},
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: root_url, "rel": "self"},
     ]
     child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    child_stac_object["links"] = [
-        {"href": leaf_url, "rel": "child"},
-        {"href": root_url, "rel": "root"},
-        {"href": child_filename, "rel": "self"},
+    child_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: leaf_url, "rel": "child"},
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: child_filename, "rel": "self"},
     ]
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
-    leaf_stac_object["links"] = [
-        {"href": root_url, "rel": "root"},
-        {"href": leaf_url, "rel": "self"},
+    leaf_stac_object[STAC_LINKS_KEY] = [
+        {STAC_HREF_KEY: root_url, "rel": "root"},
+        {STAC_HREF_KEY: leaf_url, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
         {root_url: root_stac_object, child_url: child_stac_object, leaf_url: leaf_stac_object},
@@ -487,18 +509,27 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_filename = any_safe_filename()
     second_asset_url = f"{base_url}/{second_asset_filename}"
     second_asset_multihash = any_hex_multihash()
-    stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
+    stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
-            "href": second_asset_filename,
-            "file:checksum": second_asset_multihash,
+            STAC_HREF_KEY: first_asset_url,
+            STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
+        },
+        any_asset_name(): {
+            STAC_HREF_KEY: second_asset_filename,
+            STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },
     }
     expected_assets = [
-        {"multihash": first_asset_multihash, "url": first_asset_url},
-        {"multihash": second_asset_multihash, "url": second_asset_url},
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: first_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: first_asset_url,
+        },
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: second_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: second_asset_url,
+        },
     ]
-    expected_metadata = [{"url": metadata_url}]
+    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -522,18 +553,27 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     first_asset_multihash = any_hex_multihash()
     second_asset_filename = any_safe_filename()
     second_asset_multihash = any_hex_multihash()
-    stac_object["assets"] = {
-        any_asset_name(): {"href": first_asset_url, "file:checksum": first_asset_multihash},
+    stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
-            "href": second_asset_filename,
-            "file:checksum": second_asset_multihash,
+            STAC_HREF_KEY: first_asset_url,
+            STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
+        },
+        any_asset_name(): {
+            STAC_HREF_KEY: second_asset_filename,
+            STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },
     }
     expected_assets = [
-        {"multihash": first_asset_multihash, "url": first_asset_url},
-        {"multihash": second_asset_multihash, "url": f"{base_url}/{second_asset_filename}"},
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: first_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: first_asset_url,
+        },
+        {
+            PROCESSING_ASSET_MULTIHASH_KEY: second_asset_multihash,
+            PROCESSING_ASSET_URL_KEY: f"{base_url}/{second_asset_filename}",
+        },
     ]
-    expected_metadata = [{"url": metadata_url}]
+    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -573,4 +613,4 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    return sorted(assets, key=lambda entry: entry["url"])
+    return sorted(assets, key=lambda entry: entry[PROCESSING_ASSET_URL_KEY])

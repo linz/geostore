@@ -9,6 +9,7 @@ from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
+from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..types import JsonObject
 
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
@@ -36,19 +37,22 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(hash_key=body["title"]):
-        return error_response(HTTPStatus.CONFLICT, f"dataset '{body['title']}' already exists")
+    dataset_title = body["title"]
+    if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
+        return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 
     # create dataset
-    dataset = datasets_model_class(title=body["title"])
+    dataset = datasets_model_class(title=dataset_title)
     dataset.save()
     dataset.refresh(consistent_read=True)
 
     # create dataset catalog
     dataset_catalog = Catalog(
-        id=dataset.dataset_id,
-        description=body["description"],
-        title=body["title"],
+        **{
+            STAC_ID_KEY: dataset.dataset_id,
+            STAC_DESCRIPTION_KEY: body["description"],
+            STAC_TITLE_KEY: dataset_title,
+        },
         catalog_type=CatalogType.SELF_CONTAINED,
     )
     dataset_catalog.normalize_hrefs(

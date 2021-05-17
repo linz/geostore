@@ -21,6 +21,12 @@ from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.import_status.get import ERRORS_KEY, IMPORT_DATASET_KEY, Outcome
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
+from backend.stac_format import (
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+    STAC_LINKS_KEY,
+)
 from backend.step_function_event_keys import (
     ASSET_UPLOAD_KEY,
     EXECUTION_ARN_KEY,
@@ -131,10 +137,10 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                    "links": [
-                        {"href": collection_metadata_url, "rel": "child"},
-                        {"href": catalog_metadata_url, "rel": "root"},
-                        {"href": catalog_metadata_url, "rel": "self"},
+                    STAC_LINKS_KEY: [
+                        {STAC_HREF_KEY: collection_metadata_url, "rel": "child"},
+                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
+                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "self"},
                     ],
                 }
             ),
@@ -144,18 +150,18 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         any_asset_name(): {
-                            "href": second_asset_s3_object.url,
-                            "file:checksum": sha256_hex_digest_to_multihash(
+                            STAC_HREF_KEY: second_asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
                                 sha256(second_asset_contents).hexdigest()
                             ),
                         },
                     },
-                    "links": [
-                        {"href": item_metadata_url, "rel": "child"},
-                        {"href": catalog_metadata_url, "rel": "root"},
-                        {"href": collection_metadata_url, "rel": "self"},
+                    STAC_LINKS_KEY: [
+                        {STAC_HREF_KEY: item_metadata_url, "rel": "child"},
+                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
+                        {STAC_HREF_KEY: collection_metadata_url, "rel": "self"},
                     ],
                 }
             ),
@@ -165,17 +171,17 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         any_asset_name(): {
-                            "href": first_asset_s3_object.url,
-                            "file:checksum": sha256_hex_digest_to_multihash(
+                            STAC_HREF_KEY: first_asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
                                 sha256(first_asset_contents).hexdigest()
                             ),
                         },
                     },
-                    "links": [
-                        {"href": catalog_metadata_url, "rel": "root"},
-                        {"href": item_metadata_url, "rel": "self"},
+                    STAC_LINKS_KEY: [
+                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
+                        {STAC_HREF_KEY: item_metadata_url, "rel": "self"},
                     ],
                 }
             ),
@@ -299,10 +305,10 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         any_asset_name(): {
-                            "href": asset_s3_object.url,
-                            "file:checksum": sha256_hex_digest_to_multihash(
+                            STAC_HREF_KEY: asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
                                 sha256(asset_contents).hexdigest()
                             ),
                         },
@@ -315,7 +321,7 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "links": [{"href": child_metadata_file.url, "rel": "child"}],
+                    STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_file.url, "rel": "child"}],
                 }
             ),
             bucket_name=self.staging_bucket_name,
@@ -426,10 +432,10 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    "assets": {
+                    STAC_ASSETS_KEY: {
                         any_asset_name(): {
-                            "href": asset_s3_object.url,
-                            "file:checksum": any_hex_multihash(),
+                            STAC_HREF_KEY: asset_s3_object.url,
+                            STAC_FILE_CHECKSUM_KEY: any_hex_multihash(),
                         },
                     },
                 }

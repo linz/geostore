@@ -18,6 +18,7 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
+from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 
 from .aws_utils import (
     Dataset,
@@ -71,10 +72,10 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             catalog_json = load(new_root_metadata_file)
 
             with subtests.test(msg="catalog title"):
-                assert catalog_json["title"] == dataset_title
+                assert catalog_json[STAC_TITLE_KEY] == dataset_title
 
             with subtests.test(msg="catalog description"):
-                assert catalog_json["description"] == dataset_description
+                assert catalog_json[STAC_DESCRIPTION_KEY] == dataset_description
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)

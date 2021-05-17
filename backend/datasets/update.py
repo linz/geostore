@@ -27,16 +27,18 @@ def update_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    if datasets_model_class.datasets_title_idx.count(hash_key=body["title"]):
-        return error_response(HTTPStatus.CONFLICT, f"dataset '{body['title']}' already exists")
+    dataset_title = body["title"]
+    if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
+        return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 
     # get dataset to update
+    dataset_id = body["id"]
     try:
         dataset = datasets_model_class.get(
-            hash_key=f"{DATASET_ID_PREFIX}{body['id']}", consistent_read=True
+            hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
         )
     except DoesNotExist:
-        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' does not exist")
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' does not exist")
 
     # update dataset
     update_dataset_attributes(dataset, body)
