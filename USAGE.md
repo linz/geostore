@@ -1,6 +1,6 @@
-# Using the Geospatial Data Lake
+# Using the Geostore
 
-The purpose of GDL is to store geospatial datasets. This document should provide the technical
+The purpose of Geostore is to store geospatial datasets. This document should provide the technical
 know-how to create and maintain such datasets.
 
 The keywords "must", "must not", "required", "shall", "shall not", "should", "should not",
@@ -9,30 +9,30 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 
 # Prerequisites
 
-## Data Lake account and resource names
+## Geostore account and resource names
 
-Following information must be provided by Data Lake instance maintainer in order to start using it:
+Following information must be provided by Geostore instance maintainer in order to start using it:
 
-- Data Lake AWS account ID (`DATALAKE_AWS_ACCOUNT_ID`)
-- Data Lake user role name (`DATALAKE_USER_ROLE_NAME`)
+- Geostore AWS account ID (`GEOSTORE_AWS_ACCOUNT_ID`)
+- Geostore user role name (`GEOSTORE_USER_ROLE_NAME`)
 - Environment name (`ENV`, typically "prod")
 
 ## Dataset source S3 bucket
 
-To import data in to the Data Lake, dataset source S3 bucket must be readable by Data Lake.
+To import data in to the Geostore, dataset source S3 bucket must be readable by Geostore.
 
 Example dataset source S3 bucket policy:
 
 ```
 {
     "Version": "2012-10-17",
-    "Id": "data-lake-policy",
+    "Id": "geostore-policy",
     "Statement": [
         {
-            "Sid": "data-lake-readonly",
+            "Sid": "geostore-readonly",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::<DATALAKE_AWS_ACCOUNT_ID>:root"
+                "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:root"
             },
             "Action": [
                 "s3:GetObject",
@@ -52,7 +52,7 @@ dataset consists of geospatial metadata files in
 [SpatioTemporal Asset Catalogs (STAC)](https://stacspec.org/) format and data files, which are
 called "assets" in STAC.
 
-The GDL performs many checks on datasets. If any of the checks fail the dataset will not be
+The Geostore performs many checks on datasets. If any of the checks fail the dataset will not be
 imported, so it's important to know what they are. The following list is a reference of all the
 checks which are currently in place.
 
@@ -72,7 +72,7 @@ checks which are currently in place.
     [multihash](https://github.com/radiantearth/stac-spec/blob/master/extensions/checksum/README.md)
     corresponding to the contents of the asset file
 - Every metadata and asset file must be in the same S3 bucket.
-- Every metadata and asset URL must be readable by the GDL.
+- Every metadata and asset URL must be readable by the Geostore.
 - A dataset _may_ refer to the same asset more than once. All references to the same asset must have
   the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be
   considered invalid, even if both checksums are valid. This is to enable a simpler checksum
@@ -80,27 +80,26 @@ checks which are currently in place.
 
 # Authentication and authorization
 
-Data Lake allows read/write access for users authorized by SAML identity provider
-(`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`) configured during deployment time (see
+Geostore allows read/write access for users authorized by SAML identity provider
+(`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`) configured during deployment time (see
 [README](README.md#aws-infrastructure-deployment-cdk-stack)).
 
-Example of AWS service account authentication and authorization in to Data Lake users role via
-Azure:
+Example of AWS service account authentication and authorization in to Geostore users role via Azure:
 
-- Log in to Data Lake AWS account using Data Lake users role
+- Log in to Geostore AWS account using Geostore users role
 
   ```bash
-  aws-azure-login --profile data-lake-users
+  aws-azure-login --profile geostore-users
   ```
 
-- Set Data Lake AWS profile for subsequent commands
+- Set Geostore AWS profile for subsequent commands
   ```bash
-  export AWS_PROFILE data-lake-users
+  export AWS_PROFILE geostore-users
   ```
 
 # Endpoints
 
-There are several end user interaction points in GDL:
+There are several end user interaction points in Geostore:
 
 - A [dataset space endpoint](TODO), to create, get, update or delete individual datasets, and to
   list all datasets
@@ -116,7 +115,7 @@ the AWS web interface (links above) or via any tool using the AWS API, such as t
 
 ```bash
 aws lambda invoke \
-    --function-name '<DATALAKE-LAMBDA-FUNCTION-ENDPOINT-NAME>' \
+    --function-name '<GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME>' \
     --payload '<REQUEST-PAYLOAD-JSON>'
 /dev/stdout
 ```

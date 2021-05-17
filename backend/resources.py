@@ -9,5 +9,5 @@ class ResourceName(Enum):
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = f"{ENV}-dataset-versions"
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = f"{ENV}-import-status"
     S3_USERS_ROLE_NAME = f"{ENV}-s3-users"
-    STAGING_BUCKET_NAME = f"{ENV}-geospatial-data-lake-staging"
-    STORAGE_BUCKET_NAME = f"{ENV}-geospatial-data-lake"
+    STAGING_BUCKET_NAME = f"{ENV}-geostore-staging"
+    STORAGE_BUCKET_NAME = f"{ENV}-geostore"

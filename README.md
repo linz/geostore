@@ -1,7 +1,7 @@
-# Geospatial Data Lake
+# Geostore
 
-[![Deploy](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/deploy.yml)
-[![CodeQL Analysis](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geospatial-data-lake/actions/workflows/codeql-analysis.yml)
+[![Deploy](https://github.com/linz/geostore/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/deploy.yml)
+[![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
 ![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
 LINZ central storage, management and access solution for important geospatial datasets. Developed by
@@ -9,17 +9,17 @@ LINZ central storage, management and access solution for important geospatial da
 
 # Prerequisites
 
-## Data Lake VPC
+## Geostore VPC
 
-A Data Lake VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
+A Geostore VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
 managed internally by the IT team. If you are deploying this application outside LINZ, you will need
 to create a VPC with the following tags:
 
-- "ApplicationName": "geospatial-data-lake"
+- "ApplicationName": "geostore"
 - "ApplicationLayer": "networking"
 
-You can achieve this by adding the `networking_stack` (`datalake/networking_stack.py)` into `app.py`
-before deployment as a dependency of `processing_stack` (`datalake/processing_stack.py`).
+You can achieve this by adding the `networking_stack` (`geostore/networking_stack.py)` into `app.py`
+before deployment as a dependency of `processing_stack` (`geostore/processing_stack.py`).
 
 ## Verify infrastructure settings
 
@@ -123,9 +123,9 @@ One-time setup, assuming you are in the project directory:
       path to this directory):
 
       ```bash
-      if [[ -d "${HOME}/dev/geospatial-data-lake" ]]
+      if [[ -d "${HOME}/dev/geostore" ]]
       then
-          PATH="${HOME}/dev/geospatial-data-lake/node_modules/.bin:${PATH}"
+          PATH="${HOME}/dev/geostore/node_modules/.bin:${PATH}"
       fi
       ```
 
@@ -160,13 +160,13 @@ Re-run `. .venv/bin/activate` in each shell.
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.
      Default: dev.
 
-   * **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Data Lake
+   * **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
      Storage S3 bucket or application database tables will be preserved even if they are removed
      from stack or stack is deleted. Supported values:
      - DESTROY: destroy resource when removed from stack or stack is deleted (default)
      - RETAIN: retain orphaned resource when removed from stack or stack is deleted
 
-   - **`DATALAKE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
+   - **`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
 
 1. Bootstrap CDK (only once per profile)
 

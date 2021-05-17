@@ -1,5 +1,5 @@
 """
-Data Lake AWS resources definitions.
+Geostore AWS resources definitions.
 """
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, Tags
