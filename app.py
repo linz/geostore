@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 CDK application entry point file.
 """
@@ -13,7 +11,7 @@ from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICAT
 def main() -> None:
     app = App()
 
-    Application(app, f"{ENV}-datalake")
+    Application(app, f"{ENV}-geostore")
 
     # tag all resources in stack
     Tag.add(app, "CostCentre", "100005")

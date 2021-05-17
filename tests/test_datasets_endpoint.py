@@ -1,5 +1,5 @@
 """
-Dataset endpoint Lambda function tests. Working Data Lake AWS environment is
+Dataset endpoint Lambda function tests. Working Geostore AWS environment is
 required (run '$ cdk deploy' before running tests).
 """
 import logging

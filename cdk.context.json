@@ -1,5 +1,5 @@
 {
-  "vpc-provider:account=702361495692:filter.tag:ApplicationLayer=networking:filter.tag:ApplicationName=geospatial-data-lake:region=ap-southeast-2:returnAsymmetricSubnets=true": {
+  "vpc-provider:account=702361495692:filter.tag:ApplicationLayer=networking:filter.tag:ApplicationName=geostore:region=ap-southeast-2:returnAsymmetricSubnets=true": {
     "vpcId": "vpc-0f4380be6c48d94dc",
     "vpcCidrBlock": "10.193.112.0/20",
     "availabilityZones": [],
@@ -25,6 +25,37 @@
             "cidr": "10.193.119.0/24",
             "availabilityZone": "ap-southeast-2c",
             "routeTableId": "rtb-024c05701fbbe8069"
+          }
+        ]
+      }
+    ]
+  },
+  "vpc-provider:account=368354993240:filter.tag:ApplicationLayer=networking:filter.tag:ApplicationName=geostore:region=ap-southeast-2:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-0e01b25ed0c9a9f06",
+    "vpcCidrBlock": "172.31.0.0/16",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "Public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-0d36b875c5f64092d",
+            "cidr": "172.31.32.0/20",
+            "availabilityZone": "ap-southeast-2a",
+            "routeTableId": "rtb-0424587ed0ff6350c"
+          },
+          {
+            "subnetId": "subnet-0372a68eb0356d1b9",
+            "cidr": "172.31.0.0/20",
+            "availabilityZone": "ap-southeast-2b",
+            "routeTableId": "rtb-0424587ed0ff6350c"
+          },
+          {
+            "subnetId": "subnet-03e61f0320e505275",
+            "cidr": "172.31.16.0/20",
+            "availabilityZone": "ap-southeast-2c",
+            "routeTableId": "rtb-0424587ed0ff6350c"
           }
         ]
       }
