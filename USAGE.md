@@ -1,4 +1,4 @@
-# Using the Geostore
+# Using Geostore
 
 The purpose of Geostore is to store geospatial datasets. This document should provide the technical
 know-how to create and maintain such datasets.
@@ -19,7 +19,7 @@ Following information must be provided by Geostore instance maintainer in order 
 
 ## Dataset source S3 bucket
 
-To import data in to the Geostore, dataset source S3 bucket must be readable by Geostore.
+To import data into Geostore, the dataset source S3 bucket must be readable by Geostore.
 
 Example dataset source S3 bucket policy:
 
@@ -52,7 +52,7 @@ dataset consists of geospatial metadata files in
 [SpatioTemporal Asset Catalogs (STAC)](https://stacspec.org/) format and data files, which are
 called "assets" in STAC.
 
-The Geostore performs many checks on datasets. If any of the checks fail the dataset will not be
+Geostore performs many checks on datasets. If any of the checks fail the dataset will not be
 imported, so it's important to know what they are. The following list is a reference of all the
 checks which are currently in place.
 
@@ -72,7 +72,7 @@ checks which are currently in place.
     [multihash](https://github.com/radiantearth/stac-spec/blob/master/extensions/checksum/README.md)
     corresponding to the contents of the asset file
 - Every metadata and asset file must be in the same S3 bucket.
-- Every metadata and asset URL must be readable by the Geostore.
+- Every metadata and asset URL must be readable by Geostore.
 - A dataset _may_ refer to the same asset more than once. All references to the same asset must have
   the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be
   considered invalid, even if both checksums are valid. This is to enable a simpler checksum
