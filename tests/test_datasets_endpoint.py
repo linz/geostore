@@ -56,7 +56,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
         with subtests.test(msg="ID length"):
-            assert len(response[BODY_KEY]["id"]) == 41
+            assert len(response[BODY_KEY]["id"]) == 26
 
         with subtests.test(msg="title"):
             assert response[BODY_KEY]["title"] == dataset_title
