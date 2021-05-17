@@ -4,6 +4,7 @@
 [![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![hadolint: passing](https://img.shields.io/badge/hadolint-passing-brightgreen)](https://github.com/hadolint/hadolint)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 ![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
