@@ -4,7 +4,7 @@ from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam
 from aws_cdk.core import Construct, Fn
 
 APPLICATION_NAME_TAG_NAME = "ApplicationName"
-APPLICATION_NAME = "geospatial-data-lake"
+APPLICATION_NAME = "geostore"
 
 
 class BatchJobQueue(Construct):
@@ -70,7 +70,7 @@ class BatchJobQueue(Construct):
         cloudformation_launch_template = aws_ec2.CfnLaunchTemplate(
             self,
             "batch-launch-template",
-            launch_template_name=f"{deploy_env}-datalake-batch-launch-template",
+            launch_template_name=f"{deploy_env}-geostore-batch-launch-template",
             launch_template_data=launch_template_data,
         )
         assert cloudformation_launch_template.launch_template_name is not None
@@ -83,7 +83,7 @@ class BatchJobQueue(Construct):
         # A VPC will not be deployed by this project.
         vpc = aws_ec2.Vpc.from_lookup(
             self,
-            "datalake-vpc",
+            "geostore-vpc",
             tags={
                 APPLICATION_NAME_TAG_NAME: APPLICATION_NAME,
                 "ApplicationLayer": "networking",

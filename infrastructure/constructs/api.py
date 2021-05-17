@@ -27,7 +27,7 @@ class API(Construct):
     ) -> None:
         super().__init__(scope, stack_id)
 
-        if saml_provider_arn := environ.get("DATALAKE_SAML_IDENTITY_PROVIDER_ARN"):
+        if saml_provider_arn := environ.get("GEOSTORE_SAML_IDENTITY_PROVIDER_ARN"):
             principal = aws_iam.FederatedPrincipal(
                 federated=saml_provider_arn,
                 assume_role_action="sts:AssumeRoleWithSAML",

@@ -28,7 +28,7 @@ validated automatically.
 
 - Don't pin `apt` package versions.
 
-  [Rationale](https://github.com/linz/geospatial-data-lake/pull/171#discussion_r553474554):
+  [Rationale](https://github.com/linz/geostore/pull/171#discussion_r553474554):
 
   - Distributions should only get patch-level upgrades, making breakage unlikely.
   - Manually upgrading these packages in a timely fashion is a fair bit of overhead.
