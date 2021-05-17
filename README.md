@@ -18,8 +18,9 @@ to create a VPC with the following tags:
 - "ApplicationName": "geostore"
 - "ApplicationLayer": "networking"
 
-You can achieve this by adding the `networking_stack` (`geostore/networking_stack.py)` into `app.py`
-before deployment as a dependency of `processing_stack` (`geostore/processing_stack.py`).
+You can achieve this by adding the `networking_stack` (`infrastructure/networking_stack.py)` into
+`app.py` before deployment as a dependency of `application_stack`
+(`infrastructure/application_stack.py`).
 
 ## Verify infrastructure settings
 
