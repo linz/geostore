@@ -77,7 +77,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 if [[ -n "${delete-}" ]]
 then
     echo "Cleaning Git repository"
-    # TODO: Remove next line after fixing https://github.com/linz/geospatial-data-lake/issues/253
+    # TODO: Remove next line after fixing https://github.com/linz/geostore/issues/253
     rm --force --recursive cdk.out
     git clean -d --exclude='.idea' --force -x
 fi

@@ -13,7 +13,7 @@ class NetworkingStack(Stack):
         # create new VPC
         aws_ec2.Vpc(
             self,
-            "datalake",
+            "geostore",
             # cidr='10.0.0.0/16',  # TODO: use specific CIDR
             subnet_configuration=[
                 aws_ec2.SubnetConfiguration(

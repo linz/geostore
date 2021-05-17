@@ -23,7 +23,7 @@ multi_line_output = 3
 force_grid_wrap = 0
 
 [tool.poetry]
-name = "geospatial-data-lake"
+name = "geostore"
 version = "0.1.0"
 description = "Central storage, management and access for important geospatial datasets developed by LINZ"
 authors = [
