@@ -2,6 +2,7 @@
 
 [![Deploy](https://github.com/linz/geostore/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/deploy.yml)
 [![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
 LINZ central storage, management and access solution for important geospatial datasets. Developed by
