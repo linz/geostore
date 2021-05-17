@@ -18,6 +18,8 @@ TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
 STAC_IO.write_text_method = write_method
 
+SQS_RESOURCE = boto3.resource("sqs")
+
 
 def create_dataset(body: JsonObject) -> JsonObject:
     """POST: Create Dataset."""
@@ -63,12 +65,9 @@ def create_dataset(body: JsonObject) -> JsonObject:
     dataset_catalog.save()
 
     # add reference to root catalog
-    queue = boto3.resource("sqs").get_queue_by_name(
+    SQS_RESOURCE.get_queue_by_name(
         QueueName=get_param(ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME)
-    )
-    queue.send_message(
-        MessageBody={"dataset_title": dataset},
-    )
+    ).send_message(MessageBody=dataset.dataset_prefix)
 
     # return response
     resp_body = dataset.as_dict()

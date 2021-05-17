@@ -9,13 +9,13 @@ S3_CLIENT = boto3.client("s3")
 
 def read_method(uri: str) -> str:
     parsed = urlparse(uri)
-    result: str = STAC_IO.default_read_text_method(uri)
-
     if parsed.scheme == "s3":
         bucket = parsed.netloc
         key = parsed.path[1:]
         obj = S3_CLIENT.get_object(Bucket=bucket, Key=key)
-        result = obj["Body"].read().decode("utf-8")
+        result: str = obj["Body"].read().decode("utf-8")
+    else:
+        result = STAC_IO.default_read_text_method(uri)
 
     return result
 

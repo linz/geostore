@@ -252,13 +252,6 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
-        for storage_writer in [
-            import_dataset_role,
-            import_asset_file_function,
-            import_metadata_file_function,
-        ]:
-            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
-
         import_dataset_task = LambdaTask(
             self,
             "import-dataset-task",
@@ -278,7 +271,14 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        for storage_writer in [
+            import_dataset_role,
+            import_dataset_task.lambda_function,
+            import_asset_file_function,
+            import_metadata_file_function,
+            write_catalog_lambda,
+        ]:
+            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
         for table in [datasets_table, processing_assets_table]:
             table.grant_read_data(import_dataset_task.lambda_function)

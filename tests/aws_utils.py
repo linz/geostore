@@ -1,6 +1,7 @@
 import string
 import time
 from contextlib import AbstractContextManager
+from datetime import datetime, timedelta
 from io import StringIO
 from json import dump
 from random import choice, randrange
@@ -274,6 +275,16 @@ class MockValidationResultFactory(Mock):
 
 
 # Utility functions
+
+
+def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
+
+    process_timeout = datetime.now() + timedelta(minutes=3)
+    while (
+        "Contents" not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
+        or datetime.now() < process_timeout
+    ):
+        time.sleep(5)
 
 
 def delete_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
