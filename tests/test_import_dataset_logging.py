@@ -10,7 +10,12 @@ from pytest_subtests import SubTests  # type: ignore[import]
 from backend.error_response_keys import ERROR_KEY
 from backend.import_dataset.task import EVENT_KEY, lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function import (
+    DATASET_ID_KEY,
+    METADATA_URL_KEY,
+    S3_BATCH_RESPONSE_KEY,
+    VERSION_ID_KEY,
+)
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_s3_url
 from .general_generators import any_error_message, any_etag
@@ -128,7 +133,7 @@ class TestLogging:
         # Given
 
         create_job_mock.return_value = response = {"JobId": "Some Response"}
-        expected_response_log = json.dumps({"s3 batch response": response})
+        expected_response_log = json.dumps({S3_BATCH_RESPONSE_KEY: response})
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(

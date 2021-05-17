@@ -3,7 +3,7 @@ from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from backend.api_keys import SUCCESS_KEY
-from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from backend.step_function import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_summary import task
 
 from .aws_utils import any_lambda_context
