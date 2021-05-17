@@ -251,3 +251,10 @@ debugging at a test failure point with `--pdb --pdbcls=IPython.terminal.debugger
 in .github sets the runner type per job. We should make sure all of these use the latest specific
 ("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes
 only when we're ready for it.
+
+## GitHub Actions cache clearing
+
+To throw away the current cache (for example in case of a cache corruption), simply change the
+[`CACHE_SEED` repository "secret"](https://github.com/linz/geostore/settings/secrets/actions/CACHE_SEED),
+for example to the current timestamp (`date +%s`). Subsequent jobs will then ignore the existing
+cache.
