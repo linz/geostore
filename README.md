@@ -3,6 +3,7 @@
 [![Deploy](https://github.com/linz/geostore/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/deploy.yml)
 [![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage: 97%](https://img.shields.io/badge/Coverage-97%25-green.svg)](https://pytest.org/)
 [![hadolint: passing](https://img.shields.io/badge/hadolint-passing-brightgreen)](https://github.com/hadolint/hadolint)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
@@ -239,7 +240,8 @@ To add a production package:
 
   Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
 
-- Update the code coverage minimum in pyproject.toml on branches which increase it.
+- Update the code coverage minimum in pyproject.toml and the badge above on branches which increase
+  it.
 
   Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
