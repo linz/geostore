@@ -26,6 +26,6 @@ updates:
       time: '15:00'
       timezone: Pacific/Auckland
   - package-ecosystem: pip
-    directory: /infrastructure/lambda_layers/botocore
+    directory: /infrastructure/constructs/lambda_layers/botocore
     schedule:
       interval: weekly
