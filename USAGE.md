@@ -15,7 +15,6 @@ Following information must be provided by Geostore instance maintainer in order 
 
 - Geostore AWS account ID (`GEOSTORE_AWS_ACCOUNT_ID`)
 - Geostore user role name (`GEOSTORE_USER_ROLE_NAME`)
-- Environment name (`ENV`, typically "prod")
 
 ## Dataset source S3 bucket
 
@@ -100,12 +99,16 @@ Example of AWS service account authentication and authorization in to Geostore u
 
 There are several end user interaction points in Geostore:
 
-- A [dataset space endpoint](TODO), to create, get, update or delete individual datasets, and to
-  list all datasets
-- A [dataset versions endpoint](TODO), to create new versions of datasets. The S3 files which
-  constitute the dataset are all linked to a specific dataset version.
-- An [import status endpoint](TODO), to get information about the status of dataset version import,
-  including errors and issues
+- A
+  [dataset space endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/datasets),
+  to create, get, update or delete individual datasets, and to list all datasets
+- A
+  [dataset versions endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/dataset-versions),
+  to create new versions of datasets. The S3 files which constitute the dataset are all linked to a
+  specific dataset version.
+- An
+  [import status endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/import-status),
+  to get information about the status of dataset version import, including errors and issues
 
 These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
 the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
@@ -113,10 +116,8 @@ the AWS web interface (links above) or via any tool using the AWS API, such as t
 ## Endpoint Request Format
 
 ```bash
-aws lambda invoke \
-    --function-name '<GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME>' \
-    --payload '<REQUEST-PAYLOAD-JSON>'
-/dev/stdout
+aws lambda invoke --function-name GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME \
+    --payload 'REQUEST-PAYLOAD-JSON' /dev/stdout
 ```
 
 ## Dataset Space Endpoint Usage Examples
@@ -124,10 +125,8 @@ aws lambda invoke \
 - Example of Dataset creation request
 
   ```console
-  $ aws lambda invoke \
-      --function-name "${ENV}-datasets" \
-      --payload '{"http_method": "POST", "body": {"title": "Auckland 2020"}}' \
-      /dev/stdout
+  $ aws lambda invoke --function-name datasets \
+      --payload '{"http_method": "POST", "body": {"title": "Auckland 2020"}}' /dev/stdout
 
   {"status_code": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
   ```
@@ -135,10 +134,8 @@ aws lambda invoke \
 - Example of all Datasets listing request
 
   ```console
-  $ aws lambda invoke \
-      --function-name "${ENV}-datasets" \
-      --payload '{"http_method": "GET", "body": {}}' \
-      /dev/stdout
+  $ aws lambda invoke --function-name datasets \
+      --payload '{"http_method": "GET", "body": {}}' /dev/stdout
 
   {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland 2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
   ```
@@ -146,8 +143,7 @@ aws lambda invoke \
 - Example of single Dataset listing request
 
   ```console
-  $ aws lambda invoke \
-      --function-name "${ENV}-datasets" \
+  $ aws lambda invoke --function-name datasets \
       --payload '{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
       /dev/stdout
 
@@ -157,8 +153,7 @@ aws lambda invoke \
 - Example of Dataset delete request
 
   ```console
-  $ aws lambda invoke \
-      --function-name "${ENV}-datasets" \
+  $ aws lambda invoke --function-name datasets \
       --payload '{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
       /dev/stdout
 
@@ -170,8 +165,7 @@ aws lambda invoke \
 - Example of Dataset Version creation request
 
   ```console
-  $ aws lambda invoke \
-     --function-name "${ENV}-dataset-versions" \
+  $ aws lambda invoke --function-name dataset-versions \
      --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata_url": "s3://example-s3-url"}}' \
      /dev/stdout
 
@@ -183,8 +177,7 @@ aws lambda invoke \
 - Example of get Import Status request
 
   ```console
-  $ aws lambda invoke \
-     --function-name "${ENV}-import-status" \
+  $ aws lambda invoke --function-name import-status \
      --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
      /dev/stdout
 
