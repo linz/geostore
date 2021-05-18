@@ -16,6 +16,7 @@ from backend.check import Check
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import (
     ARRAY_INDEX_VARIABLE_NAME,
+    CHUNK_SIZE,
     ChecksumMismatchError,
     ChecksumValidator,
     get_job_offset,
@@ -25,7 +26,6 @@ from backend.processing_assets_model import ProcessingAssetType, ProcessingAsset
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
-    EMPTY_FILE_MULTIHASH,
     MockValidationResultFactory,
     any_batch_job_array_index,
     any_s3_url,
@@ -39,6 +39,8 @@ from .stac_generators import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
+
+SHA256_CHECKSUM_BYTE_COUNT = 32
 
 
 def should_return_offset_from_array_index_variable() -> None:
@@ -243,13 +245,20 @@ class TestsWithLogger:
         cls.logger = logging.getLogger("backend.check_files_checksums.task")
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
-    def should_return_when_empty_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
-        get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
+    def should_return_when_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
+        file_contents = b"x" * (CHUNK_SIZE + 1)
+        get_object_mock.return_value = {
+            "Body": StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+        }
+        multihash = (
+            f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
+            "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
+        )
 
         with patch("backend.check_files_checksums.utils.processing_assets_model_with_meta"):
             ChecksumValidator(
                 any_table_name(), MockValidationResultFactory(), self.logger
-            ).validate_url_multihash(any_s3_url(), EMPTY_FILE_MULTIHASH)
+            ).validate_url_multihash(any_s3_url(), multihash)
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_raise_exception_when_checksum_does_not_match(
@@ -258,11 +267,11 @@ class TestsWithLogger:
         get_object_mock.return_value = {"Body": StreamingBody(BytesIO(), 0)}
 
         checksum = "0" * 64
-        checksum_byte_count = 32
-
         with raises(ChecksumMismatchError), patch(
             "backend.check_files_checksums.utils.processing_assets_model_with_meta"
         ):
             ChecksumValidator(
                 any_table_name(), MockValidationResultFactory(), self.logger
-            ).validate_url_multihash(any_s3_url(), f"{SHA2_256:x}{checksum_byte_count:x}{checksum}")
+            ).validate_url_multihash(
+                any_s3_url(), f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}"
+            )
