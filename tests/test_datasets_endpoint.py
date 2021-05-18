@@ -19,8 +19,8 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
-from backend.write_to_catalog.task import ROOT_CATALOG_KEY
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
+from backend.write_to_catalog.task import ROOT_CATALOG_KEY
 
 from .aws_utils import (
     Dataset,
@@ -312,7 +312,7 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
 
 @mark.infrastructure
 def should_launch_datasets_endpoint_lambda_function(
-    lambda_client: LambdaClient, s3_client: S3Client, subtests: SubTests
+    lambda_client: LambdaClient, s3_client: S3Client
 ) -> None:
     """
     Test if datasets endpoint lambda can be successfully launched and has required permission to

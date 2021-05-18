@@ -634,6 +634,23 @@ jsii = ">=1.24.0,<2.0.0"
 publication = ">=0.0.3"
 
 [[package]]
+name = "aws-cdk.aws-kinesis"
+version = "1.92.0"
+description = "The CDK Construct Library for AWS::Kinesis"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+"aws-cdk.aws-iam" = "1.92.0"
+"aws-cdk.aws-kms" = "1.92.0"
+"aws-cdk.aws-logs" = "1.92.0"
+"aws-cdk.core" = "1.92.0"
+constructs = ">=3.2.0,<4.0.0"
+jsii = ">=1.24.0,<2.0.0"
+publication = ">=0.0.3"
+
+[[package]]
 name = "aws-cdk.aws-kms"
 version = "1.92.0"
 description = "The CDK Construct Library for AWS::KMS"
@@ -675,6 +692,31 @@ python-versions = ">=3.6"
 "aws-cdk.aws-sqs" = "1.92.0"
 "aws-cdk.core" = "1.92.0"
 "aws-cdk.cx-api" = "1.92.0"
+constructs = ">=3.2.0,<4.0.0"
+jsii = ">=1.24.0,<2.0.0"
+publication = ">=0.0.3"
+
+[[package]]
+name = "aws-cdk.aws-lambda-event-sources"
+version = "1.92.0"
+description = "Event sources for AWS Lambda"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+"aws-cdk.aws-apigateway" = "1.92.0"
+"aws-cdk.aws-dynamodb" = "1.92.0"
+"aws-cdk.aws-events" = "1.92.0"
+"aws-cdk.aws-iam" = "1.92.0"
+"aws-cdk.aws-kinesis" = "1.92.0"
+"aws-cdk.aws-lambda" = "1.92.0"
+"aws-cdk.aws-s3" = "1.92.0"
+"aws-cdk.aws-s3-notifications" = "1.92.0"
+"aws-cdk.aws-sns" = "1.92.0"
+"aws-cdk.aws-sns-subscriptions" = "1.92.0"
+"aws-cdk.aws-sqs" = "1.92.0"
+"aws-cdk.core" = "1.92.0"
 constructs = ">=3.2.0,<4.0.0"
 jsii = ">=1.24.0,<2.0.0"
 publication = ">=0.0.3"
@@ -791,6 +833,25 @@ python-versions = ">=3.6"
 "aws-cdk.aws-s3" = "1.92.0"
 "aws-cdk.core" = "1.92.0"
 "aws-cdk.cx-api" = "1.92.0"
+constructs = ">=3.2.0,<4.0.0"
+jsii = ">=1.24.0,<2.0.0"
+publication = ">=0.0.3"
+
+[[package]]
+name = "aws-cdk.aws-s3-notifications"
+version = "1.92.0"
+description = "Bucket Notifications API for AWS S3"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+"aws-cdk.aws-iam" = "1.92.0"
+"aws-cdk.aws-lambda" = "1.92.0"
+"aws-cdk.aws-s3" = "1.92.0"
+"aws-cdk.aws-sns" = "1.92.0"
+"aws-cdk.aws-sqs" = "1.92.0"
+"aws-cdk.core" = "1.92.0"
 constructs = ">=3.2.0,<4.0.0"
 jsii = ">=1.24.0,<2.0.0"
 publication = ">=0.0.3"
@@ -2429,21 +2490,22 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
-cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
+cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-event-sources", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
 check_files_checksums = ["boto3", "multihash", "pynamodb"]
 check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
 dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
-datasets = ["jsonschema", "pynamodb", "pystac", "ulid-py"]
+datasets = ["boto3", "jsonschema", "pynamodb", "pystac", "ulid-py"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
 upload_status = ["boto3", "jsonschema", "pynamodb"]
 validation_summary = ["jsonschema", "pynamodb"]
+write_to_catalog = ["boto3", "jsonschema", "pystac"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "f2c6b0198d58192a3d7b1ff721902c20dac69842b9952f3ed1d31e74638e79c0"
+content-hash = "67f7e4003ef34a4a23f27beca8ecf5403f8e66ea34f56bb63090c19d4e98eebc"
 
 [metadata.files]
 appdirs = [
@@ -2590,6 +2652,10 @@ attrs = [
     {file = "aws-cdk.aws-iam-1.92.0.tar.gz", hash = "sha256:7b8dde4fc64f75836ce19f684609e30f5344f04fdd15a4e6587879264cb87b44"},
     {file = "aws_cdk.aws_iam-1.92.0-py3-none-any.whl", hash = "sha256:4ea60234f25623dc9c34ffc2e19b9d122b5b9a01a1c1aa2342457eee392d2a10"},
 ]
+"aws-cdk.aws-kinesis" = [
+    {file = "aws-cdk.aws-kinesis-1.92.0.tar.gz", hash = "sha256:87f39c37559513b87b764a7677359390ab00cc08a9053b3afb9fc32df33b20fd"},
+    {file = "aws_cdk.aws_kinesis-1.92.0-py3-none-any.whl", hash = "sha256:3813125d3d8c87109aaac5a2f34cba03bb84f0a40917fcd37c7ad9c0e5eaa579"},
+]
 "aws-cdk.aws-kms" = [
     {file = "aws-cdk.aws-kms-1.92.0.tar.gz", hash = "sha256:0747675ebfaa721adfa7303da51865b3327ed76a9d40cb3b6129ac8ea78e92fd"},
     {file = "aws_cdk.aws_kms-1.92.0-py3-none-any.whl", hash = "sha256:896f7287e1d673c4707e7ec0cde3090431c71c8f15cf3ab7a441cfa58e8f920b"},
@@ -2597,6 +2663,10 @@ attrs = [
 "aws-cdk.aws-lambda" = [
     {file = "aws-cdk.aws-lambda-1.92.0.tar.gz", hash = "sha256:99d5320b1a5eaee67bd6b7ff213d5d57fc5a845e08ee1ce46fc994a19fb61b2e"},
     {file = "aws_cdk.aws_lambda-1.92.0-py3-none-any.whl", hash = "sha256:405aed6a3f8079b778580243c9e3003bfd605875d03f6ebc61f3555a421ff5ae"},
+]
+"aws-cdk.aws-lambda-event-sources" = [
+    {file = "aws-cdk.aws-lambda-event-sources-1.92.0.tar.gz", hash = "sha256:92e9b9f6daed47c501339bbc494bcd8f31ce8ab5314fc247939afd27515981ef"},
+    {file = "aws_cdk.aws_lambda_event_sources-1.92.0-py3-none-any.whl", hash = "sha256:5ff5b4daa198d079ce631249302aa361fe91d77b6723f8242fe9dcf67a0f6c20"},
 ]
 "aws-cdk.aws-lambda-python" = [
     {file = "aws-cdk.aws-lambda-python-1.92.0.tar.gz", hash = "sha256:52152ac0a7cf1a0808a69dea280d090ff9c1e7cc98aa2e108b1c2f63e0296c63"},
@@ -2621,6 +2691,10 @@ attrs = [
 "aws-cdk.aws-s3-assets" = [
     {file = "aws-cdk.aws-s3-assets-1.92.0.tar.gz", hash = "sha256:efae2793f4276980ae85d9c61e150990d6c6c78ae4aa56b6cb533da699714370"},
     {file = "aws_cdk.aws_s3_assets-1.92.0-py3-none-any.whl", hash = "sha256:3684517c674ce92d0ed26a0436913f62c0efb2134f08bec043e7c65535647a2b"},
+]
+"aws-cdk.aws-s3-notifications" = [
+    {file = "aws-cdk.aws-s3-notifications-1.92.0.tar.gz", hash = "sha256:8e438a05419fc3dd825f3490629ea7457ea96291dec3dcb0822338d737725bd2"},
+    {file = "aws_cdk.aws_s3_notifications-1.92.0-py3-none-any.whl", hash = "sha256:e237afd6e1673daed6000339fa84c65aaa557a89fbcc1169265f645e7721987b"},
 ]
 "aws-cdk.aws-sam" = [
     {file = "aws-cdk.aws-sam-1.92.0.tar.gz", hash = "sha256:aa35410e80a1a79ef29fd83b41d3ba5858091b06ecec5fa41af09bd1c8bb9cb5"},

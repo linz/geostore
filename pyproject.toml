@@ -157,6 +157,7 @@ validation_summary = [
 ]
 write_to_catalog = [
     "boto3",
+    "jsonschema",
     "pystac",
 ]
 

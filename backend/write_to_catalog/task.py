@@ -1,6 +1,7 @@
 import boto3
 from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
 
+from ..api_responses import BODY_KEY
 from ..pystac_io_methods import read_method, write_method
 from ..resources import ResourceName
 from ..types import JsonObject
@@ -38,7 +39,7 @@ def lambda_handler(_event: JsonObject, _context: bytes) -> JsonObject:
         )
 
     for record in _event["Records"]:
-        dataset_title_prefix = record["body"]
+        dataset_title_prefix = record[BODY_KEY]
         dataset_catalog = Catalog.from_file(
             f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}"
             f"/{dataset_title_prefix}/{ROOT_CATALOG_KEY}"
