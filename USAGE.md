@@ -63,14 +63,13 @@ checks which are currently in place.
   must be an S3 URL of the form `s3://BUCKET_NAME/KEY`, for example,
   `s3://my-bucket/some-path/foo.tif`.
 - Every asset (in the
-  [`item_assets` property](https://github.com/radiantearth/stac-spec/blob/master/extensions/item-assets/README.md))
+  [`assets` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#assets))
   must have:
   - an S3
     [URL](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object),
     as defined above
-  - a
-    [multihash](https://github.com/radiantearth/stac-spec/blob/master/extensions/checksum/README.md)
-    corresponding to the contents of the asset file
+  - a [checksum](https://github.com/stac-extensions/file#checksums) corresponding to the contents of
+    the asset file
 - Every metadata and asset file must be in the same S3 bucket.
 - Every metadata and asset URL must be readable by Geostore.
 - A dataset _may_ refer to the same asset more than once. All references to the same asset must have
