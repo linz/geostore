@@ -10,8 +10,8 @@ from aws_cdk import (
     aws_ssm,
     aws_stepfunctions,
 )
-from aws_cdk.aws_stepfunctions import Wait, WaitTime
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
+from aws_cdk.aws_stepfunctions import Wait, WaitTime
 from aws_cdk.core import Construct, Duration, Tags
 
 from backend.api_keys import SUCCESS_KEY
@@ -57,7 +57,8 @@ class Processing(Construct):
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, too-many-statements
+
         super().__init__(scope, stack_id)
 
         ############################################################################################
