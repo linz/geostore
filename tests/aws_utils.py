@@ -15,7 +15,7 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
-from mypy_boto3_s3control.literals import JobStatus
+from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -70,7 +70,7 @@ def any_next_item_index() -> int:
 
 
 def any_batch_job_status() -> str:
-    job_status: str = choice(get_args(JobStatus))
+    job_status: str = choice(get_args(JobStatusType))
     return job_status
 
 
