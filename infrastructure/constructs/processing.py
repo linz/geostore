@@ -1,5 +1,6 @@
 from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Tags
+from aws_cdk.aws_stepfunctions import Wait, WaitTime
+from aws_cdk.core import Construct, Duration, Tags
 
 from backend.api_keys import SUCCESS_KEY
 from backend.content_iterator.task import (
@@ -12,8 +13,10 @@ from backend.content_iterator.task import (
 )
 from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
-from backend.step_function_event_keys import (
+from backend.step_function import (
+    ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
@@ -24,11 +27,12 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
 from .lambda_task import LambdaTask
+from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
 
 
 class Processing(Construct):
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         scope: Construct,
         stack_id: str,
@@ -247,6 +251,25 @@ class Processing(Construct):
             table.grant_read_data(import_dataset_task.lambda_function)
             table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
+        # Import status check
+        wait_before_upload_status_check = Wait(
+            self,
+            "wait-before-upload-status-check",
+            time=WaitTime.duration(Duration.seconds(10)),
+        )
+        upload_status_task = LambdaTask(
+            self,
+            "upload-status",
+            directory="upload_status",
+            botocore_lambda_layer=botocore_lambda_layer,
+            result_path="$.upload_status",
+            extra_environment={"DEPLOY_ENV": deploy_env},
+        )
+        validation_results_table.grant_read_data(upload_status_task.lambda_function)
+        validation_results_table.grant(upload_status_task.lambda_function, "dynamodb:DescribeTable")
+
+        upload_status_task.lambda_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
+
         # Parameters
         import_asset_file_function_arn_parameter = aws_ssm.StringParameter(
             self,
@@ -284,13 +307,15 @@ class Processing(Construct):
                 ],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
-                    validation_summary_task.lambda_function,
                     content_iterator_task.lambda_function,
+                    validation_summary_task.lambda_function,
+                    upload_status_task.lambda_function,
                 ],
             }
         )
 
         success_task = aws_stepfunctions.Succeed(self, "success")
+        fail_task = aws_stepfunctions.Fail(self, "fail")
 
         ############################################################################################
         # STATE MACHINE
@@ -323,7 +348,50 @@ class Processing(Construct):
                             aws_stepfunctions.Condition.boolean_equals(
                                 f"$.{VALIDATION_KEY}.{SUCCESS_KEY}", True
                             ),
-                            import_dataset_task.next(success_task),  # type: ignore[arg-type]
+                            import_dataset_task.next(
+                                wait_before_upload_status_check  # type: ignore[arg-type]
+                            )
+                            .next(upload_status_task)
+                            .next(
+                                aws_stepfunctions.Choice(
+                                    self, "import_completed"  # type: ignore[arg-type]
+                                )
+                                .when(
+                                    aws_stepfunctions.Condition.and_(
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status", "Complete"
+                                        ),
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
+                                            "Complete",
+                                        ),
+                                    ),
+                                    success_task,  # type: ignore[arg-type]
+                                )
+                                .when(
+                                    aws_stepfunctions.Condition.or_(
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status",
+                                            "Cancelled",
+                                        ),
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status", "Failed"
+                                        ),
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
+                                            "Cancelled",
+                                        ),
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
+                                            "Failed",
+                                        ),
+                                    ),
+                                    fail_task,  # type: ignore[arg-type]
+                                )
+                                .otherwise(
+                                    wait_before_upload_status_check  # type: ignore[arg-type]
+                                )
+                            ),
                         )
                         .otherwise(validation_failure_lambda_invoke)
                     ),

@@ -14,12 +14,7 @@ from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
-from ..step_function_event_keys import (
-    DATASET_ID_KEY,
-    EXECUTION_ARN_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-)
+from ..step_function import DATASET_ID_KEY, EXECUTION_ARN_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")

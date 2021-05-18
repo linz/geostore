@@ -6,10 +6,10 @@ from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY
-from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status, get_s3_batch_copy_status
-from backend.step_function_event_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status
+from backend.step_function import DATASET_ID_KEY, VERSION_ID_KEY
 
-from .aws_utils import any_account_id, any_arn_formatted_string
+from .aws_utils import any_arn_formatted_string
 from .general_generators import any_error_message
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
@@ -39,7 +39,7 @@ class TestLogging:
         }
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_status.get.get_step_function_validation_results"
+            "backend.step_function.get_step_function_validation_results"
         ) as validation_mock:
             validation_mock.return_value = []
 
@@ -58,7 +58,6 @@ class TestLogging:
         expected_log = dumps({ERROR_KEY: error_message})
 
         with patch.object(self.logger, "warning") as logger_mock:
-
             # When
             get_import_status(
                 {
@@ -85,33 +84,11 @@ class TestLogging:
         expected_response_log = dumps({"step function response": describe_execution_response})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_status.get.STS_CLIENT.get_caller_identity"
-        ), patch(
-            "backend.import_status.get.get_step_function_validation_results"
-        ) as validation_mock:
+            "backend.step_function.STS_CLIENT.get_caller_identity"
+        ), patch("backend.step_function.get_step_function_validation_results") as validation_mock:
             validation_mock.return_value = []
             # When
             get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
-
-            # Then
-            logger_mock.assert_any_call(expected_response_log)
-
-    @patch("backend.import_status.get.S3CONTROL_CLIENT.describe_job")
-    def should_log_s3_batch_response(
-        self,
-        describe_s3_job_mock: MagicMock,
-    ) -> None:
-        # Given
-        describe_s3_job_mock.return_value = s3_batch_response = {"Job": {"Status": "Some Response"}}
-        expected_response_log = dumps({"s3 batch response": s3_batch_response})
-
-        with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_status.get.STS_CLIENT.get_caller_identity"
-        ) as sts_mock:
-            sts_mock.return_value = {"Account": any_account_id()}
-
-            # When
-            get_s3_batch_copy_status("test", self.logger)
 
             # Then
             logger_mock.assert_any_call(expected_response_log)

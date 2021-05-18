@@ -8,6 +8,7 @@ from backend.resources import ResourceName
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
 from .roles import MAX_SESSION_DURATION
+from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
 
 
@@ -93,12 +94,7 @@ class API(Construct):
 
         state_machine.grant_read(import_status_endpoint_lambda)
         assert import_status_endpoint_lambda.role is not None
-        import_status_endpoint_lambda.role.add_to_policy(
-            aws_iam.PolicyStatement(
-                resources=["*"],
-                actions=["s3:DescribeJob"],
-            ),
-        )
+        import_status_endpoint_lambda.role.add_to_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
         grant_parameter_read_access(
             {
