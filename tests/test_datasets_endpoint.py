@@ -20,7 +20,7 @@ from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
 from backend.resources import ResourceName
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
-from backend.write_to_catalog.task import ROOT_CATALOG_KEY
+from backend.write_to_catalog.task import CATALOG_KEY
 
 from .aws_utils import (
     Dataset,
@@ -332,6 +332,6 @@ def should_launch_datasets_endpoint_lambda_function(
         assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
     finally:
+        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
+        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, title, s3_client)
-        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, ROOT_CATALOG_KEY, s3_client)
-        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, ROOT_CATALOG_KEY, s3_client)

@@ -20,6 +20,7 @@ from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.boto3_keys import CONTENTS_KEY
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -281,8 +282,8 @@ def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
 
     process_timeout = datetime.now() + timedelta(minutes=3)
     while (
-        "Contents" not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
-        or datetime.now() < process_timeout
+        CONTENTS_KEY not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
+        and datetime.now() < process_timeout
     ):
         time.sleep(5)
 
@@ -364,12 +365,14 @@ def wait_for_s3_batch_job_completion(
     account_id: str,
     s3_control_client: S3ControlClient,
 ) -> DescribeJobResultTypeDef:
+    process_timeout = datetime.now() + timedelta(minutes=3)
+
     while (
         job_result := s3_control_client.describe_job(
             AccountId=account_id,
             JobId=s3_batch_job_arn,
         )
-    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES and datetime.now() < process_timeout:
         time.sleep(5)
 
     assert job_result["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, job_result
