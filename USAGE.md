@@ -122,64 +122,98 @@ aws lambda invoke --function-name GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME \
 
 ## Dataset Space Endpoint Usage Examples
 
-- Example of Dataset creation request
+### Dataset creation request
 
-  ```console
-  $ aws lambda invoke --function-name datasets \
-      --payload '{"http_method": "POST", "body": {"title": "Auckland_2020"}}' /dev/stdout
+```console
+$ aws lambda invoke --function-name datasets \
+    --payload '{"http_method": "POST", "body": {"title": "Auckland_2020"}}' /dev/stdout
 
-  {"status_code": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-  ```
+{"status_code": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+```
 
-- Example of all Datasets listing request
+Please note that it is important to choose an accurate and stable title. Changing the title is
+complex, time-consuming, risky and lossy. If you need to change the title, choose between
+[changing the dataset title by creating a copy of the latest dataset version](#Changing-the-dataset-title-by-creating-a-copy-of-the-latest-dataset-version)
+and
+[changing the dataset title by renaming and moving the files](#Changing-the-dataset-title-by-renaming-and-moving-the-files)
+below.
 
-  ```console
-  $ aws lambda invoke --function-name datasets \
-      --payload '{"http_method": "GET", "body": {}}' /dev/stdout
+### All datasets listing request
 
-  {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
-  ```
+```console
+$ aws lambda invoke --function-name datasets \
+    --payload '{"http_method": "GET", "body": {}}' /dev/stdout
 
-- Example of single Dataset listing request
+{"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+```
 
-  ```console
-  $ aws lambda invoke --function-name datasets \
-      --payload '{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
-      /dev/stdout
+### Single dataset listing request
 
-  {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-  ```
+```console
+$ aws lambda invoke --function-name datasets \
+    --payload '{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
+    /dev/stdout
 
-- Example of Dataset delete request
+{"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+```
 
-  ```console
-  $ aws lambda invoke --function-name datasets \
-      --payload '{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
-      /dev/stdout
+### Dataset delete request
 
-  {"status_code": 204, "body": {}}
-  ```
+```console
+$ aws lambda invoke --function-name datasets \
+    --payload '{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
+    /dev/stdout
+
+{"status_code": 204, "body": {}}
+```
+
+### Changing the dataset title by creating a copy of the latest dataset version
+
+This is the simplest way to change a dataset title, but there will be no explicit connection between
+the new and old datasets. Anyone wishing to go back beyond the rename of a dataset needs to be aware
+of this rename and has to either know or find the original dataset title.
+
+1. [Create a new dataset](#Dataset-creation-request)
+1. [Create a new dataset version](#Dataset-Version-creation-request) for the dataset created above,
+   using a `metadata_url` pointing to the latest version of the original dataset.
+1. [Wait for the import to finish](#Import-Status-Endpoint-Usage-Examples).
+1. Optional: if the original dataset can be removed at this point (or sometime in the future),
+   please let the Geostore product team know, and we'll arrange it.
+
+### Changing the dataset title by renaming and moving the files
+
+This process is more cumbersome and time-consuming than the above, and results links to the old
+dataset being broken rather than slowly phased out, but can be followed if necessary.
+
+1. Send a request to the product team asking for a rename, specifying the current and new title of
+   the dataset. The product team then takes care of the rest of the process:
+   1. Schedule necessary downtime and notify users.
+   1. Turn off external access to the whole or part of the system to avoid any conflicts.
+   1. Run a manual rename of all the files in the relevant dataset.
+   1. Use the `${ENV}-datasets` endpoint to rename the dataset in the database.
+   1. Re-enable external access and notify users.
+   1. Notify requester about the name change completion.
 
 ## Dataset Version Endpoint Usage Examples
 
-- Example of Dataset Version creation request
+### Dataset Version creation request
 
-  ```console
-  $ aws lambda invoke --function-name dataset-versions \
-     --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata_url": "s3://example-s3-url"}}' \
-     /dev/stdout
+```console
+$ aws lambda invoke --function-name dataset-versions \
+   --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata_url": "s3://example-s3-url"}}' \
+   /dev/stdout
 
-  {"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
-  ```
+{"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
+```
 
 ## Import Status Endpoint Usage Examples
 
-- Example of get Import Status request
+### Get Import Status request
 
-  ```console
-  $ aws lambda invoke --function-name import-status \
-     --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
-     /dev/stdout
+```console
+$ aws lambda invoke --function-name import-status \
+   --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
+   /dev/stdout
 
-  {"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
-  ```
+{"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
+```
