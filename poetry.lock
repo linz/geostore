@@ -2433,12 +2433,13 @@ dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
 datasets = ["jsonschema", "pynamodb", "pystac", "ulid-py"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
+upload_status = ["boto3", "jsonschema", "pynamodb"]
 validation_summary = ["jsonschema", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "0315923cc69a822a13d2d5fb3a352de4d374dd4a5e8f75c4211f5bd434ab9eb9"
+content-hash = "f2c6b0198d58192a3d7b1ff721902c20dac69842b9952f3ed1d31e74638e79c0"
 
 [metadata.files]
 appdirs = [

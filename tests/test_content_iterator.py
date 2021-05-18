@@ -18,7 +18,7 @@ from backend.content_iterator.task import (
 )
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
     any_item_count,

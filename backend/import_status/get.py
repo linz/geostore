@@ -1,56 +1,27 @@
 """Import Status handler function."""
 import json
-import logging
-from enum import Enum
 from http import HTTPStatus
-from typing import Optional
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
-from ..api_keys import STATUS_KEY
+from ..api_keys import SUCCESS_KEY
 from ..api_responses import error_response, success_response
 from ..error_response_keys import ERROR_KEY
-from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
-from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from ..step_function_event_keys import (
-    ASSET_UPLOAD_KEY,
+from ..step_function import (
     DATASET_ID_KEY,
     EXECUTION_ARN_KEY,
-    METADATA_UPLOAD_KEY,
+    IMPORT_DATASET_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
+    get_tasks_status,
 )
-from ..types import JsonList, JsonObject
-from ..validation_results_model import ValidationResult, validation_results_model_with_meta
+from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
-S3CONTROL_CLIENT = boto3.client("s3control")
-STS_CLIENT = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
-
-CHECK_KEY = "check"
-DETAILS_KEY = "details"
-ERRORS_KEY = "errors"
-IMPORT_DATASET_KEY = "import_dataset"
-RESULT_KEY = "result"
-URL_KEY = "url"
-
-
-class Outcome(Enum):
-    PASSED = "Passed"
-    PENDING = "Pending"
-    FAILED = "Failed"
-    SKIPPED = "Skipped"
-
-
-SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
-    True: Outcome.PASSED,
-    False: Outcome.FAILED,
-    None: Outcome.PENDING,
-}
 
 
 def get_import_status(body: JsonObject) -> JsonObject:
@@ -79,92 +50,15 @@ def get_import_status(body: JsonObject) -> JsonObject:
     step_function_output = json.loads(step_function_resp.get("output", "{}"))
     step_function_status = step_function_resp["status"]
 
-    validation_errors = get_step_function_validation_results(
-        step_function_input[DATASET_ID_KEY], step_function_input[VERSION_ID_KEY]
+    dataset_id = step_function_input[DATASET_ID_KEY]
+    version_id = step_function_input[VERSION_ID_KEY]
+    validation_success = step_function_output.get(VALIDATION_KEY, {}).get(SUCCESS_KEY)
+    import_dataset_jobs = step_function_output.get(IMPORT_DATASET_KEY, {})
+
+    tasks_status = get_tasks_status(
+        step_function_status, dataset_id, version_id, validation_success, import_dataset_jobs
     )
 
-    validation_success = step_function_output.get("validation", {}).get("success")
-    validation_outcome = get_validation_outcome(
-        step_function_status, validation_errors, validation_success
-    )
-
-    metadata_upload_status = get_import_job_status(step_function_output, METADATA_JOB_ID_KEY)
-    asset_upload_status = get_import_job_status(step_function_output, ASSET_JOB_ID_KEY)
-
-    # Failed validation implies uploads will never happen
-    if (
-        metadata_upload_status[STATUS_KEY] == Outcome.PENDING.value
-        and asset_upload_status[STATUS_KEY] == Outcome.PENDING.value
-        and validation_outcome in [Outcome.FAILED, Outcome.SKIPPED]
-    ):
-        metadata_upload_status[STATUS_KEY] = asset_upload_status[STATUS_KEY] = Outcome.SKIPPED.value
-
-    response_body = {
-        STEP_FUNCTION_KEY: {STATUS_KEY: step_function_status.title()},
-        VALIDATION_KEY: {STATUS_KEY: validation_outcome.value, ERRORS_KEY: validation_errors},
-        METADATA_UPLOAD_KEY: metadata_upload_status,
-        ASSET_UPLOAD_KEY: asset_upload_status,
-    }
+    response_body = {STEP_FUNCTION_KEY: {"status": step_function_status.title()}, **tasks_status}
 
     return success_response(HTTPStatus.OK, response_body)
-
-
-def get_validation_outcome(
-    step_function_status: str, validation_errors: JsonList, validation_success: Optional[bool]
-) -> Outcome:
-    validation_status = SUCCESS_TO_VALIDATION_OUTCOME_MAPPING[validation_success]
-    if validation_status == Outcome.PENDING:
-        # Some statuses are not reported by the step function
-        if validation_errors:
-            validation_status = Outcome.FAILED
-        elif step_function_status not in ["RUNNING", "SUCCEEDED"]:
-            validation_status = Outcome.SKIPPED
-    return validation_status
-
-
-def get_import_job_status(step_function_output: JsonObject, job_id_key: str) -> JsonObject:
-    if s3_job_id := step_function_output.get(IMPORT_DATASET_KEY, {}).get(job_id_key):
-        return get_s3_batch_copy_status(s3_job_id, LOGGER)
-    return {STATUS_KEY: Outcome.PENDING.value, ERRORS_KEY: []}
-
-
-def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
-
-    errors = []
-    validation_results_model = validation_results_model_with_meta()
-    for (
-        validation_item
-    ) in validation_results_model.validation_outcome_index.query(  # pylint: disable=no-member
-        hash_key=hash_key,
-        range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
-    ):
-        _, check_type, _, url = validation_item.sk.split(DB_KEY_SEPARATOR, maxsplit=4)
-        errors.append(
-            {
-                CHECK_KEY: check_type,
-                RESULT_KEY: validation_item.result,
-                URL_KEY: url,
-                DETAILS_KEY: validation_item.details.attribute_values,
-            }
-        )
-
-    return errors
-
-
-def get_s3_batch_copy_status(s3_batch_copy_job_id: str, logger: logging.Logger) -> JsonObject:
-    caller_identity = STS_CLIENT.get_caller_identity()
-    assert "Account" in caller_identity, caller_identity
-
-    s3_batch_copy_resp = S3CONTROL_CLIENT.describe_job(
-        AccountId=caller_identity["Account"],
-        JobId=s3_batch_copy_job_id,
-    )
-    assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    logger.debug(json.dumps({"s3 batch response": s3_batch_copy_resp}, default=str))
-
-    s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
-
-    upload_errors = s3_batch_copy_resp["Job"].get("FailureReasons", [])
-
-    return {STATUS_KEY: s3_batch_copy_status, ERRORS_KEY: upload_errors}
