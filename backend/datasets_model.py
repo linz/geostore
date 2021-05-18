@@ -47,7 +47,7 @@ class DatasetsModelBase(Model):
     id = UnicodeAttribute(
         hash_key=True,
         attr_name="pk",
-        default_for_new=lambda: f"{DATASET_ID_PREFIX}{human_readable_ulid(new())}",
+        default_for_new=lambda: f"{DATASET_ID_PREFIX}{new()}",
     )
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)
