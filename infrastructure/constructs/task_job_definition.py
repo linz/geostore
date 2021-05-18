@@ -3,6 +3,8 @@ from os.path import join
 from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
 
+from backend.resources import PRODUCTION_ENVIRONMENT_NAME
+
 from .backend import BACKEND_DIRECTORY
 
 
@@ -16,7 +18,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
         directory: str,
         job_role: aws_iam.Role,
     ):
-        if deploy_env == "prod":
+        if deploy_env == PRODUCTION_ENVIRONMENT_NAME:
             batch_job_definition_memory_limit = 3900
         else:
             batch_job_definition_memory_limit = 500

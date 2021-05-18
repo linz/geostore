@@ -1,6 +1,8 @@
 from aws_cdk import aws_ec2
 from aws_cdk.core import Construct, Stack, Tags
 
+from backend.resources import PRODUCTION_ENVIRONMENT_NAME
+
 
 class NetworkingStack(Stack):
     def __init__(self, scope: Construct, stack_id: str, deploy_env: str) -> None:
@@ -28,7 +30,7 @@ class NetworkingStack(Stack):
                     reserved=True,
                 ),
             ],
-            max_azs=99 if deploy_env == "prod" else 1,
+            max_azs=99 if deploy_env == PRODUCTION_ENVIRONMENT_NAME else 1,
         )
 
         Tags.of(self).add("ApplicationLayer", "networking")  # type: ignore[arg-type]
