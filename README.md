@@ -12,7 +12,6 @@
 [![Python: 3.8](https://img.shields.io/badge/Python-3.8-blue)](https://www.python.org/)
 [![shellcheck: passing](https://img.shields.io/badge/shellcheck-passing-brightgreen)](https://www.shellcheck.net/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
 
 LINZ central storage, management and access solution for important geospatial datasets. Developed by
 [Land Information New Zealand](https://github.com/linz).
