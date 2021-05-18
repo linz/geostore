@@ -2,7 +2,16 @@
 
 [![Deploy](https://github.com/linz/geostore/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/deploy.yml)
 [![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
-![WIP](https://img.shields.io/badge/WIP-Work%20In%20Progress-orange)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage: 97%](https://img.shields.io/badge/Coverage-97%25-green.svg)](https://pytest.org/)
+[![hadolint: passing](https://img.shields.io/badge/hadolint-passing-brightgreen)](https://github.com/hadolint/hadolint)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![pylint: passing](https://img.shields.io/badge/pylint-passing-brightgreen)](https://www.pylint.org/)
+[![Python: 3.8](https://img.shields.io/badge/Python-3.8-blue)](https://www.python.org/)
+[![shellcheck: passing](https://img.shields.io/badge/shellcheck-passing-brightgreen)](https://www.shellcheck.net/)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
 LINZ central storage, management and access solution for important geospatial datasets. Developed by
 [Land Information New Zealand](https://github.com/linz).
@@ -230,7 +239,8 @@ To add a production package:
 
   Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
 
-- Update the code coverage minimum in pyproject.toml on branches which increase it.
+- Update the code coverage minimum in pyproject.toml and the badge above on branches which increase
+  it.
 
   Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
