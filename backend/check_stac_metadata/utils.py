@@ -184,8 +184,3 @@ class STACDatasetValidator:
             return result
 
         return report_duplicate_object_names
-
-
-@lru_cache
-def get_url_before_filename(url: str) -> str:
-    return url.rsplit("/", maxsplit=1)[0]
