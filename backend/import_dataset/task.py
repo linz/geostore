@@ -18,6 +18,7 @@ from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..resources import ResourceName
+from ..s3 import S3_URL_PREFIX
 from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, S3_BATCH_RESPONSE_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
@@ -85,7 +86,7 @@ class Importer:
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
         with smart_open(
-            f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{manifest_key}", "w"
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{manifest_key}", "w"
         ) as s3_manifest:
             processing_assets_model = processing_assets_model_with_meta()
 

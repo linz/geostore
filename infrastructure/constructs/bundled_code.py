@@ -4,7 +4,7 @@ from aws_cdk import aws_lambda
 from aws_cdk.core import BundlingOptions
 
 from .backend import BACKEND_DIRECTORY
-from .runtime import PYTHON_RUNTIME
+from .lambda_config import PYTHON_RUNTIME
 
 
 def bundled_code(directory: str) -> aws_lambda.Code:

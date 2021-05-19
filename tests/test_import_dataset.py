@@ -16,6 +16,7 @@ from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.import_dataset.task import lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
@@ -178,6 +179,7 @@ def should_batch_copy_files_to_storage(
                 new_prefix = (
                     f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}/{version_id}"
                 )
+                storage_bucket_prefix = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
 
                 new_root_metadata_key = f"{new_prefix}/{root_metadata_filename}"
                 expected_root_metadata = dumps(
@@ -193,7 +195,7 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open(
-                    f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{new_root_metadata_key}"
+                    f"{storage_bucket_prefix}{new_root_metadata_key}"
                 ) as new_root_metadata_file:
                     assert expected_root_metadata == new_root_metadata_file.read()
 
@@ -215,7 +217,7 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Child metadata content"), smart_open(
-                    f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{new_child_metadata_key}"
+                    f"{storage_bucket_prefix}{new_child_metadata_key}"
                 ) as new_child_metadata_file:
                     assert expected_child_metadata == new_child_metadata_file.read()
 

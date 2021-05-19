@@ -53,7 +53,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
     # create dataset catalog
     dataset_catalog = Catalog(
         **{
-            STAC_ID_KEY: dataset.dataset_id,
+            STAC_ID_KEY: dataset.dataset_prefix,
             STAC_DESCRIPTION_KEY: body["description"],
             STAC_TITLE_KEY: dataset_title,
         },

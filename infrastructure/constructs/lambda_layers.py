@@ -2,7 +2,7 @@ import constructs
 from aws_cdk import aws_lambda_python
 from aws_cdk.core import Construct
 
-from .runtime import PYTHON_RUNTIME
+from .lambda_config import PYTHON_RUNTIME
 
 
 class LambdaLayers(Construct):

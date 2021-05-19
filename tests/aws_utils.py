@@ -25,10 +25,12 @@ from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from backend.parameter_store import ParameterName, get_param
+from backend.populate_catalog.task import CONTENTS_KEY
 from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
+from backend.s3 import S3_URL_PREFIX
 from backend.types import JsonObject
 from backend.validation_results_model import (
     ValidationResult,
@@ -108,7 +110,7 @@ def any_lambda_context() -> bytes:
 def any_s3_url() -> str:
     bucket_name = any_s3_bucket_name()
     key = any_safe_file_path()
-    return f"s3://{bucket_name}/{key}"
+    return f"{S3_URL_PREFIX}{bucket_name}/{key}"
 
 
 def any_s3_bucket_name() -> str:
@@ -226,7 +228,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
         self.file_object = file_object
         self.bucket_name = bucket_name
         self.key = key
-        self.url = f"s3://{self.bucket_name}/{self.key}"
+        self.url = f"{S3_URL_PREFIX}{self.bucket_name}/{self.key}"
         self._s3_client = boto3.client("s3")
 
     def __enter__(self) -> "S3Object":
@@ -280,10 +282,10 @@ class MockValidationResultFactory(Mock):
 def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
 
     process_timeout = datetime.now() + timedelta(minutes=3)
-    while (
-        "Contents" not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
-        and datetime.now() < process_timeout
-    ):
+    while CONTENTS_KEY not in s3_client.list_objects(Bucket=bucket_name, Prefix=key):
+        assert (
+            datetime.now() < process_timeout
+        ), f"S3 file '{bucket_name}/{key}' was not created, process timed out."
         time.sleep(5)
 
 
@@ -371,7 +373,12 @@ def wait_for_s3_batch_job_completion(
             AccountId=account_id,
             JobId=s3_batch_job_arn,
         )
-    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES and datetime.now() < process_timeout:
+    )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
+
+        assert (
+            datetime.now() < process_timeout
+        ), f"S3 Batch process {job_result['Job']['JobId']} hasn't completed, process timed out."
+
         time.sleep(5)
 
     assert job_result["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, job_result

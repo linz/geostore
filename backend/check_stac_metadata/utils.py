@@ -12,6 +12,7 @@ from ..check import Check
 from ..log import set_up_logging
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..s3 import S3_URL_PREFIX
 from ..stac_format import (
     STAC_ASSETS_KEY,
     STAC_CATALOG_TYPE,
@@ -44,8 +45,6 @@ STAC_TYPE_VALIDATION_MAP: Dict[
     STAC_CATALOG_TYPE: STACCatalogSchemaValidator,
     STAC_ITEM_TYPE: STACItemSchemaValidator,
 }
-
-S3_URL_PREFIX = "s3://"
 
 PROCESSING_ASSET_ASSET_KEY = "asset"
 PROCESSING_ASSET_MULTIHASH_KEY = "multihash"

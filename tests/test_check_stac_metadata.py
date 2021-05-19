@@ -31,6 +31,7 @@ from backend.models import (
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_COLLECTION_TYPE,
@@ -126,7 +127,7 @@ def should_save_non_s3_url_validation_results(
             non_s3_url,
             Check.NON_S3_URL,
             ValidationResult.FAILED,
-            details={MESSAGE_KEY: f"URL doesn't start with “s3://”: “{non_s3_url}”"},
+            details={MESSAGE_KEY: f"URL doesn't start with “{S3_URL_PREFIX}”: “{non_s3_url}”"},
         ),
     ]
 
@@ -138,8 +139,10 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     metadata = (
         "{"
         f'"{STAC_ASSETS_KEY}": {{'
-        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/foo", "{STAC_FILE_CHECKSUM_KEY}": ""}},'
-        f'"{asset_name}": {{"{STAC_HREF_KEY}": "s3://bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
+        f'"{asset_name}": '
+        f'{{"{STAC_HREF_KEY}": "{S3_URL_PREFIX}bucket/foo", "{STAC_FILE_CHECKSUM_KEY}": ""}},'
+        f'"{asset_name}": '
+        f'{{"{STAC_HREF_KEY}": "{S3_URL_PREFIX}bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
         "},"
         f'"{STAC_DESCRIPTION_KEY}": "any description",'
         f' "{STAC_EXTENT_KEY}": {{'
@@ -218,7 +221,7 @@ def should_save_staging_access_validation_results(
 
 @mark.infrastructure
 def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> None:
-    base_url = f"s3://{ResourceName.STAGING_BUCKET_NAME.value}/"
+    base_url = f"{S3_URL_PREFIX}{ResourceName.STAGING_BUCKET_NAME.value}/"
     valid_child_key = any_safe_filename()
     invalid_child_key = any_safe_filename()
     invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)

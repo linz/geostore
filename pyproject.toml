@@ -155,7 +155,7 @@ validation_summary = [
     "jsonschema",
     "pynamodb",
 ]
-write_to_catalog = [
+populate_catalog = [
     "boto3",
     "jsonschema",
     "pystac",

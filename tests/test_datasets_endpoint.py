@@ -18,9 +18,10 @@ from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
+from backend.populate_catalog.task import CATALOG_KEY
 from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
-from backend.write_to_catalog.task import CATALOG_KEY
 
 from .aws_utils import (
     Dataset,
@@ -72,7 +73,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
         )[0]
 
         with smart_open(
-            f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
         ) as new_catalog_metadata_file:
 
             catalog_json = load(new_catalog_metadata_file)

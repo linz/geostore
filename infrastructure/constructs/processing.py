@@ -40,6 +40,7 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
+from .lambda_config import LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -87,22 +88,31 @@ class Processing(Construct):
         ############################################################################################
         # ROOT CATALOG UPDATE MESSAGE QUEUE
 
+        dead_letter_queue = aws_sqs.Queue(
+            self,
+            "dead-letter-queue",
+            visibility_timeout=LAMBDA_TIMEOUT,
+        )
+
         self.message_queue = aws_sqs.Queue(
-            self, "root-catalog-message-queue", visibility_timeout=Duration.seconds(60)
+            self,
+            "root-catalog-message-queue",
+            visibility_timeout=LAMBDA_TIMEOUT,
+            dead_letter_queue=aws_sqs.DeadLetterQueue(max_receive_count=3, queue=dead_letter_queue),
         )
         self.message_queue_name_parameter = aws_ssm.StringParameter(
             self,
-            "root catalog message queue name",
+            "root-catalog-message-queue-name",
             string_value=self.message_queue.queue_name,
-            description=f"Root Catalog Message Queue Name for {deploy_env}",
+            description=f"Root Catalog Message Queue Name for {env_name}",
             parameter_name=ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME.value,
         )
 
         write_catalog_lambda = BundledLambdaFunction(
             self,
-            "write-catalog-bundled-lambda-function",
-            directory="write_to_catalog",
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            "populate-catalog-bundled-lambda-function",
+            directory="populate_catalog",
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
