@@ -1,5 +1,4 @@
 from hashlib import sha256
-from random import choice
 from uuid import uuid4
 
 from multihash import SHA2_256  # type: ignore[import]
@@ -44,7 +43,3 @@ def any_asset_name() -> str:
 def any_dataset_description() -> str:
     """Arbitrary-length string"""
     return random_string(100)
-
-
-def any_stac_relation() -> str:
-    return choice(["child", "root", "self"])

@@ -6,8 +6,6 @@ import logging
 
 import boto3
 import pytest
-from mypy_boto3_batch import BatchClient
-from mypy_boto3_dynamodb import DynamoDBClient
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
@@ -17,16 +15,6 @@ from mypy_boto3_sts import STSClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-@pytest.fixture()
-def batch_client() -> BatchClient:
-    return boto3.client("batch")
-
-
-@pytest.fixture()
-def dynamodb_client() -> DynamoDBClient:
-    return boto3.client("dynamodb")
 
 
 @pytest.fixture()
