@@ -1,28 +1,27 @@
 import logging
 from json import dumps
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
-from backend.import_dataset_keys import (
+from backend.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
-    NEW_KEY_KEY,
-    ORIGINAL_KEY_KEY,
     S3_BUCKET_ARN_KEY,
     S3_KEY_KEY,
-    TARGET_BUCKET_NAME_KEY,
     TASKS_KEY,
     TASK_ID_KEY,
+    get_import_result,
 )
-from backend.import_metadata_file.task import lambda_handler
+from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 
-from .aws_utils import any_lambda_context, any_s3_bucket_arn, any_s3_bucket_name
+from .aws_utils import any_s3_bucket_arn, any_s3_bucket_name
 from .general_generators import any_safe_file_path
 
-LOGGER = logging.getLogger("backend.import_metadata_file.task")
+LOGGER = logging.getLogger("backend.import_dataset_file")
 
 
-def should_log_payload() -> None:
+@patch("backend.import_metadata_file.task.importer")
+def should_log_payload(importer_mock: MagicMock) -> None:
     # Given
     event = {
         TASKS_KEY: [
@@ -46,7 +45,7 @@ def should_log_payload() -> None:
 
     with patch.object(LOGGER, "debug") as logger_mock:
         # When
-        lambda_handler(event, any_lambda_context())
+        get_import_result(event, importer_mock)
 
         # Then
         logger_mock.assert_any_call(dumps(event))

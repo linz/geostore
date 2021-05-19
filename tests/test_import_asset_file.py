@@ -3,22 +3,20 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
 from backend.import_asset_file.task import lambda_handler
-from backend.import_dataset_keys import (
+from backend.import_dataset_file import (
     EXCEPTION_PREFIX,
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
-    NEW_KEY_KEY,
-    ORIGINAL_KEY_KEY,
     RESULTS_KEY,
     RESULT_CODE_KEY,
     RESULT_CODE_PERMANENT_FAILURE,
     RESULT_STRING_KEY,
     S3_BUCKET_ARN_KEY,
     S3_KEY_KEY,
-    TARGET_BUCKET_NAME_KEY,
     TASKS_KEY,
     TASK_ID_KEY,
 )
+from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 
 from .aws_utils import any_lambda_context, any_s3_bucket_arn, any_s3_bucket_name
 from .general_generators import any_error_message, any_safe_file_path
