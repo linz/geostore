@@ -20,7 +20,6 @@ from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests  # type: ignore[import]
 
-from backend.boto3_keys import CONTENTS_KEY
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -282,7 +281,7 @@ def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
 
     process_timeout = datetime.now() + timedelta(minutes=3)
     while (
-        CONTENTS_KEY not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
+        "Contents" not in s3_client.list_objects(Bucket=bucket_name, Prefix=key)
         and datetime.now() < process_timeout
     ):
         time.sleep(5)

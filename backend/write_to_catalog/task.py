@@ -2,7 +2,6 @@ import boto3
 from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
 
 from ..api_responses import BODY_KEY
-from ..boto3_keys import CONTENTS_KEY, RECORDS_KEY
 from ..pystac_io_methods import read_method, write_method
 from ..resources import ResourceName
 from ..types import JsonObject
@@ -26,7 +25,7 @@ def lambda_handler(_event: JsonObject, _context: bytes) -> JsonObject:
     )
 
     # create root catalog if it doesn't exist
-    if CONTENTS_KEY not in results:
+    if "Contents" not in results:
         root_catalog = Catalog(
             id=ROOT_CATALOG_ID,
             title=ROOT_CATALOG_TITLE,
@@ -39,7 +38,7 @@ def lambda_handler(_event: JsonObject, _context: bytes) -> JsonObject:
             f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
         )
 
-    for record in _event[RECORDS_KEY]:
+    for record in _event["Records"]:
         dataset_title_prefix = record[BODY_KEY]
         dataset_catalog = Catalog.from_file(
             f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}"

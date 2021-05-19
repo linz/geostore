@@ -6,7 +6,6 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.boto3_keys import RECORDS_KEY
 from backend.resources import ResourceName
 from backend.stac_format import (
     STAC_CHILD_KEY,
@@ -47,7 +46,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
         key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
     ):
 
-        body = {RECORDS_KEY: [{"body": dataset.dataset_prefix}]}
+        body = {"Records": [{"body": dataset.dataset_prefix}]}
 
         try:
             task.lambda_handler(body, any_lambda_context())
@@ -108,7 +107,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
         key=CATALOG_KEY,
     ):
 
-        body = {RECORDS_KEY: [{"body": dataset.dataset_prefix}]}
+        body = {"Records": [{"body": dataset.dataset_prefix}]}
 
         task.lambda_handler(body, any_lambda_context())
 
