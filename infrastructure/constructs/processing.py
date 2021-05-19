@@ -188,14 +188,6 @@ class Processing(Construct):
             validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
-        validation_failure_lambda_invoke = LambdaTask(
-            self,
-            "validation-failure-task",
-            directory="validation_failure",
-            botocore_lambda_layer=botocore_lambda_layer,
-            result_path=aws_stepfunctions.JsonPath.DISCARD,
-        )
-
         import_dataset_role = aws_iam.Role(
             self,
             "import-dataset",
@@ -315,7 +307,8 @@ class Processing(Construct):
         )
 
         success_task = aws_stepfunctions.Succeed(self, "success")
-        fail_task = aws_stepfunctions.Fail(self, "fail")
+        upload_failure = aws_stepfunctions.Fail(self, "upload failure")
+        validation_failure = aws_stepfunctions.Succeed(self, "validation failure")
 
         ############################################################################################
         # STATE MACHINE
@@ -386,14 +379,14 @@ class Processing(Construct):
                                             "Failed",
                                         ),
                                     ),
-                                    fail_task,  # type: ignore[arg-type]
+                                    upload_failure,  # type: ignore[arg-type]
                                 )
                                 .otherwise(
                                     wait_before_upload_status_check  # type: ignore[arg-type]
                                 )
                             ),
                         )
-                        .otherwise(validation_failure_lambda_invoke)
+                        .otherwise(validation_failure)  # type: ignore[arg-type]
                     ),
                 )
                 .otherwise(content_iterator_task)
