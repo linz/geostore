@@ -22,7 +22,7 @@ from backend.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
 )
-from backend.step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
     Dataset,

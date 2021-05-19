@@ -3,9 +3,9 @@ import time
 from contextlib import AbstractContextManager
 from io import StringIO
 from json import dump
-from random import randrange
+from random import choice, randrange
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type
+from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type, get_args
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -15,6 +15,7 @@ from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
+from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -66,6 +67,11 @@ def any_batch_job_array_index() -> int:
 def any_next_item_index() -> int:
     """Arbitrary non-negative multiple of iteration size"""
     return randrange(1_000_000) * MAX_ITERATION_SIZE
+
+
+def any_batch_job_status() -> str:
+    job_status: str = choice(get_args(JobStatusType))
+    return job_status
 
 
 # DynamoDB

@@ -18,15 +18,15 @@ from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..resources import ResourceName
-from ..step_function_event_keys import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, S3_BATCH_RESPONSE_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
 if TYPE_CHECKING:
     from mypy_boto3_s3control.literals import (
-        JobManifestFieldName,
-        JobManifestFormat,
-        JobReportFormat,
-        JobReportScope,
+        JobManifestFieldNameType,
+        JobManifestFormatType,
+        JobReportFormatType,
+        JobReportScopeType,
     )
     from mypy_boto3_s3control.type_defs import (
         JobManifestLocationTypeDef,
@@ -43,10 +43,10 @@ else:
     JobOperationTypeDef = dict
     JobReportTypeDef = dict
     LambdaInvokeOperationTypeDef = dict
-    JobManifestFieldName = str
-    JobManifestFormat = str
-    JobReportFormat = str
-    JobReportScope = str
+    JobManifestFieldNameType = str
+    JobManifestFormatType = str
+    JobReportFormatType = str
+    JobReportScopeType = str
 
 LOGGER = set_up_logging(__name__)
 
@@ -65,10 +65,10 @@ S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_
 
 EVENT_KEY = "event"
 
-JOB_MANIFEST_FORMAT: JobManifestFormat = "S3BatchOperations_CSV_20180820"
-JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldName] = ["Bucket", "Key"]
-JOB_REPORT_FORMAT: JobReportFormat = "Report_CSV_20180820"
-JOB_REPORT_SCOPE: JobReportScope = "AllTasks"
+JOB_MANIFEST_FORMAT: JobManifestFormatType = "S3BatchOperations_CSV_20180820"
+JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldNameType] = ["Bucket", "Key"]
+JOB_REPORT_FORMAT: JobReportFormatType = "Report_CSV_20180820"
+JOB_REPORT_SCOPE: JobReportScopeType = "AllTasks"
 
 
 class Importer:
@@ -143,7 +143,7 @@ class Importer:
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
             ClientRequestToken=uuid4().hex,
         )
-        LOGGER.debug(dumps({"s3 batch response": response}, default=str))
+        LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: response}, default=str))
 
         return response["JobId"]
 
