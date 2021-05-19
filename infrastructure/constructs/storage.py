@@ -8,10 +8,10 @@ from backend.datasets_model import DatasetsTitleIdx
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
-from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 from .removal_policy import REMOVAL_POLICY
 from .table import Table
+from .version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 
 class Storage(Construct):
