@@ -1,6 +1,3 @@
-"""
-Data Lake processing stack.
-"""
 from aws_cdk import (
     aws_dynamodb,
     aws_iam,
@@ -108,7 +105,7 @@ class Processing(Construct):
             parameter_name=ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME.value,
         )
 
-        write_catalog_lambda = BundledLambdaFunction(
+        populate_catalog_lambda = BundledLambdaFunction(
             self,
             "populate-catalog-bundled-lambda-function",
             directory="populate_catalog",
@@ -116,8 +113,8 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
-        self.message_queue.grant_consume_messages(write_catalog_lambda)
-        write_catalog_lambda.add_event_source(
+        self.message_queue.grant_consume_messages(populate_catalog_lambda)
+        populate_catalog_lambda.add_event_source(
             SqsEventSource(self.message_queue, batch_size=1)  # type: ignore[arg-type]
         )
 
@@ -287,7 +284,7 @@ class Processing(Construct):
             import_dataset_task.lambda_function,
             import_asset_file_function,
             import_metadata_file_function,
-            write_catalog_lambda,
+            populate_catalog_lambda,
         ]:
             storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
