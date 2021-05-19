@@ -168,7 +168,7 @@ Re-run `. .venv/bin/activate` in each shell.
      ```
 
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.
-     Default: dev.
+     Default: test.
 
    * **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
      Storage S3 bucket or application database tables will be preserved even if they are removed
