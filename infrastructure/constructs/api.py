@@ -20,7 +20,7 @@ class API(Construct):
         *,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
-        deploy_env: str,
+        env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
@@ -56,7 +56,7 @@ class API(Construct):
             self,
             "datasets",
             package_name="datasets",
-            deploy_env=deploy_env,
+            env_name=env_name,
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -65,7 +65,7 @@ class API(Construct):
             self,
             "dataset-versions",
             package_name="dataset_versions",
-            deploy_env=deploy_env,
+            env_name=env_name,
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
@@ -82,7 +82,7 @@ class API(Construct):
             self,
             "import-status",
             package_name="import_status",
-            deploy_env=deploy_env,
+            env_name=env_name,
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )

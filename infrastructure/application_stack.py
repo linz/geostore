@@ -3,7 +3,7 @@ from os import environ
 import constructs
 from aws_cdk.core import Environment, Stack
 
-from backend.environment import ENV
+from backend.environment import environment_name
 
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
@@ -21,18 +21,19 @@ class Application(Stack):
 
         super().__init__(scope, stack_id, env=environment)
 
-        storage = Storage(self, "storage", deploy_env=ENV)
+        env_name = environment_name()
+        storage = Storage(self, "storage", env_name=env_name)
 
         Staging(self, "staging")
 
-        lambda_layers = LambdaLayers(self, "lambda-layers", deploy_env=ENV)
+        lambda_layers = LambdaLayers(self, "lambda-layers", env_name=env_name)
 
         processing = Processing(
             self,
             "processing",
             botocore_lambda_layer=lambda_layers.botocore,
             datasets_table=storage.datasets_table,
-            deploy_env=ENV,
+            env_name=env_name,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
         )
@@ -42,7 +43,7 @@ class Application(Stack):
             "api",
             botocore_lambda_layer=lambda_layers.botocore,
             datasets_table=storage.datasets_table,
-            deploy_env=ENV,
+            env_name=env_name,
             state_machine=processing.state_machine,
             state_machine_parameter=processing.state_machine_parameter,
             storage_bucket=storage.storage_bucket,
@@ -50,4 +51,4 @@ class Application(Stack):
         )
 
         if self.node.try_get_context("enableLDSAccess"):
-            LDS(self, "lds", deploy_env=ENV, storage_bucket=storage.storage_bucket)
+            LDS(self, "lds", env_name=env_name, storage_bucket=storage.storage_bucket)

@@ -15,13 +15,13 @@ class BatchJobQueue(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        deploy_env: str,
+        env_name: str,
         processing_assets_table: aws_dynamodb.Table,
     ):
         # pylint: disable=too-many-locals
         super().__init__(scope, construct_id)
 
-        if deploy_env == PRODUCTION_ENVIRONMENT_NAME:
+        if env_name == PRODUCTION_ENVIRONMENT_NAME:
             instance_types = [
                 aws_ec2.InstanceType("c5.xlarge"),
                 aws_ec2.InstanceType("c5.2xlarge"),
@@ -72,7 +72,7 @@ class BatchJobQueue(Construct):
         cloudformation_launch_template = aws_ec2.CfnLaunchTemplate(
             self,
             "batch-launch-template",
-            launch_template_name=f"{deploy_env}-geostore-batch-launch-template",
+            launch_template_name=f"{env_name}-geostore-batch-launch-template",
             launch_template_data=launch_template_data,
         )
         assert cloudformation_launch_template.launch_template_name is not None

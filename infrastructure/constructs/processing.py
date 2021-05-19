@@ -11,6 +11,7 @@ from backend.content_iterator.task import (
     NEXT_ITEM_KEY,
     RESULTS_TABLE_NAME_KEY,
 )
+from backend.environment import ENV_NAME_VARIABLE_NAME
 from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
 from backend.step_function import (
@@ -39,7 +40,7 @@ class Processing(Construct):
         *,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
-        deploy_env: str,
+        env_name: str,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
@@ -50,8 +51,8 @@ class Processing(Construct):
         # PROCESSING ASSETS TABLE
         processing_assets_table = Table(
             self,
-            f"{deploy_env}-processing-assets",
-            deploy_env=deploy_env,
+            f"{env_name}-processing-assets",
+            env_name=env_name,
             parameter_name=ParameterName.PROCESSING_ASSETS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )
@@ -61,7 +62,7 @@ class Processing(Construct):
         batch_job_queue = BatchJobQueue(
             self,
             "batch-job-queue",
-            deploy_env=deploy_env,
+            env_name=env_name,
             processing_assets_table=processing_assets_table,
         ).job_queue
 
@@ -77,7 +78,7 @@ class Processing(Construct):
             "check-stac-metadata-task",
             directory="check_stac_metadata",
             botocore_lambda_layer=botocore_lambda_layer,
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
         assert check_stac_metadata_task.lambda_function.role
         check_stac_metadata_task.lambda_function.role.add_managed_policy(
@@ -97,7 +98,7 @@ class Processing(Construct):
             directory="content_iterator",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{CONTENT_KEY}",
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
 
         check_files_checksums_directory = "check_files_checksums"
@@ -112,7 +113,7 @@ class Processing(Construct):
         check_files_checksums_single_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-single-task",
-            deploy_env=deploy_env,
+            env_name=env_name,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
@@ -136,7 +137,7 @@ class Processing(Construct):
         check_files_checksums_array_task = BatchSubmitJobTask(
             self,
             "check-files-checksums-array-task",
-            deploy_env=deploy_env,
+            env_name=env_name,
             directory=check_files_checksums_directory,
             s3_policy=s3_read_only_access_policy,
             job_queue=batch_job_queue,
@@ -181,7 +182,7 @@ class Processing(Construct):
             directory="validation_summary",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
         validation_results_table.grant_read_data(validation_summary_task.lambda_function)
         validation_results_table.grant(
@@ -200,14 +201,14 @@ class Processing(Construct):
             self,
             directory="import_asset_file",
             invoker=import_dataset_role,
-            deploy_env=deploy_env,
+            env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
         )
         import_metadata_file_function = ImportFileFunction(
             self,
             directory="import_metadata_file",
             invoker=import_dataset_role,
-            deploy_env=deploy_env,
+            env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
@@ -224,7 +225,7 @@ class Processing(Construct):
             directory="import_dataset",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{IMPORT_DATASET_KEY}",
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
 
         import_dataset_task.lambda_function.add_to_role_policy(
@@ -255,7 +256,7 @@ class Processing(Construct):
             directory="upload_status",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path="$.upload_status",
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
         validation_results_table.grant_read_data(upload_status_task.lambda_function)
         validation_results_table.grant(upload_status_task.lambda_function, "dynamodb:DescribeTable")
@@ -267,14 +268,14 @@ class Processing(Construct):
             self,
             "import asset file function arn",
             string_value=import_asset_file_function.function_arn,
-            description=f"Import asset file function ARN for {deploy_env}",
+            description=f"Import asset file function ARN for {env_name}",
             parameter_name=ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN.value,
         )
         import_metadata_file_function_arn_parameter = aws_ssm.StringParameter(
             self,
             "import metadata file function arn",
             string_value=import_metadata_file_function.function_arn,
-            description=f"Import metadata file function ARN for {deploy_env}",
+            description=f"Import metadata file function ARN for {env_name}",
             parameter_name=ParameterName.PROCESSING_IMPORT_METADATA_FILE_FUNCTION_TASK_ARN.value,
         )
 
@@ -282,7 +283,7 @@ class Processing(Construct):
             self,
             "import dataset role arn",
             string_value=import_dataset_role.role_arn,
-            description=f"Import dataset role ARN for {deploy_env}",
+            description=f"Import dataset role ARN for {env_name}",
             parameter_name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value,
         )
 
@@ -395,14 +396,14 @@ class Processing(Construct):
 
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            f"{deploy_env}-dataset-version-creation",
+            f"{env_name}-dataset-version-creation",
             definition=dataset_version_creation_definition,  # type: ignore[arg-type]
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(
             self,
             "state machine arn",
-            description=f"State machine ARN for {deploy_env}",
+            description=f"State machine ARN for {env_name}",
             parameter_name=ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value,  # pylint:disable=line-too-long
             string_value=self.state_machine.state_machine_arn,
         )

@@ -160,11 +160,11 @@ Re-run `. .venv/bin/activate` in each shell.
 
 1. Environment variables
 
-   - **`DEPLOY_ENV`:** set deployment environment. For your personal development stack: set
-     DEPLOY_ENV to your username.
+   - **`GEOSTORE_ENV_NAME`:** set deployment environment. For your personal development stack: set
+     GEOSTORE_ENV_NAME to your username.
 
      ```bash
-     export DEPLOY_ENV="$USER"
+     export GEOSTORE_ENV_NAME="$USER"
      ```
 
      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.

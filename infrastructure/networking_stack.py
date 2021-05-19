@@ -5,7 +5,7 @@ from backend.resources import PRODUCTION_ENVIRONMENT_NAME
 
 
 class NetworkingStack(Stack):
-    def __init__(self, scope: Construct, stack_id: str, deploy_env: str) -> None:
+    def __init__(self, scope: Construct, stack_id: str, env_name: str) -> None:
         super().__init__(scope, stack_id)
 
         ############################################################################################
@@ -30,7 +30,7 @@ class NetworkingStack(Stack):
                     reserved=True,
                 ),
             ],
-            max_azs=99 if deploy_env == PRODUCTION_ENVIRONMENT_NAME else 1,
+            max_azs=99 if env_name == PRODUCTION_ENVIRONMENT_NAME else 1,
         )
 
         Tags.of(self).add("ApplicationLayer", "networking")  # type: ignore[arg-type]

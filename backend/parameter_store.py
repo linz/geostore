@@ -5,7 +5,7 @@ from typing import Sequence
 
 import boto3
 
-from .environment import ENV
+from .environment import environment_name
 from .error_response_keys import ERROR_KEY
 from .log import set_up_logging
 
@@ -19,7 +19,7 @@ class ParameterName(Enum):
     def _generate_next_value_(  # type: ignore[misc,override] # pylint:disable=no-self-argument,no-member
         name: str, _start: int, _count: int, _last_values: Sequence[str]
     ) -> str:
-        return f"/{ENV}/{name.lower()}"
+        return f"/{environment_name()}/{name.lower()}"
 
     PROCESSING_ASSETS_TABLE_NAME = auto()
     PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
