@@ -33,13 +33,7 @@ class ParameterName(Enum):
 @lru_cache
 def get_param(parameter: ParameterName) -> str:
     try:
-        parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
+        return SSM_CLIENT.get_parameter(Name=parameter.value)["Parameter"]["Value"]
     except SSM_CLIENT.exceptions.ParameterNotFound:
         LOGGER.error(dumps({ERROR_KEY: f"Parameter not found: “{parameter.value}”"}))
-        raise
-
-    try:
-        return parameter_response["Parameter"]["Value"]
-    except KeyError as error:
-        LOGGER.error(dumps({ERROR_KEY: error}, default=str))
         raise
