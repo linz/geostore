@@ -13,7 +13,7 @@ class BatchSubmitJobTask(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        deploy_env: str,
+        env_name: str,
         directory: str,
         s3_policy: aws_iam.IManagedPolicy,
         job_queue: aws_batch.JobQueue,
@@ -35,7 +35,7 @@ class BatchSubmitJobTask(Construct):
         self.job_definition = TaskJobDefinition(
             self,
             f"{construct_id}-task-definition",
-            deploy_env=deploy_env,
+            env_name=env_name,
             directory=directory,
             job_role=self.job_role,
         )

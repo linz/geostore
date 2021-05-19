@@ -1,7 +1,7 @@
 import string
 from datetime import datetime, timedelta, timezone
 from os import urandom
-from random import choice, getrandbits, randrange
+from random import choice, randrange
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -70,10 +70,6 @@ def any_error_message() -> str:
 def any_dictionary_key() -> str:
     """Arbitrary-length string"""
     return random_string(20)
-
-
-def any_boolean() -> bool:
-    return bool(getrandbits(1))
 
 
 def any_etag() -> str:

@@ -83,7 +83,7 @@ jobs:
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
           poetry run cdk deploy --all --require-approval never
         env:
-          DEPLOY_ENV: nonprod
+          GEOSTORE_ENV_NAME: nonprod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.GEOSTORE_SAML_IDENTITY_PROVIDER_ARN_NON_PROD }}
           RESOURCE_REMOVAL_POLICY: RETAIN
@@ -108,7 +108,7 @@ jobs:
         run: |
           poetry run cdk diff -c aws-cdk:enableDiffNoFail=true
         env:
-          DEPLOY_ENV: prod
+          GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.GEOSTORE_SAML_IDENTITY_PROVIDER_ARN_PROD }}
 
@@ -119,7 +119,7 @@ jobs:
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
           poetry run cdk deploy --all --require-approval never
         env:
-          DEPLOY_ENV: prod
+          GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
             ${{ secrets.GEOSTORE_SAML_IDENTITY_PROVIDER_ARN_PROD }}
           RESOURCE_REMOVAL_POLICY: RETAIN

@@ -14,7 +14,7 @@ class Table(aws_dynamodb.Table):
         scope: Construct,
         construct_id: str,
         *,
-        deploy_env: str,
+        env_name: str,
         parameter_name: ParameterName,
         sort_key: Optional[aws_dynamodb.Attribute] = None,
     ):
@@ -31,7 +31,7 @@ class Table(aws_dynamodb.Table):
 
         self.name_parameter = aws_ssm.StringParameter(
             self,
-            f"{construct_id} table name for {deploy_env}",
+            f"{construct_id} table name for {env_name}",
             string_value=self.table_name,
             parameter_name=parameter_name.value,
         )

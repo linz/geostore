@@ -1,6 +1,8 @@
 from aws_cdk import aws_iam, aws_lambda_python
 from aws_cdk.core import Construct
 
+from backend.environment import ENV_NAME_VARIABLE_NAME
+
 from .bundled_lambda_function import BundledLambdaFunction
 
 
@@ -11,14 +13,14 @@ class ImportFileFunction(BundledLambdaFunction):
         *,
         directory: str,
         invoker: aws_iam.Role,
-        deploy_env: str,
+        env_name: str,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
     ):
         super().__init__(
             scope,
             directory.replace("_", "-"),
             directory=directory,
-            extra_environment={"DEPLOY_ENV": deploy_env},
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
         )
 

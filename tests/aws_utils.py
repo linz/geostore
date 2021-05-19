@@ -303,9 +303,6 @@ def get_s3_key_versions(
     version_list: List[ObjectIdentifierTypeDef] = []
     object_versions_paginator = s3_client.get_paginator("list_object_versions")
     for object_versions_page in object_versions_paginator.paginate(Bucket=bucket_name, Prefix=key):
-        for marker in object_versions_page.get("DeleteMarkers", []):
-            if marker["Key"] == key:
-                version_list.append({"Key": marker["Key"], "VersionId": marker["VersionId"]})
         for version in object_versions_page.get("Versions", []):
             if version["Key"] == key:
                 version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
@@ -321,8 +318,6 @@ def get_s3_prefix_versions(
     for object_versions_page in object_versions_paginator.paginate(
         Bucket=bucket_name, Prefix=prefix
     ):
-        for marker in object_versions_page.get("DeleteMarkers", []):
-            version_list.append({"Key": marker["Key"], "VersionId": marker["VersionId"]})
         for version in object_versions_page.get("Versions", []):
             version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
     assert version_list, version_list

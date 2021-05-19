@@ -5,7 +5,7 @@ from typing import Sequence
 
 import boto3
 
-from .environment import ENV
+from .environment import environment_name
 from .error_response_keys import ERROR_KEY
 from .log import set_up_logging
 
@@ -19,7 +19,7 @@ class ParameterName(Enum):
     def _generate_next_value_(  # type: ignore[misc,override] # pylint:disable=no-self-argument,no-member
         name: str, _start: int, _count: int, _last_values: Sequence[str]
     ) -> str:
-        return f"/{ENV}/{name.lower()}"
+        return f"/{environment_name()}/{name.lower()}"
 
     PROCESSING_ASSETS_TABLE_NAME = auto()
     PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
@@ -33,13 +33,7 @@ class ParameterName(Enum):
 @lru_cache
 def get_param(parameter: ParameterName) -> str:
     try:
-        parameter_response = SSM_CLIENT.get_parameter(Name=parameter.value)
+        return SSM_CLIENT.get_parameter(Name=parameter.value)["Parameter"]["Value"]
     except SSM_CLIENT.exceptions.ParameterNotFound:
         LOGGER.error(dumps({ERROR_KEY: f"Parameter not found: “{parameter.value}”"}))
-        raise
-
-    try:
-        return parameter_response["Parameter"]["Value"]
-    except KeyError as error:
-        LOGGER.error(dumps({ERROR_KEY: error}, default=str))
         raise

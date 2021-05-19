@@ -8,14 +8,14 @@ from backend.datasets_model import DatasetsTitleIdx
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 from backend.validation_results_model import ValidationOutcomeIdx
-from backend.version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 from .removal_policy import REMOVAL_POLICY
 from .table import Table
+from .version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
 
 class Storage(Construct):
-    def __init__(self, scope: Construct, stack_id: str, *, deploy_env: str) -> None:
+    def __init__(self, scope: Construct, stack_id: str, *, env_name: str) -> None:
         super().__init__(scope, stack_id)
 
         ############################################################################################
@@ -25,7 +25,7 @@ class Storage(Construct):
         aws_ssm.StringParameter(
             self,
             "git-branch",
-            parameter_name=f"/{deploy_env}/git_branch",
+            parameter_name=f"/{env_name}/git_branch",
             string_value=GIT_BRANCH,
             description="Deployment git branch",
         )
@@ -33,7 +33,7 @@ class Storage(Construct):
         aws_ssm.StringParameter(
             self,
             "git-commit",
-            parameter_name=f"/{deploy_env}/git_commit",
+            parameter_name=f"/{env_name}/git_commit",
             string_value=GIT_COMMIT,
             description="Deployment git commit",
         )
@@ -41,7 +41,7 @@ class Storage(Construct):
         aws_ssm.StringParameter(
             self,
             "git-tag",
-            parameter_name=f"/{deploy_env}/version",
+            parameter_name=f"/{env_name}/version",
             string_value=GIT_TAG,
             description="Deployment version",
         )
@@ -64,8 +64,8 @@ class Storage(Construct):
         ############################################################################################
         self.datasets_table = Table(
             self,
-            f"{deploy_env}-datasets",
-            deploy_env=deploy_env,
+            f"{env_name}-datasets",
+            env_name=env_name,
             parameter_name=ParameterName.STORAGE_DATASETS_TABLE_NAME,
         )
 
@@ -78,8 +78,8 @@ class Storage(Construct):
 
         self.validation_results_table = Table(
             self,
-            f"{deploy_env}-validation-results",
-            deploy_env=deploy_env,
+            f"{env_name}-validation-results",
+            env_name=env_name,
             parameter_name=ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME,
             sort_key=aws_dynamodb.Attribute(name="sk", type=aws_dynamodb.AttributeType.STRING),
         )

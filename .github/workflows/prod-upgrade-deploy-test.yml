@@ -97,8 +97,8 @@ jobs:
 
       - name: Set unique deployment environment type variable
         run: |
-          DEPLOY_ENV="ci${GITHUB_RUN_ID}"
-          echo "DEPLOY_ENV=$DEPLOY_ENV" | tee -a $GITHUB_ENV
+          GEOSTORE_ENV_NAME="ci${GITHUB_RUN_ID}"
+          echo "GEOSTORE_ENV_NAME=$GEOSTORE_ENV_NAME" | tee -a $GITHUB_ENV
 
       - name: Deploy copy of production AWS stacks in to CI environment
         run: |
