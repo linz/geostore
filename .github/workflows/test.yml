@@ -26,9 +26,11 @@ jobs:
         uses: actions/cache@v2.1.5
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
+          key:
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-${{
+            hashFiles('./poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ matrix.python }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-
 
       - name: Install Python dependencies
         run: |
@@ -68,9 +70,10 @@ jobs:
         uses: actions/cache@v2.1.5
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key:
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ secrets.CACHE_SEED }}-
 
       - name: Install Node.js dependencies
         run: npm ci --production
@@ -87,9 +90,11 @@ jobs:
         uses: actions/cache@v2.1.5
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('./poetry.lock') }}
+          key:
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-${{
+            hashFiles('./poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ matrix.python }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-
 
       - name: Install Python dependencies
         run: |
