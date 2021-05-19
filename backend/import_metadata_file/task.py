@@ -6,8 +6,25 @@ from urllib.parse import unquote_plus
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
-from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from ..import_dataset_keys import (
+    EXCEPTION_PREFIX,
+    INVOCATION_ID_KEY,
+    INVOCATION_SCHEMA_VERSION_KEY,
+    NEW_KEY_KEY,
+    ORIGINAL_KEY_KEY,
+    RESULTS_KEY,
+    RESULT_CODE_KEY,
+    RESULT_CODE_PERMANENT_FAILURE,
+    RESULT_STRING_KEY,
+    S3_BUCKET_ARN_KEY,
+    S3_KEY_KEY,
+    TARGET_BUCKET_NAME_KEY,
+    TASKS_KEY,
+    TASK_ID_KEY,
+    TREAT_MISSING_KEYS_AS_KEY,
+)
 from ..log import set_up_logging
+from ..stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY, STAC_LINKS_KEY
 from ..types import JsonObject
 
 S3_CLIENT = boto3.client("s3")
@@ -17,9 +34,9 @@ LOGGER = set_up_logging(__name__)
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(dumps(event))
 
-    task = event["tasks"][0]
-    source_bucket_name = task["s3BucketArn"].split(":::", maxsplit=1)[-1]
-    parameters = loads(unquote_plus(task["s3Key"]))
+    task = event[TASKS_KEY][0]
+    source_bucket_name = task[S3_BUCKET_ARN_KEY].split(":::", maxsplit=1)[-1]
+    parameters = loads(unquote_plus(task[S3_KEY_KEY]))
 
     try:
         get_object_response = S3_CLIENT.get_object(
@@ -29,10 +46,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
         metadata = load(get_object_response["Body"])
 
-        assets = metadata.get("assets", {}).values()
+        assets = metadata.get(STAC_ASSETS_KEY, {}).values()
         change_href_to_basename(assets)
 
-        links = metadata.get("links", [])
+        links = metadata.get(STAC_LINKS_KEY, [])
         change_href_to_basename(links)
 
         put_object_response = S3_CLIENT.put_object(
@@ -48,24 +65,28 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             result_code = "TemporaryFailure"
             result_string = "Retry request to Amazon S3 due to timeout."
         else:
-            result_code = "PermanentFailure"
+            result_code = RESULT_CODE_PERMANENT_FAILURE
             result_string = f"{error_code}: {error.response['Error']['Message']}"
     except Exception as error:  # pylint:disable=broad-except
-        result_code = "PermanentFailure"
-        result_string = "Exception: {}".format(error)
+        result_code = RESULT_CODE_PERMANENT_FAILURE
+        result_string = f"{EXCEPTION_PREFIX}: {error}"
     finally:
         results = [
-            {"taskId": (task["taskId"]), "resultCode": result_code, "resultString": result_string}
+            {
+                TASK_ID_KEY: (task[TASK_ID_KEY]),
+                RESULT_CODE_KEY: result_code,
+                RESULT_STRING_KEY: result_string,
+            }
         ]
 
     return {
-        "invocationSchemaVersion": event["invocationSchemaVersion"],
-        "treatMissingKeysAs": "PermanentFailure",
-        "invocationId": event["invocationId"],
-        "results": results,
+        INVOCATION_SCHEMA_VERSION_KEY: event[INVOCATION_SCHEMA_VERSION_KEY],
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
+        INVOCATION_ID_KEY: event[INVOCATION_ID_KEY],
+        RESULTS_KEY: results,
     }
 
 
 def change_href_to_basename(items: Iterable[Dict[str, str]]) -> None:
     for item in items:
-        item["href"] = basename(item["href"])
+        item[STAC_HREF_KEY] = basename(item[STAC_HREF_KEY])

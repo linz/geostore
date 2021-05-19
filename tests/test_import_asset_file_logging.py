@@ -4,7 +4,17 @@ from unittest.mock import patch
 from urllib.parse import quote
 
 from backend.import_asset_file.task import lambda_handler
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from backend.import_dataset_keys import (
+    INVOCATION_ID_KEY,
+    INVOCATION_SCHEMA_VERSION_KEY,
+    NEW_KEY_KEY,
+    ORIGINAL_KEY_KEY,
+    S3_BUCKET_ARN_KEY,
+    S3_KEY_KEY,
+    TARGET_BUCKET_NAME_KEY,
+    TASKS_KEY,
+    TASK_ID_KEY,
+)
 
 from .aws_utils import any_lambda_context, any_s3_bucket_arn, any_s3_bucket_name
 from .general_generators import any_safe_file_path
@@ -15,10 +25,10 @@ LOGGER = logging.getLogger("backend.import_asset_file.task")
 def should_log_payload() -> None:
     # Given
     event = {
-        "tasks": [
+        TASKS_KEY: [
             {
-                "s3BucketArn": any_s3_bucket_arn(),
-                "s3Key": quote(
+                S3_BUCKET_ARN_KEY: any_s3_bucket_arn(),
+                S3_KEY_KEY: quote(
                     dumps(
                         {
                             TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
@@ -27,11 +37,11 @@ def should_log_payload() -> None:
                         }
                     )
                 ),
-                "taskId": "any task ID",
+                TASK_ID_KEY: "any task ID",
             }
         ],
-        "invocationId": "any invocation ID",
-        "invocationSchemaVersion": "any invocation schema version",
+        INVOCATION_ID_KEY: "any invocation ID",
+        INVOCATION_SCHEMA_VERSION_KEY: "any invocation schema version",
     }
 
     with patch.object(LOGGER, "debug") as logger_mock:

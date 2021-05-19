@@ -4,7 +4,23 @@ from urllib.parse import unquote_plus
 import boto3
 from botocore.exceptions import ClientError  # type: ignore[import]
 
-from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from ..import_dataset_keys import (
+    EXCEPTION_PREFIX,
+    INVOCATION_ID_KEY,
+    INVOCATION_SCHEMA_VERSION_KEY,
+    NEW_KEY_KEY,
+    ORIGINAL_KEY_KEY,
+    RESULTS_KEY,
+    RESULT_CODE_KEY,
+    RESULT_CODE_PERMANENT_FAILURE,
+    RESULT_STRING_KEY,
+    S3_BUCKET_ARN_KEY,
+    S3_KEY_KEY,
+    TARGET_BUCKET_NAME_KEY,
+    TASKS_KEY,
+    TASK_ID_KEY,
+    TREAT_MISSING_KEYS_AS_KEY,
+)
 from ..log import set_up_logging
 from ..types import JsonObject
 
@@ -15,9 +31,9 @@ LOGGER = set_up_logging(__name__)
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(dumps(event))
 
-    task = event["tasks"][0]
-    source_bucket_name = task["s3BucketArn"].split(":::", maxsplit=1)[-1]
-    parameters = loads(unquote_plus(task["s3Key"]))
+    task = event[TASKS_KEY][0]
+    source_bucket_name = task[S3_BUCKET_ARN_KEY].split(":::", maxsplit=1)[-1]
+    parameters = loads(unquote_plus(task[S3_KEY_KEY]))
 
     try:
         response = S3_CLIENT.copy_object(
@@ -33,19 +49,23 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             result_code = "TemporaryFailure"
             result_string = "Retry request to Amazon S3 due to timeout."
         else:
-            result_code = "PermanentFailure"
+            result_code = RESULT_CODE_PERMANENT_FAILURE
             result_string = f"{error_code}: {error.response['Error']['Message']}"
     except Exception as error:  # pylint:disable=broad-except
-        result_code = "PermanentFailure"
-        result_string = "Exception: {}".format(error)
+        result_code = RESULT_CODE_PERMANENT_FAILURE
+        result_string = f"{EXCEPTION_PREFIX}: {error}"
     finally:
         results = [
-            {"taskId": (task["taskId"]), "resultCode": result_code, "resultString": result_string}
+            {
+                TASK_ID_KEY: task[TASK_ID_KEY],
+                RESULT_CODE_KEY: result_code,
+                RESULT_STRING_KEY: result_string,
+            }
         ]
 
     return {
-        "invocationSchemaVersion": event["invocationSchemaVersion"],
-        "treatMissingKeysAs": "PermanentFailure",
-        "invocationId": event["invocationId"],
-        "results": results,
+        INVOCATION_SCHEMA_VERSION_KEY: event[INVOCATION_SCHEMA_VERSION_KEY],
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
+        INVOCATION_ID_KEY: event[INVOCATION_ID_KEY],
+        RESULTS_KEY: results,
     }
