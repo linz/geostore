@@ -21,12 +21,20 @@ from backend.import_dataset_file import (
     S3_KEY_KEY,
     TASKS_KEY,
     TASK_ID_KEY,
+    TREAT_MISSING_KEYS_AS_KEY,
     get_import_result,
 )
 from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 
-from .aws_utils import any_s3_bucket_arn, any_s3_bucket_name
-from .general_generators import any_safe_file_path, random_string
+from .aws_utils import (
+    any_invocation_id,
+    any_invocation_schema_version,
+    any_operation_name,
+    any_s3_bucket_arn,
+    any_s3_bucket_name,
+    any_task_id,
+)
+from .general_generators import any_safe_file_path
 
 LOGGER = logging.getLogger("backend.import_dataset_file")
 
@@ -65,18 +73,17 @@ def should_log_payload(importer_mock: MagicMock) -> None:
 @patch("backend.import_metadata_file.task.importer")
 def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> None:
     # Given
-    task_id = "any task ID"
-    invocation_id = "any invocation ID"
-    invocation_schema_version = "any invocation schema version"
+    task_id = any_task_id()
+    invocation_id = any_invocation_id()
+    invocation_schema_version = any_invocation_schema_version()
 
-    operation_name = random_string(10)
     importer_mock.side_effect = ClientError(
         {
             IMPORTER_RESPONSE_ERROR_KEY: {
                 IMPORTER_RESPONSE_ERROR_CODE_KEY: ERROR_CODE_REQUEST_TIMEOUT
             }
         },
-        operation_name,
+        any_operation_name(),
     )
 
     event = {
@@ -105,7 +112,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     # Then
     assert response == {
         INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
-        "treatMissingKeysAs": RESULT_CODE_PERMANENT_FAILURE,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
         INVOCATION_ID_KEY: invocation_id,
         RESULTS_KEY: [
             {

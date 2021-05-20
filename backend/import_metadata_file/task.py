@@ -9,6 +9,8 @@ from ..log import set_up_logging
 from ..stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY, STAC_LINKS_KEY
 from ..types import JsonObject
 
+S3_BODY_KEY = "Body"
+
 if TYPE_CHECKING:
     from mypy_boto3_s3.type_defs import PutObjectOutputTypeDef
 else:
@@ -26,7 +28,7 @@ def importer(
     source_bucket_name: str, original_key: str, target_bucket_name: str, new_key: str
 ) -> PutObjectOutputTypeDef:
     get_object_response = S3_CLIENT.get_object(Bucket=source_bucket_name, Key=original_key)
-    assert "Body" in get_object_response, get_object_response
+    assert S3_BODY_KEY in get_object_response, get_object_response
 
     metadata = load(get_object_response["Body"])
 

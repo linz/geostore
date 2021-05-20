@@ -23,8 +23,10 @@ S3_BUCKET_ARN_KEY = "s3BucketArn"
 S3_KEY_KEY = "s3Key"
 TASKS_KEY = "tasks"
 TASK_ID_KEY = "taskId"
+TREAT_MISSING_KEYS_AS_KEY = "treatMissingKeysAs"
 
 RESULT_CODE_PERMANENT_FAILURE = "PermanentFailure"
+RESULT_CODE_SUCCEEDED = "Succeeded"
 RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 
 EXCEPTION_PREFIX = "Exception"
@@ -57,7 +59,7 @@ def get_import_result(
             parameters[TARGET_BUCKET_NAME_KEY],
             parameters[NEW_KEY_KEY],
         )
-        result_code = "Succeeded"
+        result_code = RESULT_CODE_SUCCEEDED
         result_string = str(response)
     except ClientError as error:
         error_code = error.response[IMPORTER_RESPONSE_ERROR_KEY][IMPORTER_RESPONSE_ERROR_CODE_KEY]
@@ -75,7 +77,7 @@ def get_import_result(
 
     return {
         INVOCATION_SCHEMA_VERSION_KEY: event[INVOCATION_SCHEMA_VERSION_KEY],
-        "treatMissingKeysAs": RESULT_CODE_PERMANENT_FAILURE,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
         INVOCATION_ID_KEY: event[INVOCATION_ID_KEY],
         RESULTS_KEY: [
             {

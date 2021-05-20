@@ -18,7 +18,14 @@ from backend.import_dataset_file import (
 )
 from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 
-from .aws_utils import any_lambda_context, any_s3_bucket_arn, any_s3_bucket_name
+from .aws_utils import (
+    any_invocation_id,
+    any_invocation_schema_version,
+    any_lambda_context,
+    any_s3_bucket_arn,
+    any_s3_bucket_name,
+    any_task_id,
+)
 from .general_generators import any_error_message, any_safe_file_path
 
 
@@ -27,7 +34,7 @@ def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicM
     # Given
     error_message = any_error_message()
     s3_client_mock.copy_object.side_effect = Exception(error_message)
-    task_id = "any task ID"
+    task_id = any_task_id()
     event = {
         TASKS_KEY: [
             {
@@ -44,8 +51,8 @@ def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicM
                 TASK_ID_KEY: task_id,
             }
         ],
-        INVOCATION_ID_KEY: "any invocation ID",
-        INVOCATION_SCHEMA_VERSION_KEY: "any invocation schema version",
+        INVOCATION_ID_KEY: any_invocation_id(),
+        INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
 
     response = lambda_handler(event, any_lambda_context())
