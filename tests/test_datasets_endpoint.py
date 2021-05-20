@@ -292,6 +292,28 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
     }
 
 
+def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
+    response = entrypoint.lambda_handler(
+        {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {}}, any_lambda_context()
+    )
+
+    assert response == {
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+    }
+
+
+def should_return_error_when_trying_to_update_dataset_with_missing_property() -> None:
+    response = entrypoint.lambda_handler(
+        {HTTP_METHOD_KEY: "PATCH", BODY_KEY: {}}, any_lambda_context()
+    )
+
+    assert response == {
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+    }
+
+
 @mark.infrastructure
 def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
