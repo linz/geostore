@@ -272,8 +272,8 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
     }
 
 
-def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
-    response = lambda_handler({HTTP_METHOD_KEY: "DELETE", BODY_KEY: {}}, any_lambda_context())
+def should_return_error_when_trying_to_update_dataset_with_missing_property() -> None:
+    response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: {}}, any_lambda_context())
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
@@ -281,8 +281,8 @@ def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
     }
 
 
-def should_return_error_when_trying_to_update_dataset_with_missing_property() -> None:
-    response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: {}}, any_lambda_context())
+def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
+    response = lambda_handler({HTTP_METHOD_KEY: "DELETE", BODY_KEY: {}}, any_lambda_context())
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
