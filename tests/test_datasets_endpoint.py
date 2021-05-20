@@ -6,6 +6,7 @@ import logging
 from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load
+from unittest.mock import patch
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
@@ -17,15 +18,19 @@ from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets import entrypoint
 from backend.datasets.create import TITLE_PATTERN
+from backend.populate_catalog.task import CATALOG_KEY
 from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 
 from .aws_utils import (
     Dataset,
     S3Object,
     any_lambda_context,
+    delete_s3_key,
     delete_s3_prefix,
     get_s3_prefix_versions,
+    wait_for_s3_key,
 )
 from .general_generators import any_safe_filename
 from .stac_generators import (
@@ -47,9 +52,11 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 
     try:
 
-        response = entrypoint.lambda_handler(
-            {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
-        )
+        with patch("backend.datasets.create.SQS_RESOURCE") as sqs_mock:
+            response = entrypoint.lambda_handler(
+                {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
+            )
+
         logger.info("Response: %s", response)
 
         with subtests.test(msg="status code"):
@@ -66,16 +73,19 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
         )[0]
 
         with smart_open(
-            f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
-        ) as new_root_metadata_file:
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
+        ) as new_catalog_metadata_file:
 
-            catalog_json = load(new_root_metadata_file)
+            catalog_json = load(new_catalog_metadata_file)
 
             with subtests.test(msg="catalog title"):
                 assert catalog_json[STAC_TITLE_KEY] == dataset_title
 
             with subtests.test(msg="catalog description"):
                 assert catalog_json[STAC_DESCRIPTION_KEY] == dataset_description
+
+            with subtests.test(msg="root catalog"):
+                assert sqs_mock.get_queue_by_name.return_value.send_message.called
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)
@@ -323,4 +333,6 @@ def should_launch_datasets_endpoint_lambda_function(
         assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
     finally:
+        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
+        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, title, s3_client)

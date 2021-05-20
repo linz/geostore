@@ -46,6 +46,8 @@ class Application(Stack):
             env_name=env_name,
             state_machine=processing.state_machine,
             state_machine_parameter=processing.state_machine_parameter,
+            sqs_queue=processing.message_queue,
+            sqs_queue_parameter=processing.message_queue_name_parameter,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
         )

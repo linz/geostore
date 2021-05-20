@@ -20,6 +20,7 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
@@ -115,12 +116,14 @@ class TestWithStagingBucket:
         item_metadata_filename = any_safe_filename()
 
         collection_metadata_url = (
-            f"s3://{self.staging_bucket_name}/{key_prefix}/{collection_metadata_filename}"
+            f"{S3_URL_PREFIX}{self.staging_bucket_name}/{key_prefix}/{collection_metadata_filename}"
         )
         catalog_metadata_url = (
-            f"s3://{self.staging_bucket_name}/{key_prefix}/{catalog_metadata_filename}"
+            f"{S3_URL_PREFIX}{self.staging_bucket_name}/{key_prefix}/{catalog_metadata_filename}"
         )
-        item_metadata_url = f"s3://{self.staging_bucket_name}/{key_prefix}/{item_metadata_filename}"
+        item_metadata_url = (
+            f"{S3_URL_PREFIX}{self.staging_bucket_name}/{key_prefix}/{item_metadata_filename}"
+        )
 
         first_asset_contents = any_file_contents()
         first_asset_filename = any_safe_filename()

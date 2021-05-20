@@ -1,11 +1,11 @@
 from aws_cdk import aws_iam, aws_lambda, aws_lambda_python
-from aws_cdk.core import Construct, Duration
+from aws_cdk.core import Construct
 
 from backend.environment import ENV_NAME_VARIABLE_NAME
 
 from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
-from .runtime import PYTHON_RUNTIME
+from .lambda_config import LAMBDA_TIMEOUT, PYTHON_RUNTIME
 
 
 class LambdaEndpoint(aws_lambda.Function):
@@ -25,7 +25,7 @@ class LambdaEndpoint(aws_lambda.Function):
             function_name=f"{env_name}-{construct_id}",
             handler=f"{BACKEND_DIRECTORY}.{package_name}.entrypoint.lambda_handler",
             runtime=PYTHON_RUNTIME,
-            timeout=Duration.seconds(60),
+            timeout=LAMBDA_TIMEOUT,
             code=bundled_code(package_name),
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
         )

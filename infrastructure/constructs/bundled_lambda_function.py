@@ -1,12 +1,12 @@
 from typing import Mapping, Optional
 
 from aws_cdk import aws_lambda, aws_lambda_python
-from aws_cdk.core import Construct, Duration
+from aws_cdk.core import Construct
 
 from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
 from .common import LOG_LEVEL
-from .runtime import PYTHON_RUNTIME
+from .lambda_config import LAMBDA_TIMEOUT, PYTHON_RUNTIME
 
 
 class BundledLambdaFunction(aws_lambda.Function):
@@ -31,5 +31,5 @@ class BundledLambdaFunction(aws_lambda.Function):
             runtime=PYTHON_RUNTIME,
             environment=environment,
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
-            timeout=Duration.seconds(60),
+            timeout=LAMBDA_TIMEOUT,
         )

@@ -1,4 +1,13 @@
-from aws_cdk import aws_dynamodb, aws_iam, aws_lambda_python, aws_s3, aws_ssm, aws_stepfunctions
+from aws_cdk import (
+    aws_dynamodb,
+    aws_iam,
+    aws_lambda_python,
+    aws_s3,
+    aws_sqs,
+    aws_ssm,
+    aws_stepfunctions,
+)
+from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_stepfunctions import Wait, WaitTime
 from aws_cdk.core import Construct, Duration, Tags
 
@@ -25,8 +34,10 @@ from backend.step_function import (
 
 from .batch_job_queue import BatchJobQueue
 from .batch_submit_job_task import BatchSubmitJobTask
+from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
+from .lambda_config import LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -44,7 +55,8 @@ class Processing(Construct):
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, too-many-statements
+
         super().__init__(scope, stack_id)
 
         ############################################################################################
@@ -68,6 +80,42 @@ class Processing(Construct):
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
             "AmazonS3ReadOnlyAccess"
+        )
+
+        ############################################################################################
+        # ROOT CATALOG UPDATE MESSAGE QUEUE
+
+        dead_letter_queue = aws_sqs.Queue(
+            self,
+            "dead-letter-queue",
+            visibility_timeout=LAMBDA_TIMEOUT,
+        )
+
+        self.message_queue = aws_sqs.Queue(
+            self,
+            "root-catalog-message-queue",
+            visibility_timeout=LAMBDA_TIMEOUT,
+            dead_letter_queue=aws_sqs.DeadLetterQueue(max_receive_count=3, queue=dead_letter_queue),
+        )
+        self.message_queue_name_parameter = aws_ssm.StringParameter(
+            self,
+            "root-catalog-message-queue-name",
+            string_value=self.message_queue.queue_name,
+            description=f"Root Catalog Message Queue Name for {env_name}",
+            parameter_name=ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME.value,
+        )
+
+        populate_catalog_lambda = BundledLambdaFunction(
+            self,
+            "populate-catalog-bundled-lambda-function",
+            directory="populate_catalog",
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
+            botocore_lambda_layer=botocore_lambda_layer,
+        )
+
+        self.message_queue.grant_consume_messages(populate_catalog_lambda)
+        populate_catalog_lambda.add_event_source(
+            SqsEventSource(self.message_queue, batch_size=1)  # type: ignore[arg-type]
         )
 
         ############################################################################################
@@ -212,13 +260,6 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
-        for storage_writer in [
-            import_dataset_role,
-            import_asset_file_function,
-            import_metadata_file_function,
-        ]:
-            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
-
         import_dataset_task = LambdaTask(
             self,
             "import-dataset-task",
@@ -238,7 +279,14 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        storage_bucket.grant_read_write(import_dataset_task.lambda_function)
+        for storage_writer in [
+            import_dataset_role,
+            import_dataset_task.lambda_function,
+            import_asset_file_function,
+            import_metadata_file_function,
+            populate_catalog_lambda,
+        ]:
+            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
         for table in [datasets_table, processing_assets_table]:
             table.grant_read_data(import_dataset_task.lambda_function)

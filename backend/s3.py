@@ -1,0 +1,2 @@
+S3_SCHEMA = "s3"
+S3_URL_PREFIX = f"{S3_SCHEMA}://"
