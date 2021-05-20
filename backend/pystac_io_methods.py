@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 import boto3
 from pystac import STAC_IO  # type: ignore[import]
 
-from backend.s3 import S3_SCHEMA
+from .s3 import S3_SCHEMA
 
 S3_CLIENT = boto3.client("s3")
 
