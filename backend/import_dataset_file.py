@@ -25,8 +25,15 @@ TASKS_KEY = "tasks"
 TASK_ID_KEY = "taskId"
 
 RESULT_CODE_PERMANENT_FAILURE = "PermanentFailure"
+RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 
 EXCEPTION_PREFIX = "Exception"
+RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
+
+IMPORTER_RESPONSE_ERROR_KEY = "Error"
+IMPORTER_RESPONSE_ERROR_CODE_KEY = "Code"
+
+ERROR_CODE_REQUEST_TIMEOUT = "RequestTimeout"
 
 LOGGER = set_up_logging(__name__)
 
@@ -53,13 +60,15 @@ def get_import_result(
         result_code = "Succeeded"
         result_string = str(response)
     except ClientError as error:
-        error_code = error.response["Error"]["Code"]
-        if error_code == "RequestTimeout":
-            result_code = "TemporaryFailure"
-            result_string = "Retry request to Amazon S3 due to timeout."
+        error_code = error.response[IMPORTER_RESPONSE_ERROR_KEY][IMPORTER_RESPONSE_ERROR_CODE_KEY]
+        if error_code == ERROR_CODE_REQUEST_TIMEOUT:
+            result_code = RESULT_CODE_TEMPORARY_FAILURE
+            result_string = RETRY_RESULT_STRING
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
-            result_string = f"{error_code}: {error.response['Error']['Message']}"
+            result_string = (
+                f"{error_code}: {error.response[IMPORTER_RESPONSE_ERROR_KEY]['Message']}"
+            )
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
         result_string = f"{EXCEPTION_PREFIX}: {error}"
