@@ -18,7 +18,7 @@ from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets.create import TITLE_PATTERN
 from backend.datasets.entrypoint import lambda_handler
-from backend.datasets.get import get_dataset_filter, get_dataset_single
+from backend.datasets.get import get_dataset_filter, get_dataset_single, handle_get
 from backend.populate_catalog.task import CATALOG_KEY
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
@@ -33,7 +33,7 @@ from .aws_utils import (
     get_s3_prefix_versions,
     wait_for_s3_key,
 )
-from .general_generators import any_safe_filename
+from .general_generators import any_dictionary_key, any_safe_filename, random_string
 from .stac_generators import (
     any_dataset_description,
     any_dataset_id,
@@ -270,6 +270,15 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.CONFLICT,
         BODY_KEY: {MESSAGE_KEY: expected_message},
+    }
+
+
+def should_return_error_when_trying_to_handle_get_dataset_with_wrong_property() -> None:
+    response = handle_get({any_dictionary_key(): random_string(1)})
+
+    assert response == {
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: Unhandled request"},
     }
 
 
