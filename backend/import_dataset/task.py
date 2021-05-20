@@ -17,6 +17,7 @@ from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from ..pystac_io_methods import get_bucket_and_key_from_url
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
 from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, S3_BATCH_RESPONSE_KEY, VERSION_ID_KEY
@@ -100,7 +101,7 @@ class Importer:
                 ),
             ):
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))
-                key = s3_url_to_key(item.url)
+                _, key = get_bucket_and_key_from_url(item.url)
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: ResourceName.STORAGE_BUCKET_NAME.value,
                     ORIGINAL_KEY_KEY: key,
@@ -113,9 +114,8 @@ class Importer:
             Bucket=ResourceName.STORAGE_BUCKET_NAME.value, Key=manifest_key
         )
         assert "ETag" in manifest_s3_object, manifest_s3_object
-        manifest_s3_etag = manifest_s3_object["ETag"]
         manifest_location_spec = JobManifestLocationTypeDef(
-            ObjectArn=f"{STORAGE_BUCKET_ARN}/{manifest_key}", ETag=manifest_s3_etag
+            ObjectArn=f"{STORAGE_BUCKET_ARN}/{manifest_key}", ETag=manifest_s3_object["ETag"]
         )
 
         account_number = get_account_number()
@@ -185,7 +185,3 @@ def get_account_number() -> str:
     caller_identity = STS_CLIENT.get_caller_identity()
     assert "Account" in caller_identity, caller_identity
     return caller_identity["Account"]
-
-
-def s3_url_to_key(url: str) -> str:
-    return urlparse(url).path[1:]
