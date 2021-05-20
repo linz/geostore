@@ -99,7 +99,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
         key=f"{existing_dataset.dataset_prefix}/{CATALOG_KEY}",
     ):
 
-        expected_links: JsonList = [
+        original_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"./{CATALOG_KEY}",
@@ -129,20 +129,20 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                     STAC_ID_KEY: ROOT_CATALOG_ID,
                     STAC_DESCRIPTION_KEY: ROOT_CATALOG_DESCRIPTION,
                     STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
-                    STAC_LINKS_KEY: expected_links,
+                    STAC_LINKS_KEY: original_links,
                 }
             ),
             bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
             key=CATALOG_KEY,
         ):
 
-            expected_links.append(
+            expected_links: JsonList = original_links + [
                 {
                     STAC_REL_KEY: STAC_REL_CHILD,
                     STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
                     STAC_TYPE_KEY: "application/json",
                 }
-            )
+            ]
 
             body = {RECORDS_KEY: [{"body": dataset.dataset_prefix}]}
 
