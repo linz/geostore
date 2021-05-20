@@ -34,6 +34,7 @@ RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
 IMPORTER_RESPONSE_ERROR_KEY = "Error"
 IMPORTER_RESPONSE_ERROR_CODE_KEY = "Code"
+IMPORTER_RESPONSE_ERROR_MESSAGE_KEY = "Message"
 
 ERROR_CODE_REQUEST_TIMEOUT = "RequestTimeout"
 
@@ -68,9 +69,10 @@ def get_import_result(
             result_string = RETRY_RESULT_STRING
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
-            result_string = (
-                f"{error_code}: {error.response[IMPORTER_RESPONSE_ERROR_KEY]['Message']}"
-            )
+            error_message = error.response[IMPORTER_RESPONSE_ERROR_KEY][
+                IMPORTER_RESPONSE_ERROR_MESSAGE_KEY
+            ]
+            result_string = f"{error_code}: {error_message}"
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
         result_string = f"{EXCEPTION_PREFIX}: {error}"
