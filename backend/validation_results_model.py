@@ -17,7 +17,7 @@ class ValidationResult(Enum):
     PASSED = "Passed"
 
 
-# TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
+# TODO: Remove inherit-non-class when astroid is at version 2.6 or later
 class ValidationOutcomeIdx(
     GlobalSecondaryIndex["ValidationResultsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
@@ -36,7 +36,7 @@ class ValidationResultsModelBase(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     result = UnicodeAttribute()
-    # TODO: Remove type-arg when https://github.com/pynamodb/PynamoDB/issues/682 is fixed
+    # TODO: Remove type-arg when https://github.com/pynamodb/PynamoDB/issues/920 is fixed
     details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
 
     validation_outcome_index: ValidationOutcomeIdx

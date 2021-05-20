@@ -24,7 +24,7 @@ def human_readable_ulid(ulid: ULID) -> "str":
     return f"{datetime_string}Z_{ulid.randomness()}"
 
 
-# TODO: Remove inherit-non-class when https://github.com/PyCQA/pylint/issues/3950 is fixed
+# TODO: Remove inherit-non-class when astroid is at version 2.6 or later
 class DatasetsTitleIdx(
     GlobalSecondaryIndex["DatasetsModelBase"]
 ):  # pylint:disable=too-few-public-methods,inherit-non-class
