@@ -57,8 +57,7 @@ def get_dataset_filter(body: JsonObject) -> JsonObject:
     body_schema = {
         "type": "object",
         "properties": {"title": {"type": "string"}},
-        "minProperties": 1,
-        "maxProperties": 1,
+        "required": ["title"],
     }
 
     # request body validation

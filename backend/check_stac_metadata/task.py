@@ -1,5 +1,4 @@
 from json import dumps
-from urllib.parse import urlparse
 
 import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
@@ -9,6 +8,7 @@ from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
+from ..pystac_io_methods import get_bucket_and_key_from_url
 from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
@@ -19,9 +19,7 @@ S3_CLIENT = boto3.client("s3")
 
 
 def s3_url_reader(url: str) -> StreamingBody:
-    parse_result = urlparse(url, allow_fragments=False)
-    bucket_name = parse_result.netloc
-    key = parse_result.path[1:]
+    bucket_name, key = get_bucket_and_key_from_url(url)
     response = S3_CLIENT.get_object(Bucket=bucket_name, Key=key)
     return response["Body"]
 

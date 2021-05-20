@@ -3,19 +3,39 @@ from json import dumps
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
+from botocore.exceptions import ClientError  # type: ignore[import]
+
 from backend.import_dataset_file import (
+    ERROR_CODE_REQUEST_TIMEOUT,
+    IMPORTER_RESPONSE_ERROR_CODE_KEY,
+    IMPORTER_RESPONSE_ERROR_KEY,
+    IMPORTER_RESPONSE_ERROR_MESSAGE_KEY,
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
+    RESULTS_KEY,
+    RESULT_CODE_KEY,
+    RESULT_CODE_PERMANENT_FAILURE,
+    RESULT_CODE_TEMPORARY_FAILURE,
+    RESULT_STRING_KEY,
+    RETRY_RESULT_STRING,
     S3_BUCKET_ARN_KEY,
     S3_KEY_KEY,
     TASKS_KEY,
     TASK_ID_KEY,
+    TREAT_MISSING_KEYS_AS_KEY,
     get_import_result,
 )
 from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 
-from .aws_utils import any_s3_bucket_arn, any_s3_bucket_name
-from .general_generators import any_safe_file_path
+from .aws_utils import (
+    any_invocation_id,
+    any_invocation_schema_version,
+    any_operation_name,
+    any_s3_bucket_arn,
+    any_s3_bucket_name,
+    any_task_id,
+)
+from .general_generators import any_error_message, any_safe_file_path
 
 LOGGER = logging.getLogger("backend.import_dataset_file")
 
@@ -49,3 +69,115 @@ def should_log_payload(importer_mock: MagicMock) -> None:
 
         # Then
         logger_mock.assert_any_call(dumps(event))
+
+
+@patch("backend.import_metadata_file.task.importer")
+def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> None:
+    # Given
+    task_id = any_task_id()
+    invocation_id = any_invocation_id()
+    invocation_schema_version = any_invocation_schema_version()
+
+    importer_mock.side_effect = ClientError(
+        {
+            IMPORTER_RESPONSE_ERROR_KEY: {
+                IMPORTER_RESPONSE_ERROR_CODE_KEY: ERROR_CODE_REQUEST_TIMEOUT
+            }
+        },
+        any_operation_name(),
+    )
+
+    event = {
+        TASKS_KEY: [
+            {
+                S3_BUCKET_ARN_KEY: any_s3_bucket_arn(),
+                S3_KEY_KEY: quote(
+                    dumps(
+                        {
+                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
+                            ORIGINAL_KEY_KEY: any_safe_file_path(),
+                            NEW_KEY_KEY: any_safe_file_path(),
+                        }
+                    )
+                ),
+                TASK_ID_KEY: task_id,
+            }
+        ],
+        INVOCATION_ID_KEY: invocation_id,
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+    }
+
+    # When
+    response = get_import_result(event, importer_mock)
+
+    # Then
+    assert response == {
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
+        INVOCATION_ID_KEY: invocation_id,
+        RESULTS_KEY: [
+            {
+                TASK_ID_KEY: task_id,
+                RESULT_CODE_KEY: RESULT_CODE_TEMPORARY_FAILURE,
+                RESULT_STRING_KEY: RETRY_RESULT_STRING,
+            }
+        ],
+    }
+
+
+@patch("backend.import_metadata_file.task.importer")
+def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMock) -> None:
+    # Given
+    task_id = any_task_id()
+    invocation_id = any_invocation_id()
+    invocation_schema_version = any_invocation_schema_version()
+
+    error_code = f"not {ERROR_CODE_REQUEST_TIMEOUT}"
+    error_message = any_error_message()
+
+    importer_mock.side_effect = ClientError(
+        {
+            IMPORTER_RESPONSE_ERROR_KEY: {
+                IMPORTER_RESPONSE_ERROR_CODE_KEY: error_code,
+                IMPORTER_RESPONSE_ERROR_MESSAGE_KEY: error_message,
+            }
+        },
+        any_operation_name(),
+    )
+
+    event = {
+        TASKS_KEY: [
+            {
+                S3_BUCKET_ARN_KEY: any_s3_bucket_arn(),
+                S3_KEY_KEY: quote(
+                    dumps(
+                        {
+                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
+                            ORIGINAL_KEY_KEY: any_safe_file_path(),
+                            NEW_KEY_KEY: any_safe_file_path(),
+                        }
+                    )
+                ),
+                TASK_ID_KEY: task_id,
+            }
+        ],
+        INVOCATION_ID_KEY: invocation_id,
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+    }
+
+    # When
+    response = get_import_result(event, importer_mock)
+
+    # Then
+    assert response == {
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
+        INVOCATION_ID_KEY: invocation_id,
+        RESULTS_KEY: [
+            {
+                TASK_ID_KEY: task_id,
+                RESULT_CODE_KEY: RESULT_CODE_PERMANENT_FAILURE,
+                RESULT_STRING_KEY: f"{error_code}: {error_message}",
+            }
+        ],
+    }

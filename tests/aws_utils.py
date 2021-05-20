@@ -125,6 +125,26 @@ def any_job_id() -> str:
     return uuid4().hex
 
 
+def any_invocation_schema_version() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
+
+
+def any_invocation_id() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
+
+
+def any_task_id() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
+
+
+def any_operation_name() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
+
+
 # Context managers
 
 

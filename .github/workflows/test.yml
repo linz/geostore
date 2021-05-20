@@ -137,7 +137,14 @@ jobs:
 
       - name: Verify test coverage
         run: |
-          poetry run coverage report
+          poetry run coverage html
+
+      - name: Archive code coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: htmlcov
+        if: ${{ failure() }}
 
       - name: Destroy AWS stacks used for testing
         run: |

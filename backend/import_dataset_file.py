@@ -23,10 +23,20 @@ S3_BUCKET_ARN_KEY = "s3BucketArn"
 S3_KEY_KEY = "s3Key"
 TASKS_KEY = "tasks"
 TASK_ID_KEY = "taskId"
+TREAT_MISSING_KEYS_AS_KEY = "treatMissingKeysAs"
 
 RESULT_CODE_PERMANENT_FAILURE = "PermanentFailure"
+RESULT_CODE_SUCCEEDED = "Succeeded"
+RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 
 EXCEPTION_PREFIX = "Exception"
+RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
+
+IMPORTER_RESPONSE_ERROR_KEY = "Error"
+IMPORTER_RESPONSE_ERROR_CODE_KEY = "Code"
+IMPORTER_RESPONSE_ERROR_MESSAGE_KEY = "Message"
+
+ERROR_CODE_REQUEST_TIMEOUT = "RequestTimeout"
 
 LOGGER = set_up_logging(__name__)
 
@@ -50,23 +60,26 @@ def get_import_result(
             parameters[TARGET_BUCKET_NAME_KEY],
             parameters[NEW_KEY_KEY],
         )
-        result_code = "Succeeded"
+        result_code = RESULT_CODE_SUCCEEDED
         result_string = str(response)
     except ClientError as error:
-        error_code = error.response["Error"]["Code"]
-        if error_code == "RequestTimeout":
-            result_code = "TemporaryFailure"
-            result_string = "Retry request to Amazon S3 due to timeout."
+        error_code = error.response[IMPORTER_RESPONSE_ERROR_KEY][IMPORTER_RESPONSE_ERROR_CODE_KEY]
+        if error_code == ERROR_CODE_REQUEST_TIMEOUT:
+            result_code = RESULT_CODE_TEMPORARY_FAILURE
+            result_string = RETRY_RESULT_STRING
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
-            result_string = f"{error_code}: {error.response['Error']['Message']}"
+            error_message = error.response[IMPORTER_RESPONSE_ERROR_KEY][
+                IMPORTER_RESPONSE_ERROR_MESSAGE_KEY
+            ]
+            result_string = f"{error_code}: {error_message}"
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
         result_string = f"{EXCEPTION_PREFIX}: {error}"
 
     return {
         INVOCATION_SCHEMA_VERSION_KEY: event[INVOCATION_SCHEMA_VERSION_KEY],
-        "treatMissingKeysAs": RESULT_CODE_PERMANENT_FAILURE,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
         INVOCATION_ID_KEY: event[INVOCATION_ID_KEY],
         RESULTS_KEY: [
             {

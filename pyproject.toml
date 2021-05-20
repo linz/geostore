@@ -10,7 +10,7 @@ exclude_lines = [
     'if TYPE_CHECKING:',
     'if __name__ == "__main__":',
 ]
-fail_under = 99
+fail_under = 100
 
 [tool.coverage.run]
 source = [
