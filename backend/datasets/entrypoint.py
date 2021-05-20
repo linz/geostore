@@ -10,7 +10,6 @@ from .delete import delete_dataset
 from .get import handle_get
 from .update import update_dataset
 
-# TODO: implement GET response paging
 REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
     "DELETE": delete_dataset,
     "GET": handle_get,
