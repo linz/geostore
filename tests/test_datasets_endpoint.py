@@ -18,6 +18,7 @@ from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets.create import TITLE_PATTERN
 from backend.datasets.entrypoint import lambda_handler
+from backend.datasets.get import get_dataset_filter, get_dataset_single
 from backend.populate_catalog.task import CATALOG_KEY
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
@@ -269,6 +270,24 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.CONFLICT,
         BODY_KEY: {MESSAGE_KEY: expected_message},
+    }
+
+
+def should_return_error_when_trying_to_get_single_dataset_with_missing_property() -> None:
+    response = get_dataset_single({})
+
+    assert response == {
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+    }
+
+
+def should_return_error_when_trying_to_get_datasets_with_missing_property() -> None:
+    response = get_dataset_filter({})
+
+    assert response == {
+        STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
+        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'title' is a required property"},
     }
 
 
