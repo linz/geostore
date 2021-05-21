@@ -19,6 +19,7 @@ STAC_LINKS_KEY = "links"
 STAC_REL_KEY = "rel"
 STAC_REL_ROOT = "root"
 STAC_REL_CHILD = "child"
+STAC_REL_PARENT = "parent"
 
 STAC_COLLECTION_TYPE = "Collection"
 STAC_ITEM_TYPE = "Feature"
