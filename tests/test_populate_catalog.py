@@ -6,13 +6,13 @@ from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
 
-from backend.populate_catalog import task
 from backend.populate_catalog.task import (
     CATALOG_KEY,
     RECORDS_KEY,
     ROOT_CATALOG_DESCRIPTION,
     ROOT_CATALOG_ID,
     ROOT_CATALOG_TITLE,
+    lambda_handler,
 )
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
@@ -64,7 +64,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
         body = {RECORDS_KEY: [{"body": dataset.dataset_prefix}]}
 
         try:
-            task.lambda_handler(body, any_lambda_context())
+            lambda_handler(body, any_lambda_context())
 
             with smart_open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
@@ -146,7 +146,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
 
             body = {RECORDS_KEY: [{"body": dataset.dataset_prefix}]}
 
-            task.lambda_handler(body, any_lambda_context())
+            lambda_handler(body, any_lambda_context())
 
             with smart_open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"

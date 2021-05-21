@@ -11,6 +11,8 @@ from ..datasets_model import datasets_model_with_meta
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
+from ..s3 import S3_URL_PREFIX
+from ..sqs_message_attributes import MESSAGE_ATTRIBUTE_TYPE_KEY, MESSAGE_ATTRIBUTE_TYPE_ROOT
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..types import JsonObject
 
@@ -60,14 +62,22 @@ def create_dataset(body: JsonObject) -> JsonObject:
         catalog_type=CatalogType.SELF_CONTAINED,
     )
     dataset_catalog.normalize_hrefs(
-        f"s3://{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset.dataset_prefix}"
+        f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset.dataset_prefix}"
     )
     dataset_catalog.save()
 
     # add reference to root catalog
     SQS_RESOURCE.get_queue_by_name(
-        QueueName=get_param(ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME)
-    ).send_message(MessageBody=dataset.dataset_prefix)
+        QueueName=get_param(ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME)
+    ).send_message(
+        MessageBody=dataset.dataset_prefix,
+        MessageAttributes={
+            MESSAGE_ATTRIBUTE_TYPE_KEY: {
+                "StringValue": MESSAGE_ATTRIBUTE_TYPE_ROOT,
+                "DataType": "String",
+            }
+        },
+    )
 
     # return response
     resp_body = dataset.as_dict()

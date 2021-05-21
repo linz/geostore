@@ -146,6 +146,16 @@ import_status = [
     "jsonschema",
     "pynamodb",
 ]
+populate_catalog = [
+    "boto3",
+    "jsonschema",
+    "pystac",
+]
+update_dataset_catalog = [
+    "boto3",
+    "jsonschema",
+    "pynamodb",
+]
 upload_status = [
     "boto3",
     "jsonschema",
@@ -154,11 +164,6 @@ upload_status = [
 validation_summary = [
     "jsonschema",
     "pynamodb",
-]
-populate_catalog = [
-    "boto3",
-    "jsonschema",
-    "pystac",
 ]
 
 [tool.pytest.ini_options]
