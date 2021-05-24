@@ -1,6 +1,8 @@
 from copy import deepcopy
 from json import load
+from typing import Any, Dict
 
+import pytest
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -41,6 +43,7 @@ from backend.stac_format import (
 from backend.types import JsonList
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
 from tests.file_utils import json_dict_to_file_object
+from tests.general_generators import any_safe_filename
 from tests.stac_generators import any_dataset_version_id
 from tests.stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
@@ -203,121 +206,139 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 with subtests.test(msg="catalog links"):
                     assert catalog_json[STAC_LINKS_KEY] == expected_links
 
-    # TODO paramteterizefor catalog and collection
-    @mark.infrastructure
-    def should_update_dataset_catalog_with_new_version(
-        subtests: SubTests, s3_client: S3Client
-    ) -> None:
-        dataset_version = any_dataset_version_id()
 
-        with Dataset() as dataset, S3Object(
-            file_object=json_dict_to_file_object(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    STAC_ID_KEY: dataset.dataset_prefix,
-                    STAC_TITLE_KEY: dataset.title,
-                    STAC_LINKS_KEY: [
-                        {
-                            STAC_REL_KEY: STAC_REL_ROOT,
-                            STAC_HREF_KEY: f"{dataset.dataset_prefix}/collection.json",
-                            STAC_TYPE_KEY: "application/json",
-                        },
-                    ],
-                }
-            ),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-            key=f"{dataset.dataset_prefix}/{dataset_version}/collection.json",
-        ) as dataset_version_collection, S3Object(
-            file_object=json_dict_to_file_object(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                    STAC_ID_KEY: dataset.dataset_prefix,
-                    STAC_TITLE_KEY: dataset.title,
-                    STAC_LINKS_KEY: [
-                        {
-                            STAC_REL_KEY: STAC_REL_ROOT,
-                            STAC_HREF_KEY: f"./{CATALOG_KEY}",
-                            STAC_TYPE_KEY: "application/json",
-                        },
-                        {
-                            STAC_REL_KEY: STAC_REL_PARENT,
-                            STAC_HREF_KEY: f"./{CATALOG_KEY}",
-                            STAC_TYPE_KEY: "application/json",
-                        },
-                    ],
-                }
-            ),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-            key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
-        ), S3Object(
-            file_object=json_dict_to_file_object(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                    STAC_ID_KEY: ROOT_CATALOG_ID,
-                    STAC_DESCRIPTION_KEY: ROOT_CATALOG_DESCRIPTION,
-                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
-                    STAC_LINKS_KEY: [
-                        {
-                            STAC_REL_KEY: STAC_REL_ROOT,
-                            STAC_HREF_KEY: f"./{CATALOG_KEY}",
-                            STAC_TYPE_KEY: "application/json",
-                        },
-                        {
-                            STAC_REL_KEY: STAC_REL_CHILD,
-                            STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
-                            STAC_TYPE_KEY: "application/json",
-                        },
-                    ],
-                }
-            ),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-            key=CATALOG_KEY,
-        ):
+@pytest.mark.parametrize(
+    "stac_object", [MINIMAL_VALID_STAC_COLLECTION_OBJECT, MINIMAL_VALID_STAC_CATALOG_OBJECT]
+)
+@mark.infrastructure
+def should_update_dataset_catalog_with_new_version(
+    stac_object: Dict[str, Any], subtests: SubTests
+) -> None:
 
-            expected_links: JsonList = [
-                {
-                    STAC_REL_KEY: STAC_REL_ROOT,
-                    STAC_HREF_KEY: f"./{CATALOG_KEY}",
-                    STAC_TYPE_KEY: "application/json",
-                },
-                {
-                    STAC_REL_KEY: STAC_REL_PARENT,
-                    STAC_HREF_KEY: f"./{CATALOG_KEY}",
-                    STAC_TYPE_KEY: "application/json",
-                },
-                {
-                    STAC_REL_KEY: STAC_REL_CHILD,
-                    STAC_HREF_KEY: f"./{dataset_version_collection.key}",
-                    STAC_TYPE_KEY: "application/json",
-                },
-            ]
-
-            try:
-                lambda_handler(
+    dataset_version = any_dataset_version_id()
+    filename = f"{any_safe_filename()}.json"
+    with Dataset() as dataset, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(stac_object),
+                STAC_ID_KEY: dataset.dataset_prefix,
+                STAC_TITLE_KEY: dataset.title,
+                STAC_LINKS_KEY: [
                     {
-                        RECORDS_KEY: [
-                            {
-                                BODY_KEY: dataset_version_collection.key,
-                                MESSAGE_ATTRIBUTES_KEY: {
-                                    MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                                        STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
-                                        DATA_TYPE_KEY: DATA_TYPE_STRING,
-                                    }
-                                },
-                            }
-                        ]
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"{dataset.dataset_prefix}/{filename}",
+                        STAC_TYPE_KEY: "application/json",
                     },
-                    any_lambda_context(),
-                )
+                ],
+            }
+        ),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=f"{dataset.dataset_prefix}/{dataset_version}/{filename}",
+    ) as dataset_version_metadata, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: dataset.dataset_prefix,
+                STAC_TITLE_KEY: dataset.title,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_TYPE_KEY: "application/json",
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_TYPE_KEY: "application/json",
+                    },
+                ],
+            }
+        ),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+    ), S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: ROOT_CATALOG_ID,
+                STAC_DESCRIPTION_KEY: ROOT_CATALOG_DESCRIPTION,
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_TYPE_KEY: "application/json",
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_CHILD,
+                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
+                        STAC_TYPE_KEY: "application/json",
+                    },
+                ],
+            }
+        ),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=CATALOG_KEY,
+    ):
 
-                with smart_open(
-                    f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
-                    f"{dataset.dataset_prefix}/{CATALOG_KEY}"
-                ) as updated_dataset_metadata_file:
-                    collection_json = load(updated_dataset_metadata_file)
+        expected_dataset_catalog_links: JsonList = [
+            {
+                STAC_REL_KEY: STAC_REL_ROOT,
+                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_TYPE_KEY: "application/json",
+            },
+            {
+                STAC_REL_KEY: STAC_REL_PARENT,
+                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_TYPE_KEY: "application/json",
+            },
+            {
+                STAC_REL_KEY: STAC_REL_CHILD,
+                STAC_HREF_KEY: f"./{dataset_version_metadata.key}",
+                STAC_TYPE_KEY: "application/json",
+            },
+        ]
+        expected_dataset_version_links: JsonList = [
+            {
+                STAC_REL_KEY: STAC_REL_ROOT,
+                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_TYPE_KEY: "application/json",
+            },
+            {
+                STAC_REL_KEY: STAC_REL_PARENT,
+                STAC_HREF_KEY: f"./{CATALOG_KEY}/{dataset.dataset_prefix}/{CATALOG_KEY}",
+                STAC_TYPE_KEY: "application/json",
+            },
+        ]
 
-                    with subtests.test(msg="catalog links"):
-                        assert collection_json[STAC_LINKS_KEY] == expected_links
+        lambda_handler(
+            {
+                RECORDS_KEY: [
+                    {
+                        BODY_KEY: dataset_version_metadata.key,
+                        MESSAGE_ATTRIBUTES_KEY: {
+                            MESSAGE_ATTRIBUTE_TYPE_KEY: {
+                                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
+                                DATA_TYPE_KEY: DATA_TYPE_STRING,
+                            }
+                        },
+                    }
+                ]
+            },
+            any_lambda_context(),
+        )
 
-            finally:
-                delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
+        with subtests.test(msg="dataset catalog links"), smart_open(
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+            f"{dataset.dataset_prefix}/{CATALOG_KEY}"
+        ) as updated_dataset_metadata_file:
+            collection_json = load(updated_dataset_metadata_file)
+            assert collection_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
+
+        with subtests.test(msg="dataset version links"), smart_open(
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
+            f"/{dataset_version_metadata.key}"
+            f"{dataset.dataset_prefix}/{CATALOG_KEY}"
+        ) as updated_dataset_metadata_file:
+            collection_json = load(updated_dataset_metadata_file)
+            assert collection_json[STAC_LINKS_KEY] == expected_dataset_version_links

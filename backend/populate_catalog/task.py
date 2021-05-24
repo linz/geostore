@@ -1,5 +1,5 @@
 import boto3
-from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
+from pystac import STAC_IO, Catalog, CatalogType, layout  # type: ignore[import]
 
 from ..api_responses import BODY_KEY
 from ..pystac_io_methods import read_method, write_method
@@ -9,6 +9,7 @@ from ..sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
+    STRING_VALUE_KEY,
 )
 from ..types import JsonObject
 
@@ -30,17 +31,17 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     for message in event[RECORDS_KEY]:
         if (
-            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY]
+            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY][STRING_VALUE_KEY]
             == MESSAGE_ATTRIBUTE_TYPE_ROOT
         ):
             handle_root(message[BODY_KEY])
         elif (
-            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY]
+            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY][STRING_VALUE_KEY]
             == MESSAGE_ATTRIBUTE_TYPE_DATASET
         ):
             handle_dataset(message[BODY_KEY])
         else:
-            raise Exception("Unknown type")
+            raise Exception("Unhandled SQS message type")
 
     return {}
 
@@ -50,13 +51,16 @@ def handle_dataset(version_metadata_key: str) -> None:
     storage_bucket_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
     dataset = version_metadata_key.split("/", maxsplit=2)[0]
 
-    dataset_catalog = Catalog.from_file(f"{dataset}/{CATALOG_KEY}")
+    dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset}/{CATALOG_KEY}")
 
-    dataset_catalog.add_child(
-        STAC_IO.read_stac_object(f"{storage_bucket_path}/{version_metadata_key}")
+    dataset_version_metadata = STAC_IO.read_stac_object(
+        f"{storage_bucket_path}/{version_metadata_key}"
     )
-    dataset_catalog.normalize_hrefs(storage_bucket_path)
 
+    dataset_catalog.add_child(dataset_version_metadata)
+    dataset_version_strategy = layout.CustomLayoutStrategy()
+
+    dataset_catalog.normalize_hrefs(storage_bucket_path, strategy=dataset_version_strategy)
     dataset_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
 
 
