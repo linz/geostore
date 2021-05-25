@@ -1,4 +1,3 @@
-from http import HTTPStatus
 from json import dumps
 from os.path import basename
 
@@ -6,7 +5,6 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
-from backend.api_responses import error_response
 from backend.datasets_model import datasets_model_with_meta
 from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from backend.import_dataset.task import EVENT_KEY
@@ -56,9 +54,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}", consistent_read=True
         )
     except DoesNotExist:
-        return error_response(
-            HTTPStatus.NOT_FOUND, f"dataset '{event[DATASET_ID_KEY]}' does not exist"
-        )
+        return {ERROR_MESSAGE_KEY: f"dataset '{event[DATASET_ID_KEY]}' could not be found"}
 
     new_version_metadata_key = (
         f"{dataset.dataset_prefix}{event[VERSION_ID_KEY]}"

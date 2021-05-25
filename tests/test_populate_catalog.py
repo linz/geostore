@@ -167,12 +167,25 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             key=CATALOG_KEY,
         ):
 
-            expected_links: JsonList = original_links + [
+            expected_root_links: JsonList = original_links + [
                 {
                     STAC_REL_KEY: STAC_REL_CHILD,
                     STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
                     STAC_TYPE_KEY: "application/json",
                 }
+            ]
+
+            expected_dataset_links: JsonList = [
+                {
+                    STAC_REL_KEY: STAC_REL_ROOT,
+                    STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                    STAC_TYPE_KEY: "application/json",
+                },
+                {
+                    STAC_REL_KEY: STAC_REL_PARENT,
+                    STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                    STAC_TYPE_KEY: "application/json",
+                },
             ]
 
             lambda_handler(
@@ -194,17 +207,16 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
 
             with smart_open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
-            ) as root_metadata_file:
-                catalog_json = load(root_metadata_file)
+            ) as root_metadata_file, subtests.test(msg="root catalog links"):
+                root_catalog_json = load(root_metadata_file)
+                assert root_catalog_json[STAC_LINKS_KEY] == expected_root_links
 
-                with subtests.test(msg="catalog title"):
-                    assert catalog_json[STAC_TITLE_KEY] == ROOT_CATALOG_TITLE
-
-                with subtests.test(msg="catalog description"):
-                    assert catalog_json[STAC_DESCRIPTION_KEY] == ROOT_CATALOG_DESCRIPTION
-
-                with subtests.test(msg="catalog links"):
-                    assert catalog_json[STAC_LINKS_KEY] == expected_links
+            with smart_open(
+                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
+                f"/{dataset.dataset_prefix}/{CATALOG_KEY}"
+            ) as dataset_metadata_file, subtests.test(msg="dataset catalog links"):
+                dataset_catalog_json = load(dataset_metadata_file)
+                assert dataset_catalog_json[STAC_LINKS_KEY] == expected_dataset_links
 
 
 @pytest.mark.parametrize(
@@ -221,12 +233,12 @@ def should_update_dataset_catalog_with_new_version(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(stac_object),
-                STAC_ID_KEY: dataset.dataset_prefix,
+                STAC_ID_KEY: dataset_version,
                 STAC_TITLE_KEY: dataset.title,
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"{dataset.dataset_prefix}/{filename}",
+                        STAC_HREF_KEY: f"./{filename}",
                         STAC_TYPE_KEY: "application/json",
                     },
                 ],
@@ -243,12 +255,12 @@ def should_update_dataset_catalog_with_new_version(
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
                         STAC_TYPE_KEY: "application/json",
                     },
                     {
                         STAC_REL_KEY: STAC_REL_PARENT,
-                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
                         STAC_TYPE_KEY: "application/json",
                     },
                 ],
@@ -284,29 +296,29 @@ def should_update_dataset_catalog_with_new_version(
         expected_dataset_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_KEY}",
                 STAC_TYPE_KEY: "application/json",
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_KEY}",
                 STAC_TYPE_KEY: "application/json",
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset_version_metadata.key}",
+                STAC_HREF_KEY: f"./{dataset_version}/{filename}",
                 STAC_TYPE_KEY: "application/json",
             },
         ]
         expected_dataset_version_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../../{CATALOG_KEY}",
                 STAC_TYPE_KEY: "application/json",
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}/{dataset.dataset_prefix}/{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_KEY}",
                 STAC_TYPE_KEY: "application/json",
             },
         ]
@@ -332,13 +344,12 @@ def should_update_dataset_catalog_with_new_version(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
             f"{dataset.dataset_prefix}/{CATALOG_KEY}"
         ) as updated_dataset_metadata_file:
-            collection_json = load(updated_dataset_metadata_file)
-            assert collection_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
+            catalog_json = load(updated_dataset_metadata_file)
+            assert catalog_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
 
         with subtests.test(msg="dataset version links"), smart_open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
             f"/{dataset_version_metadata.key}"
-            f"{dataset.dataset_prefix}/{CATALOG_KEY}"
         ) as updated_dataset_metadata_file:
-            collection_json = load(updated_dataset_metadata_file)
-            assert collection_json[STAC_LINKS_KEY] == expected_dataset_version_links
+            version_json = load(updated_dataset_metadata_file)
+            assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
