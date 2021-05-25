@@ -3,6 +3,7 @@ from json import load
 from typing import Any, Dict
 
 import pytest
+from _pytest.python_api import raises
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -16,6 +17,7 @@ from backend.populate_catalog.task import (
     ROOT_CATALOG_DESCRIPTION,
     ROOT_CATALOG_ID,
     ROOT_CATALOG_TITLE,
+    UnhandledSQSMessageException,
     lambda_handler,
 )
 from backend.resources import ResourceName
@@ -353,3 +355,23 @@ def should_update_dataset_catalog_with_new_version(
         ) as updated_dataset_metadata_file:
             version_json = load(updated_dataset_metadata_file)
             assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
+
+
+def should_fail_if_unknown_sqs_message_type() -> None:
+    with raises(UnhandledSQSMessageException):
+        lambda_handler(
+            {
+                RECORDS_KEY: [
+                    {
+                        BODY_KEY: any_dataset_version_id(),
+                        MESSAGE_ATTRIBUTES_KEY: {
+                            MESSAGE_ATTRIBUTE_TYPE_KEY: {
+                                STRING_VALUE_KEY: "test",
+                                DATA_TYPE_KEY: DATA_TYPE_STRING,
+                            }
+                        },
+                    }
+                ]
+            },
+            any_lambda_context(),
+        )

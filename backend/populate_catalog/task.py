@@ -43,9 +43,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         ):
             handle_dataset(message[BODY_KEY])
         else:
-            raise Exception("Unhandled SQS message type")
+            raise UnhandledSQSMessageException("Unhandled SQS message type")
 
     return {}
+
+
+class UnhandledSQSMessageException(Exception):
+    pass
 
 
 def handle_dataset(version_metadata_key: str) -> None:

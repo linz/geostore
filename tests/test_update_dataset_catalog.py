@@ -48,6 +48,7 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     assert response == {ERROR_MESSAGE_KEY: f"dataset '{dataset_id}' could not be found"}
 
 
+@mark.infrastructure
 @patch("backend.update_dataset_catalog.task.validate")
 def should_return_required_property_error_when_missing_mandatory_property(
     validate_url_mock: MagicMock,
