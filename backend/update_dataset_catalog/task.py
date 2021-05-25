@@ -12,7 +12,13 @@ from ..import_dataset.task import EVENT_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
-from ..sqs_message_attributes import MESSAGE_ATTRIBUTE_TYPE_DATASET, MESSAGE_ATTRIBUTE_TYPE_KEY
+from ..sqs_message_attributes import (
+    DATA_TYPE_KEY,
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_DATASET,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    STRING_VALUE_KEY,
+)
 from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
@@ -54,7 +60,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         return {ERROR_MESSAGE_KEY: f"dataset '{event[DATASET_ID_KEY]}' could not be found"}
 
     new_version_metadata_key = (
-        f"{dataset.dataset_prefix}{event[VERSION_ID_KEY]}"
+        f"{dataset.dataset_prefix}/{event[VERSION_ID_KEY]}/"
         f"{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
     )
 
@@ -65,8 +71,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         MessageBody=new_version_metadata_key,
         MessageAttributes={
             MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                "StringValue": MESSAGE_ATTRIBUTE_TYPE_DATASET,
-                "DataType": "String",
+                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
+                DATA_TYPE_KEY: DATA_TYPE_STRING,
             }
         },
     )

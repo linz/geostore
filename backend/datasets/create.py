@@ -12,7 +12,13 @@ from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
-from ..sqs_message_attributes import MESSAGE_ATTRIBUTE_TYPE_KEY, MESSAGE_ATTRIBUTE_TYPE_ROOT
+from ..sqs_message_attributes import (
+    DATA_TYPE_KEY,
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    MESSAGE_ATTRIBUTE_TYPE_ROOT,
+    STRING_VALUE_KEY,
+)
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..types import JsonObject
 
@@ -73,8 +79,8 @@ def create_dataset(body: JsonObject) -> JsonObject:
         MessageBody=dataset.dataset_prefix,
         MessageAttributes={
             MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                "StringValue": MESSAGE_ATTRIBUTE_TYPE_ROOT,
-                "DataType": "String",
+                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
+                DATA_TYPE_KEY: DATA_TYPE_STRING,
             }
         },
     )
