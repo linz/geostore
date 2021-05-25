@@ -1,23 +1,20 @@
 from json import dumps
 from os.path import basename
+from urllib.parse import urlparse
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
-from backend.datasets_model import datasets_model_with_meta
-from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from backend.import_dataset.task import EVENT_KEY
-from backend.log import set_up_logging
-from backend.models import DATASET_ID_PREFIX
-from backend.parameter_store import ParameterName, get_param
-from backend.s3 import s3_url_to_key
-from backend.sqs_message_attributes import (
-    MESSAGE_ATTRIBUTE_TYPE_DATASET,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-)
-from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
-from backend.types import JsonObject
+from ..datasets_model import datasets_model_with_meta
+from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+from ..import_dataset.task import EVENT_KEY
+from ..log import set_up_logging
+from ..models import DATASET_ID_PREFIX
+from ..parameter_store import ParameterName, get_param
+from ..sqs_message_attributes import MESSAGE_ATTRIBUTE_TYPE_DATASET, MESSAGE_ATTRIBUTE_TYPE_KEY
+from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..types import JsonObject
 
 LOGGER = set_up_logging(__name__)
 S3_CLIENT = boto3.client("s3")
@@ -58,7 +55,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     new_version_metadata_key = (
         f"{dataset.dataset_prefix}{event[VERSION_ID_KEY]}"
-        f"{basename(s3_url_to_key(event[METADATA_URL_KEY]))}"
+        f"{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
     )
 
     # add reference to root catalog
