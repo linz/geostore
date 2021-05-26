@@ -32,7 +32,7 @@ from .stac_generators import (
     any_hex_multihash,
 )
 
-STAC_VERSION = "1.0.0-rc.4"
+STAC_VERSION = "1.0.0"
 
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     STAC_DESCRIPTION_KEY: any_dataset_description(),
