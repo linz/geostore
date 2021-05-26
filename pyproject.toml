@@ -155,6 +155,7 @@ update_dataset_catalog = [
     "boto3",
     "jsonschema",
     "pynamodb",
+    "ulid-py"
 ]
 upload_status = [
     "boto3",

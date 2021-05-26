@@ -47,7 +47,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
         with subtests.test(msg="sqs called"):
             assert sqs_mock.get_queue_by_name.return_value.send_message.called
 
-        with subtests.test(msg="sqs called"):
+        with subtests.test(msg="correct url passed to sqs"):
             metadata_key = sqs_mock.get_queue_by_name.return_value.send_message.call_args[1][
                 "MessageBody"
             ]
