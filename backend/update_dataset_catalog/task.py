@@ -6,9 +6,9 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from pynamodb.exceptions import DoesNotExist
 
+from ..api_keys import EVENT_KEY
 from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from ..import_dataset.task import EVENT_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
