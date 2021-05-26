@@ -7,6 +7,13 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.resources import ResourceName
+from backend.sqs_message_attributes import (
+    DATA_TYPE_KEY,
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_DATASET,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    STRING_VALUE_KEY,
+)
 from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.update_dataset_catalog.task import lambda_handler
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_s3_url
@@ -41,6 +48,16 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
             any_lambda_context(),
         )
 
+        expected_sqs_call = {
+            "MessageBody": dataset_version_metadata.key,
+            "MessageAttributes": {
+                MESSAGE_ATTRIBUTE_TYPE_KEY: {
+                    STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
+                    DATA_TYPE_KEY: DATA_TYPE_STRING,
+                }
+            },
+        }
+
         with subtests.test(msg="success"):
             assert response == {}
 
@@ -48,10 +65,10 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
             assert sqs_mock.get_queue_by_name.return_value.send_message.called
 
         with subtests.test(msg="correct url passed to sqs"):
-            metadata_key = sqs_mock.get_queue_by_name.return_value.send_message.call_args[1][
-                "MessageBody"
-            ]
-            assert metadata_key == dataset_version_metadata.key
+            assert (
+                sqs_mock.get_queue_by_name.return_value.send_message.call_args[1]
+                == expected_sqs_call
+            )
 
 
 @mark.infrastructure

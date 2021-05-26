@@ -19,9 +19,17 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.datasets.create import TITLE_PATTERN
 from backend.datasets.entrypoint import lambda_handler
 from backend.datasets.get import get_dataset_filter, get_dataset_single, handle_get
+from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.populate_catalog.task import CATALOG_KEY
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
+from backend.sqs_message_attributes import (
+    DATA_TYPE_KEY,
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    MESSAGE_ATTRIBUTE_TYPE_ROOT,
+    STRING_VALUE_KEY,
+)
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 
 from .aws_utils import (
@@ -73,6 +81,16 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client
         )[0]
 
+        dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{response[BODY_KEY]['id']}"
+        expected_sqs_call = {
+            "MessageBody": dataset_prefix,
+            "MessageAttributes": {
+                MESSAGE_ATTRIBUTE_TYPE_KEY: {
+                    STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
+                    DATA_TYPE_KEY: DATA_TYPE_STRING,
+                }
+            },
+        }
         with smart_open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
         ) as new_catalog_metadata_file:
@@ -87,6 +105,12 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 
             with subtests.test(msg="root catalog"):
                 assert sqs_mock.get_queue_by_name.return_value.send_message.called
+
+            with subtests.test(msg="correct url passed to sqs"):
+                assert (
+                    sqs_mock.get_queue_by_name.return_value.send_message.call_args[1]
+                    == expected_sqs_call
+                )
 
     finally:
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)
