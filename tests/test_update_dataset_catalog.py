@@ -14,12 +14,17 @@ from backend.sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     STRING_VALUE_KEY,
 )
-from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 from backend.update_dataset_catalog.task import lambda_handler
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_s3_url
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_filename
-from tests.stac_generators import any_dataset_id, any_dataset_version_id
+from tests.stac_generators import any_dataset_version_id
 from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
@@ -42,6 +47,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
         response = lambda_handler(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
+                DATASET_PREFIX_KEY: dataset.dataset_prefix,
                 VERSION_ID_KEY: dataset_version,
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
             },
@@ -69,21 +75,6 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
                 sqs_mock.get_queue_by_name.return_value.send_message.call_args[1]
                 == expected_sqs_call
             )
-
-
-@mark.infrastructure
-def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
-    dataset_id = any_dataset_id()
-    response = lambda_handler(
-        {
-            DATASET_ID_KEY: dataset_id,
-            VERSION_ID_KEY: any_dataset_version_id(),
-            METADATA_URL_KEY: any_s3_url(),
-        },
-        any_lambda_context(),
-    )
-
-    assert response == {ERROR_MESSAGE_KEY: f"dataset '{dataset_id}' could not be found"}
 
 
 @mark.infrastructure

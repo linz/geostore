@@ -2,7 +2,8 @@ import os
 from json import dumps
 
 import boto3
-from pystac import STAC_IO, Catalog, CatalogType, Collection, Item, layout  # type: ignore[import]
+from pystac import STAC_IO, Catalog, CatalogType, Collection, Item  # type: ignore[import]
+from pystac.layout import HrefLayoutStrategy  # type: ignore[import]
 
 from ..api_keys import EVENT_KEY
 from ..api_responses import BODY_KEY
@@ -60,6 +61,30 @@ class UnhandledSQSMessageException(Exception):
     pass
 
 
+class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
+    def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
+        original_path = cat.get_self_href().split("/")
+        if is_root:
+            cat_root = parent_dir
+        else:
+            cat_root = os.path.join(parent_dir, original_path[-2])
+
+        return os.path.join(cat_root, original_path[-1])
+
+    def get_collection_href(self, col: Collection, parent_dir: str, is_root: bool) -> str:
+        original_path = col.get_self_href().split("/")
+        if is_root:
+            col_root = parent_dir
+        else:
+            col_root = os.path.join(parent_dir, original_path[-2])
+
+        return os.path.join(col_root, original_path[-1])
+
+    def get_item_href(self, item: Item, parent_dir: str) -> str:
+        original_path = item.get_self_href().split("/")
+        return os.path.join(parent_dir, original_path[-1])
+
+
 def handle_dataset(version_metadata_key: str) -> None:
     """Handle writing a new dataset version to the dataset catalog"""
     storage_bucket_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
@@ -71,41 +96,12 @@ def handle_dataset(version_metadata_key: str) -> None:
         f"{storage_bucket_path}/{version_metadata_key}"
     )
 
-    dataset_version_strategy = layout.CustomLayoutStrategy(
-        catalog_func=get_catalog_href, collection_func=get_collection_href, item_func=get_item_href
-    )
-
-    dataset_catalog.add_child(dataset_version_metadata, strategy=dataset_version_strategy)
+    dataset_catalog.add_child(dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
 
     dataset_catalog.normalize_hrefs(
-        f"{storage_bucket_path}/{dataset_prefix}", strategy=dataset_version_strategy
+        f"{storage_bucket_path}/{dataset_prefix}", strategy=GeostoreSTACLayoutStrategy()
     )
     dataset_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
-
-
-def get_catalog_href(cat: Catalog, parent_dir: str, is_root: bool) -> str:
-    og_filename = cat.get_self_href().split("/")
-    if is_root:
-        cat_root = parent_dir
-    else:
-        cat_root = os.path.join(parent_dir, "{}".format(og_filename[-2]))
-
-    return os.path.join(cat_root, og_filename[-1])
-
-
-def get_collection_href(col: Collection, parent_dir: str, is_root: bool) -> str:
-    og_filename = col.get_self_href().split("/")
-    if is_root:
-        col_root = parent_dir
-    else:
-        col_root = os.path.join(parent_dir, "{}".format(og_filename[-2]))
-
-    return os.path.join(col_root, og_filename[-1])
-
-
-def get_item_href(item: Item, parent_dir: str) -> str:
-    og_filename = item.get_self_href().split("/")
-    return os.path.join(parent_dir, "{}.json".format(og_filename[-1]))
 
 
 def handle_root(dataset_prefix: str) -> None:

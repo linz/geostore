@@ -332,6 +332,7 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
+        self.message_queue.grant_send_messages(update_dataset_catalog.lambda_function)
 
         for storage_writer in [
             import_dataset_role,
@@ -359,6 +360,7 @@ class Processing(Construct):
                     validation_summary_task.lambda_function,
                     upload_status_task.lambda_function,
                 ],
+                self.message_queue_name_parameter: [update_dataset_catalog.lambda_function],
             }
         )
 
