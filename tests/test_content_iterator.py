@@ -18,12 +18,7 @@ from backend.content_iterator.task import (
 )
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.step_function import (
-    DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-)
+from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 
 from .aws_utils import (
     any_item_count,
@@ -33,16 +28,10 @@ from .aws_utils import (
     any_table_name,
 )
 from .general_generators import any_dictionary_key
-from .stac_generators import (
-    any_dataset_id,
-    any_dataset_prefix,
-    any_dataset_version_id,
-    any_hex_multihash,
-)
+from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 INITIAL_EVENT: Dict[str, Any] = {
     DATASET_ID_KEY: any_dataset_id(),
-    DATASET_PREFIX_KEY: any_dataset_prefix(),
     METADATA_URL_KEY: any_s3_url(),
     VERSION_ID_KEY: any_dataset_version_id(),
 }
@@ -54,7 +43,6 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
         NEXT_ITEM_KEY: any_next_item_index(),
     },
     DATASET_ID_KEY: any_dataset_id(),
-    DATASET_PREFIX_KEY: any_dataset_prefix(),
     METADATA_URL_KEY: any_s3_url(),
     VERSION_ID_KEY: any_dataset_version_id(),
 }

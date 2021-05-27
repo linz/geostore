@@ -3,7 +3,7 @@ from jsonschema import validate  # type: ignore[import]
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from ..step_function import DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
 MAX_ITERATION_SIZE = 10_000
@@ -37,11 +37,10 @@ EVENT_SCHEMA = {
             "additionalProperties": False,
         },
         DATASET_ID_KEY: {"type": "string"},
-        DATASET_PREFIX_KEY: {"type": "string"},
         METADATA_URL_KEY: {"type": "string"},
         VERSION_ID_KEY: {"type": "string"},
     },
-    "required": [DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+    "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
     "additionalProperties": False,
 }
 

@@ -9,7 +9,7 @@ from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import get_bucket_and_key_from_url
-from ..step_function import DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
@@ -36,11 +36,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
-                    DATASET_PREFIX_KEY: {"type": "string"},
                     VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
             },
         )
     except ValidationError as error:

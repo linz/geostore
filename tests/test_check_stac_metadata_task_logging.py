@@ -8,19 +8,13 @@ from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.check_stac_metadata.task import lambda_handler
 from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from backend.step_function import (
-    DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-)
+from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from tests.aws_utils import any_lambda_context, any_s3_url
 from tests.general_generators import any_error_message
-from tests.stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from tests.stac_generators import any_dataset_id, any_dataset_version_id
 
 MINIMAL_PAYLOAD = {
     DATASET_ID_KEY: any_dataset_id(),
-    DATASET_PREFIX_KEY: any_dataset_prefix(),
     VERSION_ID_KEY: any_dataset_version_id(),
     METADATA_URL_KEY: any_s3_url(),
 }

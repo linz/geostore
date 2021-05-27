@@ -1,3 +1,4 @@
+import sys
 from copy import deepcopy
 from datetime import timedelta
 from hashlib import sha256, sha512
@@ -48,12 +49,7 @@ from backend.stac_format import (
     STAC_TYPE_KEY,
     STAC_VERSION_KEY,
 )
-from backend.step_function import (
-    DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
-    METADATA_URL_KEY,
-    VERSION_ID_KEY,
-)
+from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
@@ -69,12 +65,12 @@ from .general_generators import (
     any_error_message,
     any_file_contents,
     any_https_url,
+    any_program_name,
     any_safe_filename,
 )
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
-    any_dataset_prefix,
     any_dataset_version_id,
     any_hex_multihash,
 )
@@ -94,7 +90,6 @@ def should_succeed_with_validation_failure(validate_url_mock: MagicMock) -> None
         lambda_handler(
             {
                 DATASET_ID_KEY: any_dataset_id(),
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
                 VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
             },
@@ -119,7 +114,6 @@ def should_save_non_s3_url_validation_results(
         lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
                 VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: non_s3_url,
             },
@@ -164,6 +158,12 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         "}"
     )
     metadata_url = any_s3_url()
+    sys.argv = [
+        any_program_name(),
+        f"--metadata-url={metadata_url}",
+        f"--dataset-id={any_dataset_id()}",
+        f"--version-id={any_dataset_version_id()}",
+    ]
 
     url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
 
@@ -201,7 +201,6 @@ def should_save_staging_access_validation_results(
     lambda_handler(
         {
             DATASET_ID_KEY: dataset_id,
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
             VERSION_ID_KEY: version_id,
             METADATA_URL_KEY: s3_url,
         },
@@ -257,7 +256,6 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
                 VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: root_s3_object.url,
             },
@@ -379,7 +377,6 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             lambda_handler(
                 {
                     DATASET_ID_KEY: dataset_id,
-                    DATASET_PREFIX_KEY: any_dataset_prefix(),
                     VERSION_ID_KEY: version_id,
                     METADATA_URL_KEY: metadata_s3_object.url,
                 },
@@ -416,7 +413,6 @@ def should_validate_given_url(validate_url_mock: MagicMock) -> None:
         lambda_handler(
             {
                 DATASET_ID_KEY: any_dataset_id(),
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
                 VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: url,
             },
