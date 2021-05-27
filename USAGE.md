@@ -128,7 +128,7 @@ aws lambda invoke --function-name GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME \
 $ aws lambda invoke --function-name datasets \
     --payload '{"http_method": "POST", "body": {"title": "Auckland_2020", "description": "Aerial Imagery from APR 2020"}}' /dev/stdout
 
-{"status_code": 201, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+{"status_code": 201, "body": {"created_at": "2021-05-26T21:17:47.758448+0000", "pk": "DATASET#01F6N8MSVEY2Y6EPFZ5XR0KFW1", "title": "Auckland_2020", "updated_at": "2021-05-26T21:17:47.758538+0000", "id": "01F6N8MSVEY2Y6EPFZ5XR0KFW1"}}
 ```
 
 Please note that it is important to choose an accurate and stable title. Changing the title is
