@@ -28,7 +28,7 @@ from backend.sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
-    STRING_VALUE_KEY,
+    STRING_VALUE_KEY_LOWER,
 )
 from backend.stac_format import (
     STAC_DESCRIPTION_KEY,
@@ -89,7 +89,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
                             BODY_KEY: dataset.dataset_prefix,
                             MESSAGE_ATTRIBUTES_KEY: {
                                 MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                                    STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
+                                    STRING_VALUE_KEY_LOWER: MESSAGE_ATTRIBUTE_TYPE_ROOT,
                                     DATA_TYPE_KEY: DATA_TYPE_STRING,
                                 }
                             },
@@ -197,7 +197,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                             BODY_KEY: dataset.dataset_prefix,
                             MESSAGE_ATTRIBUTES_KEY: {
                                 MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                                    STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
+                                    STRING_VALUE_KEY_LOWER: MESSAGE_ATTRIBUTE_TYPE_ROOT,
                                     DATA_TYPE_KEY: DATA_TYPE_STRING,
                                 }
                             },
@@ -332,7 +332,7 @@ def should_update_dataset_catalog_with_new_version(
                         BODY_KEY: dataset_version_metadata.key,
                         MESSAGE_ATTRIBUTES_KEY: {
                             MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
+                                STRING_VALUE_KEY_LOWER: MESSAGE_ATTRIBUTE_TYPE_DATASET,
                                 DATA_TYPE_KEY: DATA_TYPE_STRING,
                             }
                         },
@@ -366,7 +366,7 @@ def should_fail_if_unknown_sqs_message_type() -> None:
                         BODY_KEY: any_dataset_version_id(),
                         MESSAGE_ATTRIBUTES_KEY: {
                             MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                                STRING_VALUE_KEY: "test",
+                                STRING_VALUE_KEY_LOWER: "test",
                                 DATA_TYPE_KEY: DATA_TYPE_STRING,
                             }
                         },
