@@ -12,6 +12,7 @@ from backend.import_dataset.task import EVENT_KEY, lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.step_function import (
     DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
     S3_BATCH_RESPONSE_KEY,
     VERSION_ID_KEY,
@@ -44,6 +45,7 @@ class TestLogging:
         ):
             event = {
                 DATASET_ID_KEY: dataset.dataset_id,
+                DATASET_PREFIX_KEY: dataset.dataset_prefix,
                 METADATA_URL_KEY: any_s3_url(),
                 VERSION_ID_KEY: any_dataset_version_id(),
             }
@@ -112,6 +114,7 @@ class TestLogging:
                 lambda_handler(
                     {
                         DATASET_ID_KEY: dataset.dataset_id,
+                        DATASET_PREFIX_KEY: dataset.dataset_prefix,
                         METADATA_URL_KEY: any_s3_url(),
                         VERSION_ID_KEY: version_id,
                     },
@@ -144,6 +147,7 @@ class TestLogging:
             lambda_handler(
                 {
                     DATASET_ID_KEY: dataset.dataset_id,
+                    DATASET_PREFIX_KEY: dataset.dataset_prefix,
                     METADATA_URL_KEY: any_s3_url(),
                     VERSION_ID_KEY: any_dataset_version_id(),
                 },
