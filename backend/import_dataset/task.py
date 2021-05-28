@@ -9,7 +9,6 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
-from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -20,7 +19,13 @@ from ..processing_assets_model import ProcessingAssetType, processing_assets_mod
 from ..pystac_io_methods import get_bucket_and_key_from_url
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
-from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, S3_BATCH_RESPONSE_KEY, VERSION_ID_KEY
+from ..step_function import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    METADATA_URL_KEY,
+    S3_BATCH_RESPONSE_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 
 if TYPE_CHECKING:
@@ -75,14 +80,13 @@ JOB_REPORT_SCOPE: JobReportScopeType = "AllTasks"
 
 class Importer:
     # pylint:disable=too-few-public-methods
-    def __init__(self, dataset_id: str, version_id: str, source_bucket_name: str):
+    def __init__(
+        self, dataset_id: str, dataset_prefix: str, version_id: str, source_bucket_name: str
+    ):
         self.dataset_id = dataset_id
         self.version_id = version_id
         self.source_bucket_name = source_bucket_name
-        dataset = datasets_model_with_meta().get(
-            hash_key=f"{DATASET_ID_PREFIX}{self.dataset_id}", consistent_read=True
-        )
-        self.dataset_prefix = dataset.dataset_prefix
+        self.dataset_prefix = dataset_prefix
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
@@ -161,10 +165,11 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
+                    DATASET_PREFIX_KEY: {"type": "string"},
                     VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+                "required": [DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
             },
         )
     except ValidationError as error:
@@ -173,7 +178,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc
 
-    importer = Importer(event[DATASET_ID_KEY], event[VERSION_ID_KEY], source_bucket_name)
+    importer = Importer(
+        event[DATASET_ID_KEY], event[DATASET_PREFIX_KEY], event[VERSION_ID_KEY], source_bucket_name
+    )
     asset_job_id = importer.run(IMPORT_ASSET_FILE_TASK_ARN, ProcessingAssetType.DATA)
     metadata_job_id = importer.run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)
 

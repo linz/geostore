@@ -60,14 +60,6 @@ def should_raise_exception_if_event_is_missing_state_machine_properties(
             lambda_handler(event, any_lambda_context())
 
 
-def should_raise_exception_if_event_has_unknown_top_level_property() -> None:
-    event = deepcopy(INITIAL_EVENT)
-    event[any_dictionary_key()] = 1
-
-    with raises(ValidationError):
-        lambda_handler(event, any_lambda_context())
-
-
 def should_raise_exception_if_content_is_missing_any_property(subtests: SubTests) -> None:
     for property_name in [FIRST_ITEM_KEY, ITERATION_SIZE_KEY, NEXT_ITEM_KEY]:
         event = deepcopy(SUBSEQUENT_EVENT)

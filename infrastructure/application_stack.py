@@ -32,7 +32,6 @@ class Application(Stack):
             self,
             "processing",
             botocore_lambda_layer=lambda_layers.botocore,
-            datasets_table=storage.datasets_table,
             env_name=env_name,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,

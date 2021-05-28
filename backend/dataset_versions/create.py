@@ -14,7 +14,13 @@ from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
-from ..step_function import DATASET_ID_KEY, EXECUTION_ARN_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    EXECUTION_ARN_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 
 STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
@@ -59,6 +65,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     # execute step function
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
+        DATASET_PREFIX_KEY: dataset.dataset_prefix,
         VERSION_ID_KEY: dataset_version_id,
         METADATA_URL_KEY: body["metadata_url"],
     }
