@@ -50,7 +50,6 @@ class Processing(Construct):
         stack_id: str,
         *,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
-        datasets_table: Table,
         env_name: str,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
@@ -288,7 +287,7 @@ class Processing(Construct):
         ]:
             storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
-        for table in [datasets_table, processing_assets_table]:
+        for table in [processing_assets_table]:
             table.grant_read_data(import_dataset_task.lambda_function)
             table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
@@ -337,7 +336,6 @@ class Processing(Construct):
 
         grant_parameter_read_access(
             {
-                datasets_table.name_parameter: [import_dataset_task.lambda_function],
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],

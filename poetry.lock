@@ -1689,13 +1689,14 @@ six = "*"
 
 [[package]]
 name = "ipdb"
-version = "0.13.7"
+version = "0.13.8"
 description = "IPython-enabled pdb"
 category = "dev"
 optional = false
 python-versions = ">=2.7"
 
 [package.dependencies]
+decorator = {version = "*", markers = "python_version > \"3.6\""}
 ipython = {version = ">=7.17.0", markers = "python_version > \"3.6\""}
 toml = {version = ">=0.10.2", markers = "python_version > \"3.6\""}
 
@@ -2913,7 +2914,7 @@ iniparse = [
     {file = "iniparse-0.5.tar.gz", hash = "sha256:932e5239d526e7acb504017bb707be67019ac428a6932368e6851691093aa842"},
 ]
 ipdb = [
-    {file = "ipdb-0.13.7.tar.gz", hash = "sha256:178c367a61c1039e44e17c56fcc4a6e7dc11b33561261382d419b6ddb4401810"},
+    {file = "ipdb-0.13.8.tar.gz", hash = "sha256:8d368fa048a93ad6c1985d7f1d78d68580c879e4053fc15714bdcf2a1b042d06"},
 ]
 ipython = [
     {file = "ipython-7.21.0-py3-none-any.whl", hash = "sha256:34207ffb2f653bced2bc8e3756c1db86e7d93e44ed049daae9814fed66d408ec"},

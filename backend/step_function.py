@@ -14,6 +14,7 @@ JOB_STATUS_SUCCEEDED = "SUCCEEDED"
 
 ASSET_UPLOAD_KEY = "asset_upload"
 DATASET_ID_KEY = "dataset_id"
+DATASET_PREFIX_KEY = "dataset_prefix"
 ERRORS_KEY = "errors"
 ERROR_CHECK_KEY = "check"
 ERROR_DETAILS_KEY = "details"
