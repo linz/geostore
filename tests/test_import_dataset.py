@@ -23,7 +23,12 @@ from backend.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
 )
-from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 
 from .aws_utils import (
     Dataset,
@@ -39,6 +44,7 @@ from .general_generators import any_file_contents, any_safe_filename
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
+    any_dataset_prefix,
     any_dataset_version_id,
     sha256_hex_digest_to_multihash,
 )
@@ -49,7 +55,11 @@ def should_return_required_property_error_when_missing_metadata_url() -> None:
     # When
 
     response = lambda_handler(
-        {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()},
+        {
+            DATASET_ID_KEY: any_dataset_id(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
+            VERSION_ID_KEY: any_dataset_version_id(),
+        },
         any_lambda_context(),
     )
 
@@ -59,7 +69,11 @@ def should_return_required_property_error_when_missing_metadata_url() -> None:
 def should_return_required_property_error_when_missing_dataset_id() -> None:
     # When
     response = lambda_handler(
-        {METADATA_URL_KEY: any_s3_url(), VERSION_ID_KEY: any_dataset_version_id()},
+        {
+            METADATA_URL_KEY: any_s3_url(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
+            VERSION_ID_KEY: any_dataset_version_id(),
+        },
         any_lambda_context(),
     )
 
@@ -70,7 +84,12 @@ def should_return_required_property_error_when_missing_version_id() -> None:
     # When
 
     response = lambda_handler(
-        {DATASET_ID_KEY: any_dataset_id(), METADATA_URL_KEY: any_s3_url()}, any_lambda_context()
+        {
+            DATASET_ID_KEY: any_dataset_id(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
+            METADATA_URL_KEY: any_s3_url(),
+        },
+        any_lambda_context(),
     )
 
     assert response == {ERROR_MESSAGE_KEY: f"'{VERSION_ID_KEY}' is a required property"}
@@ -160,6 +179,7 @@ def should_batch_copy_files_to_storage(
                 response = lambda_handler(
                     {
                         DATASET_ID_KEY: dataset.dataset_id,
+                        DATASET_PREFIX_KEY: dataset.dataset_prefix,
                         VERSION_ID_KEY: version_id,
                         METADATA_URL_KEY: root_metadata_s3_object.url,
                     },
