@@ -41,7 +41,7 @@ EVENT_SCHEMA = {
         VERSION_ID_KEY: {"type": "string"},
     },
     "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
-    "additionalProperties": False,
+    "additionalProperties": True,
 }
 
 
