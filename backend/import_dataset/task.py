@@ -9,6 +9,7 @@ import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
 from smart_open import open as smart_open  # type: ignore[import]
 
+from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -69,8 +70,6 @@ IMPORT_METADATA_FILE_TASK_ARN = get_param(
 STORAGE_BUCKET_ARN = f"arn:aws:s3:::{ResourceName.STORAGE_BUCKET_NAME.value}"
 
 S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN)
-
-EVENT_KEY = "event"
 
 JOB_MANIFEST_FORMAT: JobManifestFormatType = "S3BatchOperations_CSV_20180820"
 JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldNameType] = ["Bucket", "Key"]

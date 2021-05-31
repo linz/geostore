@@ -7,8 +7,9 @@ from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 
+from backend.api_keys import EVENT_KEY
 from backend.error_response_keys import ERROR_KEY
-from backend.import_dataset.task import EVENT_KEY, lambda_handler
+from backend.import_dataset.task import lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.step_function import (
     DATASET_ID_KEY,

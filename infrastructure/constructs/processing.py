@@ -82,7 +82,7 @@ class Processing(Construct):
         )
 
         ############################################################################################
-        # ROOT CATALOG UPDATE MESSAGE QUEUE
+        # UPDATE CATALOG UPDATE MESSAGE QUEUE
 
         dead_letter_queue = aws_sqs.Queue(
             self,
@@ -92,16 +92,16 @@ class Processing(Construct):
 
         self.message_queue = aws_sqs.Queue(
             self,
-            "root-catalog-message-queue",
+            "update-catalog-message-queue",
             visibility_timeout=LAMBDA_TIMEOUT,
             dead_letter_queue=aws_sqs.DeadLetterQueue(max_receive_count=3, queue=dead_letter_queue),
         )
         self.message_queue_name_parameter = aws_ssm.StringParameter(
             self,
-            "root-catalog-message-queue-name",
+            "update-catalog-message-queue-name",
             string_value=self.message_queue.queue_name,
-            description=f"Root Catalog Message Queue Name for {env_name}",
-            parameter_name=ParameterName.ROOT_CATALOG_MESSAGE_QUEUE_NAME.value,
+            description=f"Update Catalog Message Queue Name for {env_name}",
+            parameter_name=ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME.value,
         )
 
         populate_catalog_lambda = BundledLambdaFunction(
@@ -278,15 +278,6 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        for storage_writer in [
-            import_dataset_role,
-            import_dataset_task.lambda_function,
-            import_asset_file_function,
-            import_metadata_file_function,
-            populate_catalog_lambda,
-        ]:
-            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
-
         for table in [processing_assets_table]:
             table.grant_read_data(import_dataset_task.lambda_function)
             table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
@@ -334,6 +325,25 @@ class Processing(Construct):
             parameter_name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value,
         )
 
+        update_dataset_catalog = LambdaTask(
+            self,
+            "update-dataset-catalog",
+            directory="update_dataset_catalog",
+            botocore_lambda_layer=botocore_lambda_layer,
+            extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
+        )
+        self.message_queue.grant_send_messages(update_dataset_catalog.lambda_function)
+
+        for storage_writer in [
+            import_dataset_role,
+            import_dataset_task.lambda_function,
+            import_asset_file_function,
+            import_metadata_file_function,
+            populate_catalog_lambda,
+            update_dataset_catalog.lambda_function,
+        ]:
+            storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
+
         grant_parameter_read_access(
             {
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
@@ -350,6 +360,7 @@ class Processing(Construct):
                     validation_summary_task.lambda_function,
                     upload_status_task.lambda_function,
                 ],
+                self.message_queue_name_parameter: [update_dataset_catalog.lambda_function],
             }
         )
 
@@ -406,7 +417,9 @@ class Processing(Construct):
                                             "Complete",
                                         ),
                                     ),
-                                    success_task,  # type: ignore[arg-type]
+                                    update_dataset_catalog.next(
+                                        success_task  # type: ignore[arg-type]
+                                    ),
                                 )
                                 .when(
                                     aws_stepfunctions.Condition.or_(

@@ -77,7 +77,6 @@ class API(Construct):
         storage_bucket.grant_read_write(datasets_endpoint_lambda)
 
         sqs_queue.grant_send_messages(datasets_endpoint_lambda)
-        sqs_queue_parameter.grant_read(datasets_endpoint_lambda)
 
         for function in [datasets_endpoint_lambda, dataset_versions_endpoint_lambda]:
             datasets_table.grant_read_write_data(function)
@@ -109,6 +108,7 @@ class API(Construct):
                 ],
                 validation_results_table.name_parameter: [import_status_endpoint_lambda],
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
+                sqs_queue_parameter: [datasets_endpoint_lambda],
             }
         )
 

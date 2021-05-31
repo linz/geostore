@@ -34,7 +34,6 @@ from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
     STAC_ASSETS_KEY,
-    STAC_COLLECTION_TYPE,
     STAC_DESCRIPTION_KEY,
     STAC_EXTENT_BBOX_KEY,
     STAC_EXTENT_KEY,
@@ -46,6 +45,7 @@ from backend.stac_format import (
     STAC_ID_KEY,
     STAC_LICENSE_KEY,
     STAC_LINKS_KEY,
+    STAC_TYPE_COLLECTION,
     STAC_TYPE_KEY,
     STAC_VERSION_KEY,
 )
@@ -154,7 +154,7 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         f' "{STAC_LICENSE_KEY}": "MIT",'
         f' "{STAC_LINKS_KEY}": [],'
         f' "{STAC_VERSION_KEY}": "{STAC_VERSION}",'
-        f' "{STAC_TYPE_KEY}": "{STAC_COLLECTION_TYPE}"'
+        f' "{STAC_TYPE_KEY}": "{STAC_TYPE_COLLECTION}"'
         "}"
     )
     metadata_url = any_s3_url()

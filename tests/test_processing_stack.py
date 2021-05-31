@@ -26,6 +26,10 @@ from backend.stac_format import (
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_KEY,
+    STAC_REL_ROOT,
+    STAC_REL_SELF,
 )
 from backend.step_function import (
     ASSET_UPLOAD_KEY,
@@ -143,9 +147,9 @@ class TestWithStagingBucket:
                 {
                     **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
                     STAC_LINKS_KEY: [
-                        {STAC_HREF_KEY: collection_metadata_url, "rel": "child"},
-                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
-                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "self"},
+                        {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                        {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                        {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
                     ],
                 }
             ),
@@ -164,9 +168,9 @@ class TestWithStagingBucket:
                         },
                     },
                     STAC_LINKS_KEY: [
-                        {STAC_HREF_KEY: item_metadata_url, "rel": "child"},
-                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
-                        {STAC_HREF_KEY: collection_metadata_url, "rel": "self"},
+                        {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                        {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                        {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
                     ],
                 }
             ),
@@ -185,8 +189,8 @@ class TestWithStagingBucket:
                         },
                     },
                     STAC_LINKS_KEY: [
-                        {STAC_HREF_KEY: catalog_metadata_url, "rel": "root"},
-                        {STAC_HREF_KEY: item_metadata_url, "rel": "self"},
+                        {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                        {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
                     ],
                 }
             ),
@@ -326,7 +330,9 @@ class TestWithStagingBucket:
             file_object=json_dict_to_file_object(
                 {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_file.url, "rel": "child"}],
+                    STAC_LINKS_KEY: [
+                        {STAC_HREF_KEY: child_metadata_file.url, STAC_REL_KEY: STAC_REL_CHILD}
+                    ],
                 }
             ),
             bucket_name=self.staging_bucket_name,

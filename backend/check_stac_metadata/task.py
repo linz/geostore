@@ -4,6 +4,7 @@ import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
+from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
@@ -26,7 +27,7 @@ def s3_url_reader(url: str) -> StreamingBody:
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
-    LOGGER.debug(dumps({"event": event}))
+    LOGGER.debug(dumps({EVENT_KEY: event}))
 
     # validate input
     try:
