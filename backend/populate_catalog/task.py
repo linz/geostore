@@ -75,8 +75,7 @@ class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
     def get_collection_href(self, col: Collection, parent_dir: str, is_root: bool) -> str:
         original_path = urlparse(col.get_self_href()).path.rsplit("/", maxsplit=2)
         assert not is_root
-        col_root = join(parent_dir, original_path[-2])
-        return join(col_root, original_path[-1])
+        return join(parent_dir, *original_path[-2:])
 
     def get_item_href(self, item: Item, parent_dir: str) -> str:
         original_path = item.get_self_href().split("/")
