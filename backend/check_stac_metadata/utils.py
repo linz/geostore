@@ -15,12 +15,12 @@ from ..processing_assets_model import ProcessingAssetType, processing_assets_mod
 from ..s3 import S3_URL_PREFIX
 from ..stac_format import (
     STAC_ASSETS_KEY,
-    STAC_CATALOG_TYPE,
-    STAC_COLLECTION_TYPE,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
-    STAC_ITEM_TYPE,
     STAC_LINKS_KEY,
+    STAC_TYPE_CATALOG,
+    STAC_TYPE_COLLECTION,
+    STAC_TYPE_ITEM,
     STAC_TYPE_KEY,
 )
 from ..types import JsonObject
@@ -41,9 +41,9 @@ STAC_TYPE_VALIDATION_MAP: Dict[
         Type[STACItemSchemaValidator],
     ],
 ] = {
-    STAC_COLLECTION_TYPE: STACCollectionSchemaValidator,
-    STAC_CATALOG_TYPE: STACCatalogSchemaValidator,
-    STAC_ITEM_TYPE: STACItemSchemaValidator,
+    STAC_TYPE_COLLECTION: STACCollectionSchemaValidator,
+    STAC_TYPE_CATALOG: STACCatalogSchemaValidator,
+    STAC_TYPE_ITEM: STACItemSchemaValidator,
 }
 
 PROCESSING_ASSET_ASSET_KEY = "asset"

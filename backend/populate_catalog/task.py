@@ -1,5 +1,6 @@
-import os
 from json import dumps
+from os.path import join
+from urllib.parse import urlparse
 
 import boto3
 from pystac import STAC_IO, Catalog, CatalogType, Collection, Item  # type: ignore[import]
@@ -63,32 +64,29 @@ class UnhandledSQSMessageException(Exception):
 
 class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
     def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
-        original_path = cat.get_self_href().split("/")
+        original_path = urlparse(cat.get_self_href()).path.rsplit("/", maxsplit=2)
         if is_root:
             cat_root = parent_dir
         else:
-            cat_root = os.path.join(parent_dir, original_path[-2])
+            cat_root = join(parent_dir, original_path[-2])
 
-        return os.path.join(cat_root, original_path[-1])
+        return join(cat_root, original_path[-1])
 
     def get_collection_href(self, col: Collection, parent_dir: str, is_root: bool) -> str:
-        original_path = col.get_self_href().split("/")
-        if is_root:
-            col_root = parent_dir
-        else:
-            col_root = os.path.join(parent_dir, original_path[-2])
-
-        return os.path.join(col_root, original_path[-1])
+        original_path = urlparse(col.get_self_href()).path.rsplit("/", maxsplit=2)
+        assert not is_root
+        col_root = join(parent_dir, original_path[-2])
+        return join(col_root, original_path[-1])
 
     def get_item_href(self, item: Item, parent_dir: str) -> str:
         original_path = item.get_self_href().split("/")
-        return os.path.join(parent_dir, original_path[-1])
+        return join(parent_dir, original_path[-1])
 
 
 def handle_dataset(version_metadata_key: str) -> None:
     """Handle writing a new dataset version to the dataset catalog"""
     storage_bucket_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
-    dataset_prefix = version_metadata_key.split("/", maxsplit=2)[0]
+    dataset_prefix = version_metadata_key.split("/", maxsplit=1)[0]
 
     dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
 

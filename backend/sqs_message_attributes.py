@@ -1,4 +1,9 @@
 def decapitalize(key: str) -> str:
+    """
+    This method will be used to lower case the first character of SQS
+    message attributes being received by Lambda to resolve inconsistencies.
+    Issue outlined here: https://github.com/boto/boto3/issues/2582
+    """
     return f"{key[:1].lower()}{key[1:]}"
 
 
