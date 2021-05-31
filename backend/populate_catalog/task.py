@@ -128,6 +128,9 @@ def handle_root(dataset_prefix: str) -> None:
     dataset_catalog = Catalog.from_file(f"{dataset_path}/{CATALOG_KEY}")
 
     root_catalog.add_child(dataset_catalog)
-    root_catalog.normalize_hrefs(f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}")
+    root_catalog.normalize_hrefs(
+        f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}",
+        strategy=GeostoreSTACLayoutStrategy(),
+    )
 
     root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
