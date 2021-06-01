@@ -122,8 +122,8 @@ jobs:
 
       - name: Deploy AWS stacks for testing
         run: |
-          poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-          poetry run cdk deploy --all --require-approval never
+          poetry run cdk bootstrap --strict aws://unknown-account/ap-southeast-2
+          poetry run cdk deploy --all --require-approval never --strict
 
       - name: Run non-infrastructure tests offline
         run: >
