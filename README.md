@@ -129,7 +129,7 @@ One-time setup, assuming you are in the project directory:
    1. Verify setup: `nvm --version`.
 
 1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
-1. Run `./reset-dev-env.bash` to install packages.
+1. Run `./reset-dev-env.bash --all` to install packages.
 1. Enable the virtualenv: `. .venv/bin/activate`.
 1. Enable Node.js executables:
 
