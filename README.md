@@ -66,6 +66,7 @@ One-time setup, assuming you are in the project directory:
       if [[ -e "${HOME}/.pyenv" ]]
       then
           PATH="${HOME}/.pyenv/bin:${PATH}"
+          eval "$(pyenv init --path)"
           eval "$(pyenv init -)"
           eval "$(pyenv virtualenv-init -)"
       fi
@@ -104,7 +105,10 @@ One-time setup, assuming you are in the project directory:
    1. Install (change the version number if you want to install a different one):
 
       ```bash
-      curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+      cd "$(mktemp --directory)"
+      wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh
+      echo 'b674516f001d331c517be63c1baeaf71de6cbb6d68a44112bf2cff39a6bc246a install.sh' | sha256sum --check \
+        && bash install.sh
       ```
 
    1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `nvm` is
@@ -125,7 +129,7 @@ One-time setup, assuming you are in the project directory:
    1. Verify setup: `nvm --version`.
 
 1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
-1. Run `./reset-dev-env.bash` to install packages.
+1. Run `./reset-dev-env.bash --all` to install packages.
 1. Enable the virtualenv: `. .venv/bin/activate`.
 1. Enable Node.js executables:
 
