@@ -66,6 +66,7 @@ One-time setup, assuming you are in the project directory:
       if [[ -e "${HOME}/.pyenv" ]]
       then
           PATH="${HOME}/.pyenv/bin:${PATH}"
+          eval "$(pyenv init --path)"
           eval "$(pyenv init -)"
           eval "$(pyenv virtualenv-init -)"
       fi
