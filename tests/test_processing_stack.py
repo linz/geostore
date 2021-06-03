@@ -230,8 +230,10 @@ class TestWithStagingBucket:
                             executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
-                        LOGGER.info("Polling for State Machine state %s", "." * 6)
-                        time.sleep(5)
+                        LOGGER.info(  # pragma: no cover
+                            "Polling for State Machine state %s", "." * 6
+                        )
+                        time.sleep(5)  # pragma: no cover
 
                     assert execution["status"] == "SUCCEEDED", execution
 
@@ -371,8 +373,10 @@ class TestWithStagingBucket:
                             executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
                         )
                     )["status"] == "RUNNING":
-                        LOGGER.info("Polling for State Machine state %s", "." * 6)
-                        time.sleep(5)
+                        LOGGER.info(  # pragma: no cover
+                            "Polling for State Machine state %s", "." * 6
+                        )
+                        time.sleep(5)  # pragma: no cover
 
                 assert (execution_output := execution.get("output")), execution
 
@@ -484,8 +488,10 @@ class TestWithStagingBucket:
                         executionArn=state_machine_arn
                     )
                 )["status"] == "RUNNING":
-                    LOGGER.info("Polling for State Machine %s state", state_machine_arn)
-                    time.sleep(5)
+                    LOGGER.info(  # pragma: no cover
+                        "Polling for State Machine %s state", state_machine_arn
+                    )
+                    time.sleep(5)  # pragma: no cover
 
                 assert execution["status"] == "SUCCEEDED", execution
 
