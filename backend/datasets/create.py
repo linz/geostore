@@ -20,6 +20,7 @@ from ..sqs_message_attributes import (
     STRING_VALUE_KEY,
 )
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
+from ..step_function import DESCRIPTION_KEY, TITLE_KEY
 from ..types import JsonObject
 
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
@@ -35,10 +36,10 @@ def create_dataset(body: JsonObject) -> JsonObject:
     body_schema = {
         "type": "object",
         "properties": {
-            "title": {"type": "string", "pattern": TITLE_PATTERN},
-            "description": {"type": "string"},
+            TITLE_KEY: {"type": "string", "pattern": TITLE_PATTERN},
+            DESCRIPTION_KEY: {"type": "string"},
         },
-        "required": ["title", "description"],
+        "required": [TITLE_KEY, DESCRIPTION_KEY],
     }
 
     # request body validation
@@ -49,7 +50,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    dataset_title = body["title"]
+    dataset_title = body[TITLE_KEY]
     if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
         return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 
@@ -62,7 +63,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
     dataset_catalog = Catalog(
         **{
             STAC_ID_KEY: dataset.dataset_prefix,
-            STAC_DESCRIPTION_KEY: body["description"],
+            STAC_DESCRIPTION_KEY: body[DESCRIPTION_KEY],
             STAC_TITLE_KEY: dataset_title,
         },
         catalog_type=CatalogType.SELF_CONTAINED,

@@ -9,6 +9,7 @@ from pytest import mark
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.dataset_versions.create import create_dataset_version
 from backend.error_response_keys import ERROR_KEY
+from backend.step_function import DATASET_ID_SHORT_KEY, METADATA_URL_KEY
 
 from .aws_utils import Dataset, any_s3_url
 from .general_generators import any_error_message
@@ -30,7 +31,10 @@ class TestLogging:
         ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
             event = {
                 HTTP_METHOD_KEY: "POST",
-                BODY_KEY: {"metadata_url": any_s3_url(), "id": dataset.dataset_id},
+                BODY_KEY: {
+                    METADATA_URL_KEY: any_s3_url(),
+                    DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                },
             }
             expected_payload_log = dumps({"event": event})
 
@@ -53,7 +57,7 @@ class TestLogging:
         expected_execution_log = dumps({"response": step_function_response})
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
-            event = {"metadata_url": any_s3_url(), "id": dataset.dataset_id}
+            event = {METADATA_URL_KEY: any_s3_url(), DATASET_ID_SHORT_KEY: dataset.dataset_id}
 
             # When
             create_dataset_version(event)
@@ -68,7 +72,7 @@ class TestLogging:
         error_message = any_error_message()
         validate_schema_mock.side_effect = ValidationError(error_message)
 
-        payload = {HTTP_METHOD_KEY: "POST", BODY_KEY: {"metadata_url": metadata_url}}
+        payload = {HTTP_METHOD_KEY: "POST", BODY_KEY: {METADATA_URL_KEY: metadata_url}}
 
         expected_log = dumps({ERROR_KEY: error_message})
 
@@ -87,7 +91,7 @@ class TestLogging:
         error_message = any_error_message()
         datasets_model_mock.return_value.get.side_effect = DoesNotExist(error_message)
 
-        payload = {"metadata_url": metadata_url, "id": dataset_id}
+        payload = {METADATA_URL_KEY: metadata_url, DATASET_ID_SHORT_KEY: dataset_id}
 
         expected_log = dumps({ERROR_KEY: error_message})
 

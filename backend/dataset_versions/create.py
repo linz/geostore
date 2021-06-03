@@ -16,9 +16,11 @@ from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function import (
     DATASET_ID_KEY,
+    DATASET_ID_SHORT_KEY,
     DATASET_PREFIX_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
+    NOW_KEY,
     VERSION_ID_KEY,
 )
 from ..types import JsonObject
@@ -34,11 +36,11 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     body_schema = {
         "type": "object",
         "properties": {
-            "id": {"type": "string"},
-            "metadata_url": {"type": "string"},
-            "now": {"type": "string", "format": "date-time"},
+            DATASET_ID_SHORT_KEY: {"type": "string"},
+            METADATA_URL_KEY: {"type": "string"},
+            NOW_KEY: {"type": "string", "format": "date-time"},
         },
-        "required": ["id", "metadata_url"],
+        "required": [DATASET_ID_SHORT_KEY, METADATA_URL_KEY],
     }
 
     # validate input
@@ -53,13 +55,15 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     # validate dataset exists
     try:
         dataset = datasets_model_class.get(
-            hash_key=f"{DATASET_ID_PREFIX}{body['id']}", consistent_read=True
+            hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
         )
     except DoesNotExist as err:
         logger.warning(json.dumps({ERROR_KEY: err}, default=str))
-        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{body['id']}' could not be found")
+        return error_response(
+            HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
+        )
 
-    now = datetime.fromisoformat(body.get("now", datetime.utcnow().isoformat()))
+    now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
 
     # execute step function
@@ -67,7 +71,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         DATASET_ID_KEY: dataset.dataset_id,
         DATASET_PREFIX_KEY: dataset.dataset_prefix,
         VERSION_ID_KEY: dataset_version_id,
-        METADATA_URL_KEY: body["metadata_url"],
+        METADATA_URL_KEY: body[METADATA_URL_KEY],
     }
     state_machine_arn = get_param(
         ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN
@@ -85,7 +89,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     return success_response(
         HTTPStatus.CREATED,
         {
-            "dataset_version": dataset_version_id,
+            VERSION_ID_KEY: dataset_version_id,
             EXECUTION_ARN_KEY: step_functions_response["executionArn"],
         },
     )

@@ -33,12 +33,15 @@ from backend.stac_format import (
 )
 from backend.step_function import (
     ASSET_UPLOAD_KEY,
+    DATASET_ID_SHORT_KEY,
     ERRORS_KEY,
     EXECUTION_ARN_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
+    METADATA_URL_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
+    VERSION_ID_KEY,
     Outcome,
 )
 
@@ -206,8 +209,8 @@ class TestWithStagingBucket:
                         {
                             HTTP_METHOD_KEY: "POST",
                             BODY_KEY: {
-                                "id": dataset.dataset_id,
-                                "metadata_url": catalog_metadata_file.url,
+                                DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                                METADATA_URL_KEY: catalog_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -250,7 +253,7 @@ class TestWithStagingBucket:
                     first_asset_filename,
                     second_asset_filename,
                 ]:
-                    new_key = f"{dataset_prefix}/{json_resp['body']['dataset_version']}/{filename}"
+                    new_key = f"{dataset_prefix}/{json_resp[BODY_KEY][VERSION_ID_KEY]}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -347,8 +350,8 @@ class TestWithStagingBucket:
                         {
                             HTTP_METHOD_KEY: "POST",
                             BODY_KEY: {
-                                "id": dataset.dataset_id,
-                                "metadata_url": root_metadata_file.url,
+                                DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                                METADATA_URL_KEY: root_metadata_file.url,
                             },
                         }
                     ).encode(),
@@ -386,7 +389,7 @@ class TestWithStagingBucket:
                 # Cleanup
                 dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                    new_key = f"{dataset_prefix}/{json_resp['body']['dataset_version']}/{filename}"
+                    new_key = f"{dataset_prefix}/{json_resp[BODY_KEY][VERSION_ID_KEY]}/{filename}"
                     with subtests.test(msg=f"Delete {new_key}"):
                         delete_s3_key(self.storage_bucket_name, new_key, s3_client)
 
@@ -461,7 +464,10 @@ class TestWithStagingBucket:
                 Payload=json.dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
-                        BODY_KEY: {"id": dataset.dataset_id, "metadata_url": s3_metadata_file.url},
+                        BODY_KEY: {
+                            DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                            METADATA_URL_KEY: s3_metadata_file.url,
+                        },
                     }
                 ).encode(),
             )
@@ -484,7 +490,7 @@ class TestWithStagingBucket:
                 assert execution["status"] == "SUCCEEDED", execution
 
         # Then the files should not be copied
-        dataset_version = response_payload[BODY_KEY]["dataset_version"]
+        dataset_version = response_payload[BODY_KEY][VERSION_ID_KEY]
         dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
         for filename in [metadata_filename, asset_filename]:
             with subtests.test(msg=filename), raises(AssertionError):

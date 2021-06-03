@@ -225,7 +225,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     valid_child_key = any_safe_filename()
     invalid_child_key = any_safe_filename()
     invalid_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    invalid_stac_object.pop("id")
+    invalid_stac_object.pop(STAC_ID_KEY)
 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
