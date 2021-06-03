@@ -24,7 +24,7 @@ def should_return_required_property_error_when_missing_body() -> None:
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'body' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{BODY_KEY}' is a required property"},
     }
 
 

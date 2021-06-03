@@ -31,6 +31,7 @@ from backend.sqs_message_attributes import (
     STRING_VALUE_KEY,
 )
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
+from backend.step_function import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
 
 from .aws_utils import (
     Dataset,
@@ -57,7 +58,7 @@ logger = logging.getLogger(__name__)
 def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
     dataset_title = any_dataset_title()
     dataset_description = any_dataset_description()
-    body = {"title": dataset_title, "description": dataset_description}
+    body = {TITLE_KEY: dataset_title, DESCRIPTION_KEY: dataset_description}
 
     try:
 
@@ -72,16 +73,18 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
         with subtests.test(msg="ID length"):
-            assert len(response[BODY_KEY]["id"]) == 26
+            assert len(response[BODY_KEY][DATASET_ID_SHORT_KEY]) == 26
 
         with subtests.test(msg="title"):
-            assert response[BODY_KEY]["title"] == dataset_title
+            assert response[BODY_KEY][TITLE_KEY] == dataset_title
 
         catalog = get_s3_prefix_versions(
             ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client
         )[0]
 
-        dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{response[BODY_KEY]['id']}"
+        dataset_prefix = (
+            f"{dataset_title}{DATASET_KEY_SEPARATOR}{response[BODY_KEY][DATASET_ID_SHORT_KEY]}"
+        )
         expected_sqs_call = {
             "MessageBody": dataset_prefix,
             "MessageAttributes": {
@@ -119,7 +122,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 @mark.infrastructure
 def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
     dataset_title = any_dataset_title()
-    body = {"title": dataset_title, "description": any_dataset_description()}
+    body = {TITLE_KEY: dataset_title, DESCRIPTION_KEY: any_dataset_description()}
 
     with Dataset(title=dataset_title):
         response = lambda_handler({HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context())
@@ -139,7 +142,7 @@ def should_return_client_error_when_title_contains_unsupported_characters(
             response = lambda_handler(
                 {
                     HTTP_METHOD_KEY: "POST",
-                    BODY_KEY: {"title": character, "description": any_dataset_description()},
+                    BODY_KEY: {TITLE_KEY: character, DESCRIPTION_KEY: any_dataset_description()},
                 },
                 any_lambda_context(),
             )
@@ -156,7 +159,7 @@ def should_return_client_error_when_title_contains_unsupported_characters(
 def should_return_single_dataset(subtests: SubTests) -> None:
     # Given a dataset instance
     with Dataset() as dataset:
-        body = {"id": dataset.dataset_id}
+        body = {DATASET_ID_SHORT_KEY: dataset.dataset_id}
 
         # When requesting the dataset by ID and type
         response = lambda_handler({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context())
@@ -167,7 +170,7 @@ def should_return_single_dataset(subtests: SubTests) -> None:
         assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="ID"):
-        assert response[BODY_KEY]["id"] == dataset.dataset_id
+        assert response[BODY_KEY][DATASET_ID_SHORT_KEY] == dataset.dataset_id
 
 
 @mark.infrastructure
@@ -182,7 +185,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
         with subtests.test(msg="status code"):
             assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
-        actual_dataset_ids = [entry["id"] for entry in response[BODY_KEY]]
+        actual_dataset_ids = [entry[DATASET_ID_SHORT_KEY] for entry in response[BODY_KEY]]
         for dataset_id in (first_dataset.dataset_id, second_dataset.dataset_id):
             with subtests.test(msg=f"ID {dataset_id}"):
                 assert dataset_id in actual_dataset_ids
@@ -192,7 +195,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
 def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
     dataset_title = any_dataset_title()
-    body = {"title": dataset_title}
+    body = {TITLE_KEY: dataset_title}
 
     with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
@@ -201,7 +204,7 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
 
     with subtests.test(msg="ID"):
         # Then only the matching dataset should be returned
-        assert response[BODY_KEY][0]["id"] == matching_dataset.dataset_id
+        assert response[BODY_KEY][0][DATASET_ID_SHORT_KEY] == matching_dataset.dataset_id
 
     with subtests.test(msg="status code"):
         assert response[STATUS_CODE_KEY] == HTTPStatus.OK
@@ -214,7 +217,7 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
 def should_fail_if_get_request_requests_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {"id": dataset_id}
+    body = {DATASET_ID_SHORT_KEY: dataset_id}
 
     response = lambda_handler({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context())
 
@@ -229,7 +232,7 @@ def should_update_dataset(subtests: SubTests) -> None:
     new_dataset_title = any_dataset_title()
 
     with Dataset() as dataset:
-        body = {"id": dataset.dataset_id, "title": new_dataset_title}
+        body = {DATASET_ID_SHORT_KEY: dataset.dataset_id, TITLE_KEY: new_dataset_title}
         response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
     logger.info("Response: %s", response)
 
@@ -237,13 +240,13 @@ def should_update_dataset(subtests: SubTests) -> None:
         assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="title"):
-        assert response[BODY_KEY]["title"] == new_dataset_title
+        assert response[BODY_KEY][TITLE_KEY] == new_dataset_title
 
 
 @mark.infrastructure
 def should_fail_if_updating_with_already_existing_dataset_title() -> None:
     dataset_title = any_dataset_title()
-    body = {"id": any_dataset_id(), "title": dataset_title}
+    body = {DATASET_ID_SHORT_KEY: any_dataset_id(), TITLE_KEY: dataset_title}
 
     with Dataset(title=dataset_title):
         response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
@@ -258,7 +261,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
 def should_fail_if_updating_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {"id": dataset_id, "title": any_dataset_title()}
+    body = {DATASET_ID_SHORT_KEY: dataset_id, TITLE_KEY: any_dataset_title()}
     response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
 
     assert response == {
@@ -271,7 +274,8 @@ def should_fail_if_updating_not_existing_dataset() -> None:
 def should_delete_dataset_with_no_versions() -> None:
     with Dataset() as dataset:
         response = lambda_handler(
-            {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {"id": dataset.dataset_id}}, any_lambda_context()
+            {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: dataset.dataset_id}},
+            any_lambda_context(),
         )
 
     assert response == {STATUS_CODE_KEY: HTTPStatus.NO_CONTENT, BODY_KEY: {}}
@@ -285,7 +289,8 @@ def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
         key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
     ):
         response = lambda_handler(
-            {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {"id": dataset.dataset_id}}, any_lambda_context()
+            {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: dataset.dataset_id}},
+            any_lambda_context(),
         )
 
     expected_message = (
@@ -311,7 +316,7 @@ def should_return_error_when_trying_to_get_single_dataset_with_missing_property(
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{DATASET_ID_SHORT_KEY}' is a required property"},
     }
 
 
@@ -320,7 +325,7 @@ def should_return_error_when_trying_to_get_datasets_with_missing_property() -> N
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'title' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{TITLE_KEY}' is a required property"},
     }
 
 
@@ -329,7 +334,7 @@ def should_return_error_when_trying_to_update_dataset_with_missing_property() ->
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{DATASET_ID_SHORT_KEY}' is a required property"},
     }
 
 
@@ -338,7 +343,7 @@ def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{DATASET_ID_SHORT_KEY}' is a required property"},
     }
 
 
@@ -346,7 +351,7 @@ def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
 def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {"id": dataset_id, "title": any_dataset_title()}
+    body = {DATASET_ID_SHORT_KEY: dataset_id, TITLE_KEY: any_dataset_title()}
 
     response = lambda_handler({HTTP_METHOD_KEY: "DELETE", BODY_KEY: body}, any_lambda_context())
 
@@ -367,7 +372,7 @@ def should_launch_datasets_endpoint_lambda_function(
     title = any_dataset_title()
 
     try:
-        body = {"title": title, "description": any_dataset_description()}
+        body = {TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
 
         resp = lambda_client.invoke(
             FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,

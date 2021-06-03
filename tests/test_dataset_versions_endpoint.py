@@ -14,6 +14,7 @@ from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.dataset_versions import entrypoint
 from backend.dataset_versions.create import create_dataset_version
+from backend.step_function import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, NOW_KEY, VERSION_ID_KEY
 
 from .aws_utils import Dataset, any_lambda_context, any_s3_url
 from .stac_generators import any_dataset_id
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:
     # Given a missing "metadata_url" attribute in the body
-    body = {"id": any_dataset_id()}
+    body = {DATASET_ID_SHORT_KEY: any_dataset_id()}
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
@@ -34,13 +35,13 @@ def should_return_required_property_error_when_missing_mandatory_metadata_url() 
     # Then the API should return an error message
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'metadata_url' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{METADATA_URL_KEY}' is a required property"},
     }
 
 
 def should_return_required_property_error_when_missing_mandatory_id_property() -> None:
     # Given a missing "id" attribute in the body
-    body = {"metadata_url": any_s3_url()}
+    body = {METADATA_URL_KEY: any_s3_url()}
 
     # When attempting to create the instance
     response = entrypoint.lambda_handler(
@@ -50,13 +51,13 @@ def should_return_required_property_error_when_missing_mandatory_id_property() -
     # Then the API should return an error message
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: "Bad Request: 'id' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{DATASET_ID_SHORT_KEY}' is a required property"},
     }
 
 
 @mark.infrastructure
 def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
-    body = {"id": any_dataset_id(), "metadata_url": any_s3_url()}
+    body = {DATASET_ID_SHORT_KEY: any_dataset_id(), METADATA_URL_KEY: any_s3_url()}
 
     response = entrypoint.lambda_handler(
         {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
@@ -65,7 +66,9 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
-        BODY_KEY: {MESSAGE_KEY: f"Not Found: dataset '{body['id']}' could not be found"},
+        BODY_KEY: {
+            MESSAGE_KEY: f"Not Found: dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
+        },
     }
 
 
@@ -77,7 +80,11 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
     with patch(
         "backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
     ), Dataset() as dataset:
-        body = {"id": dataset.dataset_id, "metadata_url": any_s3_url(), "now": now.isoformat()}
+        body = {
+            DATASET_ID_SHORT_KEY: dataset.dataset_id,
+            METADATA_URL_KEY: any_s3_url(),
+            NOW_KEY: now.isoformat(),
+        }
 
         # When requesting the dataset by ID and type
         response = create_dataset_version(body)
@@ -88,4 +95,4 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
         assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID"):
-        assert response[BODY_KEY]["dataset_version"].startswith("2001-02-03T04-05-06-789Z_")
+        assert response[BODY_KEY][VERSION_ID_KEY].startswith("2001-02-03T04-05-06-789Z_")

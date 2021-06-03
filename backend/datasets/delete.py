@@ -9,6 +9,7 @@ from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
 from ..resources import ResourceName
+from ..step_function import DATASET_ID_SHORT_KEY
 from ..types import JsonObject
 
 BOTO3_CLIENT = boto3.client("s3")
@@ -17,7 +18,11 @@ BOTO3_CLIENT = boto3.client("s3")
 def delete_dataset(body: JsonObject) -> JsonObject:
     """DELETE: Delete Dataset."""
 
-    body_schema = {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]}
+    body_schema = {
+        "type": "object",
+        "properties": {DATASET_ID_SHORT_KEY: {"type": "string"}},
+        "required": [DATASET_ID_SHORT_KEY],
+    }
 
     # request body validation
     try:
@@ -28,7 +33,7 @@ def delete_dataset(body: JsonObject) -> JsonObject:
     datasets_model_class = datasets_model_with_meta()
 
     # get dataset to delete
-    dataset_id = body["id"]
+    dataset_id = body[DATASET_ID_SHORT_KEY]
     try:
         dataset = datasets_model_class.get(
             hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
