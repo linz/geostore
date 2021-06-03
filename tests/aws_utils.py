@@ -303,10 +303,10 @@ def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
 
     process_timeout = datetime.now() + timedelta(minutes=3)
     while CONTENTS_KEY not in s3_client.list_objects(Bucket=bucket_name, Prefix=key):
-        assert (
+        assert (  # pragma: no cover
             datetime.now() < process_timeout
         ), f"S3 file '{bucket_name}/{key}' was not created, process timed out."
-        time.sleep(5)
+        time.sleep(5)  # pragma: no cover
 
 
 def delete_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
@@ -395,11 +395,11 @@ def wait_for_s3_batch_job_completion(
         )
     )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
 
-        assert (
+        assert (  # pragma: no cover
             datetime.now() < process_timeout
         ), f"S3 Batch process {job_result['Job']['JobId']} hasn't completed, process timed out."
 
-        time.sleep(5)
+        time.sleep(5)  # pragma: no cover
 
     assert job_result["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, job_result
 
