@@ -1823,7 +1823,7 @@ format_nongpl = ["idna", "jsonpointer (>1.13)", "webcolors", "rfc3986-validator 
 
 [[package]]
 name = "language-formatters-pre-commit-hooks"
-version = "2.0.0"
+version = "2.1.0"
 description = "List of pre-commit hooks meant to format your source code."
 category = "dev"
 optional = false
@@ -2952,8 +2952,8 @@ jsonschema = [
     {file = "jsonschema-3.2.0.tar.gz", hash = "sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a"},
 ]
 language-formatters-pre-commit-hooks = [
-    {file = "language_formatters_pre_commit_hooks-2.0.0-py2.py3-none-any.whl", hash = "sha256:a29f7c2f4e7ace2ed5676ce452d53421cea6af193c129087f19cebfbe3a1200d"},
-    {file = "language_formatters_pre_commit_hooks-2.0.0.tar.gz", hash = "sha256:49318039fda7fa34f255e15429c49ea6100819efead0e3ade50264b7037f54f1"},
+    {file = "language_formatters_pre_commit_hooks-2.1.0-py2.py3-none-any.whl", hash = "sha256:4d4aca20623942a0e97a5fe90eec8428ac7c820b8916f37bc8814dc6955e80f5"},
+    {file = "language_formatters_pre_commit_hooks-2.1.0.tar.gz", hash = "sha256:39d2dbd51f45585d86f65ca30a3c055c7d8674a8be19dd21c123e70abe6ce39e"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.5.2.tar.gz", hash = "sha256:5944a9b95e97de1980c65f03b79b356f30a43de48682b8bdd90aa5089f0ec1f4"},
