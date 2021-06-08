@@ -31,7 +31,8 @@ class TestWithStorageBucket:
     def should_create_storage_bucket_public_access_block(self, s3_client: S3Client) -> None:
         """Test if Geostore Storage S3 Bucket access is blocked for public."""
         response = s3_client.get_public_access_block(Bucket=self.storage_bucket_name)
-        assert response["PublicAccessBlockConfiguration"]["BlockPublicAcls"] is True
-        assert response["PublicAccessBlockConfiguration"]["IgnorePublicAcls"] is True
-        assert response["PublicAccessBlockConfiguration"]["BlockPublicPolicy"] is True
-        assert response["PublicAccessBlockConfiguration"]["RestrictPublicBuckets"] is True
+        public_access_block_configuration = response["PublicAccessBlockConfiguration"]
+        assert public_access_block_configuration["BlockPublicAcls"] is True
+        assert public_access_block_configuration["IgnorePublicAcls"] is True
+        assert public_access_block_configuration["BlockPublicPolicy"] is True
+        assert public_access_block_configuration["RestrictPublicBuckets"] is True
