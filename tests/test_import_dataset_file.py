@@ -5,11 +5,13 @@ from urllib.parse import quote
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 
+from backend.aws_response import (
+    AWS_CODE_REQUEST_TIMEOUT,
+    AWS_RESPONSE_ERROR_CODE_KEY,
+    AWS_RESPONSE_ERROR_KEY,
+    AWS_RESPONSE_ERROR_MESSAGE_KEY,
+)
 from backend.import_dataset_file import (
-    ERROR_CODE_REQUEST_TIMEOUT,
-    IMPORTER_RESPONSE_ERROR_CODE_KEY,
-    IMPORTER_RESPONSE_ERROR_KEY,
-    IMPORTER_RESPONSE_ERROR_MESSAGE_KEY,
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
     RESULTS_KEY,
@@ -79,11 +81,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     invocation_schema_version = any_invocation_schema_version()
 
     importer_mock.side_effect = ClientError(
-        {
-            IMPORTER_RESPONSE_ERROR_KEY: {
-                IMPORTER_RESPONSE_ERROR_CODE_KEY: ERROR_CODE_REQUEST_TIMEOUT
-            }
-        },
+        {AWS_RESPONSE_ERROR_KEY: {AWS_RESPONSE_ERROR_CODE_KEY: AWS_CODE_REQUEST_TIMEOUT}},
         any_operation_name(),
     )
 
@@ -132,14 +130,14 @@ def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMoc
     invocation_id = any_invocation_id()
     invocation_schema_version = any_invocation_schema_version()
 
-    error_code = f"not {ERROR_CODE_REQUEST_TIMEOUT}"
+    error_code = f"not {AWS_CODE_REQUEST_TIMEOUT}"
     error_message = any_error_message()
 
     importer_mock.side_effect = ClientError(
         {
-            IMPORTER_RESPONSE_ERROR_KEY: {
-                IMPORTER_RESPONSE_ERROR_CODE_KEY: error_code,
-                IMPORTER_RESPONSE_ERROR_MESSAGE_KEY: error_message,
+            AWS_RESPONSE_ERROR_KEY: {
+                AWS_RESPONSE_ERROR_CODE_KEY: error_code,
+                AWS_RESPONSE_ERROR_MESSAGE_KEY: error_message,
             }
         },
         any_operation_name(),
