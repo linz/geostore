@@ -1,5 +1,6 @@
 from json import dumps
 from os.path import basename
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import boto3
@@ -10,18 +11,27 @@ from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..sqs_message_attributes import (
-    DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
-    STRING_VALUE_KEY,
 )
 from ..step_function import DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
+    from mypy_boto3_sqs import SQSServiceResource
+    from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3Client = object
+    SQSServiceResource = object
+    MessageAttributeValueTypeDef = dict
+
 LOGGER = set_up_logging(__name__)
-S3_CLIENT = boto3.client("s3")
-SQS_RESOURCE = boto3.resource("sqs")
+S3_CLIENT: S3Client = boto3.client("s3")
+SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -58,10 +68,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     ).send_message(
         MessageBody=new_version_metadata_key,
         MessageAttributes={
-            MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_DATASET,
-                DATA_TYPE_KEY: DATA_TYPE_STRING,
-            }
+            MESSAGE_ATTRIBUTE_TYPE_KEY: MessageAttributeValueTypeDef(
+                DataType=DATA_TYPE_STRING, StringValue=MESSAGE_ATTRIBUTE_TYPE_DATASET
+            )
         },
     )
 
