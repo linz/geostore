@@ -1,6 +1,7 @@
 """Create dataset function."""
 from http import HTTPStatus
 from string import ascii_letters, digits
+from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -13,21 +14,28 @@ from ..pystac_io_methods import write_method
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
 from ..sqs_message_attributes import (
-    DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
-    STRING_VALUE_KEY,
 )
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..step_function import DESCRIPTION_KEY, TITLE_KEY
 from ..types import JsonObject
 
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_sqs import SQSServiceResource
+    from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    SQSServiceResource = object
+    MessageAttributeValueTypeDef = dict
+
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
 STAC_IO.write_text_method = write_method
 
-SQS_RESOURCE = boto3.resource("sqs")
+SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 
 def create_dataset(body: JsonObject) -> JsonObject:
@@ -79,10 +87,9 @@ def create_dataset(body: JsonObject) -> JsonObject:
     ).send_message(
         MessageBody=dataset.dataset_prefix,
         MessageAttributes={
-            MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
-                DATA_TYPE_KEY: DATA_TYPE_STRING,
-            }
+            MESSAGE_ATTRIBUTE_TYPE_KEY: MessageAttributeValueTypeDef(
+                DataType=DATA_TYPE_STRING, StringValue=MESSAGE_ATTRIBUTE_TYPE_ROOT
+            )
         },
     )
 

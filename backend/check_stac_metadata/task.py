@@ -1,4 +1,5 @@
 from json import dumps
+from typing import TYPE_CHECKING
 
 import boto3
 from botocore.response import StreamingBody  # type: ignore[import]
@@ -15,8 +16,15 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3Client = object
+
 LOGGER = set_up_logging(__name__)
-S3_CLIENT = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3")
 
 
 def s3_url_reader(url: str) -> StreamingBody:

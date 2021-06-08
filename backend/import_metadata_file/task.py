@@ -12,11 +12,13 @@ from ..types import JsonObject
 S3_BODY_KEY = "Body"
 
 if TYPE_CHECKING:
+    from mypy_boto3_s3 import S3Client
     from mypy_boto3_s3.type_defs import PutObjectOutputTypeDef
 else:
     PutObjectOutputTypeDef = JsonObject
+    S3Client = object
 
-S3_CLIENT = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3")
 LOGGER = set_up_logging(__name__)
 
 

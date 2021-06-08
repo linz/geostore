@@ -30,6 +30,8 @@ from ..step_function import (
 from ..types import JsonObject
 
 if TYPE_CHECKING:
+    from mypy_boto3_s3 import S3Client
+    from mypy_boto3_s3control import S3ControlClient
     from mypy_boto3_s3control.literals import (
         JobManifestFieldNameType,
         JobManifestFormatType,
@@ -44,6 +46,7 @@ if TYPE_CHECKING:
         JobReportTypeDef,
         LambdaInvokeOperationTypeDef,
     )
+    from mypy_boto3_sts import STSClient
 else:
     JobManifestLocationTypeDef = dict
     JobManifestSpecTypeDef = dict
@@ -55,12 +58,15 @@ else:
     JobManifestFormatType = str
     JobReportFormatType = str
     JobReportScopeType = str
+    S3Client = object
+    S3ControlClient = object
+    STSClient = object
 
 LOGGER = set_up_logging(__name__)
 
-STS_CLIENT = boto3.client("sts")
-S3_CLIENT = boto3.client("s3")
-S3CONTROL_CLIENT = boto3.client("s3control")
+STS_CLIENT: STSClient = boto3.client("sts")
+S3_CLIENT: S3Client = boto3.client("s3")
+S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
 
 IMPORT_ASSET_FILE_TASK_ARN = get_param(ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN)
 IMPORT_METADATA_FILE_TASK_ARN = get_param(

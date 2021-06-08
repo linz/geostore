@@ -2,6 +2,7 @@
 import json
 from datetime import datetime
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -25,7 +26,14 @@ from ..step_function import (
 )
 from ..types import JsonObject
 
-STEP_FUNCTIONS_CLIENT = boto3.client("stepfunctions")
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_stepfunctions import SFNClient
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    SFNClient = object
+
+STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
 
 
 def create_dataset_version(body: JsonObject) -> JsonObject:
