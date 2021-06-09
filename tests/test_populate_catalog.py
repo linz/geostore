@@ -225,10 +225,59 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
 
 @mark.infrastructure
 def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -> None:
-
+    collection_filename = f"{any_safe_filename()}.json"
+    item_filename = f"{any_safe_filename()}.json"
     dataset_version = any_dataset_version_id()
-    filename = f"{any_safe_filename()}.json"
+    catalog_filename = f"{any_safe_filename()}.json"
     with Dataset() as dataset, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                STAC_ID_KEY: any_dataset_version_id(),
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_HREF_KEY: f"./{collection_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                ],
+            }
+        ),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=f"{dataset.dataset_prefix}/{dataset_version}/{item_filename}",
+    ), S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_ID_KEY: dataset_version,
+                STAC_TITLE_KEY: dataset.title,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_ITEM,
+                        STAC_HREF_KEY: f"./{item_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_GEOJSON,
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                ],
+            }
+        ),
+        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        key=f"{dataset.dataset_prefix}/{dataset_version}/{collection_filename}",
+    ), S3Object(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
@@ -237,14 +286,19 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"./{filename}",
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_REL_KEY: STAC_REL_CHILD,
+                        STAC_HREF_KEY: f"./{collection_filename}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=f"{dataset.dataset_prefix}/{dataset_version}/{filename}",
+        key=f"{dataset.dataset_prefix}/{dataset_version}/{catalog_filename}",
     ) as dataset_version_metadata, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -305,7 +359,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset_version}/{filename}",
+                STAC_HREF_KEY: f"./{dataset_version}/{catalog_filename}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -313,6 +367,11 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../../{CATALOG_KEY}",
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+            {
+                STAC_REL_KEY: STAC_REL_CHILD,
+                STAC_HREF_KEY: f"./{collection_filename}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
