@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import boto3
 
@@ -8,6 +8,15 @@ from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
 from .types import JsonList, JsonObject
 from .validation_results_model import ValidationResult, validation_results_model_with_meta
+
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3control import S3ControlClient
+    from mypy_boto3_sts import STSClient
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3ControlClient = object
+    STSClient = object
 
 JOB_STATUS_RUNNING = "RUNNING"
 JOB_STATUS_SUCCEEDED = "SUCCEEDED"
@@ -48,8 +57,8 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
     None: Outcome.PENDING,
 }
 
-S3CONTROL_CLIENT = boto3.client("s3control")
-STS_CLIENT = boto3.client("sts")
+S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
+STS_CLIENT: STSClient = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
 

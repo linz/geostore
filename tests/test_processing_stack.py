@@ -72,12 +72,16 @@ def should_check_state_machine_arn_parameter_exists(ssm_client: SSMClient) -> No
     parameter_response = ssm_client.get_parameter(
         Name=ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
     )
+
+    parameter = parameter_response["Parameter"]
     assert (
-        parameter_response["Parameter"]["Name"]
+        parameter["Name"]
         == ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN.value
     )
-    assert "arn" in parameter_response["Parameter"]["Value"]
-    assert "stateMachine" in parameter_response["Parameter"]["Value"]
+
+    parameter_value = parameter["Value"]
+    assert "arn" in parameter_value
+    assert "stateMachine" in parameter_value
 
 
 @mark.infrastructure
@@ -86,12 +90,13 @@ def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) 
     parameter_response = ssm_client.get_parameter(
         Name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value
     )
-    assert (
-        parameter_response["Parameter"]["Name"]
-        == ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value
-    )
-    assert "arn" in parameter_response["Parameter"]["Value"]
-    assert "iam" in parameter_response["Parameter"]["Value"]
+
+    parameter = parameter_response["Parameter"]
+    assert parameter["Name"] == ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value
+
+    parameter_value = parameter["Value"]
+    assert "arn" in parameter_value
+    assert "iam" in parameter_value
 
 
 class TestWithStagingBucket:

@@ -82,10 +82,7 @@ pytest-socket = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
-
-[tool.poetry.dev-dependencies.boto3-stubs]
-version = "*"
-extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "ssm", "stepfunctions", "sts"]
+boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "sqs", "ssm", "stepfunctions", "sts"]}
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"

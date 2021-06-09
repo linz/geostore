@@ -8,6 +8,11 @@ from botocore.exceptions import ClientError  # type: ignore[import]
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
+from backend.aws_response import (
+    AWS_RESPONSE_ERROR_CODE_KEY,
+    AWS_RESPONSE_ERROR_KEY,
+    AWS_RESPONSE_ERROR_MESSAGE_KEY,
+)
 from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_ASSET_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
@@ -93,7 +98,13 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     )
 
     expected_error = ClientError(
-        {"Error": {"Code": "TEST", "Message": "TEST"}}, operation_name="get_object"
+        {
+            AWS_RESPONSE_ERROR_KEY: {
+                AWS_RESPONSE_ERROR_CODE_KEY: "TEST",
+                AWS_RESPONSE_ERROR_MESSAGE_KEY: "TEST",
+            }
+        },
+        operation_name="get_object",
     )
     validate_mock.side_effect = expected_error
 

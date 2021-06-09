@@ -1,5 +1,6 @@
 """Delete dataset function."""
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate  # type: ignore[import]
@@ -12,7 +13,14 @@ from ..resources import ResourceName
 from ..step_function import DATASET_ID_SHORT_KEY
 from ..types import JsonObject
 
-BOTO3_CLIENT = boto3.client("s3")
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3Client = object
+
+BOTO3_CLIENT: S3Client = boto3.client("s3")
 
 
 def delete_dataset(body: JsonObject) -> JsonObject:

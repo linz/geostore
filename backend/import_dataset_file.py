@@ -4,6 +4,12 @@ from urllib.parse import unquote_plus
 
 from botocore.exceptions import ClientError  # type: ignore[import]
 
+from .aws_response import (
+    AWS_CODE_REQUEST_TIMEOUT,
+    AWS_RESPONSE_ERROR_CODE_KEY,
+    AWS_RESPONSE_ERROR_KEY,
+    AWS_RESPONSE_ERROR_MESSAGE_KEY,
+)
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from .log import set_up_logging
 from .types import JsonObject
@@ -32,12 +38,6 @@ RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 EXCEPTION_PREFIX = "Exception"
 RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
-IMPORTER_RESPONSE_ERROR_KEY = "Error"
-IMPORTER_RESPONSE_ERROR_CODE_KEY = "Code"
-IMPORTER_RESPONSE_ERROR_MESSAGE_KEY = "Message"
-
-ERROR_CODE_REQUEST_TIMEOUT = "RequestTimeout"
-
 LOGGER = set_up_logging(__name__)
 
 
@@ -63,15 +63,13 @@ def get_import_result(
         result_code = RESULT_CODE_SUCCEEDED
         result_string = str(response)
     except ClientError as error:
-        error_code = error.response[IMPORTER_RESPONSE_ERROR_KEY][IMPORTER_RESPONSE_ERROR_CODE_KEY]
-        if error_code == ERROR_CODE_REQUEST_TIMEOUT:
+        error_code = error.response[AWS_RESPONSE_ERROR_KEY][AWS_RESPONSE_ERROR_CODE_KEY]
+        if error_code == AWS_CODE_REQUEST_TIMEOUT:
             result_code = RESULT_CODE_TEMPORARY_FAILURE
             result_string = RETRY_RESULT_STRING
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
-            error_message = error.response[IMPORTER_RESPONSE_ERROR_KEY][
-                IMPORTER_RESPONSE_ERROR_MESSAGE_KEY
-            ]
+            error_message = error.response[AWS_RESPONSE_ERROR_KEY][AWS_RESPONSE_ERROR_MESSAGE_KEY]
             result_string = f"{error_code}: {error_message}"
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
