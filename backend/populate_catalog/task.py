@@ -1,7 +1,5 @@
 from json import dumps
-from os.path import join
 from typing import TYPE_CHECKING
-from urllib.parse import urlparse
 
 import boto3
 from pystac import STAC_IO, Catalog, CatalogType, Collection, Item  # type: ignore[import]
@@ -72,29 +70,20 @@ class UnhandledSQSMessageException(Exception):
 
 class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
     def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
-        original_path = urlparse(cat.get_self_href()).path.rsplit("/", maxsplit=2)
-        if is_root:
-            cat_root = parent_dir
-        else:
-            cat_root = join(parent_dir, original_path[-2])
-
-        return join(cat_root, original_path[-1])
+        return str(cat.get_self_href())
 
     def get_collection_href(self, col: Collection, parent_dir: str, is_root: bool) -> str:
-        original_path = urlparse(col.get_self_href()).path.rsplit("/", maxsplit=2)
         assert not is_root
-        return join(parent_dir, *original_path[-2:])
+        return str(col.get_self_href())
 
     def get_item_href(self, item: Item, parent_dir: str) -> str:
-        original_path = item.get_self_href().split("/")
-        return join(parent_dir, original_path[-1])
+        return str(item.get_self_href())
 
 
 def handle_dataset(version_metadata_key: str) -> None:
     """Handle writing a new dataset version to the dataset catalog"""
     storage_bucket_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
     dataset_prefix = version_metadata_key.split("/", maxsplit=1)[0]
-
     dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
 
     dataset_version_metadata = STAC_IO.read_stac_object(
