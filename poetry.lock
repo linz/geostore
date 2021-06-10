@@ -1693,7 +1693,7 @@ six = "*"
 
 [[package]]
 name = "ipdb"
-version = "0.13.8"
+version = "0.13.9"
 description = "IPython-enabled pdb"
 category = "dev"
 optional = false
@@ -2927,7 +2927,7 @@ iniparse = [
     {file = "iniparse-0.5.tar.gz", hash = "sha256:932e5239d526e7acb504017bb707be67019ac428a6932368e6851691093aa842"},
 ]
 ipdb = [
-    {file = "ipdb-0.13.8.tar.gz", hash = "sha256:8d368fa048a93ad6c1985d7f1d78d68580c879e4053fc15714bdcf2a1b042d06"},
+    {file = "ipdb-0.13.9.tar.gz", hash = "sha256:951bd9a64731c444fd907a5ce268543020086a697f6be08f7cc2c9a752a278c5"},
 ]
 ipython = [
     {file = "ipython-7.21.0-py3-none-any.whl", hash = "sha256:34207ffb2f653bced2bc8e3756c1db86e7d93e44ed049daae9814fed66d408ec"},
