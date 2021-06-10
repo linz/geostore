@@ -2199,7 +2199,7 @@ pytest = ">=3.6.3"
 
 [[package]]
 name = "pytest-subtests"
-version = "0.4.0"
+version = "0.5.0"
 description = "unittest subTest() support and subtests fixture"
 category = "dev"
 optional = false
@@ -3161,8 +3161,8 @@ pytest-socket = [
     {file = "pytest_socket-0.4.0-py3-none-any.whl", hash = "sha256:5e21faa48f1febc6ac83bf78f5dd48a8989ef84a01ae50deb3a226813e5f61d1"},
 ]
 pytest-subtests = [
-    {file = "pytest-subtests-0.4.0.tar.gz", hash = "sha256:8d9e2c1d1dce11f7b7d2c9d09202ebfc7757b7ff0cac9b72ad328edfe7ee037b"},
-    {file = "pytest_subtests-0.4.0-py3-none-any.whl", hash = "sha256:3755a42b7416b99d90bb3cb2bd1ac4767d5e4b93b8853cb3565200a4e3a10b7e"},
+    {file = "pytest-subtests-0.5.0.tar.gz", hash = "sha256:5bd1e4bf0eda4c89a6cd42b0ee28e1d2ca0848de3fd67ad8cdd6d559ed00f120"},
+    {file = "pytest_subtests-0.5.0-py3-none-any.whl", hash = "sha256:ae0e920b76f23acf28fb6265d5a83aa39b688af1cf30b2b402ac7094ccbc6bdf"},
 ]
 pytest-timeout = [
     {file = "pytest-timeout-1.4.2.tar.gz", hash = "sha256:20b3113cf6e4e80ce2d403b6fb56e9e1b871b510259206d40ff8d609f48bda76"},
