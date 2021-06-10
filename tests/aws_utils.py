@@ -249,7 +249,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
         self.bucket_name = bucket_name
         self.key = key
         self.url = f"{S3_URL_PREFIX}{self.bucket_name}/{self.key}"
-        self._s3_client = boto3.client("s3")
+        self._s3_client: S3Client = boto3.client("s3")
 
     def __enter__(self) -> "S3Object":
         self._s3_client.upload_fileobj(self.file_object, self.bucket_name, self.key)

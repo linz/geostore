@@ -1,5 +1,6 @@
 from json import dumps
 from os.path import join
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import boto3
@@ -20,10 +21,17 @@ from ..sqs_message_attributes import (
 )
 from ..types import JsonObject
 
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3Client = object
+
 STAC_IO.write_text_method = write_method
 STAC_IO.read_text_method = read_method
 
-S3_CLIENT = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3")
 
 ROOT_CATALOG_ID = "root_catalog"
 ROOT_CATALOG_TITLE = "Geostore Root Catalog"

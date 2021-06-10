@@ -26,7 +26,7 @@ ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 
 CHUNK_SIZE = 1024
 
-S3_CLIENT = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3")
 
 
 class ChecksumMismatchError(Exception):

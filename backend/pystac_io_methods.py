@@ -1,9 +1,16 @@
-from typing import IO, Tuple, Union
+from typing import IO, TYPE_CHECKING, Tuple, Union
 from urllib.parse import urlparse
 
 import boto3
 
-S3_CLIENT = boto3.client("s3")
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    S3Client = object
+
+S3_CLIENT: S3Client = boto3.client("s3")
 
 
 def read_method(url: str) -> str:

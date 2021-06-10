@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from functools import lru_cache
 from json import dumps
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import boto3
 
@@ -9,8 +9,15 @@ from .environment import environment_name
 from .error_response_keys import ERROR_KEY
 from .log import set_up_logging
 
+if TYPE_CHECKING:
+    # When type checking we want to use the third party package's stub
+    from mypy_boto3_ssm import SSMClient
+else:
+    # In production we want to avoid depending on a package which has no runtime impact
+    SSMClient = object
+
 LOGGER = set_up_logging(__name__)
-SSM_CLIENT = boto3.client("ssm")
+SSM_CLIENT: SSMClient = boto3.client("ssm")
 
 
 class ParameterName(Enum):
