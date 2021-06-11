@@ -32,8 +32,8 @@ STAC_IO.read_text_method = read_method
 S3_CLIENT: S3Client = boto3.client("s3")
 
 ROOT_CATALOG_ID = "root_catalog"
-ROOT_CATALOG_TITLE = "Geostore Root Catalog"
-ROOT_CATALOG_DESCRIPTION = "The root catalog which links to all dataset catalogues in Geostore"
+ROOT_CATALOG_TITLE = "LINZ Geostore"
+ROOT_CATALOG_DESCRIPTION = "The LINZ Geospatial Data Store (Geostore) contains all the important geospatial data held by Land Information New Zealand (LINZ).<br/>Please browse this catalog to find and access our data."
 CATALOG_KEY = "catalog.json"
 CONTENTS_KEY = "Contents"
 RECORDS_KEY = "Records"
