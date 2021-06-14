@@ -1,9 +1,10 @@
 import logging
 from json import dumps
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
-from botocore.exceptions import ClientError, ClientErrorResponseError, ClientErrorResponseTypeDef
+from botocore.exceptions import ClientError
 
 from backend.aws_response import AWS_CODE_REQUEST_TIMEOUT
 from backend.import_dataset_file import (
@@ -33,6 +34,14 @@ from .aws_utils import (
     any_task_id,
 )
 from .general_generators import any_error_message, any_safe_file_path
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 LOGGER = logging.getLogger("backend.import_dataset_file")
 

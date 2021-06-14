@@ -2,9 +2,10 @@ import logging
 from copy import deepcopy
 from io import StringIO
 from json import JSONDecodeError, dumps
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
-from botocore.exceptions import ClientError, ClientErrorResponseError, ClientErrorResponseTypeDef
+from botocore.exceptions import ClientError
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
@@ -27,6 +28,14 @@ from .stac_generators import (
     any_hex_multihash,
 )
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 LOGGER = logging.getLogger("backend.check_stac_metadata.utils")
 

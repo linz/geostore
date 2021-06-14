@@ -3,9 +3,10 @@ import sys
 from io import BytesIO
 from json import dumps
 from os import environ
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError, ClientErrorResponseError, ClientErrorResponseTypeDef
+from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from multihash import SHA2_256  # type: ignore[import]
 from pytest import raises
@@ -39,6 +40,14 @@ from .stac_generators import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 SHA256_CHECKSUM_BYTE_COUNT = 32
 

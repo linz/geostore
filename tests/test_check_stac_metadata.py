@@ -4,10 +4,10 @@ from datetime import timedelta
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError, ClientErrorResponseError, ClientErrorResponseTypeDef
+from botocore.exceptions import ClientError
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
@@ -80,6 +80,14 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_ITEM_OBJECT,
     STAC_VERSION,
 )
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
