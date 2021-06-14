@@ -103,7 +103,7 @@ jobs:
       - name: Deploy copy of production AWS stacks in to CI environment
         run: |
           poetry run cdk bootstrap --force aws://unknown-account/ap-southeast-2
-          poetry run cdk deploy --all --require-approval never
+          poetry run cdk deploy --all --require-approval never --change-set-name ${GITHUB_RUN_ID}"
 
       # checkout the branch
       - name: Checkout to current pull request version
@@ -128,7 +128,7 @@ jobs:
       - name: Upgrade copy of production AWS stacks in CI environment
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-          poetry run cdk deploy --all --require-approval never
+          poetry run cdk deploy --all --require-approval never --change-set-name ${GITHUB_RUN_ID}"
 
       - name: Destroy AWS stacks used for production upgrade testing
         run: |
