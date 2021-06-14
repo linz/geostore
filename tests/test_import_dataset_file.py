@@ -3,7 +3,7 @@ from json import dumps
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
-from botocore.exceptions import ClientError  # type: ignore[import]
+from botocore.exceptions import ClientError
 
 from backend.aws_response import (
     AWS_CODE_REQUEST_TIMEOUT,

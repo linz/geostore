@@ -2,7 +2,7 @@ from json import dumps, loads
 from typing import TYPE_CHECKING, Callable, Union
 from urllib.parse import unquote_plus
 
-from botocore.exceptions import ClientError  # type: ignore[import]
+from botocore.exceptions import ClientError
 
 from .aws_response import (
     AWS_CODE_REQUEST_TIMEOUT,

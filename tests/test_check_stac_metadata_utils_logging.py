@@ -4,7 +4,7 @@ from io import StringIO
 from json import JSONDecodeError, dumps
 from unittest.mock import MagicMock, patch
 
-from botocore.exceptions import ClientError  # type: ignore[import]
+from botocore.exceptions import ClientError
 from jsonschema import ValidationError  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY

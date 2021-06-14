@@ -5,8 +5,8 @@ from json import dumps
 from os import environ
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError  # type: ignore[import]
-from botocore.response import StreamingBody  # type: ignore[import]
+from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from multihash import SHA2_256  # type: ignore[import]
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
