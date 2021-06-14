@@ -4,12 +4,7 @@ from urllib.parse import unquote_plus
 
 from botocore.exceptions import ClientError
 
-from .aws_response import (
-    AWS_CODE_REQUEST_TIMEOUT,
-    AWS_RESPONSE_ERROR_CODE_KEY,
-    AWS_RESPONSE_ERROR_KEY,
-    AWS_RESPONSE_ERROR_MESSAGE_KEY,
-)
+from .aws_response import AWS_CODE_REQUEST_TIMEOUT
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from .log import set_up_logging
 from .types import JsonObject
@@ -63,13 +58,13 @@ def get_import_result(
         result_code = RESULT_CODE_SUCCEEDED
         result_string = str(response)
     except ClientError as error:
-        error_code = error.response[AWS_RESPONSE_ERROR_KEY][AWS_RESPONSE_ERROR_CODE_KEY]
+        error_code = error.response["Error"]["Code"]
         if error_code == AWS_CODE_REQUEST_TIMEOUT:
             result_code = RESULT_CODE_TEMPORARY_FAILURE
             result_string = RETRY_RESULT_STRING
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
-            error_message = error.response[AWS_RESPONSE_ERROR_KEY][AWS_RESPONSE_ERROR_MESSAGE_KEY]
+            error_message = error.response["Error"]["Message"]
             result_string = f"{error_code}: {error_message}"
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
