@@ -73,11 +73,6 @@ One-time setup, assuming you are in the project directory:
       ```
 
    1. Restart your shell: `exec "$SHELL"`.
-   1. Install the Python version used in this project: `pyenv install`.
-   1. Restart your shell again: `exec "$SHELL"`.
-   1. Verify setup:
-      `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` -
-      should produce no output.
 
 1. [Install and enable Poetry](https://python-poetry.org/docs/#installation):
 
@@ -130,6 +125,10 @@ One-time setup, assuming you are in the project directory:
 
 1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
 1. Run `./reset-dev-env.bash --all` to install packages.
+1. Restart your shell again: `exec "$SHELL"`.
+1. Verify setup:
+   `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` - should
+   produce no output.
 1. Enable the virtualenv: `. .venv/bin/activate`.
 1. Enable Node.js executables:
 
