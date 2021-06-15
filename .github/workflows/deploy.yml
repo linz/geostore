@@ -81,7 +81,7 @@ jobs:
         if: github.repository == 'linz/geostore' && github.ref == 'refs/heads/master'
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
-          poetry run cdk deploy --all --require-approval never
+          poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
         env:
           GEOSTORE_ENV_NAME: nonprod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
@@ -121,7 +121,9 @@ jobs:
 
       - name: (Prod) Deploy AWS stacks (only on release tag)
         if: github.repository == 'linz/geostore' && startsWith(github.ref, 'refs/tags/release-')
-        run: poetry run cdk deploy --all --require-approval never
+        run:
+          poetry run cdk deploy --all --require-approval never --change-set-name
+          "ci-${GITHUB_RUN_ID}"
         env:
           GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
