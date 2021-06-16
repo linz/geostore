@@ -12,6 +12,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'true'
+          fetch-depth: 0
 
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
@@ -36,9 +37,6 @@ jobs:
 
       - name: Print CDK version
         run: poetry run cdk --version
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: (CI) Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.5.10
@@ -60,6 +58,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'true'
+          fetch-depth: 0
 
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
@@ -84,9 +83,6 @@ jobs:
 
       - name: Print CDK version
         run: poetry run cdk --version
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: (Non-Prod) Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.5.10
@@ -101,13 +97,14 @@ jobs:
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
 
-  boostrap-nprod:
+  boostrap-prod:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
         with:
           submodules: 'true'
+          fetch-depth: 0
 
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
@@ -132,9 +129,6 @@ jobs:
 
       - name: Print CDK version
         run: poetry run cdk --version
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: (Prod) Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.5.10
