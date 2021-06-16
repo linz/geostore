@@ -1,16 +1,12 @@
 import logging
 from json import dumps
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
-from botocore.exceptions import ClientError  # type: ignore[import]
+from botocore.exceptions import ClientError
 
-from backend.aws_response import (
-    AWS_CODE_REQUEST_TIMEOUT,
-    AWS_RESPONSE_ERROR_CODE_KEY,
-    AWS_RESPONSE_ERROR_KEY,
-    AWS_RESPONSE_ERROR_MESSAGE_KEY,
-)
+from backend.aws_response import AWS_CODE_REQUEST_TIMEOUT
 from backend.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
@@ -38,6 +34,14 @@ from .aws_utils import (
     any_task_id,
 )
 from .general_generators import any_error_message, any_safe_file_path
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 LOGGER = logging.getLogger("backend.import_dataset_file")
 
@@ -81,7 +85,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     invocation_schema_version = any_invocation_schema_version()
 
     importer_mock.side_effect = ClientError(
-        {AWS_RESPONSE_ERROR_KEY: {AWS_RESPONSE_ERROR_CODE_KEY: AWS_CODE_REQUEST_TIMEOUT}},
+        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code=AWS_CODE_REQUEST_TIMEOUT)),
         any_operation_name(),
     )
 
@@ -134,12 +138,9 @@ def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMoc
     error_message = any_error_message()
 
     importer_mock.side_effect = ClientError(
-        {
-            AWS_RESPONSE_ERROR_KEY: {
-                AWS_RESPONSE_ERROR_CODE_KEY: error_code,
-                AWS_RESPONSE_ERROR_MESSAGE_KEY: error_message,
-            }
-        },
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        ),
         any_operation_name(),
     )
 

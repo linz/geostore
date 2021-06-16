@@ -3,8 +3,8 @@ from json import JSONDecodeError, dumps, load
 from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
-from botocore.exceptions import ClientError  # type: ignore[import]
-from botocore.response import StreamingBody  # type: ignore[import]
+from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from jsonschema import ValidationError  # type: ignore[import]
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY

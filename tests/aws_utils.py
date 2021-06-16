@@ -11,7 +11,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
-from botocore.auth import EMPTY_SHA256_HASH  # type: ignore[import]
+from botocore.auth import EMPTY_SHA256_HASH
 from multihash import SHA2_256  # type: ignore[import]
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef

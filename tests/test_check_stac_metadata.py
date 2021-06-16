@@ -4,20 +4,15 @@ from datetime import timedelta
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError  # type: ignore[import]
+from botocore.exceptions import ClientError
 from jsonschema import ValidationError  # type: ignore[import]
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY
-from backend.aws_response import (
-    AWS_RESPONSE_ERROR_CODE_KEY,
-    AWS_RESPONSE_ERROR_KEY,
-    AWS_RESPONSE_ERROR_MESSAGE_KEY,
-)
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
@@ -85,6 +80,14 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_ITEM_OBJECT,
     STAC_VERSION,
 )
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
@@ -195,12 +198,7 @@ def should_save_staging_access_validation_results(
 
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
-        {
-            AWS_RESPONSE_ERROR_KEY: {
-                AWS_RESPONSE_ERROR_CODE_KEY: "TEST",
-                AWS_RESPONSE_ERROR_MESSAGE_KEY: "TEST",
-            }
-        },
+        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
     get_object_mock.side_effect = expected_error
