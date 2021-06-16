@@ -2,7 +2,7 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
-from botocore.response import StreamingBody  # type: ignore[import]
+from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate  # type: ignore[import]
 
 from ..api_keys import EVENT_KEY
