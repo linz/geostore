@@ -24,8 +24,7 @@ class ImportFileFunction(BundledLambdaFunction):
             botocore_lambda_layer=botocore_lambda_layer,
         )
 
-        assert self.role is not None
-        self.role.add_to_policy(
+        self.add_to_role_policy(
             aws_iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging", "s3:ListBucket"],
                 resources=["*"],
