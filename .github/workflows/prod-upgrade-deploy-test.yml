@@ -83,7 +83,7 @@ jobs:
               --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status populate_catalog update_dataset_catalog validation_summary'
 
       - name: Print CDK version
-        run: poetry run cdk --version
+        run: cdk --version
 
       # deployment
       - name: Configure CI AWS credentials
@@ -102,7 +102,7 @@ jobs:
 
       - name: Deploy copy of production AWS stacks in to CI environment
         run: |
-          poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
+          cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
       # checkout the branch
       - name: Checkout to current pull request version
@@ -126,9 +126,9 @@ jobs:
       # deployment
       - name: Upgrade copy of production AWS stacks in CI environment
         run: |
-          poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
+          cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
       - name: Destroy AWS stacks used for production upgrade testing
         run: |
-          poetry run cdk destroy --force --all
+          cdk destroy --force --all
         if: always() # clean-up AWS stack after failure

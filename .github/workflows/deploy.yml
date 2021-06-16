@@ -64,7 +64,7 @@ jobs:
               --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status populate_catalog update_dataset_catalog validation_summary'
 
       - name: Print CDK version
-        run: poetry run cdk --version
+        run: cdk --version
 
       # NONPROD DEPLOYMENT - deploy all changes in master branch
       - name: (NonProd) Configure AWS credentials
@@ -80,7 +80,7 @@ jobs:
       - name: (NonProd) Deploy AWS stacks
         if: github.repository == 'linz/geostore' && github.ref == 'refs/heads/master'
         run: |
-          poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
+          cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
         env:
           GEOSTORE_ENV_NAME: nonprod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
@@ -105,7 +105,7 @@ jobs:
           github.repository == 'linz/geostore' && (startsWith(github.ref, 'refs/heads/release-') ||
           startsWith(github.ref, 'refs/tags/release-'))
         run: |
-          poetry run cdk diff -c aws-cdk:enableDiffNoFail=true
+          cdk diff -c aws-cdk:enableDiffNoFail=true
         env:
           GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
@@ -113,9 +113,7 @@ jobs:
 
       - name: (Prod) Deploy AWS stacks (only on release tag)
         if: github.repository == 'linz/geostore' && startsWith(github.ref, 'refs/tags/release-')
-        run:
-          poetry run cdk deploy --all --require-approval never --change-set-name
-          "ci-${GITHUB_RUN_ID}"
+        run: cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
         env:
           GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
