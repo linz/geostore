@@ -3,20 +3,16 @@ import sys
 from io import BytesIO
 from json import dumps
 from os import environ
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError  # type: ignore[import]
-from botocore.response import StreamingBody  # type: ignore[import]
+from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from multihash import SHA2_256  # type: ignore[import]
 from pytest import raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.aws_response import (
-    AWS_RESPONSE_ERROR_CODE_KEY,
-    AWS_RESPONSE_ERROR_KEY,
-    AWS_RESPONSE_ERROR_MESSAGE_KEY,
-)
 from backend.check import Check
 from backend.check_files_checksums.task import main
 from backend.check_files_checksums.utils import (
@@ -44,6 +40,14 @@ from .stac_generators import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
+
+if TYPE_CHECKING:
+    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
+        ClientErrorResponseError,
+        ClientErrorResponseTypeDef,
+    )
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 SHA256_CHECKSUM_BYTE_COUNT = 32
 
@@ -194,12 +198,7 @@ def should_save_staging_access_validation_results(
     get_object_mock: MagicMock,
 ) -> None:
     expected_error = ClientError(
-        {
-            AWS_RESPONSE_ERROR_KEY: {
-                AWS_RESPONSE_ERROR_CODE_KEY: "TEST",
-                AWS_RESPONSE_ERROR_MESSAGE_KEY: "TEST",
-            }
-        },
+        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
     get_object_mock.side_effect = expected_error
