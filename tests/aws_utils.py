@@ -100,7 +100,7 @@ def any_account_id() -> int:
 
 
 def any_lambda_context() -> bytes:
-    """Arbitrary-length string"""
+    """Arbitrary-length byte sequence"""
     return random_string(10).encode()
 
 

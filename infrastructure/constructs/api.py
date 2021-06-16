@@ -97,8 +97,7 @@ class API(Construct):
         )  # required by pynamodb
 
         state_machine.grant_read(import_status_endpoint_lambda)
-        assert import_status_endpoint_lambda.role is not None
-        import_status_endpoint_lambda.role.add_to_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
+        import_status_endpoint_lambda.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
         grant_parameter_read_access(
             {
