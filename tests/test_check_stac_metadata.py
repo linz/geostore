@@ -393,25 +393,30 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             )
 
             # Then
-            actual_items = processing_assets_model.query(
+            actual_asset_items = processing_assets_model.query(
                 expected_hash_key,
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
                 ),
             )
-            for actual_item, expected_item in zip(actual_items, expected_asset_items):
-                with subtests.test():
-                    assert actual_item.attribute_values == expected_item.attribute_values
+            for expected_item in expected_asset_items:
+                with subtests.test(msg=f"Asset {expected_item.pk}"):
+                    assert (
+                        actual_asset_items.next().attribute_values == expected_item.attribute_values
+                    )
 
-            actual_items = processing_assets_model.query(
+            actual_metadata_items = processing_assets_model.query(
                 expected_hash_key,
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
                 ),
             )
-            for actual_item, expected_item in zip(actual_items, expected_metadata_items):
-                with subtests.test():
-                    assert actual_item.attribute_values == expected_item.attribute_values
+            for expected_item in expected_metadata_items:
+                with subtests.test(msg=f"Metadata {expected_item.pk}"):
+                    assert (
+                        actual_metadata_items.next().attribute_values
+                        == expected_item.attribute_values
+                    )
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
