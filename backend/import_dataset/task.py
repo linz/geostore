@@ -48,19 +48,15 @@ if TYPE_CHECKING:
     )
     from mypy_boto3_sts import STSClient
 else:
-    JobManifestLocationTypeDef = dict
-    JobManifestSpecTypeDef = dict
-    JobManifestTypeDef = dict
-    JobOperationTypeDef = dict
-    JobReportTypeDef = dict
-    LambdaInvokeOperationTypeDef = dict
-    JobManifestFieldNameType = str
-    JobManifestFormatType = str
-    JobReportFormatType = str
-    JobReportScopeType = str
-    S3Client = object
-    S3ControlClient = object
-    STSClient = object
+    JobManifestLocationTypeDef = (
+        JobManifestSpecTypeDef
+    ) = (
+        JobManifestTypeDef
+    ) = JobOperationTypeDef = JobReportTypeDef = LambdaInvokeOperationTypeDef = dict
+    JobManifestFieldNameType = (
+        JobManifestFormatType
+    ) = JobReportFormatType = JobReportScopeType = str
+    S3Client = S3ControlClient = STSClient = object
 
 LOGGER = set_up_logging(__name__)
 
