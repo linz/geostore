@@ -15,8 +15,7 @@ if TYPE_CHECKING:
     from mypy_boto3_sts import STSClient
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    S3ControlClient = object
-    STSClient = object
+    S3ControlClient = STSClient = object
 
 JOB_STATUS_RUNNING = "RUNNING"
 JOB_STATUS_SUCCEEDED = "SUCCEEDED"
