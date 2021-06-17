@@ -1,4 +1,3 @@
-from functools import lru_cache
 from json import dumps
 from os.path import basename
 from typing import TYPE_CHECKING, List
@@ -27,6 +26,7 @@ from ..step_function import (
     S3_BATCH_RESPONSE_KEY,
     VERSION_ID_KEY,
 )
+from ..sts import get_account_number
 from ..types import JsonObject
 
 if TYPE_CHECKING:
@@ -46,7 +46,6 @@ if TYPE_CHECKING:
         JobReportTypeDef,
         LambdaInvokeOperationTypeDef,
     )
-    from mypy_boto3_sts import STSClient
 else:
     JobManifestLocationTypeDef = (
         JobManifestSpecTypeDef
@@ -56,11 +55,10 @@ else:
     JobManifestFieldNameType = (
         JobManifestFormatType
     ) = JobReportFormatType = JobReportScopeType = str
-    S3Client = S3ControlClient = STSClient = object
+    S3Client = S3ControlClient = object
 
 LOGGER = set_up_logging(__name__)
 
-STS_CLIENT: STSClient = boto3.client("sts")
 S3_CLIENT: S3Client = boto3.client("s3")
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
 
@@ -186,10 +184,3 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     metadata_job_id = importer.run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)
 
     return {ASSET_JOB_ID_KEY: asset_job_id, METADATA_JOB_ID_KEY: metadata_job_id}
-
-
-@lru_cache
-def get_account_number() -> str:
-    caller_identity = STS_CLIENT.get_caller_identity()
-    assert "Account" in caller_identity, caller_identity
-    return caller_identity["Account"]
