@@ -2,9 +2,9 @@
 Dataset Versions endpoint Lambda function tests.
 """
 
-import logging
 from datetime import datetime, timezone
 from http import HTTPStatus
+from logging import INFO, basicConfig, getLogger
 from unittest.mock import patch
 
 from pytest import mark
@@ -19,8 +19,8 @@ from backend.step_function import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, NOW_KE
 from .aws_utils import Dataset, any_lambda_context, any_s3_url
 from .stac_generators import any_dataset_id
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+basicConfig(level=INFO)
+logger = getLogger(__name__)
 
 
 def should_return_required_property_error_when_missing_mandatory_metadata_url() -> None:

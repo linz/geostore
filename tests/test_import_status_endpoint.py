@@ -1,8 +1,8 @@
 """
 Dataset Versions endpoint Lambda function tests.
 """
-import json
 from http import HTTPStatus
+from json import dumps
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -61,7 +61,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     # Given
     describe_execution_mock.return_value = {
         "status": "RUNNING",
-        "input": json.dumps(
+        "input": dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
@@ -98,8 +98,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
 
     describe_step_function_mock.return_value = {
         "status": "SUCCEEDED",
-        "input": json.dumps({DATASET_ID_KEY: dataset_id, VERSION_ID_KEY: version_id}),
-        "output": json.dumps({VALIDATION_KEY: {SUCCESS_KEY: False}}),
+        "input": dumps({DATASET_ID_KEY: dataset_id, VERSION_ID_KEY: version_id}),
+        "output": dumps({VALIDATION_KEY: {SUCCESS_KEY: False}}),
     }
 
     url = any_s3_url()
@@ -153,10 +153,10 @@ def should_report_s3_batch_upload_failures(
     # Given
     describe_step_function_mock.return_value = {
         "status": "SUCCEEDED",
-        "input": json.dumps(
+        "input": dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": json.dumps(
+        "output": dumps(
             {
                 VALIDATION_KEY: {SUCCESS_KEY: True},
                 IMPORT_DATASET_KEY: {
@@ -216,10 +216,10 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     get_caller_identity_mock.return_value = {"Account": any_account_id()}
     describe_step_function_mock.return_value = {
         "status": "FAILED",
-        "input": json.dumps(
+        "input": dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": json.dumps({}),
+        "output": dumps({}),
     }
     get_step_function_validation_results_mock.return_value = []
 
@@ -255,10 +255,10 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
     get_caller_identity_mock.return_value = {"Account": any_account_id()}
     describe_step_function_mock.return_value = {
         "status": "FAILED",
-        "input": json.dumps(
+        "input": dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": json.dumps({}),
+        "output": dumps({}),
     }
     validation_error = {ERROR_RESULT_KEY: ValidationResult.FAILED.value}
     get_step_function_validation_results_mock.return_value = [validation_error]

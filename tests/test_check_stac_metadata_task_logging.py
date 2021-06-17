@@ -1,6 +1,6 @@
-import logging
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -19,7 +19,7 @@ MINIMAL_PAYLOAD = {
     METADATA_URL_KEY: any_s3_url(),
 }
 
-LOGGER = logging.getLogger("backend.check_stac_metadata.task")
+LOGGER = getLogger("backend.check_stac_metadata.task")
 
 
 def should_log_event_payload() -> None:

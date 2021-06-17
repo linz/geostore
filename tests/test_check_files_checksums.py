@@ -1,7 +1,7 @@
-import logging
 import sys
 from io import BytesIO
 from json import dumps
+from logging import Logger, getLogger
 from os import environ
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
@@ -95,7 +95,7 @@ def should_validate_given_index(
         )
 
     processing_assets_model_mock.return_value.get.side_effect = get_mock
-    logger = logging.getLogger("backend.check_files_checksums.task")
+    logger = getLogger("backend.check_files_checksums.task")
     validation_results_table_name = any_table_name()
     expected_calls = [
         call(hash_key, validation_results_table_name),
@@ -158,7 +158,7 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     }
     expected_log = dumps({SUCCESS_KEY: False, **expected_details})
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
-    logger = logging.getLogger("backend.check_files_checksums.task")
+    logger = getLogger("backend.check_files_checksums.task")
     # When
 
     validation_results_table_name = any_table_name()
@@ -246,11 +246,11 @@ def should_save_staging_access_validation_results(
 
 
 class TestsWithLogger:
-    logger: logging.Logger
+    logger: Logger
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.check_files_checksums.task")
+        cls.logger = getLogger("backend.check_files_checksums.task")
 
     @patch("backend.check_files_checksums.utils.S3_CLIENT.get_object")
     def should_return_when_file_checksum_matches(self, get_object_mock: MagicMock) -> None:
