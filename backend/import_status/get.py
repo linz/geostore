@@ -1,6 +1,6 @@
 """Import Status handler function."""
-import json
 from http import HTTPStatus
+from json import dumps, loads
 from typing import TYPE_CHECKING
 
 import boto3
@@ -33,7 +33,7 @@ LOGGER = set_up_logging(__name__)
 
 
 def get_import_status(body: JsonObject) -> JsonObject:
-    LOGGER.debug(json.dumps({"event": body}))
+    LOGGER.debug(dumps({"event": body}))
 
     try:
         validate(
@@ -45,17 +45,17 @@ def get_import_status(body: JsonObject) -> JsonObject:
             },
         )
     except ValidationError as err:
-        LOGGER.warning(json.dumps({ERROR_KEY: err}, default=str))
+        LOGGER.warning(dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(
         executionArn=body[EXECUTION_ARN_KEY]
     )
     assert "status" in step_function_resp, step_function_resp
-    LOGGER.debug(json.dumps({"step function response": step_function_resp}, default=str))
+    LOGGER.debug(dumps({"step function response": step_function_resp}, default=str))
 
-    step_function_input = json.loads(step_function_resp["input"])
-    step_function_output = json.loads(step_function_resp.get("output", "{}"))
+    step_function_input = loads(step_function_resp["input"])
+    step_function_output = loads(step_function_resp.get("output", "{}"))
     step_function_status = step_function_resp["status"]
 
     dataset_id = step_function_input[DATASET_ID_KEY]

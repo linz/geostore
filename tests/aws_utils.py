@@ -1,10 +1,10 @@
-import string
-import time
 from contextlib import AbstractContextManager
 from datetime import datetime, timedelta
 from io import StringIO
 from json import dump
 from random import choice, randrange
+from string import ascii_lowercase, digits
+from time import sleep
 from types import TracebackType
 from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type, get_args
 from unittest.mock import Mock
@@ -56,7 +56,7 @@ S3_BATCH_JOB_FINAL_STATES = [S3_BATCH_JOB_COMPLETED_STATE, "Failed", "Cancelled"
 
 
 def any_arn_formatted_string() -> str:
-    return f"arn:aws:states:{random_string(5)}:{string.digits}:execution:yy:xx"
+    return f"arn:aws:states:{random_string(5)}:{digits}:execution:yy:xx"
 
 
 # Batch
@@ -114,7 +114,7 @@ def any_s3_url() -> str:
 
 
 def any_s3_bucket_name() -> str:
-    return _random_string_choices(f"{string.digits}{string.ascii_lowercase}", 20)
+    return _random_string_choices(f"{digits}{ascii_lowercase}", 20)
 
 
 def any_s3_bucket_arn() -> str:
@@ -306,7 +306,7 @@ def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
         assert (  # pragma: no cover
             datetime.now() < process_timeout
         ), f"S3 file '{bucket_name}/{key}' was not created, process timed out."
-        time.sleep(5)  # pragma: no cover
+        sleep(5)  # pragma: no cover
 
 
 def delete_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
@@ -399,7 +399,7 @@ def wait_for_s3_batch_job_completion(
             datetime.now() < process_timeout
         ), f"S3 Batch process {job_result['Job']['JobId']} hasn't completed, process timed out."
 
-        time.sleep(5)  # pragma: no cover
+        sleep(5)  # pragma: no cover
 
     assert job_result["Job"]["Status"] == S3_BATCH_JOB_COMPLETED_STATE, job_result
 

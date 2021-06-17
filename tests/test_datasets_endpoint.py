@@ -2,10 +2,10 @@
 Dataset endpoint Lambda function tests. Working Geostore AWS environment is
 required (run '$ cdk deploy' before running tests).
 """
-import logging
 from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load
+from logging import INFO, basicConfig, getLogger
 from unittest.mock import patch
 
 from mypy_boto3_lambda import LambdaClient
@@ -50,8 +50,8 @@ from .stac_generators import (
     any_dataset_version_id,
 )
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+basicConfig(level=INFO)
+logger = getLogger(__name__)
 
 
 @mark.infrastructure

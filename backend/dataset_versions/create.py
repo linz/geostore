@@ -1,7 +1,7 @@
 """Dataset versions handler function."""
-import json
 from datetime import datetime
 from http import HTTPStatus
+from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
@@ -39,7 +39,7 @@ STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
 def create_dataset_version(body: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(json.dumps({"event": body}))
+    logger.debug(dumps({"event": body}))
 
     body_schema = {
         "type": "object",
@@ -55,7 +55,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        logger.warning(json.dumps({ERROR_KEY: err}, default=str))
+        logger.warning(dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
@@ -66,7 +66,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
         )
     except DoesNotExist as err:
-        logger.warning(json.dumps({ERROR_KEY: err}, default=str))
+        logger.warning(dumps({ERROR_KEY: err}, default=str))
         return error_response(
             HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
         )
@@ -88,10 +88,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     step_functions_response = STEP_FUNCTIONS_CLIENT.start_execution(
         stateMachineArn=state_machine_arn,
         name=dataset_version_id,
-        input=json.dumps(step_functions_input),
+        input=dumps(step_functions_input),
     )
 
-    logger.debug(json.dumps({"response": step_functions_response}, default=str))
+    logger.debug(dumps({"response": step_functions_response}, default=str))
 
     # return arn of executing process
     return success_response(

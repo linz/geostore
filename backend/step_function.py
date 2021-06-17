@@ -1,5 +1,5 @@
-import json
 from enum import Enum
+from json import dumps
 from typing import TYPE_CHECKING, Optional
 
 import boto3
@@ -144,7 +144,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    LOGGER.debug(json.dumps({S3_BATCH_RESPONSE_KEY: s3_batch_copy_resp}, default=str))
+    LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: s3_batch_copy_resp}, default=str))
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
 

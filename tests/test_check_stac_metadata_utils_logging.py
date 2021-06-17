@@ -1,7 +1,7 @@
-import logging
 from copy import deepcopy
 from io import StringIO
 from json import JSONDecodeError, dumps
+from logging import getLogger
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = logging.getLogger("backend.check_stac_metadata.utils")
+LOGGER = getLogger("backend.check_stac_metadata.utils")
 
 
 def should_log_assets() -> None:

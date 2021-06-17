@@ -1,8 +1,7 @@
 """
 Pytest configuration file.
 """
-
-import logging
+from logging import INFO, basicConfig, getLogger
 
 import boto3
 import pytest
@@ -13,8 +12,8 @@ from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 from mypy_boto3_sts import STSClient
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+basicConfig(level=INFO)
+logger = getLogger(__name__)
 
 
 @pytest.fixture()

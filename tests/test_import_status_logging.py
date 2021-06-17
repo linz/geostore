@@ -1,5 +1,5 @@
-import logging
 from json import dumps
+from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -15,11 +15,11 @@ from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 class TestLogging:
-    logger: logging.Logger
+    logger: Logger
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.import_status.get")
+        cls.logger = getLogger("backend.import_status.get")
 
     @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
