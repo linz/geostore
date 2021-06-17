@@ -25,8 +25,7 @@ if TYPE_CHECKING:
     from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    S3Client = object
-    SQSServiceResource = object
+    S3Client = SQSServiceResource = object
     MessageAttributeValueTypeDef = dict
 
 LOGGER = set_up_logging(__name__)

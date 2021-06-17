@@ -12,8 +12,7 @@ from .types import JsonObject
 if TYPE_CHECKING:
     from mypy_boto3_s3.type_defs import CopyObjectOutputTypeDef, PutObjectOutputTypeDef
 else:
-    CopyObjectOutputTypeDef = JsonObject
-    PutObjectOutputTypeDef = JsonObject
+    CopyObjectOutputTypeDef = PutObjectOutputTypeDef = JsonObject
 
 INVOCATION_ID_KEY = "invocationId"
 INVOCATION_SCHEMA_VERSION_KEY = "invocationSchemaVersion"
