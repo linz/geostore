@@ -14,6 +14,7 @@ exclude_lines = [
 fail_under = 100
 
 [tool.coverage.run]
+branch = true
 source = [
     "backend",
     "tests",
