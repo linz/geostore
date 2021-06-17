@@ -20,7 +20,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
 
-BOTO3_CLIENT: S3Client = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3")
 
 
 def delete_dataset(body: JsonObject) -> JsonObject:
@@ -50,7 +50,7 @@ def delete_dataset(body: JsonObject) -> JsonObject:
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' does not exist")
 
     # Verify that the dataset is empty
-    list_objects_response = BOTO3_CLIENT.list_objects_v2(
+    list_objects_response = S3_CLIENT.list_objects_v2(
         Bucket=ResourceName.STORAGE_BUCKET_NAME.value, MaxKeys=1, Prefix=f"{dataset_id}/"
     )
     if list_objects_response["KeyCount"]:

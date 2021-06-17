@@ -30,7 +30,6 @@ else:
     MessageAttributeValueTypeDef = dict
 
 LOGGER = set_up_logging(__name__)
-S3_CLIENT: S3Client = boto3.client("s3")
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 

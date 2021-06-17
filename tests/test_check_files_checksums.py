@@ -115,8 +115,7 @@ def should_validate_given_index(
         environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}
     ):
         # Then
-        with subtests.test(msg="Return code"):
-            assert main() == 0
+        main()
 
         with subtests.test(msg="Log message"):
             info_log_mock.assert_any_call(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
@@ -176,8 +175,7 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     with patch.object(logger, "error") as error_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
     ):
-        with subtests.test(msg="Return code"):
-            assert main() == 0
+        main()
 
         with subtests.test(msg="Log message"):
             error_log_mock.assert_any_call(expected_log)

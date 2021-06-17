@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from argparse import ArgumentParser, Namespace
 
 from ..log import set_up_logging
@@ -21,7 +20,7 @@ def parse_arguments() -> Namespace:
     return argument_parser.parse_args()
 
 
-def main() -> int:
+def main() -> None:
     arguments = parse_arguments()
 
     index = arguments.first_item + get_job_offset()
@@ -39,8 +38,6 @@ def main() -> int:
 
     checksum_validator.validate(hash_key, range_key)
 
-    return 0
-
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
