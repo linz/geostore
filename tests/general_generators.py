@@ -1,7 +1,7 @@
-import string
 from datetime import datetime, timedelta, timezone
 from os import urandom
 from random import choice, randrange
+from string import ascii_letters, digits, printable
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -14,11 +14,11 @@ def random_string(length: int) -> str:
     Includes ASCII printable characters and the first printable character from several Unicode
     blocks <https://en.wikipedia.org/wiki/List_of_Unicode_characters>.
     """
-    return _random_string_choices(f"{string.printable}¡ĀƀḂəʰͰἀЀ–⁰₠℀⅐←∀⌀①─▀■☀🬀✁ㄅﬀ", length)
+    return _random_string_choices(f"{printable}¡ĀƀḂəʰͰἀЀ–⁰₠℀⅐←∀⌀①─▀■☀🬀✁ㄅﬀ", length)
 
 
 def random_ascii_letter_string(length: int) -> str:
-    return _random_string_choices(string.ascii_letters, length)
+    return _random_string_choices(ascii_letters, length)
 
 
 def _random_string_choices(characters: str, length: int) -> str:
@@ -44,7 +44,7 @@ def any_safe_file_path() -> str:
 
 
 def any_safe_filename() -> str:
-    return _random_string_choices(f"{string.digits}{string.ascii_letters}", 20)
+    return _random_string_choices(f"{digits}{ascii_letters}", 20)
 
 
 def any_host() -> str:

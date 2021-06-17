@@ -1,5 +1,5 @@
-import logging
 from json import dumps
+from logging import getLogger
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = logging.getLogger("backend.import_dataset_file")
+LOGGER = getLogger("backend.import_dataset_file")
 
 
 @patch("backend.import_metadata_file.task.importer")

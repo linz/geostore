@@ -1,10 +1,10 @@
-import json
-import logging
-import time
 from copy import deepcopy
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
+from json import dumps, load, loads
+from logging import INFO, basicConfig, getLogger
+from time import sleep
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
@@ -62,8 +62,8 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_ITEM_OBJECT,
 )
 
-logging.basicConfig(level=logging.INFO)
-LOGGER = logging.getLogger(__name__)
+basicConfig(level=INFO)
+LOGGER = getLogger(__name__)
 
 
 @mark.infrastructure
@@ -195,7 +195,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         try:
             resp = lambda_client.invoke(
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-                Payload=json.dumps(
+                Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
@@ -205,7 +205,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     }
                 ).encode(),
             )
-            json_resp = json.load(resp["Payload"])
+            json_resp = load(resp["Payload"])
 
             with subtests.test(msg="Dataset Versions endpoint returns success"):
                 assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
@@ -221,7 +221,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
-                    time.sleep(5)  # pragma: no cover
+                    sleep(5)  # pragma: no cover
 
                 assert execution["status"] == "SUCCEEDED", execution
 
@@ -229,7 +229,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
             account_id = sts_client.get_caller_identity()["Account"]
 
-            import_dataset_response = json.loads(execution_output)[IMPORT_DATASET_KEY]
+            import_dataset_response = loads(execution_output)[IMPORT_DATASET_KEY]
             metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                 import_dataset_response, account_id, s3_control_client, subtests
             )
@@ -268,14 +268,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         }
         status_resp = lambda_client.invoke(
             FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps(
+            Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "GET",
                     BODY_KEY: {EXECUTION_ARN_KEY: execution["executionArn"]},
                 }
             ).encode(),
         )
-        status_json_resp = json.load(status_resp["Payload"])
+        status_json_resp = load(status_resp["Payload"])
         assert status_json_resp == expected_response
 
 
@@ -336,7 +336,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         try:
             resp = lambda_client.invoke(
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-                Payload=json.dumps(
+                Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
@@ -346,7 +346,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     }
                 ).encode(),
             )
-            json_resp = json.load(resp["Payload"])
+            json_resp = load(resp["Payload"])
 
             with subtests.test(msg="Dataset Versions endpoint returns success"):
                 assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
@@ -362,13 +362,13 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
-                    time.sleep(5)  # pragma: no cover
+                    sleep(5)  # pragma: no cover
 
             assert (execution_output := execution.get("output")), execution
 
             account_id = sts_client.get_caller_identity()["Account"]
 
-            import_dataset_response = json.loads(execution_output)[IMPORT_DATASET_KEY]
+            import_dataset_response = loads(execution_output)[IMPORT_DATASET_KEY]
             metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                 import_dataset_response,
                 account_id,
@@ -403,14 +403,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         }
         status_resp = lambda_client.invoke(
             FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps(
+            Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "GET",
                     BODY_KEY: {EXECUTION_ARN_KEY: execution["executionArn"]},
                 }
             ).encode(),
         )
-        status_json_resp = json.load(status_resp["Payload"])
+        status_json_resp = load(status_resp["Payload"])
         assert status_json_resp == expected_response
 
 
@@ -451,7 +451,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         # When creating a dataset version
         dataset_version_creation_response = lambda_client.invoke(
             FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
-            Payload=json.dumps(
+            Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "POST",
                     BODY_KEY: {
@@ -462,7 +462,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
             ).encode(),
         )
 
-        response_payload = json.load(dataset_version_creation_response["Payload"])
+        response_payload = load(dataset_version_creation_response["Payload"])
         with subtests.test(msg="Dataset Versions endpoint status code"):
             assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
 
@@ -477,7 +477,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 LOGGER.info(  # pragma: no cover
                     "Polling for State Machine %s state", state_machine_arn
                 )
-                time.sleep(5)  # pragma: no cover
+                sleep(5)  # pragma: no cover
 
             assert execution["status"] == "SUCCEEDED", execution
 

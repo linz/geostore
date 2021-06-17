@@ -1,6 +1,5 @@
-import json
-import logging
 from json import dumps
+from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -25,11 +24,11 @@ from .stac_generators import any_dataset_version_id, any_hex_multihash
 
 
 class TestLogging:
-    logger: logging.Logger
+    logger: Logger
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.import_dataset.task")
+        cls.logger = getLogger("backend.import_dataset.task")
 
     @patch("backend.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
@@ -137,7 +136,7 @@ class TestLogging:
         # Given
 
         create_job_mock.return_value = response = {"JobId": "Some Response"}
-        expected_response_log = json.dumps({S3_BATCH_RESPONSE_KEY: response})
+        expected_response_log = dumps({S3_BATCH_RESPONSE_KEY: response})
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(

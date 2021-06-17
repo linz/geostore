@@ -1,6 +1,6 @@
-import logging
 import sys
 from json import dumps
+from logging import getLogger
 from os import environ
 from unittest.mock import patch
 
@@ -19,7 +19,7 @@ from backend.processing_assets_model import ProcessingAssetType, ProcessingAsset
 from .general_generators import any_program_name
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
-LOGGER = logging.getLogger("backend.check_files_checksums.task")
+LOGGER = getLogger("backend.check_files_checksums.task")
 
 
 @mark.infrastructure

@@ -1,5 +1,5 @@
-import logging
 from json import dumps
+from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from backend.step_function import S3_BATCH_RESPONSE_KEY, get_s3_batch_copy_status
@@ -8,11 +8,11 @@ from .aws_utils import any_account_id
 
 
 class TestLogging:
-    logger: logging.Logger
+    logger: Logger
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.step_function")
+        cls.logger = getLogger("backend.step_function")
 
     @patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
     def should_log_s3_batch_response(

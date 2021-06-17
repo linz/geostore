@@ -1,8 +1,8 @@
-import os
+from os import environ
 
 from aws_cdk.core import RemovalPolicy
 
-if os.environ.get("RESOURCE_REMOVAL_POLICY", "DESTROY").upper() == "RETAIN":
+if environ.get("RESOURCE_REMOVAL_POLICY", "DESTROY").upper() == "RETAIN":
     REMOVAL_POLICY = RemovalPolicy.RETAIN
 
 else:

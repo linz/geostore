@@ -1,5 +1,5 @@
-import logging
 from json import dumps
+from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError  # type: ignore[import]
@@ -17,11 +17,11 @@ from .stac_generators import any_dataset_id
 
 
 class TestLogging:
-    logger: logging.Logger
+    logger: Logger
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = logging.getLogger("backend.dataset_versions.create")
+        cls.logger = getLogger("backend.dataset_versions.create")
 
     @mark.infrastructure
     def should_log_payload(self) -> None:
