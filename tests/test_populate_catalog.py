@@ -8,6 +8,14 @@ from pytest_subtests import SubTests
 from smart_open import smart_open
 
 from backend.api_responses import BODY_KEY
+from backend.aws_message_attributes import (
+    DATA_TYPE_KEY,
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_DATASET,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    MESSAGE_ATTRIBUTE_TYPE_ROOT,
+    STRING_VALUE_KEY_LOWER,
+)
 from backend.populate_catalog.task import (
     CATALOG_KEY,
     MESSAGE_ATTRIBUTES_KEY,
@@ -20,14 +28,6 @@ from backend.populate_catalog.task import (
 )
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
-from backend.sqs_message_attributes import (
-    DATA_TYPE_KEY,
-    DATA_TYPE_STRING,
-    MESSAGE_ATTRIBUTE_TYPE_DATASET,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-    MESSAGE_ATTRIBUTE_TYPE_ROOT,
-    STRING_VALUE_KEY_LOWER,
-)
 from backend.stac_format import (
     STAC_DESCRIPTION_KEY,
     STAC_HREF_KEY,

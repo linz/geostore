@@ -5,11 +5,13 @@ from pytest import raises
 
 from backend.api_keys import SUCCESS_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from backend.step_function import Outcome
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
+    STATUS_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
@@ -53,8 +55,9 @@ def should_report_upload_statuses(
     describe_job_mock.side_effect = describe_job
 
     expected_response = {
-        ASSET_UPLOAD_KEY: {"status": asset_job_status, "errors": []},
-        METADATA_UPLOAD_KEY: {"status": metadata_job_status, "errors": []},
+        VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, "errors": []},
+        ASSET_UPLOAD_KEY: {STATUS_KEY: asset_job_status, "errors": []},
+        METADATA_UPLOAD_KEY: {STATUS_KEY: metadata_job_status, "errors": []},
     }
 
     # When

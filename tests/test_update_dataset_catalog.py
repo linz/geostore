@@ -5,15 +5,15 @@ from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.resources import ResourceName
-from backend.sqs_message_attributes import (
+from backend.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     STRING_VALUE_KEY,
 )
+from backend.error_response_keys import ERROR_MESSAGE_KEY
+from backend.resources import ResourceName
 from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,

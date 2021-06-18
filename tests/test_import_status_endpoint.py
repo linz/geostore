@@ -54,7 +54,7 @@ def should_return_required_property_error_when_missing_mandatory_execution_arn()
     }
 
 
-@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 def should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock: MagicMock,
 ) -> None:
@@ -89,7 +89,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 
 
 @mark.infrastructure
-@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) -> None:
     # Given
 
@@ -144,7 +144,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
         assert response == expected_response
 
 
-@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 @patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
 def should_report_s3_batch_upload_failures(
     describe_s3_job_mock: MagicMock,
@@ -206,7 +206,7 @@ def should_report_s3_batch_upload_failures(
 
 
 @patch("backend.step_function.get_step_function_validation_results")
-@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 @patch("backend.step_function.get_account_number")
 def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     get_account_number_mock: MagicMock,
@@ -244,7 +244,7 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
 
 
 @patch("backend.step_function.get_step_function_validation_results")
-@patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 @patch("backend.step_function.get_account_number")
 def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_status(
     get_account_number_mock: MagicMock,

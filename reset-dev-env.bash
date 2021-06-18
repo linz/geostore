@@ -112,7 +112,7 @@ then
     pyenv install --skip-existing "$(cat .python-version)"
 
     echo "Installing Python packages"
-    poetry install --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status populate_catalog update_dataset_catalog validation_summary' --remove-untracked
+    poetry install --extras='cdk check_files_checksums check_stac_metadata content_iterator datasets dataset_versions import_dataset import_status notify_slack populate_catalog update_dataset_catalog validation_summary' --remove-untracked
 fi
 
 if [[ -n "${hooks-}" ]]

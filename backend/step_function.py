@@ -1,24 +1,29 @@
 from enum import Enum
-from json import dumps
+from json import dumps, loads
 from typing import TYPE_CHECKING, Optional
 
 import boto3
 
+from .api_keys import SUCCESS_KEY
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
+    DATASET_ID_KEY,
     ERRORS_KEY,
     ERROR_CHECK_KEY,
     ERROR_DETAILS_KEY,
     ERROR_RESULT_KEY,
     ERROR_URL_KEY,
+    IMPORT_DATASET_KEY,
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
     S3_BATCH_RESPONSE_KEY,
     STATUS_KEY,
+    STEP_FUNCTION_KEY,
     VALIDATION_KEY,
+    VERSION_ID_KEY,
 )
 from .sts import get_account_number
 from .types import JsonList, JsonObject
@@ -27,9 +32,10 @@ from .validation_results_model import ValidationResult, validation_results_model
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_s3control import S3ControlClient
+    from mypy_boto3_stepfunctions import SFNClient
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    S3ControlClient = object
+    S3ControlClient = SFNClient = object
 
 
 class Outcome(Enum):
@@ -45,6 +51,8 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
     None: Outcome.PENDING,
 }
 
+
+STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
 LOGGER = set_up_logging(__name__)
 
@@ -77,6 +85,26 @@ def get_tasks_status(
         METADATA_UPLOAD_KEY: metadata_upload_status,
         ASSET_UPLOAD_KEY: asset_upload_status,
     }
+
+
+def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
+    step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(executionArn=execution_arn_key)
+    assert "status" in step_function_resp, step_function_resp
+    LOGGER.debug(dumps({"step function response": step_function_resp}, default=str))
+
+    step_function_input = loads(step_function_resp["input"])
+    step_function_output = loads(step_function_resp.get("output", "{}"))
+    step_function_status = step_function_resp["status"]
+
+    dataset_id = step_function_input[DATASET_ID_KEY]
+    version_id = step_function_input[VERSION_ID_KEY]
+    validation_success = step_function_output.get(VALIDATION_KEY, {}).get(SUCCESS_KEY)
+    import_dataset_jobs = step_function_output.get(IMPORT_DATASET_KEY, {})
+
+    tasks_status = get_tasks_status(
+        step_function_status, dataset_id, version_id, validation_success, import_dataset_jobs
+    )
+    return {STEP_FUNCTION_KEY: {"status": step_function_status.title()}, **tasks_status}
 
 
 def get_validation_outcome(
