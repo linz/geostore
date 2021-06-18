@@ -13,6 +13,7 @@ from backend.import_dataset_file import (
     RESULTS_KEY,
     RESULT_CODE_KEY,
     RESULT_CODE_PERMANENT_FAILURE,
+    RESULT_CODE_SUCCEEDED,
     RESULT_CODE_TEMPORARY_FAILURE,
     RESULT_STRING_KEY,
     RETRY_RESULT_STRING,
@@ -24,6 +25,7 @@ from backend.import_dataset_file import (
     get_import_result,
 )
 from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from backend.types import JsonObject
 
 from .aws_utils import (
     any_invocation_id,
@@ -62,11 +64,11 @@ def should_log_payload(importer_mock: MagicMock) -> None:
                         }
                     )
                 ),
-                TASK_ID_KEY: "any task ID",
+                TASK_ID_KEY: any_task_id(),
             }
         ],
-        INVOCATION_ID_KEY: "any invocation ID",
-        INVOCATION_SCHEMA_VERSION_KEY: "any invocation schema version",
+        INVOCATION_ID_KEY: any_invocation_id(),
+        INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
 
     with patch.object(LOGGER, "debug") as logger_mock:
@@ -75,6 +77,53 @@ def should_log_payload(importer_mock: MagicMock) -> None:
 
         # Then
         logger_mock.assert_any_call(dumps(event))
+
+
+@patch("backend.import_metadata_file.task.importer")
+def should_log_result(importer_mock: MagicMock) -> None:
+    # Given
+    importer_response: JsonObject = {}
+    importer_mock.return_value = importer_response
+    invocation_schema_version = any_invocation_schema_version()
+    invocation_id = any_invocation_id()
+    task_id = any_task_id()
+    event = {
+        TASKS_KEY: [
+            {
+                S3_BUCKET_ARN_KEY: any_s3_bucket_arn(),
+                S3_KEY_KEY: quote(
+                    dumps(
+                        {
+                            NEW_KEY_KEY: any_safe_file_path(),
+                            ORIGINAL_KEY_KEY: any_safe_file_path(),
+                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
+                        }
+                    )
+                ),
+                TASK_ID_KEY: task_id,
+            }
+        ],
+        INVOCATION_ID_KEY: invocation_id,
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+    }
+    expected_log_entry = {
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+        TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
+        INVOCATION_ID_KEY: invocation_id,
+        RESULTS_KEY: [
+            {
+                TASK_ID_KEY: task_id,
+                RESULT_CODE_KEY: RESULT_CODE_SUCCEEDED,
+                RESULT_STRING_KEY: str(importer_response),
+            }
+        ],
+    }
+
+    with patch.object(LOGGER, "debug") as logger_mock:
+        get_import_result(event, importer_mock)
+
+        # Then
+        logger_mock.assert_any_call(dumps(expected_log_entry))
 
 
 @patch("backend.import_metadata_file.task.importer")
