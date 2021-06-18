@@ -27,15 +27,15 @@ def should_raise_exception_when_missing_mandatory_execution_arn() -> None:
 
 @patch("backend.step_function.get_step_function_validation_results")
 @patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
-@patch("backend.step_function.STS_CLIENT.get_caller_identity")
+@patch("backend.step_function.get_account_number")
 def should_report_upload_statuses(
-    get_caller_identity_mock: MagicMock,
+    get_account_number_mock: MagicMock,
     describe_job_mock: MagicMock,
     get_step_function_validation_results_mock: MagicMock,
 ) -> None:
     # Given
     account_id = any_account_id()
-    get_caller_identity_mock.return_value = {"Account": account_id}
+    get_account_number_mock.return_value = account_id
     asset_job_id = any_job_id()
     asset_job_status = any_batch_job_status()
     metadata_job_id = any_job_id()

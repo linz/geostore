@@ -84,7 +84,7 @@ class TestLogging:
         expected_response_log = dumps({"step function response": describe_execution_response})
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.step_function.STS_CLIENT.get_caller_identity"
+            "backend.step_function.get_account_number"
         ), patch("backend.step_function.get_step_function_validation_results") as validation_mock:
             validation_mock.return_value = []
             # When
