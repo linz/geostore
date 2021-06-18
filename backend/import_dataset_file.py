@@ -69,7 +69,7 @@ def get_import_result(
         result_code = RESULT_CODE_PERMANENT_FAILURE
         result_string = f"{EXCEPTION_PREFIX}: {error}"
 
-    return {
+    result = {
         INVOCATION_SCHEMA_VERSION_KEY: event[INVOCATION_SCHEMA_VERSION_KEY],
         TREAT_MISSING_KEYS_AS_KEY: RESULT_CODE_PERMANENT_FAILURE,
         INVOCATION_ID_KEY: event[INVOCATION_ID_KEY],
@@ -81,3 +81,5 @@ def get_import_result(
             }
         ],
     }
+    LOGGER.debug(dumps(result))
+    return result
