@@ -189,11 +189,11 @@ def should_report_s3_batch_upload_failures(
             },
         },
     }
-    with patch("backend.step_function.STS_CLIENT.get_caller_identity") as sts_mock, patch(
+    with patch("backend.step_function.get_account_number") as get_account_number_mock, patch(
         "backend.step_function.get_step_function_validation_results"
     ) as validation_mock:
         validation_mock.return_value = []
-        sts_mock.return_value = {"Account": any_account_id()}
+        get_account_number_mock.return_value = any_account_id()
 
         # When
         response = entrypoint.lambda_handler(
@@ -207,13 +207,13 @@ def should_report_s3_batch_upload_failures(
 
 @patch("backend.step_function.get_step_function_validation_results")
 @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.STS_CLIENT.get_caller_identity")
+@patch("backend.step_function.get_account_number")
 def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
-    get_caller_identity_mock: MagicMock,
+    get_account_number_mock: MagicMock,
     describe_step_function_mock: MagicMock,
     get_step_function_validation_results_mock: MagicMock,
 ) -> None:
-    get_caller_identity_mock.return_value = {"Account": any_account_id()}
+    get_account_number_mock.return_value = any_account_id()
     describe_step_function_mock.return_value = {
         "status": "FAILED",
         "input": dumps(
@@ -245,14 +245,14 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
 
 @patch("backend.step_function.get_step_function_validation_results")
 @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.STS_CLIENT.get_caller_identity")
+@patch("backend.step_function.get_account_number")
 def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_status(
-    get_caller_identity_mock: MagicMock,
+    get_account_number_mock: MagicMock,
     describe_step_function_mock: MagicMock,
     get_step_function_validation_results_mock: MagicMock,
 ) -> None:
     # Given
-    get_caller_identity_mock.return_value = {"Account": any_account_id()}
+    get_account_number_mock.return_value = any_account_id()
     describe_step_function_mock.return_value = {
         "status": "FAILED",
         "input": dumps(

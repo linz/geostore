@@ -11,7 +11,6 @@ from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
-from mypy_boto3_sts import STSClient
 from pytest import mark, raises
 from pytest_subtests import SubTests  # type: ignore[import]
 
@@ -44,6 +43,7 @@ from backend.step_function import (
     VERSION_ID_KEY,
     Outcome,
 )
+from backend.sts import get_account_number
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
@@ -107,7 +107,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     lambda_client: LambdaClient,
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
-    sts_client: STSClient,
     subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
@@ -227,7 +226,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
             assert (execution_output := execution.get("output")), execution
 
-            account_id = sts_client.get_caller_identity()["Account"]
+            account_id = get_account_number()
 
             import_dataset_response = loads(execution_output)[IMPORT_DATASET_KEY]
             metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
@@ -287,7 +286,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
     lambda_client: LambdaClient,
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
-    sts_client: STSClient,
     subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
@@ -366,7 +364,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
             assert (execution_output := execution.get("output")), execution
 
-            account_id = sts_client.get_caller_identity()["Account"]
+            account_id = get_account_number()
 
             import_dataset_response = loads(execution_output)[IMPORT_DATASET_KEY]
             metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(

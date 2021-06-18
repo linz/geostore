@@ -10,6 +10,8 @@ from .clock import now
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from .parameter_store import ParameterName, get_param
 
+DATASET_KEY_SEPARATOR = "-"
+
 
 def human_readable_ulid(ulid: ULID) -> "str":
     """
@@ -99,6 +101,3 @@ def datasets_model_with_meta() -> Type[DatasetsModelBase]:
         datasets_title_idx = DatasetsTitleIdx()
 
     return DatasetModel
-
-
-DATASET_KEY_SEPARATOR = "-"

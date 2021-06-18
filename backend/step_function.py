@@ -6,16 +6,16 @@ import boto3
 
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
+from .sts import get_account_number
 from .types import JsonList, JsonObject
 from .validation_results_model import ValidationResult, validation_results_model_with_meta
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_s3control import S3ControlClient
-    from mypy_boto3_sts import STSClient
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    S3ControlClient = STSClient = object
+    S3ControlClient = object
 
 JOB_STATUS_RUNNING = "RUNNING"
 JOB_STATUS_SUCCEEDED = "SUCCEEDED"
@@ -57,7 +57,6 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 }
 
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
-STS_CLIENT: STSClient = boto3.client("sts")
 LOGGER = set_up_logging(__name__)
 
 
@@ -135,11 +134,9 @@ def get_step_function_validation_results(dataset_id: str, version_id: str) -> Js
 
 
 def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
-    caller_identity = STS_CLIENT.get_caller_identity()
-    assert "Account" in caller_identity, caller_identity
-
+    account_number = get_account_number()
     s3_batch_copy_resp = S3CONTROL_CLIENT.describe_job(
-        AccountId=caller_identity["Account"],
+        AccountId=account_number,
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp

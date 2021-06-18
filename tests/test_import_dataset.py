@@ -6,7 +6,6 @@ from json import dumps
 
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
-from mypy_boto3_sts import STSClient
 from pytest import mark
 from pytest_subtests import SubTests  # type: ignore[import]
 from smart_open import smart_open  # type: ignore[import]
@@ -29,6 +28,7 @@ from backend.step_function import (
     METADATA_URL_KEY,
     VERSION_ID_KEY,
 )
+from backend.sts import get_account_number
 
 from .aws_utils import (
     Dataset,
@@ -100,7 +100,6 @@ def should_return_required_property_error_when_missing_version_id() -> None:
 def should_batch_copy_files_to_storage(
     s3_client: S3Client,
     s3_control_client: S3ControlClient,
-    sts_client: STSClient,
     subtests: SubTests,
 ) -> None:
     # pylint: disable=too-many-locals
@@ -186,7 +185,7 @@ def should_batch_copy_files_to_storage(
                     any_lambda_context(),
                 )
 
-                account_id = sts_client.get_caller_identity()["Account"]
+                account_id = get_account_number()
 
                 metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                     response,
