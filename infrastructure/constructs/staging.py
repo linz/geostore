@@ -1,17 +1,17 @@
-from aws_cdk import aws_s3
+from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, RemovalPolicy, Tags
 
 from backend.resources import ResourceName
 
 
 class Staging(Construct):
-    def __init__(self, scope: Construct, stack_id: str) -> None:
+    def __init__(self, scope: Construct, stack_id: str, *, users_role: aws_iam.Role) -> None:
         super().__init__(scope, stack_id)
 
         ############################################################################################
         # ### DATASET STAGING S3 BUCKET ############################################################
         ############################################################################################
-        self.staging_bucket = aws_s3.Bucket(
+        staging_bucket = aws_s3.Bucket(
             self,
             "dataset-staging-bucket",
             bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
@@ -20,5 +20,6 @@ class Staging(Construct):
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
         )
+        staging_bucket.grant_read(users_role)  # type: ignore[arg-type]
 
         Tags.of(self).add("ApplicationLayer", "staging")  # type: ignore[arg-type]

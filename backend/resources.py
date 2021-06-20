@@ -19,5 +19,6 @@ class ResourceName(Enum):
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = prefix_non_prod_name("dataset-versions")
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = prefix_non_prod_name("import-status")
     S3_USERS_ROLE_NAME = prefix_non_prod_name("s3-users")
+    STAGING_USERS_ROLE_NAME = prefix_non_prod_name("staging-users")
     STAGING_BUCKET_NAME = prefix_non_prod_name("linz-geostore-staging")
     STORAGE_BUCKET_NAME = prefix_non_prod_name("linz-geostore")

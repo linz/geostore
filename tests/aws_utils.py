@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from io import StringIO
 from json import dump
 from random import choice, randrange
-from string import ascii_lowercase, digits
+from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
 from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type, get_args
@@ -30,7 +30,9 @@ from backend.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
+from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
+from backend.sts import get_account_number
 from backend.types import JsonObject
 from backend.validation_results_model import (
     ValidationResult,
@@ -57,6 +59,11 @@ S3_BATCH_JOB_FINAL_STATES = [S3_BATCH_JOB_COMPLETED_STATE, "Failed", "Cancelled"
 
 def any_arn_formatted_string() -> str:
     return f"arn:aws:states:{random_string(5)}:{digits}:execution:yy:xx"
+
+
+def any_error_code() -> str:
+    """Arbitrary-length string"""
+    return random_string(10)
 
 
 # Batch
@@ -94,6 +101,14 @@ def any_table_name() -> str:
 
 def any_account_id() -> int:
     return randrange(1_000_000_000_000)
+
+
+def any_role_name() -> str:
+    return _random_string_choices(f"{ascii_letters}{digits}", 20)
+
+
+def any_role_arn() -> str:
+    return f"arn:aws:iam::{any_account_id()}:role/{any_role_name()}"
 
 
 # Lambda
@@ -421,3 +436,8 @@ def delete_copy_job_files(
     copy_job_report_prefix = asset_copy_job_result["Job"]["Report"]["Prefix"]
     with subtests.test(msg=f"Delete {copy_job_report_prefix}"):
         delete_s3_prefix(storage_bucket_name, copy_job_report_prefix, s3_client)
+
+
+def get_s3_role_arn() -> str:
+    account_id = get_account_number()
+    return f"arn:aws:iam::{account_id}:role/{ResourceName.STAGING_USERS_ROLE_NAME.value}"

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from backend.api_keys import SUCCESS_KEY
 from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.step_function import DATASET_ID_KEY, VERSION_ID_KEY
+from backend.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_summary.task import lambda_handler
 
 from .aws_utils import any_lambda_context

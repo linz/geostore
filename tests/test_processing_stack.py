@@ -30,7 +30,8 @@ from backend.stac_format import (
     STAC_REL_ROOT,
     STAC_REL_SELF,
 )
-from backend.step_function import (
+from backend.step_function import Outcome
+from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
     ERRORS_KEY,
@@ -38,10 +39,10 @@ from backend.step_function import (
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
-    Outcome,
 )
 from backend.sts import get_account_number
 
@@ -51,6 +52,7 @@ from .aws_utils import (
     S3Object,
     delete_copy_job_files,
     delete_s3_key,
+    get_s3_role_arn,
     wait_for_copy_jobs,
 )
 from .file_utils import json_dict_to_file_object
@@ -200,6 +202,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         BODY_KEY: {
                             DATASET_ID_SHORT_KEY: dataset.dataset_id,
                             METADATA_URL_KEY: catalog_metadata_file.url,
+                            S3_ROLE_ARN_KEY: get_s3_role_arn(),
                         },
                     }
                 ).encode(),
@@ -340,6 +343,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                         BODY_KEY: {
                             DATASET_ID_SHORT_KEY: dataset.dataset_id,
                             METADATA_URL_KEY: root_metadata_file.url,
+                            S3_ROLE_ARN_KEY: get_s3_role_arn(),
                         },
                     }
                 ).encode(),
@@ -455,6 +459,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                     BODY_KEY: {
                         DATASET_ID_SHORT_KEY: dataset.dataset_id,
                         METADATA_URL_KEY: s3_metadata_file.url,
+                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
                     },
                 }
             ).encode(),

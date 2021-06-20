@@ -21,13 +21,15 @@ from backend.content_iterator.task import (
     RESULTS_TABLE_NAME_KEY,
 )
 from backend.environment import ENV_NAME_VARIABLE_NAME
-from backend.import_status.get import IMPORT_DATASET_KEY
 from backend.parameter_store import ParameterName
-from backend.step_function import (
+from backend.resources import ResourceName
+from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
@@ -39,7 +41,10 @@ from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
 from .lambda_config import LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
+from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
+from .staging import Staging
+from .sts_policy import ALLOW_ASSUME_ANY_ROLE
 from .table import Table
 
 
@@ -51,6 +56,7 @@ class Processing(Construct):
         *,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         env_name: str,
+        principal: aws_iam.PrincipalBase,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
@@ -131,6 +137,7 @@ class Processing(Construct):
         check_stac_metadata_task.lambda_function.role.add_managed_policy(
             policy=s3_read_only_access_policy
         )
+        check_stac_metadata_task.lambda_function.add_to_role_policy(ALLOW_ASSUME_ANY_ROLE)
 
         for table in [processing_assets_table, validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
@@ -153,6 +160,7 @@ class Processing(Construct):
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
             f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
+            f"{S3_ROLE_ARN_KEY}.$": f"$.{S3_ROLE_ARN_KEY}",
             f"{FIRST_ITEM_KEY}.$": f"$.{CONTENT_KEY}.{FIRST_ITEM_KEY}",
             f"{ASSETS_TABLE_NAME_KEY}.$": f"$.{CONTENT_KEY}.{ASSETS_TABLE_NAME_KEY}",
             f"{RESULTS_TABLE_NAME_KEY}.$": f"$.{CONTENT_KEY}.{RESULTS_TABLE_NAME_KEY}",
@@ -176,6 +184,8 @@ class Processing(Construct):
                 f"Ref::{ASSETS_TABLE_NAME_KEY}",
                 "--results-table-name",
                 f"Ref::{RESULTS_TABLE_NAME_KEY}",
+                "--s3-role-arn",
+                f"Ref::{S3_ROLE_ARN_KEY}",
             ],
         )
         array_size = int(
@@ -200,28 +210,35 @@ class Processing(Construct):
                 f"Ref::{ASSETS_TABLE_NAME_KEY}",
                 "--results-table-name",
                 f"Ref::{RESULTS_TABLE_NAME_KEY}",
+                "--s3-role-arn",
+                f"Ref::{S3_ROLE_ARN_KEY}",
             ],
             array_size=array_size,
         )
 
-        for reader in [
+        for processing_assets_reader in [
             content_iterator_task.lambda_function,
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            processing_assets_table.grant_read_data(reader)  # type: ignore[arg-type]
+            processing_assets_table.grant_read_data(
+                processing_assets_reader  # type: ignore[arg-type]
+            )
             processing_assets_table.grant(
-                reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+                processing_assets_reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
             )
 
-        for writer in [
+        for check_files_checksums_task in [
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            validation_results_table.grant_read_write_data(writer)  # type: ignore[arg-type]
-            validation_results_table.grant(
-                writer, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+            validation_results_table.grant_read_write_data(
+                check_files_checksums_task  # type: ignore[arg-type]
             )
+            validation_results_table.grant(
+                check_files_checksums_task, "dynamodb:DescribeTable"  # type: ignore[arg-type]
+            )
+            check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(
             self,
@@ -363,6 +380,23 @@ class Processing(Construct):
                 self.message_queue_name_parameter: [update_dataset_catalog.lambda_function],
             }
         )
+
+        ############################################################################################
+        # STAGING BUCKET ACCESS
+
+        staging_users_role = aws_iam.Role(
+            self,
+            "staging-users-role",
+            assumed_by=aws_iam.CompositePrincipal(  # type: ignore[arg-type]
+                principal, aws_iam.ServicePrincipal("batchoperations.s3.amazonaws.com")
+            ),
+            max_session_duration=MAX_SESSION_DURATION,
+            role_name=ResourceName.STAGING_USERS_ROLE_NAME.value,
+        )
+        Staging(self, "staging", users_role=staging_users_role)
+
+        ############################################################################################
+        # GENERIC_TASKS
 
         success_task = aws_stepfunctions.Succeed(self, "success")
         upload_failure = aws_stepfunctions.Fail(self, "upload failure")

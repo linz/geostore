@@ -16,6 +16,7 @@ from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFI
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 
+from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
@@ -46,9 +47,10 @@ def should_log_missing_item(subtests: SubTests) -> None:
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--first-item={index}",
         f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
         f"--results-table-name={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}",
-        f"--first-item={index}",
+        f"--s3-role-arn={get_s3_role_arn()}",
     ]
 
     # When/Then

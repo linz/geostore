@@ -18,7 +18,7 @@ else:
     PutObjectOutputTypeDef = JsonObject
     S3Client = object
 
-S3_CLIENT: S3Client = boto3.client("s3")
+TARGET_S3_CLIENT: S3Client = boto3.client("s3")
 LOGGER = set_up_logging(__name__)
 
 
@@ -27,9 +27,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
 
 def importer(
-    source_bucket_name: str, original_key: str, target_bucket_name: str, new_key: str
+    source_bucket_name: str,
+    original_key: str,
+    target_bucket_name: str,
+    new_key: str,
+    source_s3_client: S3Client,
 ) -> PutObjectOutputTypeDef:
-    get_object_response = S3_CLIENT.get_object(Bucket=source_bucket_name, Key=original_key)
+    get_object_response = source_s3_client.get_object(Bucket=source_bucket_name, Key=original_key)
     assert S3_BODY_KEY in get_object_response, get_object_response
 
     metadata = load(get_object_response["Body"])
@@ -40,7 +44,7 @@ def importer(
     links = metadata.get(STAC_LINKS_KEY, [])
     change_href_to_basename(links)
 
-    return S3_CLIENT.put_object(
+    return TARGET_S3_CLIENT.put_object(
         Bucket=target_bucket_name,
         Key=new_key,
         Body=dumps(metadata).encode(),

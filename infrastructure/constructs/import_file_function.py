@@ -4,6 +4,7 @@ from aws_cdk.core import Construct
 from backend.environment import ENV_NAME_VARIABLE_NAME
 
 from .bundled_lambda_function import BundledLambdaFunction
+from .sts_policy import ALLOW_ASSUME_ANY_ROLE
 
 
 class ImportFileFunction(BundledLambdaFunction):
@@ -30,5 +31,6 @@ class ImportFileFunction(BundledLambdaFunction):
                 resources=["*"],
             ),
         )
+        self.add_to_role_policy(ALLOW_ASSUME_ANY_ROLE)
 
         self.grant_invoke(invoker)  # type: ignore[arg-type]

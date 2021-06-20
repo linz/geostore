@@ -2552,7 +2552,9 @@ check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "pynamodb"]
 dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
 datasets = ["boto3", "jsonschema", "pynamodb", "pystac", "ulid-py"]
+import_asset_file = ["boto3", "smart-open"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
+import_metadata_file = ["boto3"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
 populate_catalog = ["boto3", "jsonschema", "pystac"]
 update_dataset_catalog = ["boto3", "jsonschema", "pynamodb", "ulid-py"]
@@ -2562,7 +2564,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "234a8bd10663db53d08a9af1ddc56b8b7c8fe74990756938753f0b9353f31bb0"
+content-hash = "db8513e2a8ff6582f12594ba95c95d17f9aa3139aaf60746f2e744f894432fda"
 
 [metadata.files]
 appdirs = [

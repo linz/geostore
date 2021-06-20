@@ -10,14 +10,14 @@ from ..api_keys import SUCCESS_KEY
 from ..api_responses import error_response, success_response
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
-from ..step_function import (
+from ..step_function import get_tasks_status
+from ..step_function_keys import (
     DATASET_ID_KEY,
     EXECUTION_ARN_KEY,
     IMPORT_DATASET_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
-    get_tasks_status,
 )
 from ..types import JsonObject
 

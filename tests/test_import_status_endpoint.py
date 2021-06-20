@@ -12,7 +12,8 @@ from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.import_status import entrypoint
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.step_function import (
+from backend.step_function import Outcome
+from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     ERRORS_KEY,
@@ -26,7 +27,6 @@ from backend.step_function import (
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
-    Outcome,
 )
 from backend.validation_results_model import ValidationResult
 

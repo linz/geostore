@@ -15,13 +15,14 @@ from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
-from ..step_function import (
+from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_ID_SHORT_KEY,
     DATASET_PREFIX_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
     NOW_KEY,
+    S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
 from ..types import JsonObject
@@ -47,8 +48,9 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             DATASET_ID_SHORT_KEY: {"type": "string"},
             METADATA_URL_KEY: {"type": "string"},
             NOW_KEY: {"type": "string", "format": "date-time"},
+            S3_ROLE_ARN_KEY: {"type": "string"},
         },
-        "required": [DATASET_ID_SHORT_KEY, METADATA_URL_KEY],
+        "required": [DATASET_ID_SHORT_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY],
     }
 
     # validate input
@@ -80,6 +82,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         DATASET_PREFIX_KEY: dataset.dataset_prefix,
         VERSION_ID_KEY: dataset_version_id,
         METADATA_URL_KEY: body[METADATA_URL_KEY],
+        S3_ROLE_ARN_KEY: body[S3_ROLE_ARN_KEY],
     }
     state_machine_arn = get_param(
         ParameterName.PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN

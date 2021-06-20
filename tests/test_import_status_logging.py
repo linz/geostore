@@ -6,8 +6,8 @@ from jsonschema import ValidationError
 
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY
-from backend.import_status.get import EXECUTION_ARN_KEY, get_import_status
-from backend.step_function import DATASET_ID_KEY, VERSION_ID_KEY
+from backend.import_status.get import get_import_status
+from backend.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
 from .general_generators import any_error_message

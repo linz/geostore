@@ -10,7 +10,7 @@ from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
 from ..resources import ResourceName
-from ..step_function import DATASET_ID_SHORT_KEY
+from ..step_function_keys import DATASET_ID_SHORT_KEY
 from ..types import JsonObject
 
 if TYPE_CHECKING:

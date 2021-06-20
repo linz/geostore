@@ -10,15 +10,16 @@ from backend.api_keys import EVENT_KEY
 from backend.error_response_keys import ERROR_KEY
 from backend.import_dataset.task import lambda_handler
 from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.step_function import (
+from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
     S3_BATCH_RESPONSE_KEY,
+    S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
 
-from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_s3_url
+from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_role_arn, any_s3_url
 from .general_generators import any_error_message, any_etag
 from .stac_generators import any_dataset_version_id, any_hex_multihash
 
@@ -47,6 +48,7 @@ class TestLogging:
                 DATASET_ID_KEY: dataset.dataset_id,
                 DATASET_PREFIX_KEY: dataset.dataset_prefix,
                 METADATA_URL_KEY: any_s3_url(),
+                S3_ROLE_ARN_KEY: any_role_arn(),
                 VERSION_ID_KEY: any_dataset_version_id(),
             }
             expected_payload_log = dumps({EVENT_KEY: event})
@@ -67,10 +69,7 @@ class TestLogging:
 
         with patch.object(self.logger, "warning") as logger_mock:
             # When
-            lambda_handler(
-                {METADATA_URL_KEY: any_s3_url(), VERSION_ID_KEY: any_dataset_version_id()},
-                any_lambda_context(),
-            )
+            lambda_handler({}, any_lambda_context())
 
             # Then
             logger_mock.assert_any_call(expected_log)
@@ -116,6 +115,7 @@ class TestLogging:
                         DATASET_ID_KEY: dataset.dataset_id,
                         DATASET_PREFIX_KEY: dataset.dataset_prefix,
                         METADATA_URL_KEY: any_s3_url(),
+                        S3_ROLE_ARN_KEY: any_role_arn(),
                         VERSION_ID_KEY: version_id,
                     },
                     any_lambda_context(),
@@ -149,6 +149,7 @@ class TestLogging:
                     DATASET_ID_KEY: dataset.dataset_id,
                     DATASET_PREFIX_KEY: dataset.dataset_prefix,
                     METADATA_URL_KEY: any_s3_url(),
+                    S3_ROLE_ARN_KEY: any_role_arn(),
                     VERSION_ID_KEY: any_dataset_version_id(),
                 },
                 any_lambda_context(),

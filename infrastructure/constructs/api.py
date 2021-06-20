@@ -1,5 +1,3 @@
-from os import environ
-
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Tags
 
@@ -21,6 +19,7 @@ class API(Construct):
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
+        principal: aws_iam.PrincipalBase,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         sqs_queue: aws_sqs.Queue,
@@ -29,18 +28,6 @@ class API(Construct):
         validation_results_table: Table,
     ) -> None:
         super().__init__(scope, stack_id)
-
-        if saml_provider_arn := environ.get("GEOSTORE_SAML_IDENTITY_PROVIDER_ARN"):
-            principal = aws_iam.FederatedPrincipal(
-                federated=saml_provider_arn,
-                assume_role_action="sts:AssumeRoleWithSAML",
-                conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
-            )
-
-        else:
-            principal = aws_iam.AccountPrincipal(  # type: ignore[assignment]
-                account_id=aws_iam.AccountRootPrincipal().account_id
-            )
 
         ############################################################################################
         # ### API ENDPOINTS ########################################################################

@@ -22,10 +22,11 @@ from backend.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
 )
-from backend.step_function import (
+from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
 from backend.sts import get_account_number
@@ -35,9 +36,11 @@ from .aws_utils import (
     ProcessingAsset,
     S3Object,
     any_lambda_context,
+    any_role_arn,
     any_s3_url,
     delete_copy_job_files,
     delete_s3_key,
+    get_s3_role_arn,
     wait_for_copy_jobs,
 )
 from .general_generators import any_file_contents, any_safe_filename
@@ -51,48 +54,26 @@ from .stac_generators import (
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
-def should_return_required_property_error_when_missing_metadata_url() -> None:
+def should_return_error_when_missing_required_property(subtests: SubTests) -> None:
+    # Given
+    minimal_body = {
+        DATASET_ID_KEY: any_dataset_id(),
+        DATASET_PREFIX_KEY: any_dataset_prefix(),
+        METADATA_URL_KEY: any_s3_url(),
+        S3_ROLE_ARN_KEY: any_role_arn(),
+        VERSION_ID_KEY: any_dataset_version_id(),
+    }
+
     # When
+    for key in minimal_body:
+        with subtests.test(msg=key):
+            # Given a missing property in the body
+            body = deepcopy(minimal_body)
+            body.pop(key)
 
-    response = lambda_handler(
-        {
-            DATASET_ID_KEY: any_dataset_id(),
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
-            VERSION_ID_KEY: any_dataset_version_id(),
-        },
-        any_lambda_context(),
-    )
+            response = lambda_handler(body, any_lambda_context())
 
-    assert response == {ERROR_MESSAGE_KEY: f"'{METADATA_URL_KEY}' is a required property"}
-
-
-def should_return_required_property_error_when_missing_dataset_id() -> None:
-    # When
-    response = lambda_handler(
-        {
-            METADATA_URL_KEY: any_s3_url(),
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
-            VERSION_ID_KEY: any_dataset_version_id(),
-        },
-        any_lambda_context(),
-    )
-
-    assert response == {ERROR_MESSAGE_KEY: f"'{DATASET_ID_KEY}' is a required property"}
-
-
-def should_return_required_property_error_when_missing_version_id() -> None:
-    # When
-
-    response = lambda_handler(
-        {
-            DATASET_ID_KEY: any_dataset_id(),
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
-            METADATA_URL_KEY: any_s3_url(),
-        },
-        any_lambda_context(),
-    )
-
-    assert response == {ERROR_MESSAGE_KEY: f"'{VERSION_ID_KEY}' is a required property"}
+            assert response == {ERROR_MESSAGE_KEY: f"'{key}' is a required property"}
 
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
@@ -181,6 +162,7 @@ def should_batch_copy_files_to_storage(
                         DATASET_PREFIX_KEY: dataset.dataset_prefix,
                         VERSION_ID_KEY: version_id,
                         METADATA_URL_KEY: root_metadata_s3_object.url,
+                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
                     },
                     any_lambda_context(),
                 )

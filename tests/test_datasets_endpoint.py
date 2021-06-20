@@ -31,7 +31,7 @@ from backend.sqs_message_attributes import (
     STRING_VALUE_KEY,
 )
 from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
-from backend.step_function import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
+from backend.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
 
 from .aws_utils import (
     Dataset,
