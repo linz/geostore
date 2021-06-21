@@ -329,11 +329,11 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = (
@@ -354,7 +354,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
             file_object=BytesIO(initial_bytes=metadata_content),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
             key=any_safe_filename(),
         ) as metadata_s3_object:
             # When
