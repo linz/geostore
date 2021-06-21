@@ -102,6 +102,7 @@ class Importer:
                 range_key_condition=processing_assets_model.sk.startswith(
                     f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             ):
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))
                 _, key = get_bucket_and_key_from_url(item.url)

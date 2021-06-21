@@ -398,6 +398,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             )
             for expected_item in expected_asset_items:
                 with subtests.test(msg=f"Asset {expected_item.pk}"):
@@ -410,6 +411,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             )
             for expected_item in expected_metadata_items:
                 with subtests.test(msg=f"Metadata {expected_item.pk}"):
