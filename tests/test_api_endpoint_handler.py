@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Callable, MutableMapping
 from unittest.mock import MagicMock
 
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY, handle_request

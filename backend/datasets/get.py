@@ -1,7 +1,7 @@
 """Get datasets functions."""
 from http import HTTPStatus
 
-from jsonschema import ValidationError, validate  # type: ignore[import]
+from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response

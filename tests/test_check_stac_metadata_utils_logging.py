@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check_stac_metadata.utils import (

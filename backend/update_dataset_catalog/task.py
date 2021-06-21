@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import boto3
-from jsonschema import ValidationError, validate  # type: ignore[import]
+from jsonschema import ValidationError, validate
 
 from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY

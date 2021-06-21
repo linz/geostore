@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, Dict, List
 from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 from pytest import mark, raises
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY
 from backend.check import Check

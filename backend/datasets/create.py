@@ -4,8 +4,8 @@ from string import ascii_letters, digits
 from typing import TYPE_CHECKING
 
 import boto3
-from jsonschema import ValidationError, validate  # type: ignore[import]
-from pystac import STAC_IO, Catalog, CatalogType  # type: ignore[import]
+from jsonschema import ValidationError, validate
+from pystac import STAC_IO, Catalog, CatalogType
 
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta

@@ -5,8 +5,8 @@ from urllib.parse import quote, urlparse
 from uuid import uuid4
 
 import boto3
-from jsonschema import ValidationError, validate  # type: ignore[import]
-from smart_open import open as smart_open  # type: ignore[import]
+from jsonschema import ValidationError, validate
+from smart_open import open as smart_open
 
 from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
