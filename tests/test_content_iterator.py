@@ -2,9 +2,9 @@ from copy import deepcopy
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 from pytest import mark, raises
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.content_iterator.task import (
     ASSETS_TABLE_NAME_KEY,

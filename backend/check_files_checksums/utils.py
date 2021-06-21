@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.exceptions import ClientError
-from multihash import FUNCS, decode  # type: ignore[import]
+from multihash import FUNCS, decode
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check

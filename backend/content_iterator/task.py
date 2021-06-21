@@ -1,4 +1,4 @@
-from jsonschema import validate  # type: ignore[import]
+from jsonschema import validate
 
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param

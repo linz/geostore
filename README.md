@@ -148,7 +148,20 @@ One-time setup, assuming you are in the project directory:
    is optional since it currently can't be set per repository or organisation, so it affects any
    repos where you have access to Dependabot alerts.)
 
-Re-run `./reset-dev-env.bash` when packages change.
+Re-run `./reset-dev-env.bash` when packages change. One easy way to use it pretty much seamlessly is
+to run it before every workday, with a crontab entry like this template:
+
+```crontab
+HOME='/home/USERNAME'
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "PATH_TO_GEOSTORE" && pyenv exec ./reset-dev-env.bash --all
+```
+
+Replace `USERNAME` and `PATH_TO_GEOSTORE` with your values, resulting in something like this:
+
+```crontab
+HOME='/home/jdoe'
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "${HOME}/dev/geostore" && pyenv exec ./reset-dev-env.bash --all
+```
 
 Re-run `. .venv/bin/activate` in each shell.
 

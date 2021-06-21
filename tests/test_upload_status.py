@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 from pytest import raises
 
 from backend.api_keys import SUCCESS_KEY

@@ -1,9 +1,9 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 from pytest import mark
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.error_response_keys import ERROR_MESSAGE_KEY
 from backend.resources import ResourceName

@@ -2,8 +2,8 @@ from json import load
 from os.path import dirname, join
 from typing import List
 
-from jsonschema import Draft7Validator, FormatChecker, RefResolver  # type: ignore[import]
-from jsonschema._utils import URIDict  # type: ignore[import]
+from jsonschema import Draft7Validator, FormatChecker, RefResolver
+from jsonschema._utils import URIDict
 
 from ..types import JsonObject
 
