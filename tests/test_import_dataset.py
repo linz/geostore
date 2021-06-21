@@ -7,8 +7,8 @@ from json import dumps
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from pytest import mark
-from pytest_subtests import SubTests  # type: ignore[import]
-from smart_open import smart_open  # type: ignore[import]
+from pytest_subtests import SubTests
+from smart_open import smart_open
 
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY

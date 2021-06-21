@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check

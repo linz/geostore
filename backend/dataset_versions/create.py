@@ -5,7 +5,7 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
-from jsonschema import ValidationError, validate  # type: ignore[import]
+from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 from ulid import from_timestamp
 

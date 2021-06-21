@@ -1,6 +1,6 @@
 from json import dumps
 
-from jsonschema import ValidationError, validate  # type: ignore[import]
+from jsonschema import ValidationError, validate
 
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY

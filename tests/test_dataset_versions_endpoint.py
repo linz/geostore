@@ -8,7 +8,7 @@ from logging import INFO, basicConfig, getLogger
 from unittest.mock import patch
 
 from pytest import mark
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY

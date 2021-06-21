@@ -3,8 +3,8 @@ from json import dumps
 from logging import getLogger
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
-from pytest_subtests import SubTests  # type: ignore[import]
+from jsonschema import ValidationError
+from pytest_subtests import SubTests
 
 from backend.check_stac_metadata.task import lambda_handler
 from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY

@@ -1,6 +1,6 @@
 from json import dumps
 
-from jsonschema import validate  # type: ignore[import]
+from jsonschema import validate
 
 from ..api_keys import SUCCESS_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY

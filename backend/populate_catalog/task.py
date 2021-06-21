@@ -2,8 +2,8 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
-from pystac import STAC_IO, Catalog, CatalogType, Collection, Item  # type: ignore[import]
-from pystac.layout import HrefLayoutStrategy  # type: ignore[import]
+from pystac import STAC_IO, Catalog, CatalogType, Collection, Item
+from pystac.layout import HrefLayoutStrategy
 
 from ..api_keys import EVENT_KEY
 from ..api_responses import BODY_KEY

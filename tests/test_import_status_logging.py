@@ -2,7 +2,7 @@ from json import dumps
 from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY

@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
-from multihash import SHA2_256  # type: ignore[import]
+from multihash import SHA2_256
 from pytest import raises
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check import Check
