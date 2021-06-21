@@ -84,6 +84,11 @@ pytest-socket = "*"
 pytest-subtests = "*"
 pytest-timeout = "*"
 shellcheck-py = "*"
+types-pkg-resources = "*"
+types-python-dateutil = "*"
+types-requests = "*"
+types-six = "*"
+types-toml = "*"
 
 [tool.poetry.dev-dependencies.coverage]
 version = "*"
