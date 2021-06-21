@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from pynamodb.exceptions import DoesNotExist
 from pytest import mark, raises
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check_files_checksums.task import main

@@ -12,13 +12,13 @@ from uuid import uuid4
 
 import boto3
 from botocore.auth import EMPTY_SHA256_HASH
-from multihash import SHA2_256  # type: ignore[import]
+from multihash import SHA2_256
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta

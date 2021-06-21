@@ -1,7 +1,7 @@
 from hashlib import sha256
 from uuid import uuid4
 
-from multihash import SHA2_256  # type: ignore[import]
+from multihash import SHA2_256
 
 from backend.datasets.create import TITLE_CHARACTERS
 from backend.datasets_model import DATASET_KEY_SEPARATOR

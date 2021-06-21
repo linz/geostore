@@ -11,8 +11,8 @@ from unittest.mock import patch
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from pytest import mark
-from pytest_subtests import SubTests  # type: ignore[import]
-from smart_open import smart_open  # type: ignore[import]
+from pytest_subtests import SubTests
+from smart_open import smart_open
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY

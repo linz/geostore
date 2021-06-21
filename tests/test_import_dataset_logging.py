@@ -2,9 +2,9 @@ from json import dumps
 from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
-from jsonschema import ValidationError  # type: ignore[import]
+from jsonschema import ValidationError
 from pytest import mark
-from pytest_subtests import SubTests  # type: ignore[import]
+from pytest_subtests import SubTests
 
 from backend.api_keys import EVENT_KEY
 from backend.error_response_keys import ERROR_KEY

@@ -2,7 +2,7 @@ from http import HTTPStatus
 from http.client import responses as http_responses
 from typing import Callable, Mapping, Union
 
-from jsonschema import ValidationError, validate  # type: ignore[import]
+from jsonschema import ValidationError, validate
 
 from .api_keys import MESSAGE_KEY
 from .types import JsonList, JsonObject
