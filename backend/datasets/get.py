@@ -7,7 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
-from ..step_function import DATASET_ID_SHORT_KEY, TITLE_KEY
+from ..step_function_keys import DATASET_ID_SHORT_KEY, TITLE_KEY
 from ..types import JsonObject
 from .list import list_datasets
 

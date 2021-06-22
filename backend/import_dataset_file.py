@@ -1,5 +1,5 @@
 from json import dumps, loads
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Optional
 from urllib.parse import unquote_plus
 
 from botocore.exceptions import ClientError
@@ -7,12 +7,16 @@ from botocore.exceptions import ClientError
 from .aws_response import AWS_CODE_REQUEST_TIMEOUT
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from .log import set_up_logging
+from .s3 import get_s3_client_for_role
+from .step_function_keys import S3_ROLE_ARN_KEY
 from .types import JsonObject
 
 if TYPE_CHECKING:
-    from mypy_boto3_s3.type_defs import CopyObjectOutputTypeDef, PutObjectOutputTypeDef
+    from mypy_boto3_s3 import S3Client
+    from mypy_boto3_s3.type_defs import PutObjectOutputTypeDef
 else:
-    CopyObjectOutputTypeDef = PutObjectOutputTypeDef = JsonObject
+    PutObjectOutputTypeDef = JsonObject
+    S3Client = object
 
 INVOCATION_ID_KEY = "invocationId"
 INVOCATION_SCHEMA_VERSION_KEY = "invocationSchemaVersion"
@@ -37,15 +41,14 @@ LOGGER = set_up_logging(__name__)
 
 def get_import_result(
     event: JsonObject,
-    importer: Callable[
-        [str, str, str, str], Union[CopyObjectOutputTypeDef, PutObjectOutputTypeDef]
-    ],
+    importer: Callable[[str, str, str, str, S3Client], Optional[PutObjectOutputTypeDef]],
 ) -> JsonObject:
     LOGGER.debug(dumps(event))
 
     task = event[TASKS_KEY][0]
     source_bucket_name = task[S3_BUCKET_ARN_KEY].split(":::", maxsplit=1)[-1]
     parameters = loads(unquote_plus(task[S3_KEY_KEY]))
+    source_s3_client = get_s3_client_for_role(parameters[S3_ROLE_ARN_KEY])
 
     try:
         response = importer(
@@ -53,6 +56,7 @@ def get_import_result(
             parameters[ORIGINAL_KEY_KEY],
             parameters[TARGET_BUCKET_NAME_KEY],
             parameters[NEW_KEY_KEY],
+            source_s3_client,
         )
         result_code = RESULT_CODE_SUCCEEDED
         result_string = str(response)
@@ -64,7 +68,7 @@ def get_import_result(
         else:
             result_code = RESULT_CODE_PERMANENT_FAILURE
             error_message = error.response["Error"]["Message"]
-            result_string = f"{error_code}: {error_message}"
+            result_string = f"{error_code} when calling {error.operation_name}: {error_message}"
     except Exception as error:  # pylint:disable=broad-except
         result_code = RESULT_CODE_PERMANENT_FAILURE
         result_string = f"{EXCEPTION_PREFIX}: {error}"

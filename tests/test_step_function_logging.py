@@ -2,7 +2,8 @@ from json import dumps
 from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
-from backend.step_function import S3_BATCH_RESPONSE_KEY, get_s3_batch_copy_status
+from backend.step_function import get_s3_batch_copy_status
+from backend.step_function_keys import S3_BATCH_RESPONSE_KEY
 
 from .aws_utils import any_account_id
 

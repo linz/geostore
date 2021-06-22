@@ -6,6 +6,20 @@ import boto3
 
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
+from .step_function_keys import (
+    ASSET_UPLOAD_KEY,
+    ERRORS_KEY,
+    ERROR_CHECK_KEY,
+    ERROR_DETAILS_KEY,
+    ERROR_RESULT_KEY,
+    ERROR_URL_KEY,
+    JOB_STATUS_RUNNING,
+    JOB_STATUS_SUCCEEDED,
+    METADATA_UPLOAD_KEY,
+    S3_BATCH_RESPONSE_KEY,
+    STATUS_KEY,
+    VALIDATION_KEY,
+)
 from .sts import get_account_number
 from .types import JsonList, JsonObject
 from .validation_results_model import ValidationResult, validation_results_model_with_meta
@@ -16,31 +30,6 @@ if TYPE_CHECKING:
 else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3ControlClient = object
-
-JOB_STATUS_RUNNING = "RUNNING"
-JOB_STATUS_SUCCEEDED = "SUCCEEDED"
-
-ASSET_UPLOAD_KEY = "asset_upload"
-DATASET_ID_KEY = "dataset_id"
-DATASET_ID_SHORT_KEY = "id"
-DATASET_PREFIX_KEY = "dataset_prefix"
-DESCRIPTION_KEY = "description"
-ERRORS_KEY = "errors"
-ERROR_CHECK_KEY = "check"
-ERROR_DETAILS_KEY = "details"
-ERROR_RESULT_KEY = "result"
-ERROR_URL_KEY = "url"
-EXECUTION_ARN_KEY = "execution_arn"
-IMPORT_DATASET_KEY = "import_dataset"
-METADATA_UPLOAD_KEY = "metadata_upload"
-METADATA_URL_KEY = "metadata_url"
-NOW_KEY = "now"
-S3_BATCH_RESPONSE_KEY = "s3_batch_response"
-STATUS_KEY = "status"
-STEP_FUNCTION_KEY = "step_function"
-TITLE_KEY = "title"
-VALIDATION_KEY = "validation"
-VERSION_ID_KEY = "version_id"
 
 
 class Outcome(Enum):

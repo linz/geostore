@@ -21,6 +21,7 @@ from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_URL_KEY,
     STACDatasetValidator,
 )
+from backend.import_metadata_file.task import S3_BODY_KEY
 from backend.models import (
     CHECK_ID_PREFIX,
     DATASET_ID_PREFIX,
@@ -49,7 +50,12 @@ from backend.stac_format import (
     STAC_TYPE_KEY,
     STAC_VERSION_KEY,
 )
-from backend.step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from backend.step_function_keys import (
+    DATASET_ID_KEY,
+    METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
+    VERSION_ID_KEY,
+)
 from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
@@ -57,8 +63,10 @@ from .aws_utils import (
     MockValidationResultFactory,
     S3Object,
     any_lambda_context,
+    any_role_arn,
     any_s3_url,
     any_table_name,
+    get_s3_role_arn,
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
@@ -91,8 +99,14 @@ else:
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_succeed_with_validation_failure(validate_url_mock: MagicMock) -> None:
+@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
+def should_succeed_with_validation_failure(
+    get_s3_client_for_role_mock: MagicMock, validate_url_mock: MagicMock
+) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
+    get_s3_client_for_role_mock.return_value.return_value = {
+        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
+    }
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
         lambda_handler(
@@ -100,34 +114,43 @@ def should_succeed_with_validation_failure(validate_url_mock: MagicMock) -> None
                 DATASET_ID_KEY: any_dataset_id(),
                 VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
+                S3_ROLE_ARN_KEY: any_role_arn(),
             },
             any_lambda_context(),
         )
 
 
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
 @patch("backend.check_stac_metadata.task.get_param")
 def should_save_non_s3_url_validation_results(
     get_param_mock: MagicMock,
+    get_s3_client_for_role_mock: MagicMock,
     validation_results_factory_mock: MagicMock,
 ) -> None:
-
+    # Given
     validation_results_table_name = any_table_name()
     get_param_mock.return_value = validation_results_table_name
     non_s3_url = any_https_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
+    get_s3_client_for_role_mock.return_value.return_value = {
+        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
+    }
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        # When
         lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
                 VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: non_s3_url,
+                S3_ROLE_ARN_KEY: any_role_arn(),
             },
             any_lambda_context(),
         )
 
+    # Then
     hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
     assert validation_results_factory_mock.mock_calls == [
         call(hash_key, validation_results_table_name),
@@ -189,11 +212,11 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
 
 @mark.infrastructure
-@patch("backend.check_stac_metadata.task.S3_CLIENT.get_object")
+@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
 @patch("backend.check_stac_metadata.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
-    get_object_mock: MagicMock,
+    get_s3_client_for_role_mock: MagicMock,
 ) -> None:
 
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
@@ -201,7 +224,7 @@ def should_save_staging_access_validation_results(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
-    get_object_mock.side_effect = expected_error
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = expected_error
 
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
@@ -212,6 +235,7 @@ def should_save_staging_access_validation_results(
             DATASET_ID_KEY: dataset_id,
             VERSION_ID_KEY: version_id,
             METADATA_URL_KEY: s3_url,
+            S3_ROLE_ARN_KEY: any_role_arn(),
         },
         any_lambda_context(),
     )
@@ -262,13 +286,17 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     ) as invalid_child_s3_object:
 
         # When
-        lambda_handler(
-            {
-                DATASET_ID_KEY: dataset_id,
-                VERSION_ID_KEY: version_id,
-                METADATA_URL_KEY: root_s3_object.url,
-            },
-            any_lambda_context(),
+        assert (
+            lambda_handler(
+                {
+                    DATASET_ID_KEY: dataset_id,
+                    VERSION_ID_KEY: version_id,
+                    METADATA_URL_KEY: root_s3_object.url,
+                    S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                },
+                any_lambda_context(),
+            )
+            == {}
         )
 
     hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
@@ -329,11 +357,11 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_content),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
         expected_hash_key = (
@@ -354,7 +382,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
             file_object=BytesIO(initial_bytes=metadata_content),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
             key=any_safe_filename(),
         ) as metadata_s3_object:
             # When
@@ -383,13 +411,17 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 ),
             ]
 
-            lambda_handler(
-                {
-                    DATASET_ID_KEY: dataset_id,
-                    VERSION_ID_KEY: version_id,
-                    METADATA_URL_KEY: metadata_s3_object.url,
-                },
-                any_lambda_context(),
+            assert (
+                lambda_handler(
+                    {
+                        DATASET_ID_KEY: dataset_id,
+                        VERSION_ID_KEY: version_id,
+                        METADATA_URL_KEY: metadata_s3_object.url,
+                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                    },
+                    any_lambda_context(),
+                )
+                == {}
             )
 
             # Then
@@ -398,6 +430,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             )
             for expected_item in expected_asset_items:
                 with subtests.test(msg=f"Asset {expected_item.pk}"):
@@ -410,6 +443,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 processing_assets_model.sk.startswith(
                     f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             )
             for expected_item in expected_metadata_items:
                 with subtests.test(msg=f"Metadata {expected_item.pk}"):
@@ -419,21 +453,31 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     )
 
 
+@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_validate_given_url(validate_url_mock: MagicMock) -> None:
+def should_validate_given_url(
+    validate_mock: MagicMock, get_s3_client_for_role_mock: MagicMock
+) -> None:
+    # Given
+    get_s3_client_for_role_mock.return_value.return_value = {
+        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
+    }
     url = any_s3_url()
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+        # When
         lambda_handler(
             {
                 DATASET_ID_KEY: any_dataset_id(),
                 VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: url,
+                S3_ROLE_ARN_KEY: any_role_arn(),
             },
             any_lambda_context(),
         )
 
-    validate_url_mock.assert_called_once_with(url)
+    # Then
+    validate_mock.assert_called_once_with(url)
 
 
 def should_treat_minimal_stac_object_as_valid() -> None:

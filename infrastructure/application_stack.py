@@ -1,6 +1,7 @@
 from os import environ
 
 import constructs
+from aws_cdk import aws_iam
 from aws_cdk.core import Environment, Stack
 
 from backend.environment import environment_name
@@ -9,7 +10,6 @@ from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
 from .constructs.processing import Processing
-from .constructs.staging import Staging
 from .constructs.storage import Storage
 
 
@@ -22,9 +22,20 @@ class Application(Stack):
         super().__init__(scope, stack_id, env=environment)
 
         env_name = environment_name()
-        storage = Storage(self, "storage", env_name=env_name)
 
-        Staging(self, "staging")
+        principal: aws_iam.PrincipalBase
+        if saml_provider_arn := environ.get("GEOSTORE_SAML_IDENTITY_PROVIDER_ARN"):
+            principal = aws_iam.FederatedPrincipal(
+                federated=saml_provider_arn,
+                assume_role_action="sts:AssumeRoleWithSAML",
+                conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
+            )
+        else:
+            principal = aws_iam.AccountPrincipal(
+                account_id=aws_iam.AccountRootPrincipal().account_id
+            )
+
+        storage = Storage(self, "storage", env_name=env_name)
 
         lambda_layers = LambdaLayers(self, "lambda-layers", env_name=env_name)
 
@@ -33,6 +44,7 @@ class Application(Stack):
             "processing",
             botocore_lambda_layer=lambda_layers.botocore,
             env_name=env_name,
+            principal=principal,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
         )
@@ -43,6 +55,7 @@ class Application(Stack):
             botocore_lambda_layer=lambda_layers.botocore,
             datasets_table=storage.datasets_table,
             env_name=env_name,
+            principal=principal,
             state_machine=processing.state_machine,
             state_machine_parameter=processing.state_machine_parameter,
             sqs_queue=processing.message_queue,

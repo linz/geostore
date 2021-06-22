@@ -1,7 +1,6 @@
 from json import dumps
-from typing import TYPE_CHECKING
 
-import boto3
+from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate
 
@@ -11,26 +10,13 @@ from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import get_bucket_and_key_from_url
-from ..step_function import DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..s3 import get_s3_client_for_role
+from ..step_function_keys import DATASET_ID_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
-if TYPE_CHECKING:
-    # When type checking we want to use the third party package's stub
-    from mypy_boto3_s3 import S3Client
-else:
-    # In production we want to avoid depending on a package which has no runtime impact
-    S3Client = object
-
 LOGGER = set_up_logging(__name__)
-S3_CLIENT: S3Client = boto3.client("s3")
-
-
-def s3_url_reader(url: str) -> StreamingBody:
-    bucket_name, key = get_bucket_and_key_from_url(url)
-    response = S3_CLIENT.get_object(Bucket=bucket_name, Key=key)
-    return response["Body"]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -47,14 +33,26 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     DATASET_ID_KEY: {"type": "string"},
                     VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
+                    S3_ROLE_ARN_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+                "required": [DATASET_ID_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY, VERSION_ID_KEY],
                 "additionalProperties": True,
             },
         )
     except ValidationError as error:
         LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
         return {ERROR_MESSAGE_KEY: error.message}
+
+    try:
+        s3_client = get_s3_client_for_role(event[S3_ROLE_ARN_KEY])
+    except ClientError as error:
+        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        return {ERROR_MESSAGE_KEY: str(error)}
+
+    def s3_url_reader(url: str) -> StreamingBody:
+        bucket_name, key = get_bucket_and_key_from_url(url)
+        response = s3_client.get_object(Bucket=bucket_name, Key=key)
+        return response["Body"]
 
     hash_key = (
         f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}"

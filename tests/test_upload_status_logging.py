@@ -3,7 +3,12 @@ from unittest.mock import MagicMock, patch
 
 from backend.api_keys import SUCCESS_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.step_function import DATASET_ID_KEY, IMPORT_DATASET_KEY, VALIDATION_KEY, VERSION_ID_KEY
+from backend.step_function_keys import (
+    DATASET_ID_KEY,
+    IMPORT_DATASET_KEY,
+    VALIDATION_KEY,
+    VERSION_ID_KEY,
+)
 from backend.upload_status.task import lambda_handler
 
 from .aws_utils import any_job_id, any_lambda_context

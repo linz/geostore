@@ -57,9 +57,8 @@ def any_https_url() -> str:
     return f"https://{host}/{path}"
 
 
-def any_file_contents() -> bytes:
-    """Arbitrary-length bytes"""
-    return urandom(20)
+def any_file_contents(byte_count: int = 10) -> bytes:
+    return urandom(byte_count)
 
 
 def any_error_message() -> str:

@@ -19,11 +19,12 @@ from ..processing_assets_model import ProcessingAssetType, processing_assets_mod
 from ..pystac_io_methods import get_bucket_and_key_from_url
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
-from ..step_function import (
+from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
     S3_BATCH_RESPONSE_KEY,
+    S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
 from ..sts import get_account_number
@@ -79,13 +80,19 @@ JOB_REPORT_SCOPE: JobReportScopeType = "AllTasks"
 
 class Importer:
     # pylint:disable=too-few-public-methods
-    def __init__(
-        self, dataset_id: str, dataset_prefix: str, version_id: str, source_bucket_name: str
+    def __init__(  # pylint:disable=too-many-arguments
+        self,
+        dataset_id: str,
+        dataset_prefix: str,
+        version_id: str,
+        source_bucket_name: str,
+        s3_role_arn: str,
     ):
         self.dataset_id = dataset_id
         self.version_id = version_id
         self.source_bucket_name = source_bucket_name
         self.dataset_prefix = dataset_prefix
+        self.s3_role_arn = s3_role_arn
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
@@ -102,6 +109,7 @@ class Importer:
                 range_key_condition=processing_assets_model.sk.startswith(
                     f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
                 ),
+                consistent_read=True,
             ):
                 LOGGER.debug(dumps({"Adding file to manifest": item.url}))
                 _, key = get_bucket_and_key_from_url(item.url)
@@ -109,6 +117,7 @@ class Importer:
                     TARGET_BUCKET_NAME_KEY: ResourceName.STORAGE_BUCKET_NAME.value,
                     ORIGINAL_KEY_KEY: key,
                     NEW_KEY_KEY: f"{self.dataset_prefix}/{self.version_id}/{basename(key)}",
+                    S3_ROLE_ARN_KEY: self.s3_role_arn,
                 }
                 row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
                 s3_manifest.write(f"{row}\n")
@@ -167,8 +176,15 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     DATASET_PREFIX_KEY: {"type": "string"},
                     VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
+                    S3_ROLE_ARN_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+                "required": [
+                    DATASET_ID_KEY,
+                    DATASET_PREFIX_KEY,
+                    METADATA_URL_KEY,
+                    S3_ROLE_ARN_KEY,
+                    VERSION_ID_KEY,
+                ],
             },
         )
     except ValidationError as error:
@@ -178,7 +194,11 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc
 
     importer = Importer(
-        event[DATASET_ID_KEY], event[DATASET_PREFIX_KEY], event[VERSION_ID_KEY], source_bucket_name
+        event[DATASET_ID_KEY],
+        event[DATASET_PREFIX_KEY],
+        event[VERSION_ID_KEY],
+        source_bucket_name,
+        event[S3_ROLE_ARN_KEY],
     )
     asset_job_id = importer.run(IMPORT_ASSET_FILE_TASK_ARN, ProcessingAssetType.DATA)
     metadata_job_id = importer.run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)

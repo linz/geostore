@@ -14,14 +14,15 @@ from backend.sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     STRING_VALUE_KEY,
 )
-from backend.step_function import (
+from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
 from backend.update_dataset_catalog.task import lambda_handler
-from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_s3_url
+from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_filename
 from tests.stac_generators import any_dataset_version_id
@@ -50,6 +51,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
                 DATASET_PREFIX_KEY: dataset.dataset_prefix,
                 VERSION_ID_KEY: dataset_version,
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
+                S3_ROLE_ARN_KEY: any_role_arn(),
             },
             any_lambda_context(),
         )

@@ -11,36 +11,61 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 
 ## Geostore account and resource names
 
-Following information must be provided by Geostore instance maintainer in order to start using it:
+You'll need the following information to start using Geostore:
 
 - Geostore AWS account ID (`GEOSTORE_AWS_ACCOUNT_ID`)
 - Geostore user role name (`GEOSTORE_USER_ROLE_NAME`)
 
+Replace the `GEOSTORE_…` strings in the following documentation with the actual values given by the
+Geostore instance maintainer.
+
 ## Dataset source S3 bucket
 
-To import data into Geostore, the dataset source S3 bucket must be readable by Geostore.
+Geostore needs to be able to read all the files which comprise the dataset in the source bucket.
+This is achieved using role assumption, where you pass a role ARN into the
+[dataset version endpoint](#Dataset-Version-creation-request).
 
-Example dataset source S3 bucket policy:
+You'll need to create a role which `GEOSTORE_AWS_ACCOUNT_ID` is allowed to assume and which has read
+access to the dataset files. You then pass the ARN of that role.
 
-```
+Technical note: Using role assumption means that it's easy for you to verify that the role you have
+created has access to the right things, without having to ask the Geostore team to verify it for
+you. Only the role assumption itself needs to be checked by the Geostore team.
+
+Template dataset source S3 bucket policy:
+
+```json
 {
-    "Version": "2012-10-17",
-    "Id": "geostore-policy",
-    "Statement": [
-        {
-            "Sid": "geostore-readonly",
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:root"
-            },
-            "Action": [
-                "s3:GetObject",
-                "s3:GetObjectAcl",
-                "s3:GetObjectTagging"
-            ],
-            "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Id": "<ID>",
+  "Statement": [
+    {
+      "Sid": "<STATEMENT_ID>",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<YOUR_ROLE_NAME>"
+      },
+      "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
+      "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
+    }
+  ]
+}
+```
+
+Template trust policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
 }
 ```
 
@@ -200,7 +225,14 @@ dataset being broken rather than slowly phased out, but can be followed if neces
 
 ```console
 $ aws lambda invoke --function-name dataset-versions \
-   --payload '{"http_method": "POST", "body": {"id": "cb8a197e649211eb955843c1de66417d", "metadata_url": "s3://example-s3-url"}}' \
+   --payload '{
+     "http_method": "POST",
+     "body": {
+       "id": "cb8a197e649211eb955843c1de66417d",
+       "metadata_url": "s3://example-s3-url",
+       "s3_role_arn": "arn:aws:iam::1234567890:role/example-role"
+     }
+   }' \
    /dev/stdout
 
 {"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}

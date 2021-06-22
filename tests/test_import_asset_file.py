@@ -1,6 +1,10 @@
+from io import BytesIO
 from json import dumps
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
+
+from mypy_boto3_s3 import S3Client
+from pytest import mark
 
 from backend.import_asset_file.task import lambda_handler
 from backend.import_dataset_file import (
@@ -17,23 +21,35 @@ from backend.import_dataset_file import (
     TASK_ID_KEY,
 )
 from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from backend.resources import ResourceName
+from backend.s3 import CHUNK_SIZE
+from backend.step_function_keys import S3_ROLE_ARN_KEY
 
 from .aws_utils import (
+    S3Object,
     any_invocation_id,
     any_invocation_schema_version,
     any_lambda_context,
+    any_role_arn,
     any_s3_bucket_arn,
     any_s3_bucket_name,
     any_task_id,
+    delete_s3_key,
+    get_s3_role_arn,
 )
-from .general_generators import any_error_message, any_safe_file_path
+from .general_generators import (
+    any_error_message,
+    any_file_contents,
+    any_safe_file_path,
+    any_safe_filename,
+)
 
 
-@patch("backend.import_asset_file.task.S3_CLIENT")
-def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicMock) -> None:
+@patch("backend.import_asset_file.task.smart_open.open")
+def should_treat_unhandled_exception_as_permanent_failure(open_mock: MagicMock) -> None:
     # Given
     error_message = any_error_message()
-    s3_client_mock.copy_object.side_effect = Exception(error_message)
+    open_mock.side_effect = Exception(error_message)
     task_id = any_task_id()
     event = {
         TASKS_KEY: [
@@ -42,9 +58,10 @@ def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicM
                 S3_KEY_KEY: quote(
                     dumps(
                         {
-                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
-                            ORIGINAL_KEY_KEY: any_safe_file_path(),
                             NEW_KEY_KEY: any_safe_file_path(),
+                            ORIGINAL_KEY_KEY: any_safe_file_path(),
+                            S3_ROLE_ARN_KEY: any_role_arn(),
+                            TARGET_BUCKET_NAME_KEY: any_s3_bucket_name(),
                         }
                     )
                 ),
@@ -55,7 +72,8 @@ def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicM
         INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
 
-    response = lambda_handler(event, any_lambda_context())
+    with patch("backend.import_dataset_file.get_s3_client_for_role"):
+        response = lambda_handler(event, any_lambda_context())
 
     assert response[RESULTS_KEY] == [
         {
@@ -64,3 +82,82 @@ def should_treat_unhandled_exception_as_permanent_failure(s3_client_mock: MagicM
             RESULT_STRING_KEY: f"{EXCEPTION_PREFIX}: {error_message}",
         }
     ]
+
+
+@mark.infrastructure
+def should_copy_empty_file(s3_client: S3Client) -> None:
+    # Given a single-chunk asset file
+    target_filename = any_safe_filename()
+    target_bucket = ResourceName.STORAGE_BUCKET_NAME.value
+
+    with S3Object(
+        file_object=BytesIO(),
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        key=any_safe_filename(),
+    ) as asset_file:
+        event = {
+            TASKS_KEY: [
+                {
+                    S3_BUCKET_ARN_KEY: f"arn:aws:s3:::{asset_file.bucket_name}",
+                    S3_KEY_KEY: quote(
+                        dumps(
+                            {
+                                NEW_KEY_KEY: target_filename,
+                                ORIGINAL_KEY_KEY: asset_file.key,
+                                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                                TARGET_BUCKET_NAME_KEY: target_bucket,
+                            }
+                        )
+                    ),
+                    TASK_ID_KEY: any_task_id(),
+                }
+            ],
+            INVOCATION_ID_KEY: any_invocation_id(),
+            INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
+        }
+        try:
+            # When
+            lambda_handler(event, any_lambda_context())
+        finally:
+            # Then
+            delete_s3_key(target_bucket, target_filename, s3_client)
+
+
+@mark.infrastructure
+def should_copy_multi_chunk_file(s3_client: S3Client) -> None:
+    # Given a multi-chunk asset file
+    asset_contents = any_file_contents(byte_count=CHUNK_SIZE + 1)
+    target_filename = any_safe_filename()
+    target_bucket = ResourceName.STORAGE_BUCKET_NAME.value
+
+    with S3Object(
+        file_object=BytesIO(initial_bytes=asset_contents),
+        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        key=any_safe_filename(),
+    ) as asset_file:
+        event = {
+            TASKS_KEY: [
+                {
+                    S3_BUCKET_ARN_KEY: f"arn:aws:s3:::{asset_file.bucket_name}",
+                    S3_KEY_KEY: quote(
+                        dumps(
+                            {
+                                NEW_KEY_KEY: target_filename,
+                                ORIGINAL_KEY_KEY: asset_file.key,
+                                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                                TARGET_BUCKET_NAME_KEY: target_bucket,
+                            }
+                        )
+                    ),
+                    TASK_ID_KEY: any_task_id(),
+                }
+            ],
+            INVOCATION_ID_KEY: any_invocation_id(),
+            INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
+        }
+        try:
+            # When
+            lambda_handler(event, any_lambda_context())
+        finally:
+            # Then
+            delete_s3_key(target_bucket, target_filename, s3_client)

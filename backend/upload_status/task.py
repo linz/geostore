@@ -5,7 +5,8 @@ from jsonschema import validate
 from ..api_keys import SUCCESS_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
-from ..step_function import (
+from ..step_function import get_tasks_status
+from ..step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,
@@ -13,7 +14,6 @@ from ..step_function import (
     METADATA_UPLOAD_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
-    get_tasks_status,
 )
 from ..types import JsonObject
 

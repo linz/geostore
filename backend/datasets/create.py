@@ -19,7 +19,7 @@ from ..sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
 )
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
-from ..step_function import DESCRIPTION_KEY, TITLE_KEY
+from ..step_function_keys import DESCRIPTION_KEY, TITLE_KEY
 from ..types import JsonObject
 
 if TYPE_CHECKING:

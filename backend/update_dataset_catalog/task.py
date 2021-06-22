@@ -15,7 +15,12 @@ from ..sqs_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
 )
-from ..step_function import DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY
+from ..step_function_keys import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    METADATA_URL_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 
 if TYPE_CHECKING:
