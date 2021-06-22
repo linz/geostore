@@ -387,9 +387,7 @@ class Processing(Construct):
         staging_users_role = aws_iam.Role(
             self,
             "staging-users-role",
-            assumed_by=aws_iam.CompositePrincipal(  # type: ignore[arg-type]
-                principal, aws_iam.ServicePrincipal("batchoperations.s3.amazonaws.com")
-            ),
+            assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
             role_name=ResourceName.STAGING_USERS_ROLE_NAME.value,
         )
