@@ -2,6 +2,7 @@
 
 [![Deploy](https://github.com/linz/geostore/actions/workflows/deploy.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/deploy.yml)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/linz/geostore.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/linz/geostore/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/linz/geostore.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/linz/geostore/context:python)
 [![CodeQL Analysis](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/linz/geostore/actions/workflows/codeql-analysis.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage: 100% branches](https://img.shields.io/badge/Coverage-100%25%20branches-brightgreen.svg)](https://pytest.org/)
