@@ -39,7 +39,8 @@ This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific par
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
-- `enableLDSAccess`: if true, gives the LINZ Data Service/Koordinates access to the storage bucket.
+- `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage bucket.
+- `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
 
 # Development setup
 
