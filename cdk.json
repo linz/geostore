@@ -5,6 +5,7 @@
     "@aws-cdk/core:newStyleStackSynthesis": true,
     "@aws-cdk/core:stackRelativeExports": true,
     "@aws-cdk:enableDiffNoFail": true,
-    "enableLDSAccess": true
+    "enableLDSAccess": true,
+    "enableOpenTopographyAccess": true
   }
 }

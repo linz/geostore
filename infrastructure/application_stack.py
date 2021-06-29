@@ -9,6 +9,7 @@ from backend.environment import environment_name
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
+from .constructs.opentopo import OpenTopography
 from .constructs.processing import Processing
 from .constructs.storage import Storage
 
@@ -66,3 +67,8 @@ class Application(Stack):
 
         if self.node.try_get_context("enableLDSAccess"):
             LDS(self, "lds", env_name=env_name, storage_bucket=storage.storage_bucket)
+
+        if self.node.try_get_context("enableOpenTopographyAccess"):
+            OpenTopography(
+                self, "opentopography", env_name=env_name, storage_bucket=storage.storage_bucket
+            )
