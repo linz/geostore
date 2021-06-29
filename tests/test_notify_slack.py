@@ -23,12 +23,12 @@ from backend.notify_slack.task import (
     STEP_FUNCTION_UPLOAD_STATUS_KEY,
     WEBHOOK_MESSAGE_BLOCKS_KEY,
     lambda_handler,
-    post_to_slack,
     publish_sns_message,
 )
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
     STATUS_KEY,
@@ -38,7 +38,7 @@ from backend.step_function_keys import (
 
 from .aws_utils import any_arn_formatted_string, any_lambda_context
 from .general_generators import any_https_url
-from .stac_generators import any_dataset_id, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
 
 
 @patch("backend.notify_slack.task.WebhookClient.send")
@@ -58,6 +58,7 @@ def should_notify_slack_with_finished_details_when_url_set(webhook_client_mock: 
                 STEP_FUNCTION_INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
+                        DATASET_PREFIX_KEY: any_dataset_prefix(),
                         VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
@@ -77,15 +78,15 @@ def should_notify_slack_with_finished_details_when_url_set(webhook_client_mock: 
             }
         }
 
-        post_to_slack(notify_slack_input)
+        lambda_handler(notify_slack_input, any_lambda_context())
 
         # Then
         webhook_client_mock.assert_called_once()
-        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 9
+        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 11
 
 
 @patch("backend.notify_slack.task.WebhookClient.send")
-def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
+def should_not_notify_slack_when_step_function_running(webhook_client_mock: MagicMock) -> None:
     # Given
 
     webhook_client_mock.return_value.status_code = HTTPStatus.OK
@@ -101,6 +102,7 @@ def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
                 STEP_FUNCTION_INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
+                        DATASET_PREFIX_KEY: any_dataset_prefix(),
                         VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
@@ -110,11 +112,10 @@ def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
             }
         }
 
-        post_to_slack(notify_slack_input)
+        lambda_handler(notify_slack_input, any_lambda_context())
 
         # Then
-        webhook_client_mock.assert_called_once()
-        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 6
+        webhook_client_mock.assert_not_called()
 
 
 @patch("backend.notify_slack.task.WebhookClient.send")
@@ -143,13 +144,13 @@ def should_log_and_not_post_to_slack_when_url_not_set(
 def should_publish_sns_message(get_param_mock: MagicMock) -> None:
     # Given
     get_param_mock.return_value = topic_arn = any_arn_formatted_string()
-    dataset_id = any_dataset_id()
+    dataset_prefix = any_dataset_prefix()
     publish_sns_message_input = {
         EVENT_DETAIL_KEY: {
             STATUS_KEY: JOB_STATUS_SUCCEEDED,
             STEP_FUNCTION_INPUT_KEY: dumps(
                 {
-                    DATASET_ID_KEY: dataset_id,
+                    DATASET_PREFIX_KEY: dataset_prefix,
                 }
             ),
         }
@@ -160,7 +161,7 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
         "Message": dumps(publish_sns_message_input),
         "MessageAttributes": {
             MESSAGE_ATTRIBUTE_DATASET_KEY: MessageAttributeValueTypeDef(
-                DataType=DATA_TYPE_STRING, StringValue=dataset_id
+                DataType=DATA_TYPE_STRING, StringValue=dataset_prefix
             ),
             MESSAGE_ATTRIBUTE_STATUS_KEY: MessageAttributeValueTypeDef(
                 DataType=DATA_TYPE_STRING, StringValue=JOB_STATUS_SUCCEEDED
