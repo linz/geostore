@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime
 from http import HTTPStatus
 from json import dumps, loads
 from os import environ
@@ -32,7 +32,6 @@ else:
     MessageAttributeValueTypeDef = dict
 
 
-SLACK_CHANNEL_ENV_NAME = "GEOSTORE_SLACK_NOTIFY_CHANNEL"
 SLACK_URL_ENV_NAME = "GEOSTORE_SLACK_NOTIFY_URL"
 
 EVENT_DETAIL_KEY = "detail"
@@ -84,37 +83,36 @@ def publish_sns_message(event: JsonObject) -> None:
 def post_to_slack(event: JsonObject) -> None:
     event_details = event[EVENT_DETAIL_KEY]
     step_function_input = loads(event_details[STEP_FUNCTION_INPUT_KEY])
-    validation_details = loads(event_details[STEP_FUNCTION_OUTPUT_KEY])[
-        STEP_FUNCTION_UPLOAD_STATUS_KEY
-    ]
 
     slack_message_blocks = [
         blocks.HeaderBlock(text="Geostore Dataset Version Import"),
         blocks.DividerBlock(),
-        blocks.SectionBlock(text=f"*Status:*{event_details[STATUS_KEY]}"),
+        blocks.SectionBlock(text=f"*Status:* {event_details[STATUS_KEY]}"),
         blocks.DividerBlock(),
         blocks.SectionBlock(
             text=f"Dataset ID: {step_function_input[DATASET_ID_KEY]}\n"
             f"Dataset Version ID: {step_function_input[VERSION_ID_KEY]}\n"
-            f"Execution ARN: {event_details[STEP_FUNCTION_ARN_KEY]}"
+            f"Execution ARN: `{event_details[STEP_FUNCTION_ARN_KEY]}`"
         ),
         blocks.DividerBlock(),
     ]
 
     if event_details[STEP_FUNCTION_STOPDATE_KEY]:
+        validation_details = loads(event_details[STEP_FUNCTION_OUTPUT_KEY])[
+            STEP_FUNCTION_UPLOAD_STATUS_KEY
+        ]
         running_time = str(
-            timedelta(
-                event_details[STEP_FUNCTION_STOPDATE_KEY]
-                - event_details[STEP_FUNCTION_STARTDATE_KEY]
-            )
+            datetime.utcfromtimestamp(event_details[STEP_FUNCTION_STOPDATE_KEY])
+            - datetime.utcfromtimestamp(event_details[STEP_FUNCTION_STARTDATE_KEY])
         )
+
         slack_message_blocks.append(blocks.SectionBlock(text=f"*Running Time:* {running_time}"))
         slack_message_blocks.append(blocks.DividerBlock())
         slack_message_blocks.append(
             blocks.SectionBlock(
-                text=f"Validation: {dumps(validation_details[VALIDATION_KEY])}\n"
-                f"Asset Upload: {dumps(validation_details[ASSET_UPLOAD_KEY])}\n"
-                f"Metadata Upload: {dumps(validation_details[METADATA_UPLOAD_KEY])}"
+                text=f"Validation: `{dumps(validation_details[VALIDATION_KEY])}`\n"
+                f"Asset Upload: `{dumps(validation_details[ASSET_UPLOAD_KEY])}`\n"
+                f"Metadata Upload: `{dumps(validation_details[METADATA_UPLOAD_KEY])}`"
             )
         )
 

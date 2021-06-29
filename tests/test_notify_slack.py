@@ -21,6 +21,7 @@ from backend.notify_slack.task import (
     STEP_FUNCTION_STARTDATE_KEY,
     STEP_FUNCTION_STOPDATE_KEY,
     STEP_FUNCTION_UPLOAD_STATUS_KEY,
+    WEBHOOK_MESSAGE_BLOCKS_KEY,
     lambda_handler,
     post_to_slack,
     publish_sns_message,
@@ -41,7 +42,7 @@ from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 @patch("backend.notify_slack.task.WebhookClient.send")
-def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
+def should_notify_slack_with_finished_details_when_url_set(webhook_client_mock: MagicMock) -> None:
     # Given
 
     webhook_client_mock.return_value.status_code = HTTPStatus.OK
@@ -78,6 +79,40 @@ def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
 
         # Then
         webhook_client_mock.assert_called_once()
+        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 9
+
+
+@patch("backend.notify_slack.task.WebhookClient.send")
+def should_notify_slack_when_url_set(webhook_client_mock: MagicMock) -> None:
+    # Given
+
+    webhook_client_mock.return_value.status_code = HTTPStatus.OK
+    mock_slack_url = any_https_url()
+
+    with patch.dict(environ, {SLACK_URL_ENV_NAME: mock_slack_url}):
+        now_ts = datetime.now()
+        # When
+        notify_slack_input = {
+            EVENT_DETAIL_KEY: {
+                STATUS_KEY: JOB_STATUS_SUCCEEDED,
+                STEP_FUNCTION_ARN_KEY: any_arn_formatted_string(),
+                STEP_FUNCTION_INPUT_KEY: dumps(
+                    {
+                        DATASET_ID_KEY: any_dataset_id(),
+                        VERSION_ID_KEY: any_dataset_version_id(),
+                    }
+                ),
+                STEP_FUNCTION_OUTPUT_KEY: None,
+                STEP_FUNCTION_STARTDATE_KEY: (now_ts - timedelta(seconds=10)).timestamp(),
+                STEP_FUNCTION_STOPDATE_KEY: None,
+            }
+        }
+
+        post_to_slack(notify_slack_input)
+
+        # Then
+        webhook_client_mock.assert_called_once()
+        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 6
 
 
 @patch("backend.notify_slack.task.WebhookClient.send")

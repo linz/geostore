@@ -9,6 +9,7 @@ from backend.step_function import Outcome
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    ERRORS_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     STATUS_KEY,
@@ -55,9 +56,9 @@ def should_report_upload_statuses(
     describe_job_mock.side_effect = describe_job
 
     expected_response = {
-        VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, "errors": []},
-        ASSET_UPLOAD_KEY: {STATUS_KEY: asset_job_status, "errors": []},
-        METADATA_UPLOAD_KEY: {STATUS_KEY: metadata_job_status, "errors": []},
+        VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
+        ASSET_UPLOAD_KEY: {STATUS_KEY: asset_job_status, ERRORS_KEY: []},
+        METADATA_UPLOAD_KEY: {STATUS_KEY: metadata_job_status, ERRORS_KEY: []},
     }
 
     # When
