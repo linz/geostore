@@ -15,17 +15,19 @@ from ..aws_message_attributes import (
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
+from ..resources import ResourceName
+from ..s3 import S3_URL_PREFIX
 from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_S3_LOCATION,
     VERSION_ID_KEY,
 )
 from ..types import JsonObject
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
-    from mypy_boto3_s3 import S3Client
     from mypy_boto3_sqs import SQSServiceResource
     from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
 else:
@@ -77,4 +79,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         },
     )
 
-    return {}
+    return {
+        NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
+        f"{ResourceName.STORAGE_BUCKET_NAME.value}/"
+        f"{new_version_metadata_key}"
+    }

@@ -12,7 +12,7 @@ from aws_cdk import (
 from aws_cdk.core import Construct
 
 from backend.environment import ENV_NAME_VARIABLE_NAME
-from backend.notify_slack.task import SLACK_URL_ENV_NAME
+from backend.notify_status_update.task import SLACK_URL_ENV_NAME
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
 
@@ -35,7 +35,7 @@ class Notify(Construct):
         slack_notify_function = BundledLambdaFunction(
             scope,
             f"{env_name}-notify-slack-function",
-            directory="notify_slack",
+            directory="notify_status_update",
             extra_environment={
                 ENV_NAME_VARIABLE_NAME: env_name,
             },

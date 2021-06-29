@@ -2,9 +2,7 @@ from datetime import datetime
 from http import HTTPStatus
 from json import dumps, loads
 from os import environ
-from os.path import basename
 from typing import TYPE_CHECKING
-from urllib.parse import urlparse
 
 import boto3
 from slack_sdk.models.blocks import blocks
@@ -14,13 +12,11 @@ from ..api_keys import EVENT_KEY
 from ..aws_message_attributes import DATA_TYPE_STRING
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
-from ..resources import ResourceName
-from ..s3 import S3_URL_PREFIX
 from ..step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_PREFIX_KEY,
     METADATA_UPLOAD_KEY,
-    METADATA_URL_KEY,
+    NEW_VERSION_S3_LOCATION,
     STATUS_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
@@ -91,16 +87,12 @@ def post_to_slack(event: JsonObject) -> None:
     step_function_input = loads(event_details[STEP_FUNCTION_INPUT_KEY])
     step_function_output = loads(event_details[STEP_FUNCTION_OUTPUT_KEY])
     validation_details = step_function_output[STEP_FUNCTION_UPLOAD_STATUS_KEY]
-    running_time = str(
-        datetime.fromtimestamp(event_details[STEP_FUNCTION_STOPDATE_KEY] / 1000.0)
-        - datetime.fromtimestamp(event_details[STEP_FUNCTION_STARTDATE_KEY] / 1000.0)
-    )
+    s3_location = step_function_output[STEP_FUNCTION_UPDATE_DATASET_KEY][NEW_VERSION_S3_LOCATION]
 
-    new_version_metadata_key = (
-        f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
-        f"{step_function_input[DATASET_PREFIX_KEY]}/{step_function_input[VERSION_ID_KEY]}/"
-        f"{basename(urlparse(step_function_input[METADATA_URL_KEY]).path[1:])}"
-    )
+    running_time = str(
+        datetime.fromtimestamp(event_details[STEP_FUNCTION_STOPDATE_KEY] / 1000)
+        - datetime.fromtimestamp(event_details[STEP_FUNCTION_STARTDATE_KEY] / 1000)
+    ).split(".", maxsplit=1)[0]
 
     slack_message_blocks = [
         blocks.HeaderBlock(text="Geostore Dataset Version Import"),
@@ -121,7 +113,7 @@ def post_to_slack(event: JsonObject) -> None:
             f"*Metadata Upload:* `{dumps(validation_details[METADATA_UPLOAD_KEY])}`"
         ),
         blocks.DividerBlock(),
-        blocks.SectionBlock(text=f"*S3 Location:* {new_version_metadata_key}"),
+        blocks.SectionBlock(text=f"*S3 Location:* `{s3_location}`"),
     ]
 
     response = WebhookClient(environ[SLACK_URL_ENV_NAME]).send(blocks=slack_message_blocks)
