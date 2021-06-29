@@ -121,7 +121,7 @@ def post_to_slack(event: JsonObject) -> None:
             f"*Metadata Upload:* `{dumps(validation_details[METADATA_UPLOAD_KEY])}`"
         ),
         blocks.DividerBlock(),
-        blocks.SectionBlock(text=f"*S3 Location:* `{new_version_metadata_key}`"),
+        blocks.SectionBlock(text=f"*S3 Location:* {new_version_metadata_key}"),
     ]
 
     response = WebhookClient(environ[SLACK_URL_ENV_NAME]).send(blocks=slack_message_blocks)
