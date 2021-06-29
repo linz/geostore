@@ -70,8 +70,10 @@ def should_notify_slack_with_finished_details_when_url_set(webhook_client_mock: 
                         }
                     }
                 ),
-                STEP_FUNCTION_STARTDATE_KEY: (now_ts - timedelta(seconds=10)).timestamp(),
-                STEP_FUNCTION_STOPDATE_KEY: now_ts.timestamp(),
+                STEP_FUNCTION_STARTDATE_KEY: round(
+                    (now_ts - timedelta(seconds=10)).timestamp() * 1000
+                ),
+                STEP_FUNCTION_STOPDATE_KEY: round(now_ts.timestamp() * 1000),
             }
         }
 

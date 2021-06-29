@@ -102,8 +102,8 @@ def post_to_slack(event: JsonObject) -> None:
             STEP_FUNCTION_UPLOAD_STATUS_KEY
         ]
         running_time = str(
-            datetime.utcfromtimestamp(event_details[STEP_FUNCTION_STOPDATE_KEY])
-            - datetime.utcfromtimestamp(event_details[STEP_FUNCTION_STARTDATE_KEY])
+            datetime.fromtimestamp(event_details[STEP_FUNCTION_STOPDATE_KEY] / 1000.0)
+            - datetime.fromtimestamp(event_details[STEP_FUNCTION_STARTDATE_KEY] / 1000.0)
         )
 
         slack_message_blocks.append(blocks.SectionBlock(text=f"*Running Time:* {running_time}"))
