@@ -43,7 +43,6 @@ from .lambda_config import LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
-from .staging import Staging
 from .sts_policy import ALLOW_ASSUME_ANY_ROLE
 from .table import Table
 
@@ -384,14 +383,13 @@ class Processing(Construct):
         ############################################################################################
         # STAGING BUCKET ACCESS
 
-        staging_users_role = aws_iam.Role(
+        self.staging_users_role = aws_iam.Role(
             self,
             "staging-users-role",
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
             role_name=ResourceName.STAGING_USERS_ROLE_NAME.value,
         )
-        Staging(self, "staging", users_role=staging_users_role)
 
         ############################################################################################
         # GENERIC_TASKS

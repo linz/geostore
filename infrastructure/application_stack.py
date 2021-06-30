@@ -11,6 +11,7 @@ from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
 from .constructs.opentopo import OpenTopography
 from .constructs.processing import Processing
+from .constructs.staging import Staging
 from .constructs.storage import Storage
 
 
@@ -49,6 +50,7 @@ class Application(Stack):
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
         )
+        Staging(self, "staging", users_role=processing.staging_users_role)
 
         API(
             self,
