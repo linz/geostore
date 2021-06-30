@@ -72,7 +72,6 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
             assert response == {
                 NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
                 f"{ResourceName.STORAGE_BUCKET_NAME.value}/"
-                f"{dataset.dataset_prefix}{dataset_version}"
                 f"{dataset_version_metadata.key}"
             }
 
