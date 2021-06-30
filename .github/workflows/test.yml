@@ -131,8 +131,15 @@ jobs:
 
       - name: Run infrastructure tests online
         run: >
-          poetry run coverage run --append --module pytest -m infrastructure
+          poetry run coverage run --append --module pytest --junitxml=junit.xml
           "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
+
+      - name: Archive JUnit test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-report
+          path: junit.xml
+        if: ${{ failure() }}
 
       - name: Verify test coverage
         run: |
