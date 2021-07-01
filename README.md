@@ -126,7 +126,8 @@ One-time setup, assuming you are in the project directory:
    1. Restart your shell: `exec "$SHELL"`.
    1. Verify setup: `nvm --version`.
 
-1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support): `nvm install --lts`
+1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support):
+   `nvm install "$(cat .node-version)"`
 1. Run `./reset-dev-env.bash --all` to install packages.
 1. Restart your shell again: `exec "$SHELL"`.
 1. Verify setup:
