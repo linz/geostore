@@ -81,7 +81,7 @@ class Notify(Construct):
             scope,
             "geostore-cloudwatch-stepfunctions-rule",
             enabled=True,
-            rule_name="geostore-cloudwatch-rule",
+            rule_name=ResourceName.CLOUDWATCH_RULE_NAME.value,
             description="Cloudwatch rule to detect import status updates",
             event_pattern=aws_events.EventPattern(
                 source=["aws.states"],
