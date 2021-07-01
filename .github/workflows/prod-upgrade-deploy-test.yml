@@ -119,7 +119,6 @@ jobs:
       - name: Get HEAD configuration
         run: |
           echo "HEAD_NODE_VERSION=$(cat .node-version)" | tee -a $GITHUB_ENV
-          echo "HEAD_PYTHON_EXTRAS=$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" | tee -a $GITHUB_ENV
           echo "HEAD_PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       # dependencies installation
