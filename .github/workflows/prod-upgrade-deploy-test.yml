@@ -18,8 +18,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
         with:
-          submodules: 'true'
-          fetch-depth: 0
+          submodules: true
 
       # prod version detection
       - name: Configure production AWS credentials
@@ -36,7 +35,11 @@ jobs:
           echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
       - name: Checkout to current production version
-        run: git checkout ${{ env.PROD_VERSION }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.PROD_VERSION }}
+          clean: false
+          submodules: true
 
       # dependencies installation
       - name: Use Node for CDK deployment
@@ -104,9 +107,12 @@ jobs:
         run: |
           poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
-      # checkout the branch
       - name: Checkout to current pull request version
-        run: git checkout ${{ env.GITHUB_SHA }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.GITHUB_SHA }}
+          clean: false
+          submodules: true
 
       # dependencies installation
       - name: Install Node.js dependencies
