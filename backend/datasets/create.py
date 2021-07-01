@@ -8,16 +8,16 @@ from jsonschema import ValidationError, validate
 from pystac import STAC_IO, Catalog, CatalogType
 
 from ..api_responses import error_response, success_response
+from ..aws_message_attributes import (
+    DATA_TYPE_STRING,
+    MESSAGE_ATTRIBUTE_TYPE_KEY,
+    MESSAGE_ATTRIBUTE_TYPE_ROOT,
+)
 from ..datasets_model import datasets_model_with_meta
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import write_method
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
-from ..sqs_message_attributes import (
-    DATA_TYPE_STRING,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-    MESSAGE_ATTRIBUTE_TYPE_ROOT,
-)
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..step_function_keys import DESCRIPTION_KEY, TITLE_KEY
 from ..types import JsonObject

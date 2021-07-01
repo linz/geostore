@@ -9,6 +9,7 @@ from backend.environment import environment_name
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
+from .constructs.notify import Notify
 from .constructs.opentopo import OpenTopography
 from .constructs.processing import Processing
 from .constructs.staging import Staging
@@ -65,6 +66,14 @@ class Application(Stack):
             sqs_queue_parameter=processing.message_queue_name_parameter,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
+        )
+
+        Notify(
+            self,
+            "notify",
+            botocore_lambda_layer=lambda_layers.botocore,
+            env_name=env_name,
+            state_machine=processing.state_machine,
         )
 
         if self.node.try_get_context("enableLDSAccess"):

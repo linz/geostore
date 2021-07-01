@@ -5,19 +5,21 @@ from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.resources import ResourceName
-from backend.sqs_message_attributes import (
+from backend.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     STRING_VALUE_KEY,
 )
+from backend.error_response_keys import ERROR_MESSAGE_KEY
+from backend.resources import ResourceName
+from backend.s3 import S3_URL_PREFIX
 from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_S3_LOCATION,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
@@ -67,7 +69,11 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
         }
 
         with subtests.test(msg="success"):
-            assert response == {}
+            assert response == {
+                NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
+                f"{ResourceName.STORAGE_BUCKET_NAME.value}/"
+                f"{dataset_version_metadata.key}"
+            }
 
         with subtests.test(msg="sqs called"):
             assert sqs_mock.get_queue_by_name.return_value.send_message.called

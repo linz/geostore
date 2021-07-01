@@ -22,3 +22,4 @@ class ResourceName(Enum):
     STAGING_USERS_ROLE_NAME = prefix_non_prod_name("staging-users")
     STAGING_BUCKET_NAME = prefix_non_prod_name("linz-geostore-staging")
     STORAGE_BUCKET_NAME = prefix_non_prod_name("linz-geostore")
+    SNS_TOPIC_NAME = prefix_non_prod_name("geostore-import-status")

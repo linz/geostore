@@ -63,6 +63,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     )
     return {
         key: raw_import_status[key]
-        for key in [ASSET_UPLOAD_KEY, METADATA_UPLOAD_KEY]
+        for key in [VALIDATION_KEY, ASSET_UPLOAD_KEY, METADATA_UPLOAD_KEY]
         if key in raw_import_status
     }

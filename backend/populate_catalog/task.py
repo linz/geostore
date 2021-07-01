@@ -7,16 +7,16 @@ from pystac.layout import HrefLayoutStrategy
 
 from ..api_keys import EVENT_KEY
 from ..api_responses import BODY_KEY
-from ..log import set_up_logging
-from ..pystac_io_methods import read_method, write_method
-from ..resources import ResourceName
-from ..s3 import S3_URL_PREFIX
-from ..sqs_message_attributes import (
+from ..aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
     STRING_VALUE_KEY_LOWER,
 )
+from ..log import set_up_logging
+from ..pystac_io_methods import read_method, write_method
+from ..resources import ResourceName
+from ..s3 import S3_URL_PREFIX
 from ..types import JsonObject
 
 if TYPE_CHECKING:

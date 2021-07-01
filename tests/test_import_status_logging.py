@@ -21,7 +21,7 @@ class TestLogging:
     def setup_class(cls) -> None:
         cls.logger = getLogger("backend.import_status.get")
 
-    @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
+    @patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
         event = {
@@ -69,26 +69,27 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.import_status.get.STEP_FUNCTIONS_CLIENT.describe_execution")
-    def should_log_stepfunctions_status_response(
-        self,
-        describe_execution_mock: MagicMock,
-    ) -> None:
-        # Given
-        describe_execution_mock.return_value = describe_execution_response = {
-            "status": "Some Response",
-            "input": dumps(
-                {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
-            ),
-        }
-        expected_response_log = dumps({"step function response": describe_execution_response})
 
-        with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.step_function.get_account_number"
-        ), patch("backend.step_function.get_step_function_validation_results") as validation_mock:
-            validation_mock.return_value = []
-            # When
-            get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
+@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+def should_log_stepfunctions_status_response(
+    describe_execution_mock: MagicMock,
+) -> None:
+    # Given
+    describe_execution_mock.return_value = describe_execution_response = {
+        "status": "Some Response",
+        "input": dumps(
+            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+        ),
+    }
+    expected_response_log = dumps({"step function response": describe_execution_response})
 
-            # Then
-            logger_mock.assert_any_call(expected_response_log)
+    logger = getLogger("backend.step_function")
+    with patch.object(logger, "debug") as logger_mock, patch(
+        "backend.step_function.get_account_number"
+    ), patch("backend.step_function.get_step_function_validation_results") as validation_mock:
+        validation_mock.return_value = []
+        # When
+        get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
+
+        # Then
+        logger_mock.assert_any_call(expected_response_log)

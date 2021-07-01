@@ -50,11 +50,14 @@ python = "^3.8,<3.9"
 "aws-cdk.aws-ecr" = {version = "*", optional = true}
 "aws-cdk.aws-ecr_assets" = {version = "*", optional = true}
 "aws-cdk.aws-ecs" = {version = "*", optional = true}
+"aws-cdk.aws-events" = {version = "*", optional = true}
+"aws-cdk.aws-events-targets" = {version = "*", optional = true}
 "aws-cdk.aws-iam" = {version = "*", optional = true}
 "aws-cdk.aws-lambda" = {version = "*", optional = true}
 "aws-cdk.aws-lambda-event-sources" = {version = "*", optional = true}
 "aws-cdk.aws-lambda-python" = {version = "*", optional = true}
 "aws-cdk.aws-s3" = {version = "*", optional = true}
+"aws-cdk.aws-sns" = {version = "*", optional = true}
 "aws-cdk.aws-stepfunctions" = {version = "*", optional = true}
 "aws-cdk.aws-stepfunctions_tasks" = {version = "*", optional = true}
 awscli = {version = "*", optional = true}
@@ -64,13 +67,14 @@ jsonschema = {version = "*", extras = ["format"], optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
 pystac = {version = "*", optional = true}
+slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 ulid-py = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
-boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "sqs", "ssm", "stepfunctions", "sts"]}
+boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
 gitlint = "*"
 ipdb = "*"
 isort = "*"
@@ -101,11 +105,14 @@ cdk = [
     "aws-cdk.aws-ecr",
     "aws-cdk.aws-ecr_assets",
     "aws-cdk.aws-ecs",
+    "aws-cdk.aws-events",
+    "aws-cdk.aws-events-targets",
     "aws-cdk.aws-iam",
     "aws-cdk.aws-lambda",
     "aws-cdk.aws-lambda-event-sources",
     "aws-cdk.aws-lambda-python",
     "aws-cdk.aws-s3",
+    "aws-cdk.aws-sns",
     "aws-cdk.aws-stepfunctions",
     "aws-cdk.aws-stepfunctions_tasks",
     "awscli",
@@ -156,6 +163,10 @@ import_status = [
     "boto3",
     "jsonschema",
     "pynamodb",
+]
+notify_status_update = [
+    "boto3",
+    "slack-sdk"
 ]
 populate_catalog = [
     "boto3",
