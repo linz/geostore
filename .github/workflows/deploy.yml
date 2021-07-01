@@ -10,15 +10,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        python: ['3.8']
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
         with:
           submodules: 'true'
+
+      - name: Get configuration
+        run: |
+          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node for CDK deployment
         uses: actions/setup-node@v2.1.5
@@ -41,20 +41,20 @@ jobs:
       - name: Add local Node packages to PATH
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
-      - name: Use Python ${{ matrix.python }}
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
         uses: actions/cache@v2.1.6
         with:
           path: ~/.cache/pip
           key:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-${{
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{
             hashFiles('./poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ matrix.python }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
 
       - name: Install Python dependencies
         run: |

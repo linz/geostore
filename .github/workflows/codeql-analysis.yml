@@ -14,10 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Get configuration
+        run: |
+          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
+
       - name: Set up Python
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: '3.8'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: |
