@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "NODE_VERSION=$(cat .node-version)" | tee -a $GITHUB_ENV
 
-      - name: Use Node for CDK deployment
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v2.1.5
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "NODE_VERSION=$(cat .node-version)" | tee -a $GITHUB_ENV
 
-      - name: Use Node for CDK deployment
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v2.1.5
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -118,7 +118,7 @@ jobs:
         run: |
           echo "NODE_VERSION=$(cat .node-version)" | tee -a $GITHUB_ENV
 
-      - name: Use Node for CDK deployment
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v2.1.5
         with:
           node-version: ${{ env.NODE_VERSION }}
