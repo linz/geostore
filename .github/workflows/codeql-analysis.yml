@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
-      - name: Set up Python
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
