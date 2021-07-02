@@ -15,6 +15,7 @@ def prefix_non_prod_name(name: str) -> str:
 
 class ResourceName(Enum):
     API_USERS_ROLE_NAME = prefix_non_prod_name("api-users")
+    CLOUDWATCH_RULE_NAME = prefix_non_prod_name("geostore-cloudwatch-rule")
     DATASETS_ENDPOINT_FUNCTION_NAME = prefix_non_prod_name("datasets")
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = prefix_non_prod_name("dataset-versions")
     IMPORT_STATUS_ENDPOINT_FUNCTION_NAME = prefix_non_prod_name("import-status")
