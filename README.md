@@ -227,7 +227,6 @@ To add a production package:
 1. Install the package using `poetry add --optional PACKAGE='*'`.
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
-   - When adding a new "extra", make sure to install it in `reset-dev-env.bash`.
 
 - Make sure to update packages separately from adding packages. Basically, follow this process
   before running `poetry add`, and do the equivalent when updating Node.js packages or changing
