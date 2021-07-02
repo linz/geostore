@@ -21,16 +21,30 @@ Geostore instance maintainer.
 
 ## Dataset source S3 bucket
 
-Geostore needs to be able to read all the files which comprise the dataset in the source bucket.
-This is achieved using role assumption, where you pass a role ARN into the
+Geostore needs to be able to read all the files in the dataset in the source bucket. This is
+achieved using role assumption: you need to create a role which `GEOSTORE_AWS_ACCOUNT_ID` is allowed
+to assume (see the policy below) and which has read access to the dataset files in your bucket. You
+then pass the ARN of that role into the
 [dataset version endpoint](#Dataset-Version-creation-request).
-
-You'll need to create a role which `GEOSTORE_AWS_ACCOUNT_ID` is allowed to assume and which has read
-access to the dataset files. You then pass the ARN of that role.
 
 Technical note: Using role assumption means that it's easy for you to verify that the role you have
 created has access to the right things, without having to ask the Geostore team to verify it for
 you. Only the role assumption itself needs to be checked by the Geostore team.
+
+Template trust policy on your role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>",
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
 
 Template dataset source S3 bucket policy:
 
@@ -47,23 +61,6 @@ Template dataset source S3 bucket policy:
       },
       "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
       "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
-    }
-  ]
-}
-```
-
-Template trust policy:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
-      },
-      "Action": "sts:AssumeRole"
     }
   ]
 }
