@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
 
+from backend.api_keys import EVENT_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.error_response_keys import ERROR_KEY
 from backend.import_status.get import get_import_status
@@ -29,7 +30,7 @@ class TestLogging:
             BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
         }
 
-        expected_payload_log = dumps({"event": event})
+        expected_payload_log = dumps({EVENT_KEY: event})
 
         describe_step_function_mock.return_value = {
             "status": "RUNNING",
