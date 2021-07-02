@@ -40,9 +40,7 @@ Template trust policy:
   "Statement": [
     {
       "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
-      },
+      "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>",
       "Action": "sts:AssumeRole"
     }
   ]
