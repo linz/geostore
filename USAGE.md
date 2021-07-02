@@ -32,6 +32,23 @@ Technical note: Using role assumption means that it's easy for you to verify tha
 created has access to the right things, without having to ask the Geostore team to verify it for
 you. Only the role assumption itself needs to be checked by the Geostore team.
 
+Template trust policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
+
 Template dataset source S3 bucket policy:
 
 ```json
@@ -47,23 +64,6 @@ Template dataset source S3 bucket policy:
       },
       "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
       "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
-    }
-  ]
-}
-```
-
-Template trust policy:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
-      },
-      "Action": "sts:AssumeRole"
     }
   ]
 }
