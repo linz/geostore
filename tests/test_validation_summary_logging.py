@@ -2,7 +2,7 @@ from json import dumps
 from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
-from backend.api_keys import SUCCESS_KEY
+from backend.api_keys import EVENT_KEY, SUCCESS_KEY
 from backend.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from backend.validation_summary import task
 
@@ -20,7 +20,7 @@ class TestLogging:
     def should_log_event(self) -> None:
         # Given
         event = {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
-        expected_log = dumps({"event": event})
+        expected_log = dumps({EVENT_KEY: event})
 
         with patch(
             f"{task.__name__}.{task.validation_results_model_with_meta.__name__}"

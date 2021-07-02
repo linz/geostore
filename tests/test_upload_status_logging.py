@@ -1,7 +1,7 @@
 from json import dumps
 from unittest.mock import MagicMock, patch
 
-from backend.api_keys import SUCCESS_KEY
+from backend.api_keys import EVENT_KEY, SUCCESS_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from backend.step_function_keys import (
     DATASET_ID_KEY,
@@ -29,7 +29,7 @@ def should_log_event(get_tasks_status_mock: MagicMock) -> None:
             ASSET_JOB_ID_KEY: any_job_id(),
         },
     }
-    expected_log = dumps({"event": event})
+    expected_log = dumps({EVENT_KEY: event})
 
     with patch("backend.upload_status.task.LOGGER.debug") as logger_mock:
         # When
