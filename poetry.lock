@@ -2194,7 +2194,7 @@ toml = ">=0.7.1"
 
 [[package]]
 name = "pynamodb"
-version = "5.0.3"
+version = "5.1.0"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = true
@@ -3285,8 +3285,8 @@ pylint = [
     {file = "pylint-2.8.3.tar.gz", hash = "sha256:0a049c5d47b629d9070c3932d13bff482b12119b6a241a93bc460b0be16953c8"},
 ]
 pynamodb = [
-    {file = "pynamodb-5.0.3-py3-none-any.whl", hash = "sha256:bc813a7a9cc4242a7b26ccdd474d9eb63d12e9f0a0ae2a504dbd6648029a9ba5"},
-    {file = "pynamodb-5.0.3.tar.gz", hash = "sha256:01741df673abb518d5cf9f00223a227f5d0ab9e0a6b19e444ceb38d497019f31"},
+    {file = "pynamodb-5.1.0-py3-none-any.whl", hash = "sha256:8a38fa76522878ef1a8a0b62e6dcc1f883af73182a6c30a050481d316f589d34"},
+    {file = "pynamodb-5.1.0.tar.gz", hash = "sha256:7f351d70b9f4da95ea2d7e50299640e4c46c83b7b24bea5daf110acd2e5aef2b"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
