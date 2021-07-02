@@ -30,6 +30,8 @@ from backend.step_function_keys import (
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
+    UPDATE_DATASET_KEY,
+    UPLOAD_STATUS_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
@@ -309,7 +311,7 @@ class Processing(Construct):
             "upload-status",
             directory="upload_status",
             botocore_lambda_layer=botocore_lambda_layer,
-            result_path="$.upload_status",
+            result_path=f"$.{UPLOAD_STATUS_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
         validation_results_table.grant_read_data(upload_status_task.lambda_function)
@@ -347,6 +349,7 @@ class Processing(Construct):
             directory="update_dataset_catalog",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
+            result_path=f"$.{UPDATE_DATASET_KEY}",
         )
         self.message_queue.grant_send_messages(update_dataset_catalog.lambda_function)
 
