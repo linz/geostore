@@ -74,6 +74,7 @@ class Application(Stack):
             botocore_lambda_layer=lambda_layers.botocore,
             env_name=env_name,
             state_machine=processing.state_machine,
+            validation_results_table=storage.validation_results_table,
         )
 
         if self.node.try_get_context("enableLDSAccess"):
