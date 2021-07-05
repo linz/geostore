@@ -8,5 +8,3 @@ load-plugins = pylint.extensions.mccabe
 max-complexity = 6
 [FORMAT]
 max-line-length=100
-[MISCELLANEOUS]
-notes=FIXME,XXX

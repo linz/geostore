@@ -16,7 +16,7 @@ class NetworkingStack(Stack):
         aws_ec2.Vpc(
             self,
             "geostore",
-            # cidr='10.0.0.0/16',  # TODO: use specific CIDR
+            # cidr='10.0.0.0/16',  # TODO: use specific CIDR pylint:disable=fixme
             subnet_configuration=[
                 aws_ec2.SubnetConfiguration(
                     cidr_mask=27, name="public", subnet_type=aws_ec2.SubnetType.PUBLIC
