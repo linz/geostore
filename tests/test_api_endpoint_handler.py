@@ -32,7 +32,7 @@ def should_call_relevant_http_method(subtests: SubTests) -> None:
     post_mock = MagicMock()
 
     get_mock = MagicMock()
-    get_mock.return_value = expected_response = "Some Response"
+    get_mock.return_value = expected_response = {"some key": "some value"}
 
     request_handlers: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
         "POST": post_mock,

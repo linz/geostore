@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import boto3
 from slack_sdk.models.blocks import blocks
-from slack_sdk.webhook import WebhookClient
+from slack_sdk.webhook.client import WebhookClient
 
 from ..api_keys import EVENT_KEY
 from ..aws_message_attributes import DATA_TYPE_STRING
