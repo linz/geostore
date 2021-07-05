@@ -189,6 +189,18 @@ validation_summary = [
     "pynamodb",
 ]
 
+[tool.pylint.MASTER]
+disable = [
+    "duplicate-code",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+]
+load-plugins = [
+    "pylint.extensions.mccabe",
+]
+max-complexity = 6
+
 [tool.pytest.ini_options]
 addopts = "--randomly-dont-reset-seed"
 markers = [
