@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 from pytest_subtests import SubTests
 
+from backend.api_keys import EVENT_KEY
 from backend.check_stac_metadata.task import lambda_handler
 from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from backend.import_metadata_file.task import S3_BODY_KEY
@@ -50,7 +51,7 @@ LOGGER = getLogger("backend.check_stac_metadata.task")
 @patch("backend.check_stac_metadata.task.get_s3_client_for_role")
 def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
-    expected_log = dumps({"event": payload})
+    expected_log = dumps({EVENT_KEY: payload})
     get_s3_client_for_role_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }

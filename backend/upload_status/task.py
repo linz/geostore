@@ -2,7 +2,7 @@ from json import dumps
 
 from jsonschema import validate
 
-from ..api_keys import SUCCESS_KEY
+from ..api_keys import EVENT_KEY, SUCCESS_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..log import set_up_logging
 from ..step_function import get_tasks_status
@@ -24,7 +24,7 @@ LOGGER = set_up_logging(__name__)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(dumps({"event": event}))
+    LOGGER.debug(dumps({EVENT_KEY: event}))
 
     validate(
         event,

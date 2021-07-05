@@ -9,6 +9,7 @@ from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 from ulid import from_timestamp
 
+from ..api_keys import EVENT_KEY
 from ..api_responses import error_response, success_response
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
@@ -40,7 +41,7 @@ STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
 def create_dataset_version(body: JsonObject) -> JsonObject:
     logger = set_up_logging(__name__)
 
-    logger.debug(dumps({"event": body}))
+    logger.debug(dumps({EVENT_KEY: body}))
 
     body_schema = {
         "type": "object",

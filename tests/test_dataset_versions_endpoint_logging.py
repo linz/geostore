@@ -6,6 +6,7 @@ from jsonschema import ValidationError
 from pynamodb.exceptions import DoesNotExist
 from pytest import mark
 
+from backend.api_keys import EVENT_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
 from backend.dataset_versions.create import create_dataset_version
 from backend.error_response_keys import ERROR_KEY
@@ -37,7 +38,7 @@ class TestLogging:
                     S3_ROLE_ARN_KEY: any_role_arn(),
                 },
             }
-            expected_payload_log = dumps({"event": event})
+            expected_payload_log = dumps({EVENT_KEY: event})
 
             # When
             create_dataset_version(event)
