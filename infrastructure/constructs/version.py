@@ -1,30 +1,12 @@
-import subprocess
+from subprocess import PIPE, Popen
 
-GIT_BRANCH = (
-    subprocess.Popen(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"], shell=False, stdout=subprocess.PIPE
-    )
-    .communicate()[0]
-    .decode()
-    .strip()
-)
-GIT_COMMIT = (
-    subprocess.Popen(["git", "rev-parse", "--short", "HEAD"], shell=False, stdout=subprocess.PIPE)
-    .communicate()[0]
-    .decode()
-    .strip()
-)
+with Popen(["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=PIPE) as branch_command:
+    GIT_BRANCH = branch_command.communicate()[0].decode().strip()
 
-GIT_TAG = (
-    subprocess.Popen(
-        ["git", "describe", "--tags", "--exact-match"],
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-    )
-    .communicate()[0]
-    .decode()
-    .strip()
-)
+with Popen(["git", "rev-parse", "--short", "HEAD"], stdout=PIPE) as commit_command:
+    GIT_COMMIT = commit_command.communicate()[0].decode().strip()
+
+with Popen(["git", "describe", "--tags", "--exact-match"], stdout=PIPE) as tag_command:
+    GIT_TAG = tag_command.communicate()[0].decode().strip()
 if not GIT_TAG:
     GIT_TAG = "UNRELEASED"
