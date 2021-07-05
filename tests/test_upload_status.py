@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
@@ -47,7 +48,7 @@ def should_report_upload_statuses(
     get_step_function_validation_results_mock.return_value = []
 
     def describe_job(AccountId: str, JobId: str) -> JsonObject:  # pylint: disable=invalid-name
-        assert AccountId == account_id
+        assert AccountId == cast(str, account_id)
         return {
             asset_job_id: {"Job": {"Status": asset_job_status, "FailureReasons": []}},
             metadata_job_id: {"Job": {"Status": metadata_job_status, "FailureReasons": []}},

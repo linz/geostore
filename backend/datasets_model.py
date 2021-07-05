@@ -90,7 +90,7 @@ class DatasetsModelMeta(MetaModel):
                 "region": environ["AWS_DEFAULT_REGION"],
             },
         )
-        klass: "DatasetsModelMeta" = MetaModel.__new__(
+        klass: "DatasetsModelMeta" = MetaModel.__new__(  # type: ignore[no-untyped-call]
             cls, name, bases, namespace, discriminator=discriminator
         )
         return klass
