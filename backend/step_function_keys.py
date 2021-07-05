@@ -1,3 +1,4 @@
+JOB_STATUS_FAILED = "FAILED"
 JOB_STATUS_RUNNING = "RUNNING"
 JOB_STATUS_SUCCEEDED = "SUCCEEDED"
 
@@ -22,5 +23,7 @@ S3_ROLE_ARN_KEY = "s3_role_arn"
 STATUS_KEY = "status"
 STEP_FUNCTION_KEY = "step_function"
 TITLE_KEY = "title"
+UPDATE_DATASET_KEY = "update_dataset_catalog"
+UPLOAD_STATUS_KEY = "upload_status"
 VALIDATION_KEY = "validation"
 VERSION_ID_KEY = "version_id"

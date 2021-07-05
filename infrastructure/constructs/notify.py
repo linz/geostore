@@ -18,6 +18,8 @@ from backend.resources import ResourceName
 
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
+from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
+from .table import Table
 
 
 class Notify(Construct):
@@ -29,6 +31,7 @@ class Notify(Construct):
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
+        validation_results_table: Table,
     ) -> None:
         super().__init__(scope, stack_id)
 
@@ -46,6 +49,12 @@ class Notify(Construct):
                 SLACK_URL_ENV_NAME,
                 environ[SLACK_URL_ENV_NAME],
             )
+
+            validation_results_table.grant_read_data(slack_notify_function)
+            validation_results_table.grant(slack_notify_function, "dynamodb:DescribeTable")
+            state_machine.grant_read(slack_notify_function)
+
+            slack_notify_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
         # Allow anyone to subscribe to topic
         step_function_topic = aws_sns.Topic(
@@ -65,6 +74,9 @@ class Notify(Construct):
         grant_parameter_read_access(
             {
                 sns_topic_arn_parameter: [slack_notify_function],
+                validation_results_table.name_parameter: [
+                    slack_notify_function,
+                ],
             }
         )
         step_function_topic.grant_publish(slack_notify_function)
