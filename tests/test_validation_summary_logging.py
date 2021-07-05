@@ -23,7 +23,7 @@ class TestLogging:
         expected_log = dumps({EVENT_KEY: event})
 
         with patch(
-            f"{task.__name__}.{task.validation_results_model_with_meta.__name__}"
+            "backend.validation_summary.task.validation_results_model_with_meta"
         ), patch.object(self.logger, "debug") as logger_mock:
             # When
             task.lambda_handler(event, any_lambda_context())
@@ -31,7 +31,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch(f"{task.__name__}.{task.validation_results_model_with_meta.__name__}")
+    @patch("backend.validation_summary.task.validation_results_model_with_meta")
     def should_log_failure_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
@@ -45,7 +45,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch(f"{task.__name__}.{task.validation_results_model_with_meta.__name__}")
+    @patch("backend.validation_summary.task.validation_results_model_with_meta")
     def should_log_success_result(self, validation_results_model_mock: MagicMock) -> None:
         # Given
         event = {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}

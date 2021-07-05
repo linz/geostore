@@ -72,7 +72,7 @@ class UnhandledSQSMessageException(Exception):
     pass
 
 
-class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
+class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):  # type: ignore[misc]
     def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
         return str(cat.get_self_href())
 

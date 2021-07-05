@@ -37,7 +37,7 @@ class ValidationResultsModelBase(Model):
     sk = UnicodeAttribute(range_key=True)
     result = UnicodeAttribute()
     # TODO: Remove type-arg when https://github.com/pynamodb/PynamoDB/issues/920 is fixed
-    details: MapAttribute = MapAttribute(null=True)  # type: ignore[type-arg]
+    details: MapAttribute[str, Any] = MapAttribute(null=True)  # type: ignore[no-untyped-call]
 
     validation_outcome_index: ValidationOutcomeIdx
 
@@ -64,7 +64,8 @@ def validation_results_model_with_meta(
                     "region": environ["AWS_DEFAULT_REGION"],
                 },
             )
-            klass: "ValidationResultsModelMeta" = MetaModel.__new__(
+            klass: "ValidationResultsModelMeta"
+            klass = MetaModel.__new__(  # type: ignore[no-untyped-call]
                 cls, name, bases, namespace, discriminator=discriminator
             )
             return klass

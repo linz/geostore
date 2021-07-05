@@ -8,7 +8,7 @@ from jsonschema._utils import URIDict
 from ..types import JsonObject
 
 
-class BaseSTACValidator(Draft7Validator):
+class BaseSTACValidator(Draft7Validator):  # type: ignore[misc]
     def __init__(self, schema: str, extra_schemas: List[str]) -> None:
         self.script_dir = dirname(__file__)
 
