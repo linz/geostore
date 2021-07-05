@@ -47,18 +47,13 @@ from .aws_utils import any_arn_formatted_string, any_lambda_context, any_s3_url
 from .general_generators import any_https_url
 from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
 
-STEP_FUNCTION_START_DATE = round(
+STEP_FUNCTION_START_MILLISECOND_TIMESTAMP = round(
     datetime(
         2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc
     ).timestamp()
     * 1000
 )
-STEP_FUNCTION_STOPDATE = round(
-    datetime(
-        2001, 2, 3, hour=4, minute=5, second=16, microsecond=789876, tzinfo=timezone.utc
-    ).timestamp()
-    * 1000
-)
+STEP_FUNCTION_STOP_MILLISECOND_TIMESTAMP = STEP_FUNCTION_START_MILLISECOND_TIMESTAMP + 10
 
 
 @patch("backend.notify_status_update.task.WebhookClient.send")
@@ -104,8 +99,8 @@ def should_notify_slack_with_finished_details_when_url_set(
                         UPDATE_DATASET_KEY: {NEW_VERSION_S3_LOCATION: any_s3_url()},
                     }
                 ),
-                STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_DATE,
-                STEP_FUNCTION_STOPDATE_KEY: STEP_FUNCTION_STOPDATE,
+                STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_MILLISECOND_TIMESTAMP,
+                STEP_FUNCTION_STOPDATE_KEY: STEP_FUNCTION_STOP_MILLISECOND_TIMESTAMP,
             }
         }
 
@@ -173,8 +168,8 @@ def should_notify_slack_when_step_function_failed(
                         VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
-                STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_DATE,
-                STEP_FUNCTION_STOPDATE_KEY: STEP_FUNCTION_STOPDATE,
+                STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_MILLISECOND_TIMESTAMP,
+                STEP_FUNCTION_STOPDATE_KEY: STEP_FUNCTION_STOP_MILLISECOND_TIMESTAMP,
             },
             STEP_FUNCTION_OUTPUT_KEY: None,
         }
