@@ -50,11 +50,11 @@ class Notify(Construct):
                 environ[SLACK_URL_ENV_NAME],
             )
 
-            validation_results_table.grant_read_data(slack_notify_function)
-            validation_results_table.grant(slack_notify_function, "dynamodb:DescribeTable")
-            state_machine.grant_read(slack_notify_function)
+        validation_results_table.grant_read_data(slack_notify_function)
+        validation_results_table.grant(slack_notify_function, "dynamodb:DescribeTable")
+        state_machine.grant_read(slack_notify_function)
 
-            slack_notify_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
+        slack_notify_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
         # Allow anyone to subscribe to topic
         step_function_topic = aws_sns.Topic(
