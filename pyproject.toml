@@ -28,6 +28,22 @@ include_trailing_comma = true
 multi_line_output = 3
 force_grid_wrap = 0
 
+[tool.mypy]
+show_error_codes = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = [
+    "jsonschema",
+    "jsonschema._utils",
+    "multihash",
+    "pystac",
+    "pystac.layout",
+    "pytest_subtests",
+    "smart_open",
+]
+ignore_missing_imports = true
+
 [tool.poetry]
 name = "geostore"
 version = "0.1.0"
