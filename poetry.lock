@@ -2640,7 +2640,7 @@ import_asset_file = ["boto3", "smart-open"]
 import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
 import_metadata_file = ["boto3"]
 import_status = ["boto3", "jsonschema", "pynamodb"]
-notify_status_update = ["boto3", "slack-sdk"]
+notify_status_update = ["boto3", "pynamodb", "slack-sdk"]
 populate_catalog = ["boto3", "jsonschema", "pystac"]
 update_dataset_catalog = ["boto3", "jsonschema", "pynamodb", "ulid-py"]
 upload_status = ["boto3", "jsonschema", "pynamodb"]
@@ -2649,7 +2649,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.9"
-content-hash = "d6a9961aba4483f03027467478d4c2dc6cead2052f405d9c66fe659580b9bf03"
+content-hash = "cfcc09c24267beeeb36b9df367ba443b6f437df2560b33274bf1fd185d4762ff"
 
 [metadata.files]
 appdirs = [
