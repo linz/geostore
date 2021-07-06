@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit -o noclobber -o nounset
+set -o errexit -o noclobber -o nounset -o pipefail
 
 if [[ "$#" -lt 1 ]]
 then
