@@ -1,14 +1,18 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
-from json import dumps
+from json import dumps, load
 from logging import getLogger
 from os import environ
 from unittest.mock import MagicMock, patch
 
+from mypy_boto3_events import EventBridgeClient
+from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_sns.type_defs import MessageAttributeValueTypeDef
+from pytest import mark
 from pytest_subtests import SubTests
 
 from backend.api_keys import EVENT_KEY
+from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from backend.aws_message_attributes import DATA_TYPE_STRING
 from backend.notify_status_update.task import (
     EVENT_DETAIL_KEY,
@@ -24,6 +28,7 @@ from backend.notify_status_update.task import (
     lambda_handler,
     publish_sns_message,
 )
+from backend.resources import ResourceName
 from backend.step_function import Outcome
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -238,3 +243,37 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
 
     # Then
     assert sns_client_mock.call_args[1] == expected_sns_call
+
+
+@mark.infrastructure
+def should_launch_notify_slack_endpoint_lambda_function(
+    lambda_client: LambdaClient, events_client: EventBridgeClient
+) -> None:
+
+    cloudwatch_events_response = events_client.list_targets_by_rule(
+        Rule=ResourceName.CLOUDWATCH_RULE_NAME.value
+    )
+
+    notify_status_lambda_arn = cloudwatch_events_response["Targets"][0]["Arn"]
+
+    # When
+    body = {
+        EVENT_DETAIL_KEY: {
+            STATUS_KEY: JOB_STATUS_FAILED,
+            STEP_FUNCTION_INPUT_KEY: dumps(
+                {
+                    DATASET_ID_KEY: any_dataset_id(),
+                    DATASET_PREFIX_KEY: any_dataset_prefix(),
+                }
+            ),
+        },
+        STEP_FUNCTION_OUTPUT_KEY: None,
+    }
+
+    resp = lambda_client.invoke(
+        FunctionName=notify_status_lambda_arn,
+        Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
+    )
+    json_resp = load(resp["Payload"])
+
+    assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.NO_CONTENT, json_resp

@@ -90,7 +90,7 @@ ulid-py = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
-boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
+boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
 gitlint = "*"
 ipdb = "*"
 isort = "*"
@@ -182,6 +182,7 @@ import_status = [
 ]
 notify_status_update = [
     "boto3",
+    "jsonschema",
     "pynamodb",
     "slack-sdk"
 ]

@@ -9,6 +9,7 @@ from slack_sdk.models.blocks import blocks
 from slack_sdk.webhook.client import WebhookClient
 
 from ..api_keys import EVENT_KEY
+from ..api_responses import success_response
 from ..aws_message_attributes import DATA_TYPE_STRING
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
@@ -64,7 +65,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     publish_sns_message(event)
 
-    return {}
+    return success_response(HTTPStatus.NO_CONTENT, {})
 
 
 def publish_sns_message(event: JsonObject) -> None:
