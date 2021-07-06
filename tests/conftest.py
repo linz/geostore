@@ -5,6 +5,7 @@ from logging import INFO, basicConfig, getLogger
 
 import boto3
 import pytest
+from mypy_boto3_events import EventBridgeClient
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
@@ -28,6 +29,11 @@ def s3_client() -> S3Client:
 @pytest.fixture()
 def s3_control_client() -> S3ControlClient:
     return boto3.client("s3control")
+
+
+@pytest.fixture()
+def events_client() -> EventBridgeClient:
+    return boto3.client("events")
 
 
 @pytest.fixture()
