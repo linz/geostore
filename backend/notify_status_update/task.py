@@ -65,7 +65,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     publish_sns_message(event)
 
-    return success_response(HTTPStatus.NO_CONTENT, {})
+    return success_response(HTTPStatus.OK, {})
 
 
 def publish_sns_message(event: JsonObject) -> None:

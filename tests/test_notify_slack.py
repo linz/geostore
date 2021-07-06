@@ -12,7 +12,7 @@ from pytest import mark
 from pytest_subtests import SubTests
 
 from backend.api_keys import EVENT_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from backend.api_responses import STATUS_CODE_KEY
 from backend.aws_message_attributes import DATA_TYPE_STRING
 from backend.notify_status_update.task import (
     EVENT_DETAIL_KEY,
@@ -250,11 +250,9 @@ def should_launch_notify_slack_endpoint_lambda_function(
     lambda_client: LambdaClient, events_client: EventBridgeClient
 ) -> None:
 
-    cloudwatch_events_response = events_client.list_targets_by_rule(
+    notify_status_lambda_arn = events_client.list_targets_by_rule(
         Rule=ResourceName.CLOUDWATCH_RULE_NAME.value
-    )
-
-    notify_status_lambda_arn = cloudwatch_events_response["Targets"][0]["Arn"]
+    )["Targets"][0]["Arn"]
 
     # When
     body = {
@@ -270,10 +268,11 @@ def should_launch_notify_slack_endpoint_lambda_function(
         STEP_FUNCTION_OUTPUT_KEY: None,
     }
 
-    resp = lambda_client.invoke(
-        FunctionName=notify_status_lambda_arn,
-        Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
+    resp = load(
+        lambda_client.invoke(
+            FunctionName=notify_status_lambda_arn,
+            Payload=dumps(body).encode(),
+        )["Payload"]
     )
-    json_resp = load(resp["Payload"])
 
-    assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.NO_CONTENT, json_resp
+    assert resp.get(STATUS_CODE_KEY) == HTTPStatus.OK, resp
