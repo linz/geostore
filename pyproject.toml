@@ -182,6 +182,7 @@ import_status = [
 ]
 notify_status_update = [
     "boto3",
+    "pynamodb",
     "slack-sdk"
 ]
 populate_catalog = [
