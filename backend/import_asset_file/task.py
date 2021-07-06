@@ -30,7 +30,7 @@ def importer(
 ) -> None:
     source_response = source_s3_client.get_object(Bucket=source_bucket_name, Key=original_key)
 
-    # TODO: Simplify once https://github.com/boto/boto3/issues/426 is actually fixed
+    # TODO: Simplify once boto3 issue #426 is actually fixed pylint:disable=fixme
     with smart_open.open(
         f"{S3_URL_PREFIX}{target_bucket_name}/{new_key}",
         mode="w",
