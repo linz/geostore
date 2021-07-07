@@ -84,16 +84,16 @@ One-time setup, assuming you are in the project directory:
    1. Install:
 
       ```bash
-      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
       ```
 
-   1. Add the following to ~/.bashrc:
+   1. Make sure `"${HOME}/.local/bin"` is on your `PATH`, for example by adding the following to
+      your `~/.bashrc`:
 
       ```bash
-      # Poetry <https://python-poetry.org/>
-      if [[ -e "${HOME}/.poetry" ]]
+      if [[ -e "${HOME}/.local/bin" ]]
       then
-          PATH="${HOME}/.poetry/bin:${PATH}"
+          PATH="${HOME}/.local/bin:${PATH}"
       fi
       ```
 
