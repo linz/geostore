@@ -5,15 +5,15 @@ RUN apt-get update --quiet --quiet \
     curl python3-pip > /dev/null \
     && rm -rf /var/lib/apt/lists/*
 # hadolint ignore=DL3059
-RUN curl --location --show-error --silent --output get-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    && echo '86aeebaa16fabfecfccea823b6c587aa5055be70da299b7e76578e8df78cd016 get-poetry.py' > get-poetry.py.sha256 \
-    && sha256sum --check get-poetry.py.sha256 \
-    && python3 get-poetry.py > /dev/null \
-    && rm get-poetry.py get-poetry.py.sha256
+RUN curl --location --show-error --silent --output install-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
+    && echo 'b35d059be6f343ac1f05ae56e8eaaaebb34da8c92424ee00133821d7f11e3a9c install-poetry.py' > install-poetry.py.sha256 \
+    && sha256sum --check install-poetry.py.sha256 \
+    && python3 install-poetry.py > /dev/null \
+    && rm install-poetry.py install-poetry.py.sha256
 COPY poetry.lock poetry.toml pyproject.toml /opt/
 WORKDIR /opt
 ARG task
-RUN ~/.poetry/bin/poetry install --quiet --extras=${task} --no-dev
+RUN ~/.local/bin/poetry install --quiet --extras=${task} --no-dev
 
 
 FROM ubuntu:20.04
