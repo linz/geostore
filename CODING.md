@@ -18,6 +18,128 @@
 - The formatting of code, configuration and commits are enforced by Git hooks
   - Use [Conventional Commits](https://www.conventionalcommits.org/) style commit messages
 
+## How to test a full import to nonprod
+
+It should be possible to follow this guide step by step to import a dataset from your personal test
+stack into nonprod.
+
+1. Set up properties of the target account, in this case nonprod:
+
+   ```shell
+   export GEOSTORE_AWS_ACCOUNT_ID=632223577832
+   stack_prefix='nonprod'
+   export GEOSTORE_USER_ROLE_NAME="${stack_prefix}-api-users"
+   ```
+
+1. Set up properties of the source account and resources you're about to create there:
+
+   ```shell
+   export AWS_PROFILE='PERSONAL_PROFILE_ID'
+   source_account_id='SOURCE_ACCOUNT_ID'
+   policy_name="geostore-assumption-by-${GEOSTORE_USER_ROLE_NAME}"
+   role_name="geostore-${GEOSTORE_USER_ROLE_NAME}"
+   bucket_name='SOURCE_BUCKET_NAME'
+   metadata_url="s3://${bucket_name}/PATH_TO_COLLECTION_JSON"
+   ```
+
+1. Log in to your personal profile as an admin user:
+
+   ```shell
+   aws-azure-login --no-prompt --profile="$AWS_PROFILE"
+   ```
+
+1. Create the assumption [policy](https://console.aws.amazon.com/iamv2/home?#/policies$customer):
+
+   ```shell
+   policy_arn="$(
+       aws iam create-policy \
+           --policy-name="${policy_name}" \
+           --policy-document="{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Resource\": \"arn:aws:iam::${GEOSTORE_AWS_ACCOUNT_ID}:role/${GEOSTORE_USER_ROLE_NAME}\", \"Action\": \"sts:AssumeRole\"}]}" \
+       | jq --raw-output .Policy.Arn
+   )"
+   ```
+
+1. Create the assumed [role](https://console.aws.amazon.com/iamv2/home?#/roles):
+
+   ```shell
+   role_arn="$(
+       aws iam create-role \
+           --role-name="${role_name}" \
+           --assume-role-policy-document="{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"AWS\": \"arn:aws:iam::${GEOSTORE_AWS_ACCOUNT_ID}:root\"}, \"Action\": \"sts:AssumeRole\", \"Condition\": {}}]}" \
+       | jq --raw-output .Role.Arn
+   )"
+   ```
+
+1. Attach the policy to the role:
+
+   ```shell
+   aws iam attach-role-policy \
+       --role-name="${role_name}" \
+       --policy-arn="${policy_arn}"
+   ```
+
+1. Allow the assumed role to access your [S3 bucket](https://s3.console.aws.amazon.com/s3/home)
+   (**warning:** this will _overwrite_ any existing bucket policy, not add to it):
+
+   ```shell
+   aws s3api put-bucket-policy \
+       --bucket="${bucket_name}" \
+       --policy="{\"Id\": \"Policy$(date +%s)\", \"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"Stmt$(date +%s)\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectAcl\", \"s3:GetObjectTagging\"], \"Effect\": \"Allow\", \"Resource\": \"arn:aws:s3:::${bucket_name}/*\", \"Principal\": {\"AWS\": [\"${role_arn}\"]}}]}"
+   ```
+
+1. Change the AWS profile to the target one:
+
+   ```shell
+   AWS_PROFILE='TARGET_PROFILE_ID'
+   ```
+
+1. Assume the `${stack_prefix}-api-users` role on the target profile:
+
+   ```shell
+   aws-azure-login --no-prompt --profile="$AWS_PROFILE"
+   ```
+
+1. Create a new dataset:
+
+   ```shell
+   dataset_id="$(
+       aws lambda invoke \
+           --function-name="${stack_prefix}-datasets" \
+           --payload "{\"http_method\": \"POST\", \"body\": {\"title\": \"test_$(date +%s)\", \"description\": \"Description\"}}" \
+           /dev/stdout \
+       | jq --raw-output '.body.id // empty'
+   )"
+   ```
+
+1. Create a dataset version:
+
+   ```shell
+   execution_arn="$(
+       aws lambda invoke \
+           --function-name="${stack_prefix}-dataset-versions" \
+           --payload "{\"http_method\": \"POST\", \"body\": {\"id\": \"${dataset_id}\", \"metadata_url\": \"${metadata_url}\", \"s3_role_arn\": \"${role_arn}\"}}" \
+           /dev/stdout \
+       | jq --raw-output '.body.execution_arn // empty'
+   )"
+   ```
+
+1. Poll for the import to finish:
+
+   ```shell
+   aws lambda invoke \
+       --function-name="${stack_prefix}-import-status" \
+       --payload "{\"http_method\": \"GET\", \"body\": {\"execution_arn\": \"${execution_arn}\"}}" \
+       /dev/stdout
+   ```
+
+To clean up:
+
+```shell
+aws iam detach-role-policy --role-name="${role_name}" --policy-arn="${policy_arn}"
+aws iam delete-policy --policy-arn="${policy_arn}"
+aws iam delete-role --role-name="${role_name}"
+```
+
 ## Code review checklist
 
 This document is meant to give general hints for code reviewers. It should not be considered a

@@ -38,9 +38,9 @@ Template trust policy on your role:
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Action": "sts:AssumeRole",
       "Effect": "Allow",
-      "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>",
-      "Action": "sts:AssumeRole"
+      "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
     }
   ]
 }
@@ -50,17 +50,17 @@ Template dataset source S3 bucket policy:
 
 ```json
 {
-  "Version": "2012-10-17",
   "Id": "<ID>",
+  "Version": "2012-10-17",
   "Statement": [
     {
       "Sid": "<STATEMENT_ID>",
+      "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
       "Effect": "Allow",
+      "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*",
       "Principal": {
         "AWS": "arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<YOUR_ROLE_NAME>"
-      },
-      "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
-      "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*"
+      }
     }
   ]
 }
