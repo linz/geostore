@@ -56,7 +56,7 @@ WEBHOOK_MESSAGE_CHANNEL_KEY = "channel"
 SNS_CLIENT: SNSClient = boto3.client("sns")
 LOGGER = set_up_logging(__name__)
 
-BLOCK_MAX_CHAR_LIMIT = 3000
+BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#section
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -132,4 +132,4 @@ def format_block(title: str, body: str) -> str:
     """Perform some slack formatting and ensure blocks don't exceed character limit"""
     block_prefix = f"*{title}:* `"
     body_length = BLOCK_MAX_CHAR_LIMIT - len(block_prefix) - 1
-    return f"{block_prefix}{str(body[:body_length])}`"
+    return f"{block_prefix}{body[:body_length]}`"
