@@ -113,7 +113,7 @@ def should_notify_slack_with_finished_details_when_url_set(
 
         # Then assert there is 11 slack_sdk message 'blocks' sent to webhook url
         webhook_client_mock.assert_called_once()
-        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 11
+        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 15
 
 
 @patch("backend.notify_status_update.task.WebhookClient.send")
@@ -183,7 +183,7 @@ def should_notify_slack_when_step_function_failed(
 
         # Then assert there is 9 slack_sdk message 'blocks' sent to webhook url
         webhook_client_mock.assert_called_once()
-        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 9
+        assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 13
 
 
 @patch("backend.notify_status_update.task.WebhookClient.send")

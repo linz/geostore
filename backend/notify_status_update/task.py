@@ -56,6 +56,8 @@ WEBHOOK_MESSAGE_CHANNEL_KEY = "channel"
 SNS_CLIENT: SNSClient = boto3.client("sns")
 LOGGER = set_up_logging(__name__)
 
+BLOCK_MAX_CHAR_LIMIT = 3000
+
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(dumps({EVENT_KEY: event}))
@@ -99,18 +101,20 @@ def post_to_slack(event: JsonObject) -> None:
         blocks.DividerBlock(),
         blocks.SectionBlock(text=f"*Status:* {event_details[STATUS_KEY]}"),
         blocks.DividerBlock(),
-        blocks.SectionBlock(
-            text=f"*Dataset ID:* `{step_function_input[DATASET_PREFIX_KEY]}`\n"
-            f"*Dataset Version ID:* `{step_function_input[VERSION_ID_KEY]}`\n"
-            f"*Execution ARN:* `{event_details[STEP_FUNCTION_ARN_KEY]}`"
-        ),
+        blocks.SectionBlock(text=f"*Dataset ID:* `{step_function_input[DATASET_PREFIX_KEY]}`"),
+        blocks.SectionBlock(text=f"*Dataset Version ID:* `{step_function_input[VERSION_ID_KEY]}`"),
+        blocks.SectionBlock(text=f"*Execution ARN:* `{event_details[STEP_FUNCTION_ARN_KEY]}`"),
         blocks.DividerBlock(),
         blocks.SectionBlock(text=f"*Running Time:* {running_time}"),
         blocks.DividerBlock(),
         blocks.SectionBlock(
-            text=f"*Validation:* `{validation_details[VALIDATION_KEY]}`\n"
-            f"*Asset Upload:* `{validation_details[ASSET_UPLOAD_KEY]}`\n"
-            f"*Metadata Upload:* `{validation_details[METADATA_UPLOAD_KEY]}`"
+            text=format_block("Validation", dumps(validation_details[VALIDATION_KEY]))
+        ),
+        blocks.SectionBlock(
+            text=format_block("Asset Upload", dumps(validation_details[ASSET_UPLOAD_KEY]))
+        ),
+        blocks.SectionBlock(
+            text=format_block("Metadata Upload", dumps(validation_details[METADATA_UPLOAD_KEY]))
         ),
     ]
 
@@ -122,3 +126,10 @@ def post_to_slack(event: JsonObject) -> None:
 
     response = WebhookClient(environ[SLACK_URL_ENV_NAME]).send(blocks=slack_message_blocks)
     assert response.status_code == HTTPStatus.OK
+
+
+def format_block(title: str, body: str) -> str:
+    """Perform some slack formatting and ensure blocks don't exceed character limit"""
+    block_prefix = f"*{title}:* `"
+    body_length = BLOCK_MAX_CHAR_LIMIT - len(block_prefix) - 1
+    return f"{block_prefix}{str(body[:body_length])}`"
