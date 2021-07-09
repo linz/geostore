@@ -15,9 +15,8 @@ fail_under = 100
 
 [tool.coverage.run]
 branch = true
-source = [
-    "backend",
-    "tests",
+omit = [
+    ".venv/*",
 ]
 
 [tool.isort]
