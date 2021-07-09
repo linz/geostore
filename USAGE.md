@@ -253,11 +253,11 @@ The ARN of our SNS Topic is `arn:aws:sns:ap-southeast-2:715898075157:geostore-im
 you may choose to subscribe to.
 
 You may also choose to apply a subscription filter policy, which will filter notifications for a
-specific dataset or specific statuses.
+specific dataset or specific statuses. Included in the example is all the valid statuses.
 
 ```json
 {
-  "dataset_id": ["id_1234567890", "id_0987654321"],
+  "dataset_id": ["01F9ZGZ4EGEZ9R4Z48VNQHKB0Z", "01F9ZFRK12V0WFXJ94S0DHCP65"],
   "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
 }
 ```
@@ -270,7 +270,7 @@ contain a JSON string with specific details regarding the Step Function Executio
   "Type": "Notification",
   "MessageId": "xxxx-xxxx-xxxx",
   "TopicArn": "arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status",
-  "Message": "MESSAGE BELOW",
+  "Message": "{\"version\": \"0\", […]}",
   "Timestamp": "2021-07-07T01:49:33.471Z",
   "SignatureVersion": "1",
   "Signature": "xxxxx",
@@ -279,7 +279,7 @@ contain a JSON string with specific details regarding the Step Function Executio
   "MessageAttributes": {
     "dataset_id": {
       "Type": "String",
-      "Value": "test_123456789"
+      "Value": "01F9ZFRK12V0WFXJ94S0DHCP65"
     },
     "status": {
       "Type": "String",
