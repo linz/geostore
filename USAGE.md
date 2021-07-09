@@ -250,7 +250,7 @@ $ aws lambda invoke --function-name import-status \
 ## Receive Import Status updates by subscribing to our AWS SNS Topic
 
 The ARN of our SNS Topic is `arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status` which
-you may choose to subscribe too.
+you may choose to subscribe to.
 
 You may also choose to apply a subscription filter policy, which will filter notifications for a
 specific dataset or specific statuses.
@@ -262,8 +262,8 @@ specific dataset or specific statuses.
 }
 ```
 
-Below is an example payload received when subscribed to our SNS Topic. The Message field will
-contain a json string with specific details regarding the Step Function Execution.
+Below is an example payload received when subscribed to our SNS Topic. The 'Message' field will
+contain a JSON string with specific details regarding the Step Function Execution.
 
 ```json
 {
@@ -289,8 +289,9 @@ contain a json string with specific details regarding the Step Function Executio
 }
 ```
 
-Below is an example of the EventBridge 'Step Functions Execution Status Change' payload. This will
-be formatted as a string and associated with the 'Message' attribute in the above SNS payload. See
+Below is an example of the AWS EventBridge 'Step Functions Execution Status Change' payload. This
+will be formatted as a string and associated with the 'Message' attribute in the above SNS payload.
+See
 [AWS EventBridge Payload Examples](https://docs.aws.amazon.com/step-functions/latest/dg/cw-events.html#cw-events-events)
 
 ```json
