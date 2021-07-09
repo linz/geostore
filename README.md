@@ -265,6 +265,25 @@ To add a production package:
 
   Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
+## Upgrading Python version
+
+To minimise the chance of discrepancies between environments it is important to run the same (or as
+close as possible) version of Python in the development environment, in the pipeline, and in
+deployed instances. At the moment the available versions are constrained by the following:
+
+- The
+  [Ubuntu packages](https://packages.ubuntu.com/search?keywords=python3&searchon=names&exact=1&suite=all&section=all)
+  used in the [Dockerfile](/linz/geostore/blob/master/backend/Dockerfile)
+- The [AWS base images](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html) used as
+  [Lambda runtimes](/linz/geostore/blob/master/infrastructure/constructs/lambda_config.py)
+- The [pyenv versions](https://github.com/pyenv/pyenv) used for
+  [local development](/linz/geostore/blob/master/.python-version)
+- The [supported Poetry versions](https://python-poetry.org/docs/#system-requirements) used for all
+  [dependencies](/linz/geostore/blob/master/pyproject.toml)
+
+When updating Python versions you have to check that all of the above can be kept at the same minor
+version, and ideally at the same patch level.
+
 ## Running tests
 
 To launch full test suite: `pytest tests/`
