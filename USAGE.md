@@ -246,3 +246,81 @@ $ aws lambda invoke --function-name import-status \
 
 {"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
 ```
+
+## Receive Import Status updates by subscribing to our AWS SNS Topic
+
+The ARN of our SNS Topic is `arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status` which
+you may choose to subscribe to.
+
+You may also choose to apply a subscription filter policy, which will filter notifications for a
+specific dataset or specific statuses. Included in the example is all the valid statuses.
+
+```json
+{
+  "dataset_id": ["01F9ZGZ4EGEZ9R4Z48VNQHKB0Z", "01F9ZFRK12V0WFXJ94S0DHCP65"],
+  "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
+}
+```
+
+Below is an example payload received when subscribed to our SNS Topic. The 'Message' field will
+contain a JSON string with specific details regarding the Step Function Execution.
+
+```json
+{
+  "Type": "Notification",
+  "MessageId": "xxxx-xxxx-xxxx",
+  "TopicArn": "arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status",
+  "Message": "{\"version\": \"0\", […]}",
+  "Timestamp": "2021-07-07T01:49:33.471Z",
+  "SignatureVersion": "1",
+  "Signature": "xxxxx",
+  "SigningCertURL": "https://example.com",
+  "UnsubscribeURL": "https://example.com",
+  "MessageAttributes": {
+    "dataset_id": {
+      "Type": "String",
+      "Value": "01F9ZFRK12V0WFXJ94S0DHCP65"
+    },
+    "status": {
+      "Type": "String",
+      "Value": "SUCCEEDED"
+    }
+  }
+}
+```
+
+Below is an example of the AWS EventBridge 'Step Functions Execution Status Change' payload. This
+will be formatted as a string and associated with the 'Message' attribute in the above SNS payload.
+See
+[AWS EventBridge Payload Examples](https://docs.aws.amazon.com/step-functions/latest/dg/cw-events.html#cw-events-events)
+
+```json
+{
+  "version": "0",
+  "id": "3afc69d1-1291-6372-ae76-9a9c11ee35c4",
+  "detail-type": "Step Functions Execution Status Change",
+  "source": "aws.states",
+  "account": "715898075157",
+  "time": "2021-07-07T01:49:29Z",
+  "region": "ap-southeast-2",
+  "resources": ["arn:aws:states:example"],
+  "detail": {
+    "executionArn": "arn:aws:states:example",
+    "stateMachineArn": "arn:aws:states:example",
+    "name": "Aerial_Imagery_xxxx",
+    "status": "SUCCEEDED",
+    "startDate": 1625622391067,
+    "stopDate": 1625622569782,
+    "input": "{\"dataset_id\": \"01F9ZA9ZZZDM815S20EHXEAT40\", \"dataset_prefix\": \"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\", \"version_id\": \"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\", \"metadata_url\": \"s3://example/catalog.json\", \"s3_role_arn\": \"arn:aws:iam::715898075157:role/example\"}",
+    "inputDetails": {
+      "included": true
+    },
+    "output": "{\"dataset_id\":\"01F9ZA9ZZZDM815S20EHXEAT40\",\"dataset_prefix\":\"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\",\"version_id\":\"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\",\"metadata_url\":\"s3://example/catalog.json\",\"s3_role_arn\":\"arn:aws:iam::715898075157:role/example\",\"content\":{\"first_item\":\"0\",\"iteration_size\":1,\"next_item\":-1,\"assets_table_name\":\"example\",\"results_table_name\":\"example\"},\"validation\":{\"success\":true},\"import_dataset\":{\"asset_job_id\":\"e4ad8b0d-4358-4c42-bb0d-3577c96f7039\",\"metadata_job_id\":\"84a7b4fc-7d00-403c-a5fb-91257f406afb\"},\"upload_status\":{\"validation\":{\"status\":\"Passed\",\"errors\":[]},\"asset_upload\":{\"status\":\"Complete\",\"errors\":[]},\"metadata_upload\":{\"status\":\"Complete\",\"errors\":[]}},\"update_dataset_catalog\":{\"new_version_s3_location\":\"s3://linz-geostore/example/catalog.json\"}}",
+    "outputDetails": {
+      "included": true
+    }
+  }
+}
+```
+
+Note: the output field will only be populated above when the Step Function has succeeded.
