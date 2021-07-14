@@ -249,15 +249,20 @@ $ aws lambda invoke --function-name import-status \
 
 ## Receive Import Status updates by subscribing to our AWS SNS Topic
 
-The ARN of our SNS Topic is `arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status` which
-you may choose to subscribe to.
+The ARN of our SNS Topic is
+`arn:aws:sns:ap-southeast-2:<GEOSTORE_AWS_ACCOUNT_ID>:geostore-import-status` which you may choose
+to subscribe to.
 
 You may also choose to apply a subscription filter policy, which will filter notifications for a
 specific dataset or specific statuses. Included in the example is all the valid statuses.
 
+The Geostore will store a dataset in a top level directory name with format of (dataset
+title)-(dataset id) You can filter SNS topics for a dataset by providing the entire dataset
+directory name or by providing just the title in a 'prefix' object. Examples below.
+
 ```json
 {
-  "dataset_id": ["01F9ZGZ4EGEZ9R4Z48VNQHKB0Z", "01F9ZFRK12V0WFXJ94S0DHCP65"],
+  "dataset_id": [{ "prefix": "Taranaki" }, "Taranaki_2020-01F9ZFRK12V0WFXJ94S0DHCP65"],
   "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
 }
 ```
@@ -269,7 +274,7 @@ contain a JSON string with specific details regarding the Step Function Executio
 {
   "Type": "Notification",
   "MessageId": "xxxx-xxxx-xxxx",
-  "TopicArn": "arn:aws:sns:ap-southeast-2:715898075157:geostore-import-status",
+  "TopicArn": "arn:aws:sns:ap-southeast-2:<GEOSTORE_AWS_ACCOUNT_ID>:geostore-import-status",
   "Message": "{\"version\": \"0\", […]}",
   "Timestamp": "2021-07-07T01:49:33.471Z",
   "SignatureVersion": "1",
@@ -300,7 +305,7 @@ See
   "id": "3afc69d1-1291-6372-ae76-9a9c11ee35c4",
   "detail-type": "Step Functions Execution Status Change",
   "source": "aws.states",
-  "account": "715898075157",
+  "account": "<GEOSTORE_AWS_ACCOUNT_ID>",
   "time": "2021-07-07T01:49:29Z",
   "region": "ap-southeast-2",
   "resources": ["arn:aws:states:example"],
