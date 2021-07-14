@@ -22,8 +22,15 @@ from backend.step_function_keys import (
     ERROR_RESULT_KEY,
     ERROR_URL_KEY,
     EXECUTION_ARN_KEY,
+    FAILED_TASKS_KEY,
     IMPORT_DATASET_KEY,
+    INPUT_KEY,
+    JOB_STATUS_FAILED,
+    JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
+    OUTPUT_KEY,
+    S3_BATCH_STATUS_COMPLETE,
+    S3_BATCH_STATUS_FAILED,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
@@ -152,11 +159,11 @@ def should_report_s3_batch_upload_failures(
 ) -> None:
     # Given
     describe_step_function_mock.return_value = {
-        "status": "SUCCEEDED",
-        "input": dumps(
+        STATUS_KEY: JOB_STATUS_SUCCEEDED,
+        INPUT_KEY: dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": dumps(
+        OUTPUT_KEY: dumps(
             {
                 VALIDATION_KEY: {SUCCESS_KEY: True},
                 IMPORT_DATASET_KEY: {
@@ -168,10 +175,7 @@ def should_report_s3_batch_upload_failures(
     }
 
     describe_s3_job_mock.return_value = {
-        "Job": {
-            "Status": "Completed",
-            "FailureReasons": [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
-        }
+        "Job": {"Status": S3_BATCH_STATUS_COMPLETE, "ProgressSummary": {"NumberOfTasksFailed": 1}}
     }
 
     expected_response = {
@@ -180,12 +184,12 @@ def should_report_s3_batch_upload_failures(
             STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
             VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
             METADATA_UPLOAD_KEY: {
-                STATUS_KEY: "Completed",
-                ERRORS_KEY: [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+                STATUS_KEY: S3_BATCH_STATUS_FAILED,
+                ERRORS_KEY: [{FAILED_TASKS_KEY: 1}],
             },
             ASSET_UPLOAD_KEY: {
-                STATUS_KEY: "Completed",
-                ERRORS_KEY: [{"FailureCode": "TEST_CODE", "FailureReason": "TEST_REASON"}],
+                STATUS_KEY: S3_BATCH_STATUS_FAILED,
+                ERRORS_KEY: [{FAILED_TASKS_KEY: 1}],
             },
         },
     }
@@ -215,11 +219,11 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
 ) -> None:
     get_account_number_mock.return_value = any_account_id()
     describe_step_function_mock.return_value = {
-        "status": "FAILED",
-        "input": dumps(
+        STATUS_KEY: JOB_STATUS_FAILED,
+        INPUT_KEY: dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": dumps({}),
+        OUTPUT_KEY: dumps({}),
     }
     get_step_function_validation_results_mock.return_value = []
 
@@ -254,11 +258,11 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
     # Given
     get_account_number_mock.return_value = any_account_id()
     describe_step_function_mock.return_value = {
-        "status": "FAILED",
-        "input": dumps(
+        STATUS_KEY: JOB_STATUS_FAILED,
+        INPUT_KEY: dumps(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
-        "output": dumps({}),
+        OUTPUT_KEY: dumps({}),
     }
     validation_error = {ERROR_RESULT_KEY: ValidationResult.FAILED.value}
     get_step_function_validation_results_mock.return_value = [validation_error]

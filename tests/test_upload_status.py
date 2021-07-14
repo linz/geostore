@@ -50,8 +50,15 @@ def should_report_upload_statuses(
     def describe_job(AccountId: str, JobId: str) -> JsonObject:  # pylint: disable=invalid-name
         assert AccountId == cast(str, account_id)
         return {
-            asset_job_id: {"Job": {"Status": asset_job_status, "FailureReasons": []}},
-            metadata_job_id: {"Job": {"Status": metadata_job_status, "FailureReasons": []}},
+            asset_job_id: {
+                "Job": {"Status": asset_job_status, "ProgressSummary": {"NumberOfTasksFailed": 0}}
+            },
+            metadata_job_id: {
+                "Job": {
+                    "Status": metadata_job_status,
+                    "ProgressSummary": {"NumberOfTasksFailed": 0},
+                }
+            },
         }[JobId]
 
     describe_job_mock.side_effect = describe_job
