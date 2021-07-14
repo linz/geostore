@@ -42,7 +42,7 @@ class TestLogging:
         ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
             "backend.import_dataset.task.validate"
         ), patch(
-            "backend.import_dataset.task.smart_open"
+            "backend.import_dataset.task.smart_open.open"
         ):
             event = {
                 DATASET_ID_KEY: dataset.dataset_id,
@@ -99,7 +99,7 @@ class TestLogging:
             ) as processing_asset, patch.object(
                 self.logger, "debug"
             ) as logger_mock, patch(
-                "backend.import_dataset.task.smart_open"
+                "backend.import_dataset.task.smart_open.open"
             ), patch(
                 "backend.import_dataset.task.S3CONTROL_CLIENT.create_job"
             ):
@@ -140,7 +140,7 @@ class TestLogging:
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_dataset.task.smart_open"
+            "backend.import_dataset.task.smart_open.open"
         ):
 
             # When
