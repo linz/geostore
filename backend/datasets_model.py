@@ -13,7 +13,7 @@ from .parameter_store import ParameterName, get_param
 DATASET_KEY_SEPARATOR = "-"
 
 
-def human_readable_ulid(ulid: ULID) -> "str":
+def human_readable_ulid(ulid: ULID) -> str:
     """
     Formats the timestamp part of the ULID as a human readable datetime. Uses "T" as the date/time
     separator as per RFC3339, hyphen as the datetime field separator to ensure broad filesystem

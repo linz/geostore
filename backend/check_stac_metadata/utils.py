@@ -55,7 +55,7 @@ EXPLICITLY_RELATIVE_PATH_PREFIX = "./"
 
 @lru_cache
 def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
-    if url_or_path[:5] == S3_URL_PREFIX:
+    if url_or_path.startswith(S3_URL_PREFIX):
         return url_or_path
 
     if url_or_path.startswith(EXPLICITLY_RELATIVE_PATH_PREFIX):
