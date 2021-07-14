@@ -525,12 +525,15 @@ def should_validate_metadata_files_recursively() -> None:
 
 def should_only_validate_each_file_once() -> None:
     # Given multiple references to the same URL
-    # Given relative and absolute URLs to the same file
+    # Given explicitly relative (`./foo`), implicitly relative (`foo`) and absolute URLs to the same
+    # file
     base_url = any_s3_url()
     root_url = f"{base_url}/{any_safe_filename()}"
     child_filename = any_safe_filename()
     child_url = f"{base_url}/{child_filename}"
-    leaf_url = f"{base_url}/{any_safe_filename()}"
+    leaf_filename = any_safe_filename()
+    explicitly_relative_leaf_filename = f"./{leaf_filename}"
+    leaf_url = f"{base_url}/{leaf_filename}"
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
     root_stac_object[STAC_LINKS_KEY] = [
@@ -547,7 +550,7 @@ def should_only_validate_each_file_once() -> None:
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     leaf_stac_object[STAC_LINKS_KEY] = [
         {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: leaf_url, "rel": "self"},
+        {STAC_HREF_KEY: explicitly_relative_leaf_filename, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
         {root_url: root_stac_object, child_url: child_stac_object, leaf_url: leaf_stac_object},

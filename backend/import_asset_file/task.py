@@ -33,7 +33,7 @@ def importer(
     # TODO: Simplify once boto3 issue #426 is actually fixed pylint:disable=fixme
     with smart_open.open(
         f"{S3_URL_PREFIX}{target_bucket_name}/{new_key}",
-        mode="w",
+        mode="wb",
         transport_params={"client": TARGET_S3_CLIENT},
     ) as target_file:
         for chunk in source_response["Body"].iter_chunks(chunk_size=CHUNK_SIZE):
