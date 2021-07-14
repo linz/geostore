@@ -1,11 +1,11 @@
 from copy import deepcopy
 from json import load
 
+import smart_open
 from _pytest.python_api import raises
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
-from smart_open import smart_open
 
 from backend.api_responses import BODY_KEY
 from backend.aws_message_attributes import (
@@ -101,7 +101,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
                 any_lambda_context(),
             )
 
-            with smart_open(
+            with smart_open.open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
             ) as new_root_metadata_file:
                 catalog_json = load(new_root_metadata_file)
@@ -209,13 +209,13 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 any_lambda_context(),
             )
 
-            with smart_open(
+            with smart_open.open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
             ) as root_metadata_file, subtests.test(msg="root catalog links"):
                 root_catalog_json = load(root_metadata_file)
                 assert root_catalog_json[STAC_LINKS_KEY] == expected_root_links
 
-            with smart_open(
+            with smart_open.open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
                 f"/{dataset.dataset_prefix}/{CATALOG_KEY}"
             ) as dataset_metadata_file, subtests.test(msg="dataset catalog links"):
@@ -398,14 +398,14 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             any_lambda_context(),
         )
 
-        with subtests.test(msg="dataset catalog links"), smart_open(
+        with subtests.test(msg="dataset catalog links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
             f"{dataset.dataset_prefix}/{CATALOG_KEY}"
         ) as updated_dataset_metadata_file:
             catalog_json = load(updated_dataset_metadata_file)
             assert catalog_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
 
-        with subtests.test(msg="dataset version links"), smart_open(
+        with subtests.test(msg="dataset version links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
             f"/{dataset_version_metadata.key}"
         ) as updated_dataset_metadata_file:
@@ -572,21 +572,21 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             any_lambda_context(),
         )
 
-        with subtests.test(msg="dataset catalog links"), smart_open(
+        with subtests.test(msg="dataset catalog links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
             f"{dataset.dataset_prefix}/{CATALOG_KEY}"
         ) as updated_dataset_metadata_file:
             catalog_json = load(updated_dataset_metadata_file)
             assert catalog_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
 
-        with subtests.test(msg="dataset version links"), smart_open(
+        with subtests.test(msg="dataset version links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
             f"/{dataset_version_metadata.key}"
         ) as updated_dataset_metadata_file:
             version_json = load(updated_dataset_metadata_file)
             assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
 
-        with subtests.test(msg="item links"), smart_open(
+        with subtests.test(msg="item links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}" f"/{item_metadata.key}"
         ) as updated_item_metadata_file:
             item_json = load(updated_item_metadata_file)

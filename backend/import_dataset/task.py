@@ -5,8 +5,8 @@ from urllib.parse import quote, urlparse
 from uuid import uuid4
 
 import boto3
+import smart_open
 from jsonschema import ValidationError, validate
-from smart_open import open as smart_open
 
 from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
@@ -96,7 +96,7 @@ class Importer:
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
-        with smart_open(
+        with smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{manifest_key}", "w"
         ) as s3_manifest:
             processing_assets_model = processing_assets_model_with_meta()

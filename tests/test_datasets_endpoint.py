@@ -8,11 +8,11 @@ from json import dumps, load
 from logging import INFO, basicConfig, getLogger
 from unittest.mock import patch
 
+import smart_open
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
-from smart_open import smart_open
 
 from backend.api_keys import MESSAGE_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
@@ -94,7 +94,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
                 }
             },
         }
-        with smart_open(
+        with smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
         ) as new_catalog_metadata_file:
 
