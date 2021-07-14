@@ -114,7 +114,7 @@ def should_batch_copy_files_to_storage(
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     STAC_ASSETS_KEY: {
                         child_asset_name: {
-                            STAC_HREF_KEY: child_asset_s3_object.url,
+                            STAC_HREF_KEY: f"./{child_asset_filename}",
                             STAC_FILE_CHECKSUM_KEY: child_asset_multihash,
                         }
                     },
