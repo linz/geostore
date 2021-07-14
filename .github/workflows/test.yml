@@ -104,6 +104,11 @@ jobs:
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')"
 
+      - name: Run non-infrastructure tests offline
+        run: >
+          poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
+          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
+
       - name: Print CDK version
         run: poetry run cdk --version
 
@@ -124,11 +129,6 @@ jobs:
       - name: Deploy AWS stacks for testing
         run: |
           poetry run cdk deploy --all --require-approval never --strict --change-set-name "ci-${GITHUB_RUN_ID}"
-
-      - name: Run non-infrastructure tests offline
-        run: >
-          poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
 
       - name: Run infrastructure tests online
         run: >
