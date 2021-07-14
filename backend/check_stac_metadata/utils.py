@@ -50,11 +50,16 @@ PROCESSING_ASSET_ASSET_KEY = "asset"
 PROCESSING_ASSET_MULTIHASH_KEY = "multihash"
 PROCESSING_ASSET_URL_KEY = "url"
 
+EXPLICITLY_RELATIVE_PATH_PREFIX = "./"
+
 
 @lru_cache
 def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
     if url_or_path.startswith(S3_URL_PREFIX):
         return url_or_path
+
+    if url_or_path.startswith(EXPLICITLY_RELATIVE_PATH_PREFIX):
+        url_or_path = url_or_path[len(EXPLICITLY_RELATIVE_PATH_PREFIX) :]
 
     return f"{dirname(parent_url)}/{url_or_path}"
 
