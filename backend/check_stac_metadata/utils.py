@@ -53,7 +53,7 @@ PROCESSING_ASSET_URL_KEY = "url"
 
 @lru_cache
 def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) -> str:
-    if url_or_path[:5] == S3_URL_PREFIX:
+    if url_or_path.startswith(S3_URL_PREFIX):
         return url_or_path
 
     return f"{dirname(parent_url)}/{url_or_path}"
