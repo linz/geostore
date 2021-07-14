@@ -228,18 +228,32 @@ def should_batch_copy_files_to_storage(
                     )
 
                 # Then the root asset file is in the root prefix
+                new_root_asset_key = f"{new_prefix}/{root_asset_filename}"
+
+                with subtests.test(msg="Verify root asset contents"), smart_open(
+                    f"{storage_bucket_prefix}{new_root_asset_key}"
+                ) as new_root_asset_file:
+                    assert root_asset_content == new_root_asset_file.read()
+
                 with subtests.test(msg="Delete root asset object"):
                     delete_s3_key(
                         ResourceName.STORAGE_BUCKET_NAME.value,
-                        f"{new_prefix}/{root_asset_filename}",
+                        new_root_asset_key,
                         s3_client,
                     )
 
                 # Then the child asset file is in the root prefix
+                new_child_asset_key = f"{new_prefix}/{child_asset_filename}"
+
+                with subtests.test(msg="Verify child asset contents"), smart_open(
+                    f"{storage_bucket_prefix}{new_child_asset_key}"
+                ) as new_child_asset_file:
+                    assert child_asset_content == new_child_asset_file.read()
+
                 with subtests.test(msg="Delete child asset object"):
                     delete_s3_key(
                         ResourceName.STORAGE_BUCKET_NAME.value,
-                        f"{new_prefix}/{child_asset_filename}",
+                        new_child_asset_key,
                         s3_client,
                     )
 
