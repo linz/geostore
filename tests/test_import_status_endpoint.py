@@ -3,6 +3,7 @@ Dataset Versions endpoint Lambda function tests.
 """
 from http import HTTPStatus
 from json import dumps
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -36,6 +37,7 @@ from backend.step_function_keys import (
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
+from backend.types import JsonObject
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -159,6 +161,11 @@ def should_report_s3_batch_upload_task_failures(
     describe_step_function_mock: MagicMock,
 ) -> None:
     # Given
+    metadata_job_id = any_job_id()
+    asset_job_id = any_job_id()
+    metadata_failed_task_count = 1
+    asset_failed_task_count = 2
+
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_SUCCEEDED,
         INPUT_KEY: dumps(
@@ -168,20 +175,30 @@ def should_report_s3_batch_upload_task_failures(
             {
                 VALIDATION_KEY: {SUCCESS_KEY: True},
                 IMPORT_DATASET_KEY: {
-                    METADATA_JOB_ID_KEY: any_job_id(),
-                    ASSET_JOB_ID_KEY: any_job_id(),
+                    METADATA_JOB_ID_KEY: metadata_job_id,
+                    ASSET_JOB_ID_KEY: asset_job_id,
                 },
             }
         ),
     }
 
-    describe_s3_job_mock.return_value = {
-        "Job": {
-            "Status": S3_BATCH_STATUS_COMPLETE,
-            "FailureReasons": [],
-            "ProgressSummary": {"NumberOfTasksFailed": 1},
+    def get_failed_task_count(job_id: str) -> int:
+        if job_id == metadata_job_id:
+            return metadata_failed_task_count
+        if job_id == asset_job_id:
+            return asset_failed_task_count
+        assert False, f"Unknown job ID {job_id}"
+
+    def describe_job_mock(**kwargs: Any) -> JsonObject:
+        return {
+            "Job": {
+                "Status": S3_BATCH_STATUS_COMPLETE,
+                "FailureReasons": [],
+                "ProgressSummary": {"NumberOfTasksFailed": get_failed_task_count(kwargs["JobId"])},
+            }
         }
-    }
+
+    describe_s3_job_mock.side_effect = describe_job_mock
 
     expected_response = {
         STATUS_CODE_KEY: HTTPStatus.OK,
@@ -190,11 +207,11 @@ def should_report_s3_batch_upload_task_failures(
             VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
             METADATA_UPLOAD_KEY: {
                 STATUS_KEY: S3_BATCH_STATUS_FAILED,
-                ERRORS_KEY: {FAILED_TASKS_KEY: 1, FAILURE_REASONS_KEY: []},
+                ERRORS_KEY: {FAILED_TASKS_KEY: metadata_failed_task_count, FAILURE_REASONS_KEY: []},
             },
             ASSET_UPLOAD_KEY: {
                 STATUS_KEY: S3_BATCH_STATUS_FAILED,
-                ERRORS_KEY: {FAILED_TASKS_KEY: 1, FAILURE_REASONS_KEY: []},
+                ERRORS_KEY: {FAILED_TASKS_KEY: asset_failed_task_count, FAILURE_REASONS_KEY: []},
             },
         },
     }
