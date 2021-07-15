@@ -22,7 +22,11 @@ class TestLogging:
     ) -> None:
         # Given
         describe_s3_job_mock.return_value = s3_batch_response = {
-            "Job": {"Status": "Some Response", "ProgressSummary": {"NumberOfTasksFailed": 0}}
+            "Job": {
+                "Status": "Some Response",
+                "FailureReasons": [],
+                "ProgressSummary": {"NumberOfTasksFailed": 0},
+            }
         }
         expected_response_log = dumps({S3_BATCH_RESPONSE_KEY: s3_batch_response})
 
