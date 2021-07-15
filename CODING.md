@@ -195,6 +195,10 @@ validated automatically.
   it easier to search through the tests for similar ones to use as a template for a new one, and
   makes it faster to understand what's gone wrong when an old test fails in CI.
 
+- To reproduce pipeline non-infrastructure test runs, make sure to
+  `unset AWS_DEFAULT_REGION AWS_PROFILE` and `mv ~/.aws{,.orig}` (undo with `mv ~/.aws{.orig,}`)
+  first.
+
 ### AWS Lambda
 
 - To speed up our lambdas, boto3 clients and other large pieces of setup should be initialised
