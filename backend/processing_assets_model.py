@@ -6,6 +6,7 @@ from typing import Optional, Type
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.models import Model
 
+from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .parameter_store import ParameterName, get_param
 
 
@@ -30,6 +31,6 @@ def processing_assets_model_with_meta(
     class ProcessingAssetsModel(ProcessingAssetsModelBase):
         class Meta:  # pylint:disable=too-few-public-methods
             table_name = assets_table_name
-            region = environ["AWS_DEFAULT_REGION"]
+            region = environ[AWS_DEFAULT_REGION_KEY]
 
     return ProcessingAssetsModel
