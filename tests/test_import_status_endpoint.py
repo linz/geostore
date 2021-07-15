@@ -165,6 +165,10 @@ def should_report_s3_batch_upload_task_failures(
     asset_job_id = any_job_id()
     metadata_failed_task_count = 1
     asset_failed_task_count = 2
+    id_count_mapping = {
+        metadata_job_id: metadata_failed_task_count,
+        asset_job_id: asset_failed_task_count,
+    }
 
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_SUCCEEDED,
@@ -182,19 +186,12 @@ def should_report_s3_batch_upload_task_failures(
         ),
     }
 
-    def get_failed_task_count(job_id: str) -> int:
-        if job_id == metadata_job_id:
-            return metadata_failed_task_count
-        if job_id == asset_job_id:
-            return asset_failed_task_count
-        assert False, f"Unknown job ID {job_id}"
-
     def describe_job_mock(**kwargs: Any) -> JsonObject:
         return {
             "Job": {
                 "Status": S3_BATCH_STATUS_COMPLETE,
                 "FailureReasons": [],
-                "ProgressSummary": {"NumberOfTasksFailed": get_failed_task_count(kwargs["JobId"])},
+                "ProgressSummary": {"NumberOfTasksFailed": id_count_mapping.get(kwargs["JobId"])},
             }
         }
 
