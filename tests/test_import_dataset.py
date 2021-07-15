@@ -4,11 +4,11 @@ from hashlib import sha256
 from io import BytesIO
 from json import dumps
 
+import smart_open
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
 from pytest import mark
 from pytest_subtests import SubTests
-from smart_open import smart_open
 
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.error_response_keys import ERROR_MESSAGE_KEY
@@ -195,8 +195,8 @@ def should_batch_copy_files_to_storage(
                         STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_filename, "rel": "child"}],
                     }
                 ).encode()
-                with subtests.test(msg="Root metadata content"), smart_open(
-                    f"{storage_bucket_prefix}{new_root_metadata_key}"
+                with subtests.test(msg="Root metadata content"), smart_open.open(
+                    f"{storage_bucket_prefix}{new_root_metadata_key}", mode="rb"
                 ) as new_root_metadata_file:
                     assert expected_root_metadata == new_root_metadata_file.read()
 
@@ -217,8 +217,8 @@ def should_batch_copy_files_to_storage(
                         },
                     }
                 ).encode()
-                with subtests.test(msg="Child metadata content"), smart_open(
-                    f"{storage_bucket_prefix}{new_child_metadata_key}"
+                with subtests.test(msg="Child metadata content"), smart_open.open(
+                    f"{storage_bucket_prefix}{new_child_metadata_key}", mode="rb"
                 ) as new_child_metadata_file:
                     assert expected_child_metadata == new_child_metadata_file.read()
 
@@ -230,8 +230,8 @@ def should_batch_copy_files_to_storage(
                 # Then the root asset file is in the root prefix
                 new_root_asset_key = f"{new_prefix}/{root_asset_filename}"
 
-                with subtests.test(msg="Verify root asset contents"), smart_open(
-                    f"{storage_bucket_prefix}{new_root_asset_key}"
+                with subtests.test(msg="Verify root asset contents"), smart_open.open(
+                    f"{storage_bucket_prefix}{new_root_asset_key}", mode="rb"
                 ) as new_root_asset_file:
                     assert root_asset_content == new_root_asset_file.read()
 
@@ -245,8 +245,8 @@ def should_batch_copy_files_to_storage(
                 # Then the child asset file is in the root prefix
                 new_child_asset_key = f"{new_prefix}/{child_asset_filename}"
 
-                with subtests.test(msg="Verify child asset contents"), smart_open(
-                    f"{storage_bucket_prefix}{new_child_asset_key}"
+                with subtests.test(msg="Verify child asset contents"), smart_open.open(
+                    f"{storage_bucket_prefix}{new_child_asset_key}", mode="rb"
                 ) as new_child_asset_file:
                     assert child_asset_content == new_child_asset_file.read()
 
