@@ -196,7 +196,7 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open.open(
-                    f"{storage_bucket_prefix}{new_root_metadata_key}"
+                    f"{storage_bucket_prefix}{new_root_metadata_key}", mode="rb"
                 ) as new_root_metadata_file:
                     assert expected_root_metadata == new_root_metadata_file.read()
 
@@ -218,7 +218,7 @@ def should_batch_copy_files_to_storage(
                     }
                 ).encode()
                 with subtests.test(msg="Child metadata content"), smart_open.open(
-                    f"{storage_bucket_prefix}{new_child_metadata_key}"
+                    f"{storage_bucket_prefix}{new_child_metadata_key}", mode="rb"
                 ) as new_child_metadata_file:
                     assert expected_child_metadata == new_child_metadata_file.read()
 
@@ -231,7 +231,7 @@ def should_batch_copy_files_to_storage(
                 new_root_asset_key = f"{new_prefix}/{root_asset_filename}"
 
                 with subtests.test(msg="Verify root asset contents"), smart_open.open(
-                    f"{storage_bucket_prefix}{new_root_asset_key}"
+                    f"{storage_bucket_prefix}{new_root_asset_key}", mode="rb"
                 ) as new_root_asset_file:
                     assert root_asset_content == new_root_asset_file.read()
 
@@ -246,7 +246,7 @@ def should_batch_copy_files_to_storage(
                 new_child_asset_key = f"{new_prefix}/{child_asset_filename}"
 
                 with subtests.test(msg="Verify child asset contents"), smart_open.open(
-                    f"{storage_bucket_prefix}{new_child_asset_key}"
+                    f"{storage_bucket_prefix}{new_child_asset_key}", mode="rb"
                 ) as new_child_asset_file:
                     assert child_asset_content == new_child_asset_file.read()
 

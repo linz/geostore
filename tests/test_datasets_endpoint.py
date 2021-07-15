@@ -95,7 +95,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             },
         }
         with smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}"
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}", mode="rb"
         ) as new_catalog_metadata_file:
 
             catalog_json = load(new_catalog_metadata_file)
