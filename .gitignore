@@ -10,3 +10,4 @@ __pycache__
 Thumbs.db
 /.venv
 /.vscode
+*.isorted

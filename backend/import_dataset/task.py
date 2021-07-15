@@ -63,14 +63,7 @@ LOGGER = set_up_logging(__name__)
 S3_CLIENT: S3Client = boto3.client("s3")
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
 
-IMPORT_ASSET_FILE_TASK_ARN = get_param(ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN)
-IMPORT_METADATA_FILE_TASK_ARN = get_param(
-    ParameterName.PROCESSING_IMPORT_METADATA_FILE_FUNCTION_TASK_ARN
-)
-
 STORAGE_BUCKET_ARN = f"arn:aws:s3:::{ResourceName.STORAGE_BUCKET_NAME.value}"
-
-S3_BATCH_COPY_ROLE_ARN = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN)
 
 JOB_MANIFEST_FORMAT: JobManifestFormatType = "S3BatchOperations_CSV_20180820"
 JOB_MANIFEST_FIELD_NAMES: List[JobManifestFieldNameType] = ["Bucket", "Key"]
@@ -93,6 +86,7 @@ class Importer:
         self.source_bucket_name = source_bucket_name
         self.dataset_prefix = dataset_prefix
         self.s3_role_arn = s3_role_arn
+        self.s3_batch_copy_role_arn = get_param(ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN)
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
         manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
@@ -153,7 +147,7 @@ class Importer:
                 ReportScope=JOB_REPORT_SCOPE,
             ),
             Priority=1,
-            RoleArn=S3_BATCH_COPY_ROLE_ARN,
+            RoleArn=self.s3_batch_copy_role_arn,
             ClientRequestToken=uuid4().hex,
         )
         LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: response}, default=str))
@@ -200,7 +194,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         source_bucket_name,
         event[S3_ROLE_ARN_KEY],
     )
-    asset_job_id = importer.run(IMPORT_ASSET_FILE_TASK_ARN, ProcessingAssetType.DATA)
-    metadata_job_id = importer.run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)
+
+    import_asset_file_task_arn = get_param(
+        ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN
+    )
+    import_metadata_file_task_arn = get_param(
+        ParameterName.PROCESSING_IMPORT_METADATA_FILE_FUNCTION_TASK_ARN
+    )
+    asset_job_id = importer.run(import_asset_file_task_arn, ProcessingAssetType.DATA)
+    metadata_job_id = importer.run(import_metadata_file_task_arn, ProcessingAssetType.METADATA)
 
     return {ASSET_JOB_ID_KEY: asset_job_id, METADATA_JOB_ID_KEY: metadata_job_id}

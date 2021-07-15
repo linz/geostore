@@ -1,48 +1,56 @@
 from io import BytesIO
 from json import dumps
+from os import environ
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 
-from backend.import_asset_file.task import lambda_handler
-from backend.import_dataset_file import (
-    EXCEPTION_PREFIX,
-    INVOCATION_ID_KEY,
-    INVOCATION_SCHEMA_VERSION_KEY,
-    RESULTS_KEY,
-    RESULT_CODE_KEY,
-    RESULT_CODE_PERMANENT_FAILURE,
-    RESULT_STRING_KEY,
-    S3_BUCKET_ARN_KEY,
-    S3_KEY_KEY,
-    TASKS_KEY,
-    TASK_ID_KEY,
-)
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from backend.resources import ResourceName
-from backend.s3 import CHUNK_SIZE
-from backend.step_function_keys import S3_ROLE_ARN_KEY
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import (
-    S3Object,
-    any_invocation_id,
-    any_invocation_schema_version,
-    any_lambda_context,
-    any_role_arn,
-    any_s3_bucket_arn,
-    any_s3_bucket_name,
-    any_task_id,
-    delete_s3_key,
-    get_s3_role_arn,
-)
-from .general_generators import (
-    any_error_message,
-    any_file_contents,
-    any_safe_file_path,
-    any_safe_filename,
-)
+from .aws_profile_utils import any_region_name
+
+with patch.dict(
+    environ, {AWS_DEFAULT_REGION_KEY: environ.get(AWS_DEFAULT_REGION_KEY, any_region_name())}
+):
+    from backend.import_asset_file.task import lambda_handler
+    from backend.import_dataset_file import (
+        EXCEPTION_PREFIX,
+        INVOCATION_ID_KEY,
+        INVOCATION_SCHEMA_VERSION_KEY,
+        RESULTS_KEY,
+        RESULT_CODE_KEY,
+        RESULT_CODE_PERMANENT_FAILURE,
+        RESULT_STRING_KEY,
+        S3_BUCKET_ARN_KEY,
+        S3_KEY_KEY,
+        TASKS_KEY,
+        TASK_ID_KEY,
+    )
+    from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+    from backend.resources import ResourceName
+    from backend.s3 import CHUNK_SIZE
+    from backend.step_function_keys import S3_ROLE_ARN_KEY
+
+    from .aws_utils import (
+        S3Object,
+        any_invocation_id,
+        any_invocation_schema_version,
+        any_lambda_context,
+        any_role_arn,
+        any_s3_bucket_arn,
+        any_s3_bucket_name,
+        any_task_id,
+        delete_s3_key,
+        get_s3_role_arn,
+    )
+    from .general_generators import (
+        any_error_message,
+        any_file_contents,
+        any_safe_file_path,
+        any_safe_filename,
+    )
 
 
 @patch("backend.import_asset_file.task.smart_open.open")

@@ -2,32 +2,16 @@ from copy import deepcopy
 from io import StringIO
 from json import JSONDecodeError, dumps
 from logging import getLogger
+from os import environ
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 
-from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.check_stac_metadata.utils import (
-    PROCESSING_ASSET_ASSET_KEY,
-    PROCESSING_ASSET_MULTIHASH_KEY,
-    PROCESSING_ASSET_URL_KEY,
-    STACDatasetValidator,
-)
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
-from .general_generators import any_error_message, any_https_url, any_safe_filename
-from .stac_generators import (
-    any_asset_name,
-    any_dataset_id,
-    any_dataset_version_id,
-    any_hex_multihash,
-)
-from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+from .aws_profile_utils import any_region_name
 
 if TYPE_CHECKING:
     from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
@@ -36,6 +20,28 @@ if TYPE_CHECKING:
     )
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
+    from backend.check_stac_metadata.utils import (
+        PROCESSING_ASSET_ASSET_KEY,
+        PROCESSING_ASSET_MULTIHASH_KEY,
+        PROCESSING_ASSET_URL_KEY,
+        STACDatasetValidator,
+    )
+    from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+    from backend.s3 import S3_URL_PREFIX
+    from backend.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
+
+    from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
+    from .general_generators import any_error_message, any_https_url, any_safe_filename
+    from .stac_generators import (
+        any_asset_name,
+        any_dataset_id,
+        any_dataset_version_id,
+        any_hex_multihash,
+    )
+    from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 LOGGER = getLogger("backend.check_stac_metadata.utils")
 

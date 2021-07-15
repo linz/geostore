@@ -2,33 +2,15 @@ from copy import deepcopy
 from io import StringIO
 from json import dumps
 from logging import getLogger
+from os import environ
+from random import choice
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
+from botocore.args import LEGACY_GLOBAL_STS_REGIONS
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 from pytest_subtests import SubTests
-
-from backend.api_keys import EVENT_KEY
-from backend.check_stac_metadata.task import lambda_handler
-from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from backend.import_metadata_file.task import S3_BODY_KEY
-from backend.step_function_keys import (
-    DATASET_ID_KEY,
-    METADATA_URL_KEY,
-    S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
-)
-from tests.aws_utils import (
-    any_error_code,
-    any_lambda_context,
-    any_operation_name,
-    any_role_arn,
-    any_s3_url,
-)
-from tests.general_generators import any_error_message
-from tests.stac_generators import any_dataset_id, any_dataset_version_id
-from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
     from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
@@ -37,6 +19,30 @@ if TYPE_CHECKING:
     )
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+
+with patch.dict(environ, {"AWS_DEFAULT_REGION": choice(LEGACY_GLOBAL_STS_REGIONS)}):
+    from backend.api_keys import EVENT_KEY
+    from backend.aws_keys import AWS_DEFAULT_REGION_KEY
+    from backend.check_stac_metadata.task import lambda_handler
+    from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+    from backend.import_metadata_file.task import S3_BODY_KEY
+    from backend.step_function_keys import (
+        DATASET_ID_KEY,
+        METADATA_URL_KEY,
+        S3_ROLE_ARN_KEY,
+        VERSION_ID_KEY,
+    )
+    from tests.aws_profile_utils import any_region_name
+    from tests.aws_utils import (
+        any_error_code,
+        any_lambda_context,
+        any_operation_name,
+        any_role_arn,
+        any_s3_url,
+    )
+    from tests.general_generators import any_error_message
+    from tests.stac_generators import any_dataset_id, any_dataset_version_id
+    from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 MINIMAL_PAYLOAD = {
     DATASET_ID_KEY: any_dataset_id(),
@@ -56,8 +62,12 @@ def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
-    with patch.object(LOGGER, "debug") as logger_mock, patch(
-        "backend.check_stac_metadata.task.STACDatasetValidator.run"
+    with patch("backend.check_stac_metadata.task.STACDatasetValidator.run"), patch(
+        "backend.parameter_store.SSM_CLIENT"
+    ), patch("backend.validation_results_model.validation_results_model_with_meta"), patch.object(
+        LOGGER, "debug"
+    ) as logger_mock, patch.dict(
+        environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}
     ):
         lambda_handler(payload, any_lambda_context())
 

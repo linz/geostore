@@ -1,13 +1,19 @@
 from json import dumps
 from logging import Logger, getLogger
+from os import environ
 from unittest.mock import MagicMock, patch
 
-from backend.api_keys import EVENT_KEY, SUCCESS_KEY
-from backend.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
-from backend.validation_summary import task
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import any_lambda_context
-from .stac_generators import any_dataset_id, any_dataset_version_id
+from .aws_profile_utils import any_region_name
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.api_keys import EVENT_KEY, SUCCESS_KEY
+    from backend.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
+    from backend.validation_summary import task
+
+    from .aws_utils import any_lambda_context
+    from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 class TestLogging:

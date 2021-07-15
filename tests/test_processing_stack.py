@@ -4,7 +4,9 @@ from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load, loads
 from logging import INFO, basicConfig, getLogger
+from os import environ
 from time import sleep
+from unittest.mock import patch
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
@@ -16,6 +18,7 @@ from pytest_subtests import SubTests
 
 from backend.api_keys import STATUS_KEY
 from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 from backend.datasets_model import DATASET_KEY_SEPARATOR
 from backend.parameter_store import ParameterName
 from backend.resources import ResourceName
@@ -30,7 +33,6 @@ from backend.stac_format import (
     STAC_REL_ROOT,
     STAC_REL_SELF,
 )
-from backend.step_function import Outcome
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
@@ -48,6 +50,7 @@ from backend.step_function_keys import (
 )
 from backend.sts import get_account_number
 
+from .aws_profile_utils import any_region_name
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
     Dataset,
@@ -65,6 +68,11 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
     MINIMAL_VALID_STAC_ITEM_OBJECT,
 )
+
+with patch.dict(
+    environ, {AWS_DEFAULT_REGION_KEY: environ.get(AWS_DEFAULT_REGION_KEY, any_region_name())}
+):
+    from backend.step_function import Outcome
 
 basicConfig(level=INFO)
 LOGGER = getLogger(__name__)

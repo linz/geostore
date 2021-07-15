@@ -1,18 +1,24 @@
 from json import dumps
+from os import environ
 from unittest.mock import MagicMock, patch
 
-from backend.api_keys import EVENT_KEY, SUCCESS_KEY
-from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.step_function_keys import (
-    DATASET_ID_KEY,
-    IMPORT_DATASET_KEY,
-    VALIDATION_KEY,
-    VERSION_ID_KEY,
-)
-from backend.upload_status.task import lambda_handler
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import any_job_id, any_lambda_context
-from .stac_generators import any_dataset_id, any_dataset_version_id
+from .aws_profile_utils import any_region_name
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.api_keys import EVENT_KEY, SUCCESS_KEY
+    from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+    from backend.step_function_keys import (
+        DATASET_ID_KEY,
+        IMPORT_DATASET_KEY,
+        VALIDATION_KEY,
+        VERSION_ID_KEY,
+    )
+    from backend.upload_status.task import lambda_handler
+
+    from .aws_utils import any_job_id, any_lambda_context
+    from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 @patch("backend.upload_status.task.get_tasks_status")

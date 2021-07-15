@@ -1,3 +1,4 @@
+from os import environ
 from typing import cast
 from unittest.mock import MagicMock, patch
 
@@ -5,8 +6,8 @@ from jsonschema import ValidationError
 from pytest import raises
 
 from backend.api_keys import SUCCESS_KEY
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.step_function import Outcome
 from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -22,8 +23,12 @@ from backend.step_function_keys import (
 from backend.types import JsonObject
 from backend.upload_status.task import lambda_handler
 
+from .aws_profile_utils import any_region_name
 from .aws_utils import any_account_id, any_batch_job_status, any_job_id, any_lambda_context
 from .stac_generators import any_dataset_id, any_dataset_version_id
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.step_function import Outcome
 
 
 def should_raise_exception_when_missing_mandatory_execution_arn() -> None:

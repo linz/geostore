@@ -1,40 +1,44 @@
 from copy import deepcopy
+from os import environ
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
-from pytest import mark, raises
+from pytest import raises
 from pytest_subtests import SubTests
 
-from backend.content_iterator.task import (
-    ASSETS_TABLE_NAME_KEY,
-    CONTENT_KEY,
-    FIRST_ITEM_KEY,
-    ITERATION_SIZE_KEY,
-    MAX_ITERATION_SIZE,
-    NEXT_ITEM_KEY,
-    RESULTS_TABLE_NAME_KEY,
-    lambda_handler,
-)
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.step_function_keys import (
-    DATASET_ID_KEY,
-    METADATA_URL_KEY,
-    S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
-)
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import (
-    any_item_count,
-    any_lambda_context,
-    any_next_item_index,
-    any_role_arn,
-    any_s3_url,
-    any_table_name,
-)
-from .general_generators import any_dictionary_key
-from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
+from .aws_profile_utils import any_region_name
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.content_iterator.task import (
+        ASSETS_TABLE_NAME_KEY,
+        CONTENT_KEY,
+        FIRST_ITEM_KEY,
+        ITERATION_SIZE_KEY,
+        MAX_ITERATION_SIZE,
+        NEXT_ITEM_KEY,
+        RESULTS_TABLE_NAME_KEY,
+        lambda_handler,
+    )
+    from backend.step_function_keys import (
+        DATASET_ID_KEY,
+        METADATA_URL_KEY,
+        S3_ROLE_ARN_KEY,
+        VERSION_ID_KEY,
+    )
+
+    from .aws_utils import (
+        any_item_count,
+        any_lambda_context,
+        any_next_item_index,
+        any_role_arn,
+        any_s3_url,
+        any_table_name,
+    )
+    from .general_generators import any_dictionary_key
+    from .stac_generators import any_dataset_id, any_dataset_version_id
 
 INITIAL_EVENT: Dict[str, Any] = {
     DATASET_ID_KEY: any_dataset_id(),
@@ -142,7 +146,8 @@ def should_return_zero_as_first_item_if_no_content(
     event = deepcopy(INITIAL_EVENT)
     processing_assets_model_mock.return_value.count.return_value = any_item_count()
 
-    response = lambda_handler(event, any_lambda_context())
+    with patch("backend.parameter_store.SSM_CLIENT"):
+        response = lambda_handler(event, any_lambda_context())
 
     assert response[FIRST_ITEM_KEY] == "0", response
 
@@ -154,7 +159,8 @@ def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMoc
     event[CONTENT_KEY][NEXT_ITEM_KEY] = next_item_index
     processing_assets_model_mock.return_value.count.return_value = any_item_count()
 
-    response = lambda_handler(event, any_lambda_context())
+    with patch("backend.parameter_store.SSM_CLIENT"):
+        response = lambda_handler(event, any_lambda_context())
 
     assert response[FIRST_ITEM_KEY] == str(next_item_index), response
 
@@ -250,31 +256,3 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     response = lambda_handler(event, any_lambda_context())
 
     assert response == expected_response, response
-
-
-@mark.infrastructure
-def should_count_only_asset_files() -> None:
-    # Given a single metadata and asset entry in the database
-    event = deepcopy(INITIAL_EVENT)
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{event['dataset_id']}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
-    )
-    processing_assets_model = processing_assets_model_with_meta()
-    processing_assets_model(
-        hash_key=hash_key,
-        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
-        url=any_s3_url(),
-    ).save()
-    processing_assets_model(
-        hash_key=hash_key,
-        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
-        url=any_s3_url(),
-        multihash=any_hex_multihash(),
-    ).save()
-
-    # When running the Lambda handler
-    response = lambda_handler(event, any_lambda_context())
-
-    # Then the iteration size should be one
-    assert response[ITERATION_SIZE_KEY] == 1

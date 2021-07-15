@@ -12,35 +12,9 @@ from multihash import SHA2_256
 from pytest import raises
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.check import Check
-from backend.check_files_checksums.task import main
-from backend.check_files_checksums.utils import (
-    ARRAY_INDEX_VARIABLE_NAME,
-    ChecksumMismatchError,
-    ChecksumValidator,
-    get_job_offset,
-)
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
-from backend.s3 import CHUNK_SIZE
-from backend.validation_results_model import ValidationResult
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import (
-    MockValidationResultFactory,
-    any_batch_job_array_index,
-    any_role_arn,
-    any_s3_url,
-    any_table_name,
-)
-from .general_generators import any_program_name
-from .stac_generators import (
-    any_dataset_id,
-    any_dataset_version_id,
-    any_hex_multihash,
-    any_sha256_hex_digest,
-    sha256_hex_digest_to_multihash,
-)
+from .aws_profile_utils import any_region_name
 
 if TYPE_CHECKING:
     from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
@@ -49,6 +23,37 @@ if TYPE_CHECKING:
     )
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+
+with patch.dict(environ, {AWS_DEFAULT_REGION_KEY: any_region_name()}, clear=True):
+    from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
+    from backend.check import Check
+    from backend.check_files_checksums.task import main
+    from backend.check_files_checksums.utils import (
+        ARRAY_INDEX_VARIABLE_NAME,
+        ChecksumMismatchError,
+        ChecksumValidator,
+        get_job_offset,
+    )
+    from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+    from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+    from backend.s3 import CHUNK_SIZE
+    from backend.validation_results_model import ValidationResult
+
+    from .aws_utils import (
+        MockValidationResultFactory,
+        any_batch_job_array_index,
+        any_role_arn,
+        any_s3_url,
+        any_table_name,
+    )
+    from .general_generators import any_program_name
+    from .stac_generators import (
+        any_dataset_id,
+        any_dataset_version_id,
+        any_hex_multihash,
+        any_sha256_hex_digest,
+        sha256_hex_digest_to_multihash,
+    )
 
 SHA256_CHECKSUM_BYTE_COUNT = 32
 

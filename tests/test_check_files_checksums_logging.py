@@ -8,17 +8,24 @@ from pynamodb.exceptions import DoesNotExist
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.check_files_checksums.task import main
-from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
-from backend.error_response_keys import ERROR_KEY
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.parameter_store import ParameterName, get_param
-from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 
-from .aws_utils import get_s3_role_arn
-from .general_generators import any_program_name
-from .stac_generators import any_dataset_id, any_dataset_version_id
+from .aws_profile_utils import any_region_name
+
+with patch.dict(
+    environ, {AWS_DEFAULT_REGION_KEY: environ.get(AWS_DEFAULT_REGION_KEY, any_region_name())}
+):
+    from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
+    from backend.check_files_checksums.task import main
+    from backend.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
+    from backend.error_response_keys import ERROR_KEY
+    from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+    from backend.parameter_store import ParameterName, get_param
+    from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+
+    from .aws_utils import get_s3_role_arn
+    from .general_generators import any_program_name
+    from .stac_generators import any_dataset_id, any_dataset_version_id
 
 LOGGER = getLogger("backend.check_files_checksums.task")
 

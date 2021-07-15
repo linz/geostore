@@ -1,34 +1,41 @@
 from copy import deepcopy
+from os import environ
+from random import choice
 from unittest.mock import MagicMock, patch
 
+from botocore.args import LEGACY_GLOBAL_STS_REGIONS
 from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.aws_message_attributes import (
-    DATA_TYPE_KEY,
-    DATA_TYPE_STRING,
-    MESSAGE_ATTRIBUTE_TYPE_DATASET,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-    STRING_VALUE_KEY,
-)
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.step_function_keys import (
-    DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
-    METADATA_URL_KEY,
-    NEW_VERSION_S3_LOCATION,
-    S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
-)
-from backend.update_dataset_catalog.task import lambda_handler
-from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
-from tests.file_utils import json_dict_to_file_object
-from tests.general_generators import any_error_message, any_safe_filename
-from tests.stac_generators import any_dataset_version_id
-from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+with patch.dict(
+    environ,
+    {"AWS_DEFAULT_REGION": environ.get("AWS_DEFAULT_REGION", choice(LEGACY_GLOBAL_STS_REGIONS))},
+):
+    from backend.aws_message_attributes import (
+        DATA_TYPE_KEY,
+        DATA_TYPE_STRING,
+        MESSAGE_ATTRIBUTE_TYPE_DATASET,
+        MESSAGE_ATTRIBUTE_TYPE_KEY,
+        STRING_VALUE_KEY,
+    )
+    from backend.error_response_keys import ERROR_MESSAGE_KEY
+    from backend.resources import ResourceName
+    from backend.s3 import S3_URL_PREFIX
+    from backend.step_function_keys import (
+        DATASET_ID_KEY,
+        DATASET_PREFIX_KEY,
+        METADATA_URL_KEY,
+        NEW_VERSION_S3_LOCATION,
+        S3_ROLE_ARN_KEY,
+        VERSION_ID_KEY,
+    )
+    from backend.update_dataset_catalog.task import lambda_handler
+    from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
+    from tests.file_utils import json_dict_to_file_object
+    from tests.general_generators import any_error_message, any_safe_filename
+    from tests.stac_generators import any_dataset_version_id
+    from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
 @mark.infrastructure
