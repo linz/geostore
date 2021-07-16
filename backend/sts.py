@@ -3,12 +3,14 @@ from typing import TYPE_CHECKING
 
 import boto3
 
+from .boto3_config import CONFIG
+
 if TYPE_CHECKING:
     from mypy_boto3_sts import STSClient
 else:
     STSClient = object
 
-STS_CLIENT: STSClient = boto3.client("sts")
+STS_CLIENT: STSClient = boto3.client("sts", config=CONFIG)
 
 
 @lru_cache

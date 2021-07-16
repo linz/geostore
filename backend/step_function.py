@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional
 import boto3
 
 from .api_keys import SUCCESS_KEY
+from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
 from .step_function_keys import (
@@ -55,8 +56,8 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 }
 
 
-STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
-S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
+STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
+S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
 LOGGER = set_up_logging(__name__)
 
 

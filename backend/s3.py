@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import boto3
 
+from .boto3_config import CONFIG
 from .environment import environment_name
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ S3_URL_PREFIX = f"{S3_SCHEMA}://"
 
 CHUNK_SIZE = 1024
 
-STS_CLIENT: STSClient = boto3.client("sts")
+STS_CLIENT: STSClient = boto3.client("sts", config=CONFIG)
 
 
 def get_s3_client_for_role(role_arn: str) -> S3Client:
@@ -27,6 +28,7 @@ def get_s3_client_for_role(role_arn: str) -> S3Client:
     credentials = assume_role_response["Credentials"]
     client: S3Client = boto3.client(
         "s3",
+        config=CONFIG,
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
