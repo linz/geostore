@@ -36,6 +36,8 @@ from backend.step_function_keys import (
     DATASET_ID_SHORT_KEY,
     ERRORS_KEY,
     EXECUTION_ARN_KEY,
+    FAILED_TASKS_KEY,
+    FAILURE_REASONS_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
@@ -264,8 +266,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             BODY_KEY: {
                 STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
                 VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
-                METADATA_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
-                ASSET_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
+                METADATA_UPLOAD_KEY: {
+                    STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE,
+                    ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+                },
+                ASSET_UPLOAD_KEY: {
+                    STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE,
+                    ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+                },
             },
         }
         status_resp = lambda_client.invoke(
@@ -399,8 +407,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             BODY_KEY: {
                 STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
                 VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
-                METADATA_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
-                ASSET_UPLOAD_KEY: {STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE, ERRORS_KEY: []},
+                METADATA_UPLOAD_KEY: {
+                    STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE,
+                    ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+                },
+                ASSET_UPLOAD_KEY: {
+                    STATUS_KEY: S3_BATCH_JOB_COMPLETED_STATE,
+                    ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+                },
             },
         }
         status_resp = lambda_client.invoke(

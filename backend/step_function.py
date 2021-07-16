@@ -15,11 +15,14 @@ from .step_function_keys import (
     ERROR_DETAILS_KEY,
     ERROR_RESULT_KEY,
     ERROR_URL_KEY,
+    FAILED_TASKS_KEY,
+    FAILURE_REASONS_KEY,
     IMPORT_DATASET_KEY,
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
     S3_BATCH_RESPONSE_KEY,
+    S3_BATCH_STATUS_FAILED,
     STATUS_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
@@ -160,7 +163,13 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
     LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: s3_batch_copy_resp}, default=str))
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
+    failure_reasons = s3_batch_copy_resp["Job"]["FailureReasons"]
+    failed_tasks = s3_batch_copy_resp["Job"]["ProgressSummary"]["NumberOfTasksFailed"]
 
-    upload_errors = s3_batch_copy_resp["Job"].get("FailureReasons", [])
+    if failed_tasks > 0:
+        s3_batch_copy_status = S3_BATCH_STATUS_FAILED
 
-    return {STATUS_KEY: s3_batch_copy_status, ERRORS_KEY: upload_errors}
+    return {
+        STATUS_KEY: s3_batch_copy_status,
+        ERRORS_KEY: {FAILED_TASKS_KEY: failed_tasks, FAILURE_REASONS_KEY: failure_reasons},
+    }

@@ -29,6 +29,9 @@ from backend.step_function_keys import (
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
+    S3_BATCH_STATUS_CANCELLED,
+    S3_BATCH_STATUS_COMPLETE,
+    S3_BATCH_STATUS_FAILED,
     S3_ROLE_ARN_KEY,
     UPDATE_DATASET_KEY,
     UPLOAD_STATUS_KEY,
@@ -443,11 +446,12 @@ class Processing(Construct):
                                 .when(
                                     aws_stepfunctions.Condition.and_(
                                         aws_stepfunctions.Condition.string_equals(
-                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status", "Complete"
+                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status",
+                                            S3_BATCH_STATUS_COMPLETE,
                                         ),
                                         aws_stepfunctions.Condition.string_equals(
                                             f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
-                                            "Complete",
+                                            S3_BATCH_STATUS_COMPLETE,
                                         ),
                                     ),
                                     update_dataset_catalog.next(
@@ -458,18 +462,19 @@ class Processing(Construct):
                                     aws_stepfunctions.Condition.or_(
                                         aws_stepfunctions.Condition.string_equals(
                                             f"$.upload_status.{ASSET_UPLOAD_KEY}.status",
-                                            "Cancelled",
+                                            S3_BATCH_STATUS_CANCELLED,
                                         ),
                                         aws_stepfunctions.Condition.string_equals(
-                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status", "Failed"
-                                        ),
-                                        aws_stepfunctions.Condition.string_equals(
-                                            f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
-                                            "Cancelled",
+                                            f"$.upload_status.{ASSET_UPLOAD_KEY}.status",
+                                            S3_BATCH_STATUS_FAILED,
                                         ),
                                         aws_stepfunctions.Condition.string_equals(
                                             f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
-                                            "Failed",
+                                            S3_BATCH_STATUS_CANCELLED,
+                                        ),
+                                        aws_stepfunctions.Condition.string_equals(
+                                            f"$.upload_status.{METADATA_UPLOAD_KEY}.status",
+                                            S3_BATCH_STATUS_FAILED,
                                         ),
                                     ),
                                     upload_failure,  # type: ignore[arg-type]

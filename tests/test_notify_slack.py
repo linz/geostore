@@ -20,8 +20,6 @@ from backend.notify_status_update.task import (
     MESSAGE_ATTRIBUTE_STATUS_KEY,
     SLACK_URL_ENV_NAME,
     STEP_FUNCTION_ARN_KEY,
-    STEP_FUNCTION_INPUT_KEY,
-    STEP_FUNCTION_OUTPUT_KEY,
     STEP_FUNCTION_STARTDATE_KEY,
     STEP_FUNCTION_STOPDATE_KEY,
     WEBHOOK_MESSAGE_BLOCKS_KEY,
@@ -35,11 +33,13 @@ from backend.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     ERRORS_KEY,
+    INPUT_KEY,
     JOB_STATUS_FAILED,
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
     NEW_VERSION_S3_LOCATION,
+    OUTPUT_KEY,
     STATUS_KEY,
     STEP_FUNCTION_KEY,
     UPDATE_DATASET_KEY,
@@ -87,14 +87,14 @@ def should_notify_slack_with_finished_details_when_url_set(
             EVENT_DETAIL_KEY: {
                 STATUS_KEY: JOB_STATUS_SUCCEEDED,
                 STEP_FUNCTION_ARN_KEY: any_arn_formatted_string(),
-                STEP_FUNCTION_INPUT_KEY: dumps(
+                INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
                         DATASET_PREFIX_KEY: any_dataset_prefix(),
                         VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
-                STEP_FUNCTION_OUTPUT_KEY: dumps(
+                OUTPUT_KEY: dumps(
                     {
                         UPLOAD_STATUS_KEY: {
                             VALIDATION_KEY: "",
@@ -166,7 +166,7 @@ def should_notify_slack_when_step_function_failed(
             EVENT_DETAIL_KEY: {
                 STATUS_KEY: JOB_STATUS_FAILED,
                 STEP_FUNCTION_ARN_KEY: any_arn_formatted_string(),
-                STEP_FUNCTION_INPUT_KEY: dumps(
+                INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
                         DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -176,7 +176,7 @@ def should_notify_slack_when_step_function_failed(
                 STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_MILLISECOND_TIMESTAMP,
                 STEP_FUNCTION_STOPDATE_KEY: STEP_FUNCTION_STOP_MILLISECOND_TIMESTAMP,
             },
-            STEP_FUNCTION_OUTPUT_KEY: None,
+            OUTPUT_KEY: None,
         }
 
         lambda_handler(notify_status_update_input, any_lambda_context())
@@ -216,7 +216,7 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
     publish_sns_message_input = {
         EVENT_DETAIL_KEY: {
             STATUS_KEY: JOB_STATUS_SUCCEEDED,
-            STEP_FUNCTION_INPUT_KEY: dumps(
+            INPUT_KEY: dumps(
                 {
                     DATASET_PREFIX_KEY: dataset_prefix,
                 }
@@ -258,14 +258,14 @@ def should_launch_notify_slack_endpoint_lambda_function(
     body = {
         EVENT_DETAIL_KEY: {
             STATUS_KEY: JOB_STATUS_FAILED,
-            STEP_FUNCTION_INPUT_KEY: dumps(
+            INPUT_KEY: dumps(
                 {
                     DATASET_ID_KEY: any_dataset_id(),
                     DATASET_PREFIX_KEY: any_dataset_prefix(),
                 }
             ),
         },
-        STEP_FUNCTION_OUTPUT_KEY: None,
+        OUTPUT_KEY: None,
     }
 
     resp = load(

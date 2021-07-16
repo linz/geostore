@@ -11,6 +11,8 @@ from backend.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     ERRORS_KEY,
+    FAILED_TASKS_KEY,
+    FAILURE_REASONS_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     STATUS_KEY,
@@ -50,16 +52,34 @@ def should_report_upload_statuses(
     def describe_job(AccountId: str, JobId: str) -> JsonObject:  # pylint: disable=invalid-name
         assert AccountId == cast(str, account_id)
         return {
-            asset_job_id: {"Job": {"Status": asset_job_status, "FailureReasons": []}},
-            metadata_job_id: {"Job": {"Status": metadata_job_status, "FailureReasons": []}},
+            asset_job_id: {
+                "Job": {
+                    "Status": asset_job_status,
+                    "FailureReasons": [],
+                    "ProgressSummary": {"NumberOfTasksFailed": 0},
+                }
+            },
+            metadata_job_id: {
+                "Job": {
+                    "Status": metadata_job_status,
+                    "FailureReasons": [],
+                    "ProgressSummary": {"NumberOfTasksFailed": 0},
+                }
+            },
         }[JobId]
 
     describe_job_mock.side_effect = describe_job
 
     expected_response = {
         VALIDATION_KEY: {STATUS_KEY: Outcome.PASSED.value, ERRORS_KEY: []},
-        ASSET_UPLOAD_KEY: {STATUS_KEY: asset_job_status, ERRORS_KEY: []},
-        METADATA_UPLOAD_KEY: {STATUS_KEY: metadata_job_status, ERRORS_KEY: []},
+        ASSET_UPLOAD_KEY: {
+            STATUS_KEY: asset_job_status,
+            ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+        },
+        METADATA_UPLOAD_KEY: {
+            STATUS_KEY: metadata_job_status,
+            ERRORS_KEY: {FAILED_TASKS_KEY: 0, FAILURE_REASONS_KEY: []},
+        },
     }
 
     # When
