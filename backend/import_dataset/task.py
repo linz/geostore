@@ -9,6 +9,7 @@ import smart_open
 from jsonschema import ValidationError, validate
 
 from ..api_keys import EVENT_KEY
+from ..boto3_config import CONFIG
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -60,8 +61,8 @@ else:
 
 LOGGER = set_up_logging(__name__)
 
-S3_CLIENT: S3Client = boto3.client("s3")
-S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control")
+S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
+S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
 
 IMPORT_ASSET_FILE_TASK_ARN = get_param(ParameterName.PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN)
 IMPORT_METADATA_FILE_TASK_ARN = get_param(
