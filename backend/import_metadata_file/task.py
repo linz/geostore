@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Dict, Iterable
 
 import boto3
 
+from ..boto3_config import CONFIG
 from ..import_dataset_file import get_import_result
 from ..log import set_up_logging
 from ..stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY, STAC_LINKS_KEY
@@ -18,7 +19,7 @@ else:
     PutObjectOutputTypeDef = JsonObject
     S3Client = object
 
-TARGET_S3_CLIENT: S3Client = boto3.client("s3")
+TARGET_S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 LOGGER = set_up_logging(__name__)
 
 

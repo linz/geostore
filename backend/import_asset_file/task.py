@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 import boto3
 import smart_open
 
+from ..boto3_config import CONFIG
 from ..import_dataset_file import get_import_result
 from ..s3 import CHUNK_SIZE, S3_URL_PREFIX
 from ..types import JsonObject
@@ -14,7 +15,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
 
-TARGET_S3_CLIENT: S3Client = boto3.client("s3")
+TARGET_S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

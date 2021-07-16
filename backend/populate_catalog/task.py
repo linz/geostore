@@ -13,6 +13,7 @@ from ..aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
     STRING_VALUE_KEY_LOWER,
 )
+from ..boto3_config import CONFIG
 from ..log import set_up_logging
 from ..pystac_io_methods import read_method, write_method
 from ..resources import ResourceName
@@ -29,7 +30,7 @@ else:
 STAC_IO.write_text_method = write_method
 STAC_IO.read_text_method = read_method
 
-S3_CLIENT: S3Client = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 ROOT_CATALOG_ID = "root_catalog"
 ROOT_CATALOG_TITLE = "LINZ Geostore"
