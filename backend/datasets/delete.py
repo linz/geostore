@@ -7,6 +7,7 @@ from jsonschema import ValidationError, validate
 from pynamodb.exceptions import DoesNotExist
 
 from ..api_responses import error_response, success_response
+from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
 from ..resources import ResourceName
@@ -20,7 +21,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
 
-S3_CLIENT: S3Client = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 
 def delete_dataset(body: JsonObject) -> JsonObject:

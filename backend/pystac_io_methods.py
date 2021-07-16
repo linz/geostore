@@ -3,6 +3,8 @@ from urllib.parse import urlparse
 
 import boto3
 
+from .boto3_config import CONFIG
+
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_s3 import S3Client
@@ -10,7 +12,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
 
-S3_CLIENT: S3Client = boto3.client("s3")
+S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 
 def read_method(url: str) -> str:

@@ -11,6 +11,7 @@ from slack_sdk.webhook.client import WebhookClient
 from ..api_keys import EVENT_KEY
 from ..api_responses import success_response
 from ..aws_message_attributes import DATA_TYPE_STRING
+from ..boto3_config import CONFIG
 from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..step_function import get_import_status_given_arn
@@ -53,7 +54,7 @@ STEP_FUNCTION_STOPDATE_KEY = "stopDate"
 WEBHOOK_MESSAGE_BLOCKS_KEY = "blocks"
 WEBHOOK_MESSAGE_CHANNEL_KEY = "channel"
 
-SNS_CLIENT: SNSClient = boto3.client("sns")
+SNS_CLIENT: SNSClient = boto3.client("sns", config=CONFIG)
 LOGGER = set_up_logging(__name__)
 
 BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#section
