@@ -6,6 +6,7 @@ from pynamodb.attributes import MapAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
 
+from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .check import Check
 from .models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from .parameter_store import ParameterName, get_param
@@ -61,7 +62,7 @@ def validation_results_model_with_meta(
                 (),
                 {
                     "table_name": results_table_name,
-                    "region": environ["AWS_DEFAULT_REGION"],
+                    "region": environ[AWS_DEFAULT_REGION_KEY],
                 },
             )
             klass: "ValidationResultsModelMeta"

@@ -6,6 +6,7 @@ from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
 from ulid import ULID, new
 
+from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .clock import now
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from .parameter_store import ParameterName, get_param
@@ -87,7 +88,7 @@ class DatasetsModelMeta(MetaModel):
             (),
             {
                 "table_name": get_param(ParameterName.STORAGE_DATASETS_TABLE_NAME),
-                "region": environ["AWS_DEFAULT_REGION"],
+                "region": environ[AWS_DEFAULT_REGION_KEY],
             },
         )
         klass: "DatasetsModelMeta" = MetaModel.__new__(  # type: ignore[no-untyped-call]

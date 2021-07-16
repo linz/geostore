@@ -3,6 +3,7 @@ from os.path import join
 from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
 
+from backend.aws_keys import AWS_DEFAULT_REGION_KEY
 from backend.environment import ENV_NAME_VARIABLE_NAME
 from backend.resources import PRODUCTION_ENVIRONMENT_NAME
 
@@ -36,7 +37,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             memory_limit_mib=batch_job_definition_memory_limit,
             vcpus=1,
             environment={
-                "AWS_DEFAULT_REGION": job_role.stack.region,
+                AWS_DEFAULT_REGION_KEY: job_role.stack.region,
                 ENV_NAME_VARIABLE_NAME: env_name,
             },
         )

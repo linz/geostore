@@ -2,6 +2,7 @@
 /.coverage
 /htmlcov/
 /.idea/
+*.isorted
 /.mypy_cache/
 /node_modules/
 *.pyc
