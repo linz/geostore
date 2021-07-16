@@ -20,6 +20,7 @@ from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests
 
+from backend.boto3_config import CONFIG
 from backend.content_iterator.task import MAX_ITERATION_SIZE
 from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
@@ -264,7 +265,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
         self.bucket_name = bucket_name
         self.key = key
         self.url = f"{S3_URL_PREFIX}{self.bucket_name}/{self.key}"
-        self._s3_client: S3Client = boto3.client("s3")
+        self._s3_client: S3Client = boto3.client("s3", config=CONFIG)
 
     def __enter__(self) -> "S3Object":
         self._s3_client.upload_fileobj(

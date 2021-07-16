@@ -11,6 +11,7 @@ from ulid import from_timestamp
 
 from ..api_keys import EVENT_KEY
 from ..api_responses import error_response, success_response
+from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
 from ..log import set_up_logging
@@ -35,7 +36,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     SFNClient = object
 
-STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions")
+STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
 
 
 def create_dataset_version(body: JsonObject) -> JsonObject:

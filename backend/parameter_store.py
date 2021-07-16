@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Sequence
 
 import boto3
 
+from .boto3_config import CONFIG
 from .environment import environment_name
 from .error_response_keys import ERROR_KEY
 from .log import set_up_logging
@@ -17,7 +18,7 @@ else:
     SSMClient = object
 
 LOGGER = set_up_logging(__name__)
-SSM_CLIENT: SSMClient = boto3.client("ssm")
+SSM_CLIENT: SSMClient = boto3.client("ssm", config=CONFIG)
 
 
 class ParameterName(Enum):
