@@ -17,9 +17,9 @@ from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from ..pystac_io_methods import get_bucket_and_key_from_url
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
+from ..s3_utils import get_bucket_and_key_from_url
 from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
