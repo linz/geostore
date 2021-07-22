@@ -56,11 +56,10 @@ So that [some reason], we want to [do something]
   - [ ] Readme/Changelog/Diagrams are updated
   - [ ] Product Owner has approved acceptance criteria as complete
   - [ ] Meets non-functional requirements:
-    - [ ] Capacity (in total): At least 300TB of data and 100,000,000 files it total and ability to
-          grow 10% every year and a single dataset can contain 1,000,000 files and xx GB (TODO:
-          confirm).
-    - [ ] Capacity (per dataset): Up to 1TB and 150,000 files
-    - [ ] Cost: Data can be stored at < 0.5 NZD per GB per year (cost calculation
+    - [ ] Scalability (data): Can scale to 300TB of data and 100,000,000 files and ability to
+          increase 10% every year
+    - [ ] Scability (users): Can scale to 100 concurrent users
+    - [ ] Cost: Data can be stored at < 0.5 NZD per GB per year
     - [ ] Performance: A large dataset (500 GB and 50,000 files - e.g. Akl aerial imagery) can be
           validated, imported and stored within 24 hours
     - [ ] Accessibility: Can be used from LINZ networks and the public internet
