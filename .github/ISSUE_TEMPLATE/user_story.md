@@ -55,7 +55,6 @@ So that [some reason], as a [role], I want to [do something].
   - [ ] Checked against [CODING guidelines](https://github.com/linz/geostore/blob/master/CODING.md)
   - [ ] Relevant new tasks are added to backlog and communicated to the team
   - [ ] Important decisions recorded in the issue ticket
-  - [ ] Sprint board is updated
   - [ ] Readme/Changelog/Diagrams are updated
   - [ ] Product Owner has approved acceptance criteria as complete
   - [ ] Meets non-functional requirements:
