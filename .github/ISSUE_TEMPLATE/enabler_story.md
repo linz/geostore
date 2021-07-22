@@ -32,7 +32,7 @@ So that [some reason], we want to [do something]
 
 - [ ] This story is **ready** to work on
   - [ ] Negotiable (team can decide how to design and implement)
-  - [ ] Valuable (and vertical) from a user perspective
+  - [ ] Valuable (from a user perspective)
   - [ ] Estimate value applied (agreed by team)
   - [ ] Small (so as to fit within an iteration)
   - [ ] Testable (in principle, even if there isn't a test for it yet)
@@ -49,7 +49,7 @@ So that [some reason], we want to [do something]
   - [ ] Automated tests are passing
   - [ ] Code is peer reviewed and pushed to master
   - [ ] Deployed successfully to test environment
-  - [ ] Checked against CODING guidelines
+  - [ ] Checked against [CODING guidelines](https://github.com/linz/geostore/blob/master/CODING.md)
   - [ ] Relevant new tasks are added to backlog and communicated to the team
   - [ ] Important decisions recorded in the issue ticket
   - [ ] Sprint board is updated

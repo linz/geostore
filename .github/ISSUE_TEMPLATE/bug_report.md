@@ -51,7 +51,7 @@ Relevant software versions:
   - [ ] Automated tests are passing
   - [ ] Code is peer reviewed and pushed to master
   - [ ] Deployed successfully to test environment
-  - [ ] Checked against CODING guidelines
+  - [ ] Checked against [CODING guidelines](https://github.com/linz/geostore/blob/master/CODING.md)
   - [ ] Relevant new tasks are added to backlog and communicated to the team
   - [ ] Important decisions recorded in the issue ticket
   - [ ] Sprint board is updated
