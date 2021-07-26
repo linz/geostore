@@ -70,7 +70,7 @@ jobs:
       # NONPROD DEPLOYMENT - deploy all changes in master branch
       - name: (NonProd) Configure AWS credentials
         if: github.repository == 'linz/geostore' && github.ref == 'refs/heads/master'
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -93,7 +93,7 @@ jobs:
         if: >
           github.repository == 'linz/geostore' && (startsWith(github.ref, 'refs/heads/release-') ||
           startsWith(github.ref, 'refs/tags/release-'))
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
