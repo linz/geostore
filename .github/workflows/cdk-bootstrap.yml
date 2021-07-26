@@ -20,7 +20,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -66,7 +66,7 @@ jobs:
         run: poetry run cdk --version
 
       - name: (CI) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -93,7 +93,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -139,7 +139,7 @@ jobs:
         run: poetry run cdk --version
 
       - name: (Non-Prod) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -166,7 +166,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -212,7 +212,7 @@ jobs:
         run: poetry run cdk --version
 
       - name: (Prod) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

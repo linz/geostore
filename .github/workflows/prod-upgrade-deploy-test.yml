@@ -18,7 +18,7 @@ jobs:
 
       # prod version detection
       - name: Configure production AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -45,7 +45,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: ${{ env.PROD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -93,7 +93,7 @@ jobs:
 
       # deployment
       - name: Configure CI AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.5.10
+        uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -124,7 +124,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v2.3.0
         with:
           node-version: ${{ env.HEAD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
