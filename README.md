@@ -20,9 +20,9 @@
 LINZ central storage, management and access solution for important geospatial datasets. Developed by
 [Land Information New Zealand](https://github.com/linz).
 
-# Prerequisites
+## Prerequisites
 
-## Geostore VPC
+### Geostore VPC
 
 A Geostore VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
 managed internally by the IT team. If you are deploying this application outside LINZ, you will need
@@ -35,7 +35,7 @@ You can achieve this by adding the `networking_stack` (`infrastructure/networkin
 `app.py` before deployment as a dependency of `application_stack`
 (`infrastructure/application_stack.py`).
 
-## Verify infrastructure settings
+### Verify infrastructure settings
 
 This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific parts, controlled by
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
@@ -44,7 +44,7 @@ The settings are:
 - `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage bucket.
 - `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
 
-# Development setup
+## Development setup
 
 One-time setup, assuming you are in the project directory:
 
@@ -171,7 +171,7 @@ HOME='/home/jdoe'
 
 Re-run `. .venv/bin/activate` in each shell.
 
-# AWS Infrastructure deployment
+## AWS Infrastructure deployment
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
@@ -218,9 +218,9 @@ Re-run `. .venv/bin/activate` in each shell.
 If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AWS-PROFILE-NAME>`
 arguments above.
 
-# Development
+## Development
 
-## Adding or updating Python dependencies
+### Adding or updating Python dependencies
 
 To add a development-only package: `poetry add --dev PACKAGE='*'`
 
@@ -265,7 +265,7 @@ To add a production package:
 
   Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
-## Upgrading Python version
+### Upgrading Python version
 
 To minimise the chance of discrepancies between environments it is important to run the same (or as
 close as possible) version of Python in the development environment, in the pipeline, and in
@@ -284,25 +284,25 @@ deployed instances. At the moment the available versions are constrained by the 
 When updating Python versions you have to check that all of the above can be kept at the same minor
 version, and ideally at the same patch level.
 
-## Running tests
+### Running tests
 
 To launch full test suite: `pytest tests/`
 
-## Debugging
+### Debugging
 
 To start debugging at a specific line, insert `import ipdb; ipdb.set_trace()`.
 
 To debug a test run, add `--capture=no` to the `pytest` arguments. You can also automatically start
 debugging at a test failure point with `--pdb --pdbcls=IPython.terminal.debugger:Pdb`.
 
-## Upgrading CI runner
+### Upgrading CI runner
 
 [`jobs.<job_id>.runs-on`](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on)
 in .github sets the runner type per job. We should make sure all of these use the latest specific
 ("ubuntu-YY.MM" as opposed to "ubuntu-latest") Ubuntu LTS version, to make sure the version changes
 only when we're ready for it.
 
-## GitHub Actions cache clearing
+### GitHub Actions cache clearing
 
 To throw away the current cache (for example in case of a cache corruption), simply change the
 [`CACHE_SEED` repository "secret"](https://github.com/linz/geostore/settings/secrets/actions/CACHE_SEED),
