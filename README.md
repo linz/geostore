@@ -46,9 +46,17 @@ The settings are:
 
 ## Development setup
 
-One-time setup:
+One-time setup which generally assumes that you're in the project directory.
+
+### Common
 
 1. [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
+1. Configure Docker:
+   1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
+   1. Log out and back in to enable the new group
+
+### Ubuntu
+
 1. Install [`nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
    ```bash
    cd "$(mktemp --directory)"
@@ -123,6 +131,18 @@ HOME='/home/jdoe'
 ```
 
 Re-run `. activate-dev-env.bash` in each shell.
+
+### Nix
+
+Run `nix-shell`.
+
+Restart your `nix-shell` when packages change.
+
+### Optional
+
+Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This is optional
+since it currently can't be set per repository or organisation, so it affects any repos where you
+have access to Dependabot alerts.)
 
 ## AWS Infrastructure deployment
 
