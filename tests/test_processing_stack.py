@@ -245,15 +245,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             metadata_copy_job_result, asset_copy_job_result = wait_for_copy_jobs(
                 import_dataset_response, account_id, s3_control_client, subtests
             )
-        finally:
-            # Cleanup
+
             dataset_version_prefix = (
                 f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 f"/{dataset_versions_body[VERSION_ID_KEY]}/"
             )
             storage_bucket_prefix = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
 
-            # Catalog
+            # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
             with subtests.test(msg="Imported catalog has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_catalog_key}", mode="rb"
@@ -276,12 +275,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     ],
                 } == load(imported_catalog_file)
 
-            with subtests.test(msg="Delete imported catalog object"):
-                delete_s3_key(
-                    ResourceName.STORAGE_BUCKET_NAME.value, imported_catalog_key, s3_client
-                )
-
-            # Collection
+            # Collection contents
             imported_collection_key = f"{dataset_version_prefix}{collection_metadata_filename}"
             with subtests.test(msg="Imported collection has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
@@ -310,12 +304,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     ],
                 } == load(imported_collection_file)
 
-            with subtests.test(msg="Delete imported collection object"):
-                delete_s3_key(
-                    ResourceName.STORAGE_BUCKET_NAME.value, imported_collection_key, s3_client
-                )
-
-            # Item
+            # Item contents
             imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
@@ -334,34 +323,30 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     ],
                 } == load(imported_item_file)
 
-            with subtests.test(msg="Delete imported item object"):
-                delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, imported_item_key, s3_client)
-
-            # First asset
+            # First asset contents
+            imported_first_asset_key = f"{dataset_version_prefix}{first_asset_filename}"
             with subtests.test(msg="Verify first asset contents"), smart_open.open(
-                f"{storage_bucket_prefix}{dataset_version_prefix}{first_asset_filename}", mode="rb"
+                f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
             ) as imported_first_asset_file:
                 assert first_asset_contents == imported_first_asset_file.read()
 
-            with subtests.test(msg="Delete first asset object"):
-                delete_s3_key(
-                    ResourceName.STORAGE_BUCKET_NAME.value,
-                    f"{dataset_version_prefix}{first_asset_filename}",
-                    s3_client,
-                )
-
-            # Second asset
+            # Second asset contents
+            imported_second_asset_key = f"{dataset_version_prefix}{second_asset_filename}"
             with subtests.test(msg="Verify second asset contents"), smart_open.open(
-                f"{storage_bucket_prefix}{dataset_version_prefix}{second_asset_filename}", mode="rb"
+                f"{storage_bucket_prefix}{imported_second_asset_key}", mode="rb"
             ) as imported_second_asset_file:
                 assert second_asset_contents == imported_second_asset_file.read()
-
-            with subtests.test(msg="Delete second asset object"):
-                delete_s3_key(
-                    ResourceName.STORAGE_BUCKET_NAME.value,
-                    f"{dataset_version_prefix}{second_asset_filename}",
-                    s3_client,
-                )
+        finally:
+            # Cleanup
+            for key in [
+                imported_catalog_key,
+                imported_collection_key,
+                imported_item_key,
+                imported_first_asset_key,
+                imported_second_asset_key,
+            ]:
+                with subtests.test(msg=f"Delete {key}"):
+                    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, key, s3_client)
 
             with subtests.test(msg="Delete copy job files"):
                 delete_copy_job_files(
