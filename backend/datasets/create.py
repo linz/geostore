@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate
-from pystac import STAC_IO, Catalog, CatalogType
+from pystac import Catalog, CatalogType, StacIO
 
 from ..api_responses import error_response, success_response
 from ..aws_message_attributes import (
@@ -15,7 +15,7 @@ from ..aws_message_attributes import (
 )
 from ..datasets_model import datasets_model_with_meta
 from ..parameter_store import ParameterName, get_param
-from ..pystac_io_methods import write_method
+from ..pystac_io_methods import S3StacIO
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
@@ -33,9 +33,10 @@ else:
 
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
-STAC_IO.write_text_method = write_method
 
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
+
+StacIO.set_default(S3StacIO)
 
 
 def create_dataset(body: JsonObject) -> JsonObject:
