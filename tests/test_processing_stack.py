@@ -251,14 +251,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
-            storage_bucket_name = ResourceName.STORAGE_BUCKET_NAME.value
-            delete_copy_job_files(
-                metadata_copy_job_result,
-                asset_copy_job_result,
-                storage_bucket_name,
-                s3_client,
-                subtests,
-            )
+            with subtests.test(msg="Delete copy job files"):
+                delete_copy_job_files(
+                    metadata_copy_job_result,
+                    asset_copy_job_result,
+                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    s3_client,
+                    subtests,
+                )
 
     with subtests.test(msg="Should report import status after success"):
         expected_response = {
@@ -393,13 +393,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
-            delete_copy_job_files(
-                metadata_copy_job_result,
-                asset_copy_job_result,
-                ResourceName.STORAGE_BUCKET_NAME.value,
-                s3_client,
-                subtests,
-            )
+            with subtests.test(msg="Delete copy job files"):
+                delete_copy_job_files(
+                    metadata_copy_job_result,
+                    asset_copy_job_result,
+                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    s3_client,
+                    subtests,
+                )
 
     with subtests.test(msg="Should report import status after success"):
         expected_response = {

@@ -258,10 +258,11 @@ def should_batch_copy_files_to_storage(
                     )
 
                 # Cleanup
-                delete_copy_job_files(
-                    metadata_copy_job_result,
-                    asset_copy_job_result,
-                    ResourceName.STORAGE_BUCKET_NAME.value,
-                    s3_client,
-                    subtests,
-                )
+                with subtests.test(msg="Delete copy job files"):
+                    delete_copy_job_files(
+                        metadata_copy_job_result,
+                        asset_copy_job_result,
+                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        s3_client,
+                        subtests,
+                    )
