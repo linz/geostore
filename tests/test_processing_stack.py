@@ -216,6 +216,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     dataset_versions_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED
                 ), dataset_versions_payload
 
+            dataset_versions_body = dataset_versions_payload[BODY_KEY]
             with subtests.test(msg="Should complete Step Function successfully"):
 
                 LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
@@ -223,7 +224,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
-                        executionArn=dataset_versions_payload[BODY_KEY][EXECUTION_ARN_KEY]
+                        executionArn=dataset_versions_body[EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
@@ -249,10 +250,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 first_asset_filename,
                 second_asset_filename,
             ]:
-                new_key = (
-                    f"{dataset_prefix}/{dataset_versions_payload[BODY_KEY][VERSION_ID_KEY]}"
-                    f"/{filename}"
-                )
+                new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
@@ -368,6 +366,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     dataset_versions_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED
                 ), dataset_versions_payload
 
+            dataset_versions_body = dataset_versions_payload[BODY_KEY]
             with subtests.test(msg="Should complete Step Function successfully"):
 
                 LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
@@ -375,7 +374,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
-                        executionArn=dataset_versions_payload[BODY_KEY][EXECUTION_ARN_KEY]
+                        executionArn=dataset_versions_body[EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
@@ -396,10 +395,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             # Cleanup
             dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                new_key = (
-                    f"{dataset_prefix}/{dataset_versions_payload[BODY_KEY][VERSION_ID_KEY]}"
-                    f"/{filename}"
-                )
+                new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
@@ -494,9 +490,10 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         with subtests.test(msg="Dataset Versions endpoint status code"):
             assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
 
+        dataset_versions_body = response_payload[BODY_KEY]
         with subtests.test(msg="Step function result"):
             # Then poll for State Machine State
-            state_machine_arn = response_payload[BODY_KEY][EXECUTION_ARN_KEY]
+            state_machine_arn = dataset_versions_body[EXECUTION_ARN_KEY]
             while (
                 execution := step_functions_client.describe_execution(
                     executionArn=state_machine_arn
@@ -510,7 +507,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
             assert execution["status"] == "SUCCEEDED", execution
 
     # Then the files should not be copied
-    dataset_version = response_payload[BODY_KEY][VERSION_ID_KEY]
+    dataset_version = dataset_versions_body[VERSION_ID_KEY]
     dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
     for filename in [metadata_filename, asset_filename]:
         with subtests.test(msg=filename), raises(AssertionError):
