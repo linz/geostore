@@ -221,3 +221,6 @@ markers = [
     "infrastructure: requires a deployed infrastructure",
 ]
 python_functions = "should_*"
+testpaths = [
+    "tests"
+]
