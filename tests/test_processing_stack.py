@@ -327,7 +327,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             }
         ),
         bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
-        key=("{}/{}".format(key_prefix, child_metadata_filename)),
+        key=f"{key_prefix}/{child_metadata_filename}",
     ) as child_metadata_file, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -338,7 +338,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             }
         ),
         bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
-        key=("{}/{}".format(key_prefix, root_metadata_filename)),
+        key=f"{key_prefix}/{root_metadata_filename}",
     ) as root_metadata_file, Dataset() as dataset:
 
         # When
