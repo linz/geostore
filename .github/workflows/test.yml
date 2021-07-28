@@ -128,12 +128,12 @@ jobs:
       - name: Run non-infrastructure tests offline
         run: >
           poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
+          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
 
       - name: Run infrastructure tests online
         run: >
           poetry run coverage run --append --module pytest --junitxml=junit.xml
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2 tests
+          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
 
       - name: Archive JUnit test report
         uses: actions/upload-artifact@v2
