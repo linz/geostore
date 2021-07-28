@@ -196,7 +196,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
         # When
         try:
-            resp = lambda_client.invoke(
+            dataset_versions_response = lambda_client.invoke(
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=dumps(
                     {
@@ -209,19 +209,21 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     }
                 ).encode(),
             )
-            json_resp = load(resp["Payload"])
+            dataset_versions_payload = load(dataset_versions_response["Payload"])
 
             with subtests.test(msg="Dataset Versions endpoint returns success"):
-                assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
+                assert (
+                    dataset_versions_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED
+                ), dataset_versions_payload
 
             with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", json_resp)
+                LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
 
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
-                        executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
+                        executionArn=dataset_versions_payload[BODY_KEY][EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
@@ -247,7 +249,10 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 first_asset_filename,
                 second_asset_filename,
             ]:
-                new_key = f"{dataset_prefix}/{json_resp[BODY_KEY][VERSION_ID_KEY]}/{filename}"
+                new_key = (
+                    f"{dataset_prefix}/{dataset_versions_payload[BODY_KEY][VERSION_ID_KEY]}"
+                    f"/{filename}"
+                )
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
@@ -261,7 +266,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 )
 
     with subtests.test(msg="Should report import status after success"):
-        expected_response = {
+        expected_status_payload = {
             STATUS_CODE_KEY: HTTPStatus.OK,
             BODY_KEY: {
                 STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
@@ -276,7 +281,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 },
             },
         }
-        status_resp = lambda_client.invoke(
+        status_response = lambda_client.invoke(
             FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
             Payload=dumps(
                 {
@@ -285,8 +290,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
             ).encode(),
         )
-        status_json_resp = load(status_resp["Payload"])
-        assert status_json_resp == expected_response
+        status_payload = load(status_response["Payload"])
+        assert status_payload == expected_status_payload
 
 
 @mark.timeout(1200)
@@ -343,7 +348,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
         # When
         try:
-            resp = lambda_client.invoke(
+            dataset_versions_response = lambda_client.invoke(
                 FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
                 Payload=dumps(
                     {
@@ -356,19 +361,21 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     }
                 ).encode(),
             )
-            json_resp = load(resp["Payload"])
+            dataset_versions_payload = load(dataset_versions_response["Payload"])
 
             with subtests.test(msg="Dataset Versions endpoint returns success"):
-                assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
+                assert (
+                    dataset_versions_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED
+                ), dataset_versions_payload
 
             with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", json_resp)
+                LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
 
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
-                        executionArn=json_resp[BODY_KEY][EXECUTION_ARN_KEY]
+                        executionArn=dataset_versions_payload[BODY_KEY][EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
                     LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
@@ -389,7 +396,10 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             # Cleanup
             dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                new_key = f"{dataset_prefix}/{json_resp[BODY_KEY][VERSION_ID_KEY]}/{filename}"
+                new_key = (
+                    f"{dataset_prefix}/{dataset_versions_payload[BODY_KEY][VERSION_ID_KEY]}"
+                    f"/{filename}"
+                )
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
 
@@ -403,7 +413,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 )
 
     with subtests.test(msg="Should report import status after success"):
-        expected_response = {
+        expected_status_payload = {
             STATUS_CODE_KEY: HTTPStatus.OK,
             BODY_KEY: {
                 STEP_FUNCTION_KEY: {STATUS_KEY: "Succeeded"},
@@ -418,7 +428,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 },
             },
         }
-        status_resp = lambda_client.invoke(
+        status_response = lambda_client.invoke(
             FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
             Payload=dumps(
                 {
@@ -427,8 +437,8 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 }
             ).encode(),
         )
-        status_json_resp = load(status_resp["Payload"])
-        assert status_json_resp == expected_response
+        status_payload = load(status_response["Payload"])
+        assert status_payload == expected_status_payload
 
 
 @mark.infrastructure
