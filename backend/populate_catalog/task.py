@@ -2,7 +2,7 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
-from pystac import STAC_IO, Catalog, CatalogType, Collection, Item
+from pystac import Catalog, CatalogType, Collection, Item, StacIO, read_file
 from pystac.layout import HrefLayoutStrategy
 
 from ..api_keys import EVENT_KEY
@@ -15,7 +15,7 @@ from ..aws_message_attributes import (
 )
 from ..boto3_config import CONFIG
 from ..log import set_up_logging
-from ..pystac_io_methods import read_method, write_method
+from ..pystac_io_methods import S3StacIO
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
 from ..types import JsonObject
@@ -26,9 +26,6 @@ if TYPE_CHECKING:
 else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = object
-
-STAC_IO.write_text_method = write_method
-STAC_IO.read_text_method = read_method
 
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
@@ -45,6 +42,8 @@ RECORDS_KEY = "Records"
 MESSAGE_ATTRIBUTES_KEY = "messageAttributes"
 
 LOGGER = set_up_logging(__name__)
+
+StacIO.set_default(S3StacIO)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -91,9 +90,7 @@ def handle_dataset(version_metadata_key: str) -> None:
     dataset_prefix = version_metadata_key.split("/", maxsplit=1)[0]
     dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
 
-    dataset_version_metadata = STAC_IO.read_stac_object(
-        f"{storage_bucket_path}/{version_metadata_key}"
-    )
+    dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
 
     dataset_catalog.add_child(dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
 
