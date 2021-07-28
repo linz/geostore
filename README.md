@@ -286,7 +286,7 @@ version, and ideally at the same patch level.
 
 ### Running tests
 
-To launch full test suite: `pytest tests/`
+To launch full test suite, run `pytest`.
 
 ### Debugging
 
