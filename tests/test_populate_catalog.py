@@ -592,7 +592,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
 
         with subtests.test(msg="item links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}" f"/{item_metadata.key}",
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{item_metadata.key}",
             mode="rb",
         ) as updated_item_metadata_file:
             item_json = load(updated_item_metadata_file)
