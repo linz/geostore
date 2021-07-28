@@ -6,6 +6,7 @@ from json import dumps, load, loads
 from logging import INFO, basicConfig, getLogger
 from time import sleep
 
+import smart_open
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3control import S3ControlClient
@@ -105,7 +106,7 @@ def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) 
 
 @mark.timeout(1200)
 @mark.infrastructure
-def should_successfully_run_dataset_version_creation_process_with_multiple_assets(
+def should_successfully_run_dataset_version_creation_process_with_multiple_assets(  # pylint:disable=too-many-statements
     # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,
@@ -127,8 +128,16 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
     first_asset_contents = any_file_contents()
     first_asset_filename = any_safe_filename()
+    first_asset_name = any_asset_name()
+    first_asset_hex_digest = sha256_hex_digest_to_multihash(
+        sha256(first_asset_contents).hexdigest()
+    )
     second_asset_contents = any_file_contents()
     second_asset_filename = any_safe_filename()
+    second_asset_name = any_asset_name()
+    second_asset_hex_digest = sha256_hex_digest_to_multihash(
+        sha256(second_asset_contents).hexdigest()
+    )
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
@@ -138,7 +147,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         file_object=BytesIO(initial_bytes=second_asset_contents),
         bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=f"{key_prefix}/{second_asset_filename}",
-    ) as second_asset_s3_object, S3Object(
+    ), S3Object(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
@@ -156,11 +165,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 STAC_ASSETS_KEY: {
-                    any_asset_name(): {
-                        STAC_HREF_KEY: second_asset_s3_object.url,
-                        STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
-                            sha256(second_asset_contents).hexdigest()
-                        ),
+                    second_asset_name: {
+                        STAC_HREF_KEY: f"./{second_asset_filename}",
+                        STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
                     },
                 },
                 STAC_LINKS_KEY: [
@@ -177,11 +184,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             {
                 **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
                 STAC_ASSETS_KEY: {
-                    any_asset_name(): {
+                    first_asset_name: {
                         STAC_HREF_KEY: first_asset_s3_object.url,
-                        STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
-                            sha256(first_asset_contents).hexdigest()
-                        ),
+                        STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                     },
                 },
                 STAC_LINKS_KEY: [
@@ -242,17 +247,121 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             )
         finally:
             # Cleanup
-            dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
-            for filename in [
-                catalog_metadata_filename,
-                collection_metadata_filename,
-                item_metadata_filename,
-                first_asset_filename,
-                second_asset_filename,
-            ]:
-                new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
-                with subtests.test(msg=f"Delete {new_key}"):
-                    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
+            dataset_version_prefix = (
+                f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
+                f"/{dataset_versions_body[VERSION_ID_KEY]}/"
+            )
+            storage_bucket_prefix = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+
+            # Catalog
+            imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
+            with subtests.test(msg="Imported catalog has relative keys"), smart_open.open(
+                f"{storage_bucket_prefix}{imported_catalog_key}", mode="rb"
+            ) as imported_catalog_file:
+                assert {
+                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    STAC_LINKS_KEY: [
+                        {
+                            STAC_HREF_KEY: collection_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_CHILD,
+                        },
+                        {
+                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_ROOT,
+                        },
+                        {
+                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_SELF,
+                        },
+                    ],
+                } == load(imported_catalog_file)
+
+            with subtests.test(msg="Delete imported catalog object"):
+                delete_s3_key(
+                    ResourceName.STORAGE_BUCKET_NAME.value, imported_catalog_key, s3_client
+                )
+
+            # Collection
+            imported_collection_key = f"{dataset_version_prefix}{collection_metadata_filename}"
+            with subtests.test(msg="Imported collection has relative keys"), smart_open.open(
+                f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
+            ) as imported_collection_file:
+                assert {
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                    STAC_ASSETS_KEY: {
+                        second_asset_name: {
+                            STAC_HREF_KEY: second_asset_filename,
+                            STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
+                        },
+                    },
+                    STAC_LINKS_KEY: [
+                        {
+                            STAC_HREF_KEY: item_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_CHILD,
+                        },
+                        {
+                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_ROOT,
+                        },
+                        {
+                            STAC_HREF_KEY: collection_metadata_filename,
+                            STAC_REL_KEY: STAC_REL_SELF,
+                        },
+                    ],
+                } == load(imported_collection_file)
+
+            with subtests.test(msg="Delete imported collection object"):
+                delete_s3_key(
+                    ResourceName.STORAGE_BUCKET_NAME.value, imported_collection_key, s3_client
+                )
+
+            # Item
+            imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
+            with subtests.test(msg="Imported item has relative keys"), smart_open.open(
+                f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
+            ) as imported_item_file:
+                assert {
+                    **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                    STAC_ASSETS_KEY: {
+                        first_asset_name: {
+                            STAC_HREF_KEY: first_asset_filename,
+                            STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
+                        },
+                    },
+                    STAC_LINKS_KEY: [
+                        {STAC_HREF_KEY: catalog_metadata_filename, STAC_REL_KEY: STAC_REL_ROOT},
+                        {STAC_HREF_KEY: item_metadata_filename, STAC_REL_KEY: STAC_REL_SELF},
+                    ],
+                } == load(imported_item_file)
+
+            with subtests.test(msg="Delete imported item object"):
+                delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, imported_item_key, s3_client)
+
+            # First asset
+            with subtests.test(msg="Verify first asset contents"), smart_open.open(
+                f"{storage_bucket_prefix}{dataset_version_prefix}{first_asset_filename}", mode="rb"
+            ) as imported_first_asset_file:
+                assert first_asset_contents == imported_first_asset_file.read()
+
+            with subtests.test(msg="Delete first asset object"):
+                delete_s3_key(
+                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    f"{dataset_version_prefix}{first_asset_filename}",
+                    s3_client,
+                )
+
+            # Second asset
+            with subtests.test(msg="Verify second asset contents"), smart_open.open(
+                f"{storage_bucket_prefix}{dataset_version_prefix}{second_asset_filename}", mode="rb"
+            ) as imported_second_asset_file:
+                assert second_asset_contents == imported_second_asset_file.read()
+
+            with subtests.test(msg="Delete second asset object"):
+                delete_s3_key(
+                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    f"{dataset_version_prefix}{second_asset_filename}",
+                    s3_client,
+                )
 
             with subtests.test(msg="Delete copy job files"):
                 delete_copy_job_files(
