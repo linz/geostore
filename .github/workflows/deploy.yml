@@ -22,7 +22,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.3.1
+        uses: actions/setup-node@v2.3.2
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
