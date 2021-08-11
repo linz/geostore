@@ -2,8 +2,12 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
-from pystac import Catalog, CatalogType, Collection, Item, StacIO, read_file
+from pystac import read_file
+from pystac.catalog import Catalog, CatalogType
+from pystac.collection import Collection
+from pystac.item import Item
 from pystac.layout import HrefLayoutStrategy
+from pystac.stac_io import StacIO
 
 from ..api_keys import EVENT_KEY
 from ..api_responses import BODY_KEY
@@ -72,7 +76,7 @@ class UnhandledSQSMessageException(Exception):
     pass
 
 
-class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):  # type: ignore[misc]
+class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
     def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
         return str(cat.get_self_href())
 
@@ -91,8 +95,10 @@ def handle_dataset(version_metadata_key: str) -> None:
     dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
 
     dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
-
-    dataset_catalog.add_child(dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
+    dataset_catalog.add_child(
+        child=dataset_version_metadata,  # type: ignore[arg-type]
+        strategy=GeostoreSTACLayoutStrategy(),
+    )
 
     dataset_catalog.normalize_hrefs(
         f"{storage_bucket_path}/{dataset_prefix}", strategy=GeostoreSTACLayoutStrategy()
