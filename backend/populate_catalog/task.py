@@ -95,10 +95,8 @@ def handle_dataset(version_metadata_key: str) -> None:
     dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
 
     dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
-    dataset_catalog.add_child(
-        child=dataset_version_metadata,  # type: ignore[arg-type]
-        strategy=GeostoreSTACLayoutStrategy(),
-    )
+    assert isinstance(dataset_version_metadata, (Catalog, Collection))
+    dataset_catalog.add_child(child=dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
 
     dataset_catalog.normalize_hrefs(
         f"{storage_bucket_path}/{dataset_prefix}", strategy=GeostoreSTACLayoutStrategy()
