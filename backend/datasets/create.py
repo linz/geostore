@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate
-from pystac import Catalog, CatalogType, StacIO
+from pystac.catalog import Catalog, CatalogType
+from pystac.stac_io import StacIO
 
 from ..api_responses import error_response, success_response
 from ..aws_message_attributes import (
