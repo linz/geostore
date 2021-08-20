@@ -2454,11 +2454,11 @@ testing = ["pytest (>=5.4,<6)", "pytest-asyncio (<1)", "Flask-Sockets (>=0.2,<1)
 
 [[package]]
 name = "smart-open"
-version = "5.1.0"
+version = "5.2.0"
 description = "Utils for streaming large files (S3, HDFS, GCS, Azure Blob Storage, gzip, bz2...)"
 category = "main"
 optional = true
-python-versions = ">=3.6.*"
+python-versions = ">=3.6,<4.0"
 
 [package.dependencies]
 boto3 = {version = "*", optional = true, markers = "extra == \"s3\""}
@@ -3497,8 +3497,8 @@ slack-sdk = [
     {file = "slack_sdk-3.8.0.tar.gz", hash = "sha256:cb90ce362b2497169cba5488c9ac0f6bc0d7941a3d6c4e4bee469c1cda391f39"},
 ]
 smart-open = [
-    {file = "smart_open-5.1.0-py3-none-any.whl", hash = "sha256:2059b07f530c8c9e2158e4e1575309aacb74bd813da2325c1f348015d04f3bd6"},
-    {file = "smart_open-5.1.0.tar.gz", hash = "sha256:e4dc1350b240ef0759e343e4e2f361bfd4e5477bb2619866e97f80240652e92e"},
+    {file = "smart_open-5.2.0-py3-none-any.whl", hash = "sha256:c670c977cd4c66e91097fc3cda57ceec09f1d660019225b6bd870523c02ef516"},
+    {file = "smart_open-5.2.0.tar.gz", hash = "sha256:308f439ed01a8c7a97727c354e80d1786acadd2ae1cdd190fc787bb1f48c1245"},
 ]
 strict-rfc3339 = [
     {file = "strict-rfc3339-0.7.tar.gz", hash = "sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277"},
