@@ -159,3 +159,18 @@ jobs:
         run: |
           poetry run cdk destroy --force --all
         if: always() # clean-up AWS stack after failure
+
+  build-nix-shell:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - uses: actions/cache@v2.1.6
+        with:
+          path: /nix/store
+          key: nix-${{ secrets.CACHE_SEED }}-${{ hashFiles('./shell.nix') }}
+          restore-keys: nix-${{ secrets.CACHE_SEED }}-
+      - uses: cachix/install-nix-action@v13
+
+      - run: nix-shell --pure --run true
