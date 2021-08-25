@@ -134,7 +134,9 @@ Re-run `. activate-dev-env.bash` in each shell.
 
 ### Nix
 
-Run `nix-shell`.
+1. Run `nix-shell`.
+1. Optional: Install and [configure](https://direnv.net/docs/hook.html) `direnv` and
+   `direnv allow .` to load the Nix shell whenever you `cd` into the project.
 
 Restart your `nix-shell` when packages change.
 
