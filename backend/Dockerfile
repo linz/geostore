@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as build
 
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
-    curl python3-pip \
+    curl python-is-python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 # hadolint ignore=DL3059
 RUN curl --location --show-error --silent --output install-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
