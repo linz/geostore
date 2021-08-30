@@ -2426,14 +2426,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "shellcheck-py"
-version = "0.7.2.1"
-description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
-category = "dev"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -2674,7 +2666,7 @@ validation_summary = ["jsonschema", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.10"
-content-hash = "c10f8f53602ee6b7cc137783e52ec19f9cf83ac87b101f9128bc5432f1769f7a"
+content-hash = "735a9ced2891bd24f45df7ecf29faa6b79498295e1df6e0be92b26ece85c3b9f"
 
 [metadata.files]
 appdirs = [
@@ -3482,12 +3474,6 @@ s3transfer = [
 sh = [
     {file = "sh-1.14.1-py2.py3-none-any.whl", hash = "sha256:75e86a836f47de095d4531718fe8489e6f7446c75ddfa5596f632727b919ffae"},
     {file = "sh-1.14.1.tar.gz", hash = "sha256:39aa9af22f6558a0c5d132881cf43e34828ca03e4ae11114852ca6a55c7c1d8e"},
-]
-shellcheck-py = [
-    {file = "shellcheck_py-0.7.2.1-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:8855607a09888a7fcc6d9289772a29847d19b9785fd57239993db487a861a977"},
-    {file = "shellcheck_py-0.7.2.1-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9f0e0a6498102bb8a72d1e268b34615f5f2f0abdbb70196261fd9c2ac75cbb08"},
-    {file = "shellcheck_py-0.7.2.1-py2.py3-none-win_amd64.whl", hash = "sha256:d594a9750e322b23894f0dd1447542078ad7da6ad4cd3628e6f22707352abd42"},
-    {file = "shellcheck_py-0.7.2.1.tar.gz", hash = "sha256:a45daaab5b3e60daca6c72935d847075aa1177f1d0e01a258268b17a88b5c7e0"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
