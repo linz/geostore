@@ -2275,7 +2275,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 
 [[package]]
 name = "pytest-randomly"
-version = "3.9.0"
+version = "3.10.1"
 description = "Pytest plugin to randomly order tests and control random.seed."
 category = "dev"
 optional = false
@@ -3332,8 +3332,8 @@ pytest = [
     {file = "pytest-6.2.4.tar.gz", hash = "sha256:50bcad0a0b9c5a72c8e4e7c9855a3ad496ca6a881a3641b4260605450772c54b"},
 ]
 pytest-randomly = [
-    {file = "pytest-randomly-3.9.0.tar.gz", hash = "sha256:ed2036cc7d6aad58bf05b309b502e7a8fb6fda8a881e145dcd1351dd240b0a60"},
-    {file = "pytest_randomly-3.9.0-py3-none-any.whl", hash = "sha256:83977ef250b14b5fa34f15d82ff24e52406e7a99de7a81fdbbab74c0ffadc45c"},
+    {file = "pytest-randomly-3.10.1.tar.gz", hash = "sha256:d4ef5dbf27e542e6a4e4cec7a20ef3f1b906bce21fa340ca5657b5326ef23a64"},
+    {file = "pytest_randomly-3.10.1-py3-none-any.whl", hash = "sha256:d28d490e3a743bdd64c5bc87c5fc182eac966ba6432c6bb6b224e32e76527e9e"},
 ]
 pytest-socket = [
     {file = "pytest-socket-0.4.0.tar.gz", hash = "sha256:f590593675161e1407df676f0aff9ae24ca52c19f0fb4f30df0aaf820fa32bb1"},
