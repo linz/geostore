@@ -64,12 +64,11 @@ repos:
         stages: [commit]
         types: [python]
 
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: 04cf542e423601a418787b8c7d704c3c1317e6d3 # v0.7.2
+    hooks:
       - id: shellcheck
-        name: shellcheck
-        entry: shellcheck
-        language: system
         stages: [commit]
-        types: [bash]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: a99a3fbe79a9d346cabd02a5e167ad0edafe616b # v2.3.0
