@@ -490,8 +490,9 @@ def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> Non
         MINIMAL_VALID_STAC_ITEM_OBJECT,
         MINIMAL_VALID_STAC_CATALOG_OBJECT,
     ]:
+        stac_type = stac_object[STAC_TYPE_KEY]
         for key in stac_object:
-            with subtests.test(msg=f"{stac_object[STAC_TYPE_KEY]} {key}"):
+            with subtests.test(msg=f"{stac_type} {key}"):
                 stac_object = deepcopy(stac_object)
                 stac_object.pop(key)
 
