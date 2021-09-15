@@ -26,7 +26,7 @@ class BaseSTACValidator(Draft7Validator):  # type: ignore[misc]
         super().__init__(item_schema, resolver=resolver, format_checker=FormatChecker())
 
     def get_schema_dict(self, path: str) -> JsonObject:
-        with open(join(self.script_dir, path)) as file_pointer:
+        with open(join(self.script_dir, path), encoding="utf-8") as file_pointer:
             schema_dict: JsonObject = load(file_pointer)
             return schema_dict
 
