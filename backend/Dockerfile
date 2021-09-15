@@ -13,7 +13,7 @@ RUN curl --location --show-error --silent --output install-poetry.py https://raw
 COPY poetry.lock poetry.toml pyproject.toml /opt/
 WORKDIR /opt
 ARG task
-RUN ~/.local/bin/poetry install --extras=${task} --no-dev
+RUN ~/.local/bin/poetry install --extras=${task} --no-dev --no-root
 
 
 FROM ubuntu:20.04
