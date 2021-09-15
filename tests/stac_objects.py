@@ -53,7 +53,6 @@ MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
     STAC_ASSETS_KEY: {
         any_asset_name(): {STAC_HREF_KEY: any_s3_url(), STAC_FILE_CHECKSUM_KEY: any_hex_multihash()}
     },
-    STAC_DESCRIPTION_KEY: any_dataset_description(),
     STAC_GEOMETRY_KEY: None,
     STAC_ID_KEY: any_dataset_id(),
     STAC_LINKS_KEY: [],
