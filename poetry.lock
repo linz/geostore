@@ -2303,7 +2303,7 @@ pytest = "*"
 
 [[package]]
 name = "pytest-socket"
-version = "0.4.0"
+version = "0.4.1"
 description = "Pytest Plugin to disable socket calls during tests"
 category = "dev"
 optional = false
@@ -2556,7 +2556,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.25.2"
+version = "2.25.6"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -3348,8 +3348,8 @@ pytest-randomly = [
     {file = "pytest_randomly-3.10.1-py3-none-any.whl", hash = "sha256:d28d490e3a743bdd64c5bc87c5fc182eac966ba6432c6bb6b224e32e76527e9e"},
 ]
 pytest-socket = [
-    {file = "pytest-socket-0.4.0.tar.gz", hash = "sha256:f590593675161e1407df676f0aff9ae24ca52c19f0fb4f30df0aaf820fa32bb1"},
-    {file = "pytest_socket-0.4.0-py3-none-any.whl", hash = "sha256:5e21faa48f1febc6ac83bf78f5dd48a8989ef84a01ae50deb3a226813e5f61d1"},
+    {file = "pytest-socket-0.4.1.tar.gz", hash = "sha256:b5abcfd14d9c03e7d4e2875bb5e190af28bf5b4162d0a83e3d7aee6d79f1c85d"},
+    {file = "pytest_socket-0.4.1-py3-none-any.whl", hash = "sha256:e3bc6cc9c2534289c6a5b9748ca733f6ae8c8d34f1fdab5115ca17a47860bf5e"},
 ]
 pytest-subtests = [
     {file = "pytest-subtests-0.5.0.tar.gz", hash = "sha256:5bd1e4bf0eda4c89a6cd42b0ee28e1d2ca0848de3fd67ad8cdd6d559ed00f120"},
@@ -3538,8 +3538,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-0.1.6-py3-none-any.whl", hash = "sha256:5b6241ea9fca2d8878cc152017d9524da62a7a856b98e31006e68b02aab47442"},
 ]
 types-requests = [
-    {file = "types-requests-2.25.2.tar.gz", hash = "sha256:03122b582f5300ec35ac6692f2634207c467e602dc9ba46b5811a9f6ce0b0bc2"},
-    {file = "types_requests-2.25.2-py3-none-any.whl", hash = "sha256:a4c03c654527957a70002079ca48669b53d82eac4811abf140ea93847b65529b"},
+    {file = "types-requests-2.25.6.tar.gz", hash = "sha256:e21541c0f55c066c491a639309159556dd8c5833e49fcde929c4c47bdb0002ee"},
+    {file = "types_requests-2.25.6-py3-none-any.whl", hash = "sha256:a5a305b43ea57bf64d6731f89816946a405b591eff6de28d4c0fd58422cee779"},
 ]
 types-six = [
     {file = "types-six-1.16.0.tar.gz", hash = "sha256:9ad421d38daed2bc501a75065c0f6ee2a034cc484e4bc4bcb2e2c3560a4619e4"},
