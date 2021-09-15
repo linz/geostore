@@ -46,110 +46,75 @@ The settings are:
 
 ## Development setup
 
-One-time setup, assuming you are in the project directory:
+One-time setup:
 
-1. Install and configure Docker:
-   1. Install the package: `sudo apt install docker.io`
-   1. Add yourself to the "docker" group: `sudo usermod --append --groups docker "$USER"`
-   1. Either log out and back in, or run `newgrp docker` to enable the new group for yourself in the
-      current terminal.
-1. [Install and enable `pyenv`](https://github.com/pyenv/pyenv#installation):
+1. [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
+1. Install [`nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
+   ```bash
+   cd "$(mktemp --directory)"
+   wget https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh
+   echo 'b674516f001d331c517be63c1baeaf71de6cbb6d68a44112bf2cff39a6bc246a install.sh' | sha256sum --check && bash install.sh
+   ```
+1. Install [Poetry](https://python-poetry.org/docs/master/#installation):
+   ```bash
+   cd "$(mktemp --directory)"
+   wget https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
+   echo 'b35d059be6f343ac1f05ae56e8eaaaebb34da8c92424ee00133821d7f11e3a9c install-poetry.py' | sha256sum --check && python3 install-poetry.py
+   ```
+1. Install [Pyenv](https://github.com/pyenv/pyenv#installation):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
+   cd "$(mktemp --directory)"
+   wget https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer
+   echo '3aa49f2b3b77556272a80a01fe44d46733f4862dbbbc956002dc944c428bebd8 pyenv-installer' | sha256sum --check && bash pyenv-installer
+   ```
+1. Enable the above by adding the following to your `~/.bashrc`:
 
-   1. Install Python build environment:
+   ```bash
+   if [[ -e "${HOME}/.local/bin" ]]
+   then
+       PATH="${HOME}/.local/bin:${PATH}"
+   fi
 
-      ```bash
-      sudo apt-get update
-      sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
-      ```
+   # nvm <https://github.com/nvm-sh/nvm>
+   if [[ -d "${HOME}/.nvm" ]]
+   then
+       export NVM_DIR="${HOME}/.nvm"
+       # shellcheck source=/dev/null
+       [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+       # shellcheck source=/dev/null
+       [[ -s "${NVM_DIR}/bash_completion" ]] && . "${NVM_DIR}/bash_completion"
+   fi
 
-   1. `curl https://pyenv.run | bash`
-   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `pyenv`
-      is not installed):
+   # Pyenv <https://github.com/pyenv/pyenv>
+   if [[ -e "${HOME}/.pyenv" ]]
+   then
+       PATH="${HOME}/.pyenv/bin:${PATH}"
+       eval "$(pyenv init --path)"
+       eval "$(pyenv init -)"
+       eval "$(pyenv virtualenv-init -)"
+   fi
+   ```
 
-      ```bash
-      # Pyenv <https://github.com/pyenv/pyenv>
-      if [[ -e "${HOME}/.pyenv" ]]
-      then
-          PATH="${HOME}/.pyenv/bin:${PATH}"
-          eval "$(pyenv init --path)"
-          eval "$(pyenv init -)"
-          eval "$(pyenv virtualenv-init -)"
-      fi
-      ```
-
-   1. Restart your shell: `exec "$SHELL"`.
-
-1. [Install and enable Poetry](https://python-poetry.org/docs/#installation):
-
-   1. Install:
-
-      ```bash
-      curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
-      ```
-
-   1. Make sure `"${HOME}/.local/bin"` is on your `PATH`, for example by adding the following to
-      your `~/.bashrc`:
-
-      ```bash
-      if [[ -e "${HOME}/.local/bin" ]]
-      then
-          PATH="${HOME}/.local/bin:${PATH}"
-      fi
-      ```
-
-   1. Restart your shell: `exec "$SHELL"`.
-   1. Verify setup: `poetry --version`.
-
-1. [Install and enable `nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
-
-   1. Install (change the version number if you want to install a different one):
-
-      ```bash
-      cd "$(mktemp --directory)"
-      wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh
-      echo 'b674516f001d331c517be63c1baeaf71de6cbb6d68a44112bf2cff39a6bc246a install.sh' | sha256sum --check \
-        && bash install.sh
-      ```
-
-   1. Add the following to ~/.bashrc (wraps the upstream instructions to not do anything if `nvm` is
-      not installed):
-
-      ```bash
-      if [[ -d "${HOME}/.nvm" ]]
-      then
-          export NVM_DIR="${HOME}/.nvm"
-          # shellcheck source=/dev/null
-          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
-          # shellcheck source=/dev/null
-          [[ -s "${NVM_DIR}/bash_completion" ]] && . "${NVM_DIR}/bash_completion"
-      fi
-      ```
-
-   1. Restart your shell: `exec "$SHELL"`.
-   1. Verify setup: `nvm --version`.
-
-1. [Install latest `npm` LTS](https://github.com/nvm-sh/nvm#long-term-support):
-   `nvm install "$(cat .node-version)"`
-1. Run `./reset-dev-env.bash --all` to install packages.
-1. Restart your shell again: `exec "$SHELL"`.
+1. Configure Docker:
+   1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
+   1. Log out and back in to enable the new group
 1. Verify setup:
-   `diff <(python <<< 'import platform; print(platform.python_version())') .python-version` - should
-   produce no output.
-1. Enable the virtualenv: `. .venv/bin/activate`.
-1. Enable Node.js executables:
-
-   1. Add the executables directory to your path in ~/.bashrc (replace the project path with the
-      path to this directory):
-
-      ```bash
-      if [[ -d "${HOME}/dev/geostore" ]]
-      then
-          PATH="${HOME}/dev/geostore/node_modules/.bin:${PATH}"
-      fi
-      ```
-
-   1. Verify setup: `cdk --version`
-
+   1. `nvm --version` should print a version
+   1. `poetry --version` should print a version
+   1. `pyenv --version` should print a version
+1. Install project Python version:
+   1. `cd` to the project directory
+   1. Install: `pyenv install --skip-existing`
+   1. Verify:
+      `diff <(python <<< 'import platform; print(platform.python_version())') .python-version`
+      should print nothing
+1. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support):
+   `nvm install "$(cat .node-version)"`
+1. Create Python virtual environment: `python -m venv .venv`
+1. Activate the python virtual environment: `. .venv/bin/activate`
+1. Run `./reset-dev-env.bash --all` to install packages.
 1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
    is optional since it currently can't be set per repository or organisation, so it affects any
    repos where you have access to Dependabot alerts.)
@@ -177,7 +142,7 @@ Re-run `. .venv/bin/activate` in each shell.
 1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
 
    ```bash
-   aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
+   node_modules/.bin/aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
    ```
 
 1. Environment variables
@@ -203,13 +168,13 @@ Re-run `. .venv/bin/activate` in each shell.
 1. Bootstrap CDK (only once per profile)
 
    ```bash
-   cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+   node_modules/.bin/cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
    ```
 
 1. Deploy CDK stack
 
    ```bash
-   cdk --profile=<AWS-PROFILE-NAME> deploy --all
+   node_modules/.bin/cdk --profile=<AWS-PROFILE-NAME> deploy --all
    ```
 
    Once comfortable with CDK you can add `--require-approval=never` above to deploy

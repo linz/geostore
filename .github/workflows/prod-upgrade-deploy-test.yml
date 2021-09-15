@@ -86,7 +86,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')"
+              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
+              --no-dev --no-root
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -166,7 +167,7 @@ jobs:
           python -m pip install poetry
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --remove-untracked
+              --no-dev --no-root --remove-untracked
 
       # deployment
       - name: Upgrade copy of production AWS stacks in CI environment
