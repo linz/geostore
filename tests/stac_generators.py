@@ -1,4 +1,5 @@
 from hashlib import sha256
+from random import choice
 from uuid import uuid4
 
 from multihash import SHA2_256
@@ -49,3 +50,17 @@ def any_asset_name() -> str:
 def any_dataset_description() -> str:
     """Arbitrary-length string"""
     return random_string(100)
+
+
+def any_security_classification() -> str:
+    return choice(
+        [
+            "Unclassified",
+            "IN-CONFIDENCE",
+            "SENSITIVE",
+            "RESTRICTED",
+            "CONFIDENTIAL",
+            "SECRET",
+            "TOP-SECRET",
+        ]
+    )
