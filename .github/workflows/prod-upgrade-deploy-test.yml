@@ -40,7 +40,7 @@ jobs:
       # TODO: Remove `|| […]` once this code is in production
       - name: Get production configuration
         run: |
-          echo "PROD_NODE_VERSION=$(cat .node-version || echo 14)" | tee -a $GITHUB_ENV
+          echo "PROD_NODE_VERSION=$(cat .nvmrc || echo 14)" | tee -a $GITHUB_ENV
           echo "PROD_PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       # dependencies installation
@@ -120,7 +120,7 @@ jobs:
 
       - name: Get HEAD configuration
         run: |
-          echo "HEAD_NODE_VERSION=$(cat .node-version)" | tee -a $GITHUB_ENV
+          echo "HEAD_NODE_VERSION=$(cat .nvmrc)" | tee -a $GITHUB_ENV
           echo "HEAD_PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       # dependencies installation

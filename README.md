@@ -100,21 +100,9 @@ One-time setup:
 1. Configure Docker:
    1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
    1. Log out and back in to enable the new group
-1. Verify setup:
-   1. `nvm --version` should print a version
-   1. `poetry --version` should print a version
-   1. `pyenv --version` should print a version
-1. Install project Python version:
-   1. `cd` to the project directory
-   1. Install: `pyenv install --skip-existing`
-   1. Verify:
-      `diff <(python <<< 'import platform; print(platform.python_version())') .python-version`
-      should print nothing
-1. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support):
-   `nvm install "$(cat .node-version)"`
-1. Create Python virtual environment: `python -m venv .venv`
-1. Activate the python virtual environment: `. .venv/bin/activate`
+1. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support): `nvm install`
 1. Run `./reset-dev-env.bash --all` to install packages.
+1. Enable the dev environment: `. activate-dev-env.bash`.
 1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
    is optional since it currently can't be set per repository or organisation, so it affects any
    repos where you have access to Dependabot alerts.)
@@ -124,17 +112,17 @@ to run it before every workday, with a crontab entry like this template:
 
 ```crontab
 HOME='/home/USERNAME'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "PATH_TO_GEOSTORE" && pyenv exec ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "PATH_TO_GEOSTORE" && ./reset-dev-env.bash --all
 ```
 
 Replace `USERNAME` and `PATH_TO_GEOSTORE` with your values, resulting in something like this:
 
 ```crontab
 HOME='/home/jdoe'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "${HOME}/dev/geostore" && pyenv exec ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "${HOME}/dev/geostore" && ./reset-dev-env.bash --all
 ```
 
-Re-run `. .venv/bin/activate` in each shell.
+Re-run `. activate-dev-env.bash` in each shell.
 
 ## AWS Infrastructure deployment
 
@@ -142,7 +130,7 @@ Re-run `. .venv/bin/activate` in each shell.
 1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
 
    ```bash
-   node_modules/.bin/aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
+   aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
    ```
 
 1. Environment variables
@@ -168,13 +156,13 @@ Re-run `. .venv/bin/activate` in each shell.
 1. Bootstrap CDK (only once per profile)
 
    ```bash
-   node_modules/.bin/cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
+   cdk --profile=<AWS-PROFILE-NAME> bootstrap aws://unknown-account/ap-southeast-2
    ```
 
 1. Deploy CDK stack
 
    ```bash
-   node_modules/.bin/cdk --profile=<AWS-PROFILE-NAME> deploy --all
+   cdk --profile=<AWS-PROFILE-NAME> deploy --all
    ```
 
    Once comfortable with CDK you can add `--require-approval=never` above to deploy
