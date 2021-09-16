@@ -14,7 +14,11 @@ from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY
 from backend.check import Check
-from backend.check_stac_metadata.stac_validators import STACCollectionSchemaValidator
+from backend.check_stac_metadata.stac_validators import (
+    STACCatalogSchemaValidator,
+    STACCollectionSchemaValidator,
+    STACItemSchemaValidator,
+)
 from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
@@ -480,23 +484,52 @@ def should_validate_given_url(
     validate_mock.assert_called_once_with(url)
 
 
-def should_treat_minimal_stac_object_as_valid() -> None:
+def should_treat_minimal_catalog_as_valid() -> None:
+    STACCatalogSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
+
+
+def should_treat_minimal_collection_as_valid() -> None:
     STACCollectionSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
 
 
-def should_treat_any_missing_top_level_key_as_invalid(subtests: SubTests) -> None:
-    for stac_object in [
-        MINIMAL_VALID_STAC_COLLECTION_OBJECT,
-        MINIMAL_VALID_STAC_ITEM_OBJECT,
-        MINIMAL_VALID_STAC_CATALOG_OBJECT,
-    ]:
-        for key in stac_object:
-            with subtests.test(msg=f"{stac_object[STAC_TYPE_KEY]} {key}"):
-                stac_object = deepcopy(stac_object)
-                stac_object.pop(key)
+def should_treat_minimal_item_as_valid() -> None:
+    STACItemSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT))
 
-                with raises(ValidationError):
-                    STACCollectionSchemaValidator().validate(stac_object)
+
+def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests) -> None:
+    original_stac_object = MINIMAL_VALID_STAC_CATALOG_OBJECT
+    for key in original_stac_object:
+        with subtests.test(msg=key), raises(
+            ValidationError, match=f"^'{key}' is a required property"
+        ):
+            stac_object = deepcopy(original_stac_object)
+            stac_object.pop(key)
+
+            STACCatalogSchemaValidator().validate(stac_object)
+
+
+def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTests) -> None:
+    original_stac_object = MINIMAL_VALID_STAC_COLLECTION_OBJECT
+    for key in original_stac_object:
+        with subtests.test(msg=key), raises(
+            ValidationError, match=f"^'{key}' is a required property"
+        ):
+            stac_object = deepcopy(original_stac_object)
+            stac_object.pop(key)
+
+            STACCollectionSchemaValidator().validate(stac_object)
+
+
+def should_treat_any_missing_item_top_level_key_as_invalid(subtests: SubTests) -> None:
+    original_stac_object = MINIMAL_VALID_STAC_ITEM_OBJECT
+    for key in original_stac_object:
+        with subtests.test(msg=key), raises(
+            ValidationError, match=f"^'{key}' is a required property"
+        ):
+            stac_object = deepcopy(original_stac_object)
+            stac_object.pop(key)
+
+            STACItemSchemaValidator().validate(stac_object)
 
 
 def should_detect_invalid_datetime() -> None:
