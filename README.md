@@ -120,14 +120,14 @@ to run it before every workday, with a crontab entry like this template:
 
 ```crontab
 HOME='/home/USERNAME'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "PATH_TO_GEOSTORE" && ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/run/current-system/sw/bin" && cd "PATH_TO_GEOSTORE" && ./reset-dev-env.bash --all
 ```
 
 Replace `USERNAME` and `PATH_TO_GEOSTORE` with your values, resulting in something like this:
 
 ```crontab
 HOME='/home/jdoe'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "${HOME}/dev/geostore" && ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/run/current-system/sw/bin" && cd "${HOME}/dev/geostore" && ./reset-dev-env.bash --all
 ```
 
 Re-run `. activate-dev-env.bash` in each shell.
