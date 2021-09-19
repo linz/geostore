@@ -2731,8 +2731,8 @@ validation_summary = ["jsonschema", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.8.10"
-content-hash = "41efeec7d1fe8d0de5c62c239b269d18780bd7ee68a65bc28157153135330865"
+python-versions = "^3.8"
+content-hash = "357c095fa49db5dce538947c8fcec02168981486cf40c6ed87a91c1358e843bf"
 
 [metadata.files]
 appdirs = [
