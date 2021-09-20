@@ -6,7 +6,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 # hadolint ignore=DL3059
 RUN curl --location --show-error --silent --output install-poetry.py https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
-    && echo 'daad01ac0c1636f1c0154575c6b3b37a0867e9cedd67d1224fc4259c07b03a86 install-poetry.py' > install-poetry.py.sha256 \
+    && echo 'e8c7f91d5bbf4d0795919cd062eafbb350bec0c7579cb61d05c2112f224935a2 install-poetry.py' > install-poetry.py.sha256 \
     && sha256sum --check install-poetry.py.sha256 \
     && python3 install-poetry.py \
     && rm install-poetry.py install-poetry.py.sha256
