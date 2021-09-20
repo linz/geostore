@@ -239,6 +239,10 @@ version, and ideally at the same patch level.
 
 ### Running tests
 
+Prerequisites:
+
+- Authenticated to a profile which has access to a deployed Geostore.
+
 To launch full test suite, run `pytest`.
 
 ### Debugging
