@@ -21,9 +21,10 @@ from backend.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from backend.models import DB_KEY_SEPARATOR
 from backend.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from backend.s3 import CHUNK_SIZE
+from backend.step_function import get_hash_key
 from backend.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -56,7 +57,6 @@ SHA256_CHECKSUM_BYTE_COUNT = 32
 def should_return_offset_from_array_index_variable() -> None:
     index = any_batch_job_array_index()
     with patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: str(index)}):
-
         assert get_job_offset() == index
 
 
@@ -78,7 +78,7 @@ def should_validate_given_index(
     # Given
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
 
     url = any_s3_url()
     hex_multihash = any_hex_multihash()
@@ -138,16 +138,13 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
-
     # Given
     actual_hex_digest = any_sha256_hex_digest()
     expected_hex_digest = any_sha256_hex_digest()
     expected_hex_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
     dataset_id = any_dataset_id()
     dataset_version_id = any_dataset_version_id()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{dataset_version_id}"
-    )
+    hash_key = get_hash_key(dataset_id, dataset_version_id)
     url = any_s3_url()
     processing_assets_model_mock.return_value.get.return_value = ProcessingAssetsModelBase(
         hash_key=hash_key,
@@ -207,7 +204,7 @@ def should_save_staging_access_validation_results(
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
 
     array_index = "1"
 

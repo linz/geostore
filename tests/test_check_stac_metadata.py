@@ -26,13 +26,7 @@ from backend.check_stac_metadata.utils import (
     STACDatasetValidator,
 )
 from backend.import_metadata_file.task import S3_BODY_KEY
-from backend.models import (
-    CHECK_ID_PREFIX,
-    DATASET_ID_PREFIX,
-    DB_KEY_SEPARATOR,
-    URL_ID_PREFIX,
-    VERSION_ID_PREFIX,
-)
+from backend.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from backend.parameter_store import ParameterName, get_param
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from backend.resources import ResourceName
@@ -54,6 +48,7 @@ from backend.stac_format import (
     STAC_TYPE_KEY,
     STAC_VERSION_KEY,
 )
+from backend.step_function import get_hash_key
 from backend.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
@@ -155,7 +150,7 @@ def should_save_non_s3_url_validation_results(
         )
 
     # Then
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
     assert validation_results_factory_mock.mock_calls == [
         call(hash_key, validation_results_table_name),
         call().save(
@@ -244,7 +239,7 @@ def should_save_staging_access_validation_results(
         any_lambda_context(),
     )
 
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
     assert validation_results_factory_mock.mock_calls == [
         call(hash_key, validation_results_table_name),
         call().save(
@@ -303,7 +298,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             == {}
         )
 
-    hash_key = f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
     validation_results_model = validation_results_model_with_meta()
     with subtests.test(msg="Root validation results"):
         assert (
@@ -368,9 +363,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
         key=any_safe_filename(),
     ) as second_asset_s3_object:
-        expected_hash_key = (
-            f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
-        )
+        expected_hash_key = get_hash_key(dataset_id, version_id)
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
         metadata_stac_object[STAC_ASSETS_KEY] = {
