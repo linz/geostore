@@ -109,6 +109,11 @@ jobs:
       - name: Print CDK version
         run: poetry run cdk --version
 
+      - name: Run non-infrastructure tests offline
+        run: >
+          poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
+          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.5.11
         with:
@@ -126,11 +131,6 @@ jobs:
       - name: Deploy AWS stacks for testing
         run: |
           poetry run cdk deploy --all --require-approval never --strict --change-set-name "ci-${GITHUB_RUN_ID}"
-
-      - name: Run non-infrastructure tests offline
-        run: >
-          poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
 
       - name: Run infrastructure tests online
         run: >
