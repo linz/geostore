@@ -61,7 +61,9 @@ def should_log_assets() -> None:
     with patch.object(LOGGER, "debug") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(metadata_url)
+        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
+            metadata_url
+        )
 
         logger_mock.assert_any_call(expected_message)
 
@@ -80,7 +82,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -103,7 +105,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -123,7 +125,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -143,6 +145,6 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
