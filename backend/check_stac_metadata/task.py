@@ -7,10 +7,10 @@ from jsonschema import ValidationError, validate
 from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..log import set_up_logging
-from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..s3 import get_s3_client_for_role
 from ..s3_utils import get_bucket_and_key_from_url
+from ..step_function import get_hash_key
 from ..step_function_keys import DATASET_ID_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
@@ -20,7 +20,6 @@ LOGGER = set_up_logging(__name__)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-
     LOGGER.debug(dumps({EVENT_KEY: event}))
 
     # validate input
@@ -54,15 +53,12 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         response = s3_client.get_object(Bucket=bucket_name, Key=key)
         return response["Body"]
 
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event[VERSION_ID_KEY]}"
-    )
+    hash_key = get_hash_key(event[DATASET_ID_KEY], event[VERSION_ID_KEY])
 
     validation_result_factory = ValidationResultFactory(
         hash_key, get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     )
-    validator = STACDatasetValidator(s3_url_reader, validation_result_factory)
+    validator = STACDatasetValidator(hash_key, s3_url_reader, validation_result_factory)
 
-    validator.run(event[METADATA_URL_KEY], hash_key)
+    validator.run(event[METADATA_URL_KEY])
     return {}

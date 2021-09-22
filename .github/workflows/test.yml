@@ -13,24 +13,23 @@ jobs:
           fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
           submodules: 'true'
 
-      - name: Get configuration
-        run: |
-          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
+      - id: python-version
+        run: echo "::set-output name=id::$(cat .python-version)"
 
-      - name: Use Python ${{ env.PYTHON_VERSION }}
+      - name: Use Python ${{ steps.python-version.outputs.id }}
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
         uses: actions/cache@v2.1.6
         with:
           path: ~/.cache/pip
           key:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{
-            hashFiles('./poetry.lock') }}
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id
+            }}-${{ hashFiles('./poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id }}-
 
       - name: Install Python dependencies
         run: |
@@ -57,15 +56,16 @@ jobs:
         with:
           submodules: 'true'
 
-      - name: Get configuration
-        run: |
-          echo "NODE_VERSION=$(cat .nvmrc)" | tee -a $GITHUB_ENV
-          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
+      - id: node-version
+        run: echo "::set-output name=id::$(cat .nvmrc)"
 
-      - name: Use Node.js ${{ env.NODE_VERSION }}
+      - id: python-version
+        run: echo "::set-output name=id::$(cat .python-version)"
+
+      - name: Use Node.js ${{ steps.node-version.outputs.id }}
         uses: actions/setup-node@v2.4.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node-version.outputs.id }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
@@ -83,20 +83,20 @@ jobs:
       - name: Add local Node packages to PATH
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
-      - name: Use Python ${{ env.PYTHON_VERSION }}
+      - name: Use Python ${{ steps.python-version.outputs.id }}
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
         uses: actions/cache@v2.1.6
         with:
           path: ~/.cache/pip
           key:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{
-            hashFiles('./poetry.lock') }}
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id
+            }}-${{ hashFiles('./poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id }}-
 
       - name: Install Python dependencies
         run: |

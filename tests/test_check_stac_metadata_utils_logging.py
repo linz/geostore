@@ -15,18 +15,13 @@ from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_URL_KEY,
     STACDatasetValidator,
 )
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
+from .dynamodb_generators import any_hash_key
 from .general_generators import any_error_message, any_https_url, any_safe_filename
-from .stac_generators import (
-    any_asset_name,
-    any_dataset_id,
-    any_dataset_version_id,
-    any_hex_multihash,
-)
+from .stac_generators import any_asset_name, any_hex_multihash
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
@@ -66,17 +61,16 @@ def should_log_assets() -> None:
     with patch.object(LOGGER, "debug") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(metadata_url)
+        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
+            metadata_url
+        )
 
         logger_mock.assert_any_call(expected_message)
 
 
 def should_log_non_s3_url_prefix_validation() -> None:
     metadata_url = any_https_url()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{any_dataset_id()}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{any_dataset_version_id()}"
-    )
+    hash_key = any_hash_key()
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
     expected_message = dumps(
         {
@@ -88,7 +82,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -96,10 +90,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
 @patch("backend.check_stac_metadata.utils.STACDatasetValidator.validate")
 def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     metadata_url = any_s3_url()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{any_dataset_id()}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{any_dataset_version_id()}"
-    )
+    hash_key = any_hash_key()
 
     expected_error = ClientError(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
@@ -114,7 +105,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -122,10 +113,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
 @patch("backend.check_stac_metadata.utils.STACDatasetValidator.validate")
 def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     metadata_url = any_s3_url()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{any_dataset_id()}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{any_dataset_version_id()}"
-    )
+    hash_key = any_hash_key()
 
     expected_error = ValidationError(any_error_message())
     validate_mock.side_effect = expected_error
@@ -137,7 +125,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
 
@@ -145,10 +133,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
 @patch("backend.check_stac_metadata.utils.STACDatasetValidator.validate")
 def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     metadata_url = any_s3_url()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{any_dataset_id()}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{any_dataset_version_id()}"
-    )
+    hash_key = any_hash_key()
 
     url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
 
@@ -160,6 +145,6 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     with patch.object(LOGGER, "error") as logger_mock, patch(
         "backend.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).run(metadata_url, hash_key)
+        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(expected_message)
