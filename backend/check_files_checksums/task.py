@@ -2,8 +2,9 @@
 from argparse import ArgumentParser, Namespace
 
 from ..log import set_up_logging
-from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType
+from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset
 
@@ -25,10 +26,7 @@ def main() -> None:
     arguments = parse_arguments()
 
     index = arguments.first_item + get_job_offset()
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{arguments.dataset_id}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{arguments.version_id}"
-    )
+    hash_key = get_hash_key(arguments.dataset_id, arguments.version_id)
     range_key = f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}"
 
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)

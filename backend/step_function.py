@@ -8,6 +8,7 @@ from .api_keys import SUCCESS_KEY
 from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .log import set_up_logging
+from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -131,7 +132,7 @@ def get_import_job_status(import_dataset_jobs: JsonObject, job_id_key: str) -> J
 
 
 def get_step_function_validation_results(dataset_id: str, version_id: str) -> JsonList:
-    hash_key = f"DATASET#{dataset_id}#VERSION#{version_id}"
+    hash_key = get_hash_key(dataset_id, version_id)
 
     errors = []
     validation_results_model = validation_results_model_with_meta()
@@ -174,3 +175,9 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
         STATUS_KEY: s3_batch_copy_status,
         ERRORS_KEY: {FAILED_TASKS_KEY: failed_tasks, FAILURE_REASONS_KEY: failure_reasons},
     }
+
+
+def get_hash_key(dataset_id: str, dataset_version_id: str) -> str:
+    return (
+        f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{dataset_version_id}"
+    )
