@@ -67,6 +67,7 @@ from .aws_utils import (
     any_table_name,
     get_s3_role_arn,
 )
+from .dynamodb_generators import any_hash_key
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
     any_error_message,
@@ -199,7 +200,9 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
-        STACDatasetValidator(url_reader, validation_results_factory_mock).validate(metadata_url)
+        STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).validate(
+            metadata_url
+        )
 
     # Then
     validation_results_factory_mock.save.assert_any_call(
@@ -544,7 +547,9 @@ def should_validate_metadata_files_recursively() -> None:
     )
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(parent_url)
+        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
+            parent_url
+        )
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -584,7 +589,9 @@ def should_only_validate_each_file_once() -> None:
     )
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        STACDatasetValidator(url_reader, MockValidationResultFactory()).validate(root_url)
+        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
+            root_url
+        )
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
 
@@ -623,7 +630,7 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
+        validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
 
     # When
     validator.validate(metadata_url)
@@ -667,7 +674,7 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
     with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        validator = STACDatasetValidator(url_reader, MockValidationResultFactory())
+        validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
 
     validator.validate(metadata_url)
 
@@ -682,7 +689,7 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     # Given
     metadata_url = any_s3_url()
     url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
-    validator = STACDatasetValidator(url_reader, validation_results_factory_mock)
+    validator = STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock)
 
     # When
     with raises(JSONDecodeError):

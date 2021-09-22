@@ -67,9 +67,11 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
 class STACDatasetValidator:
     def __init__(
         self,
+        hash_key: str,
         url_reader: Callable[[str], StreamingBody],
         validation_result_factory: ValidationResultFactory,
     ):
+        self.hash_key = hash_key
         self.url_reader = url_reader
         self.validation_result_factory = validation_result_factory
 
@@ -79,7 +81,7 @@ class STACDatasetValidator:
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
-    def run(self, metadata_url: str, hash_key: str) -> None:
+    def run(self, metadata_url: str) -> None:
         if metadata_url[:5] != S3_URL_PREFIX:
             error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
@@ -99,14 +101,14 @@ class STACDatasetValidator:
 
         for index, metadata_file in enumerate(self.dataset_metadata):
             self.processing_assets_model(
-                hash_key=hash_key,
+                hash_key=self.hash_key,
                 range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}{index}",
                 url=metadata_file[PROCESSING_ASSET_URL_KEY],
             ).save()
 
         for index, asset in enumerate(self.dataset_assets):
             self.processing_assets_model(
-                hash_key=hash_key,
+                hash_key=self.hash_key,
                 range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
                 url=asset[PROCESSING_ASSET_URL_KEY],
                 multihash=asset[PROCESSING_ASSET_MULTIHASH_KEY],

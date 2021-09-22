@@ -58,7 +58,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     validation_result_factory = ValidationResultFactory(
         hash_key, get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     )
-    validator = STACDatasetValidator(s3_url_reader, validation_result_factory)
+    validator = STACDatasetValidator(hash_key, s3_url_reader, validation_result_factory)
 
-    validator.run(event[METADATA_URL_KEY], hash_key)
+    validator.run(event[METADATA_URL_KEY])
     return {}
