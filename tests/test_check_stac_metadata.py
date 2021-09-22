@@ -23,6 +23,7 @@ from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    NoAssetsInDatasetError,
     STACDatasetValidator,
 )
 from backend.import_metadata_file.task import S3_BODY_KEY
@@ -453,33 +454,6 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     )
 
 
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
-@patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-def should_validate_given_url(
-    validate_mock: MagicMock, get_s3_client_for_role_mock: MagicMock
-) -> None:
-    # Given
-    get_s3_client_for_role_mock.return_value.return_value = {
-        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
-    }
-    url = any_s3_url()
-
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        # When
-        lambda_handler(
-            {
-                DATASET_ID_KEY: any_dataset_id(),
-                VERSION_ID_KEY: any_dataset_version_id(),
-                METADATA_URL_KEY: url,
-                S3_ROLE_ARN_KEY: any_role_arn(),
-            },
-            any_lambda_context(),
-        )
-
-    # Then
-    validate_mock.assert_called_once_with(url)
-
-
 def should_treat_minimal_catalog_as_valid() -> None:
     STACCatalogSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
 
@@ -707,6 +681,16 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
             },
         ),
     ]
+
+
+def should_raise_exception_when_the_dataset_has_no_assets() -> None:
+    metadata_url = any_s3_url()
+    url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
+
+    with raises(NoAssetsInDatasetError):
+        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).run(
+            metadata_url
+        )
 
 
 def _sort_assets(assets: List[Dict[str, str]]) -> List[Dict[str, str]]:

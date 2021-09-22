@@ -99,6 +99,13 @@ class STACDatasetValidator:
             LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(error)}))
             return
 
+        if not self.dataset_assets:
+            raise NoAssetsInDatasetError
+
+        self.process_metadata()
+        self.process_assets()
+
+    def process_metadata(self) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
             self.processing_assets_model(
                 hash_key=self.hash_key,
@@ -106,6 +113,7 @@ class STACDatasetValidator:
                 url=metadata_file[PROCESSING_ASSET_URL_KEY],
             ).save()
 
+    def process_assets(self) -> None:
         for index, asset in enumerate(self.dataset_assets):
             self.processing_assets_model(
                 hash_key=self.hash_key,
@@ -190,3 +198,7 @@ class STACDatasetValidator:
             return result
 
         return report_duplicate_object_names
+
+
+class NoAssetsInDatasetError(Exception):
+    pass
