@@ -1,8 +1,12 @@
+*.bak
 /cdk.out/
 /.coverage
+html/
 /htmlcov/
 /.idea/
 *.isorted
+.mutmut-cache
+mutmut.xml
 /.mypy_cache/
 /node_modules/
 *.pyc
