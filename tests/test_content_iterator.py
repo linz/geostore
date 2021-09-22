@@ -16,8 +16,9 @@ from backend.content_iterator.task import (
     RESULTS_TABLE_NAME_KEY,
     lambda_handler,
 )
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from backend.models import DB_KEY_SEPARATOR
 from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from backend.step_function import get_hash_key
 from backend.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
@@ -165,7 +166,6 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
-
     assets_table_name = any_table_name()
     results_table_name = any_table_name()
     get_param_mock.side_effect = [assets_table_name, results_table_name]
@@ -196,7 +196,6 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
-
     assets_table_name = any_table_name()
     results_table_name = any_table_name()
     get_param_mock.side_effect = [assets_table_name, results_table_name]
@@ -227,7 +226,6 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
 ) -> None:
-
     assets_table_name = any_table_name()
     results_table_name = any_table_name()
     get_param_mock.side_effect = [assets_table_name, results_table_name]
@@ -256,10 +254,7 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
 def should_count_only_asset_files() -> None:
     # Given a single metadata and asset entry in the database
     event = deepcopy(INITIAL_EVENT)
-    hash_key = (
-        f"{DATASET_ID_PREFIX}{event['dataset_id']}"
-        f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
-    )
+    hash_key = get_hash_key(event["dataset_id"], event["version_id"])
     processing_assets_model = processing_assets_model_with_meta()
     processing_assets_model(
         hash_key=hash_key,
