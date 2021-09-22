@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from mypy_boto3_ssm import SSMClient
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    SSMClient = object
+    SSMClient = object  # pragma: no mutate
 
 LOGGER = set_up_logging(__name__)
 SSM_CLIENT: SSMClient = boto3.client("ssm", config=CONFIG)

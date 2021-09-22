@@ -8,7 +8,7 @@ from .boto3_config import CONFIG
 if TYPE_CHECKING:
     from mypy_boto3_sts import STSClient
 else:
-    STSClient = object
+    STSClient = object  # pragma: no mutate
 
 STS_CLIENT: STSClient = boto3.client("sts", config=CONFIG)
 
