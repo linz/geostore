@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class Check(Enum):
+    ASSETS_IN_DATASET = "assets in dataset"
     CHECKSUM = "checksum"
     DUPLICATE_OBJECT_KEY = "duplicate asset name"
     JSON_PARSE = "JSON parse"

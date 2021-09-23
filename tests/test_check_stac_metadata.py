@@ -5,6 +5,7 @@ from glob import glob
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps, load
+from logging import getLogger
 from typing import TYPE_CHECKING, Dict, List
 from unittest.mock import MagicMock, call, patch
 
@@ -13,7 +14,7 @@ from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY
+from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check import Check
 from backend.check_stac_metadata.stac_validators import (
     STACCatalogSchemaValidator,
@@ -22,9 +23,9 @@ from backend.check_stac_metadata.stac_validators import (
 )
 from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
+    NO_ASSETS_FOUND_ERROR_MESSAGE,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
-    NoAssetsInDatasetError,
     STACDatasetValidator,
 )
 from backend.import_metadata_file.task import S3_BODY_KEY
@@ -105,6 +106,8 @@ if TYPE_CHECKING:
     )
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+
+LOGGER = getLogger("backend.check_stac_metadata.utils")
 
 
 @patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
@@ -710,13 +713,26 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     ]
 
 
-def should_raise_exception_when_the_dataset_has_no_assets() -> None:
+@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+def should_report_when_the_dataset_has_no_assets(
+    validation_results_factory_mock: MagicMock, subtests: SubTests
+) -> None:
     metadata_url = any_s3_url()
     url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
+    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE})
 
-    with raises(NoAssetsInDatasetError):
-        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).run(
+    with patch.object(LOGGER, "error") as logger_mock, subtests.test(msg="Logging"):
+        STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).run(
             metadata_url
+        )
+        logger_mock.assert_any_call(expected_message)
+
+    with subtests.test(msg="Validation results"):
+        validation_results_factory_mock.save.assert_any_call(
+            metadata_url,
+            Check.ASSETS_IN_DATASET,
+            ValidationResult.FAILED,
+            details={MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE},
         )
 
 
