@@ -1,9 +1,10 @@
 import sys
 from copy import deepcopy
 from datetime import timedelta
+from glob import glob
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
-from json import JSONDecodeError, dumps
+from json import JSONDecodeError, dumps, load
 from typing import TYPE_CHECKING, Dict, List
 from unittest.mock import MagicMock, call, patch
 
@@ -33,8 +34,14 @@ from backend.processing_assets_model import ProcessingAssetType, processing_asse
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
+    LATEST_LINZ_SCHEMA_DIRECTORY,
+    LATEST_LINZ_STAC_EXTENSION_URL,
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
+    LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_DESCRIPTION_KEY,
+    STAC_EXTENSIONS_KEY,
     STAC_EXTENT_BBOX_KEY,
     STAC_EXTENT_KEY,
     STAC_EXTENT_SPATIAL_KEY,
@@ -45,8 +52,10 @@ from backend.stac_format import (
     STAC_ID_KEY,
     STAC_LICENSE_KEY,
     STAC_LINKS_KEY,
+    STAC_TITLE_KEY,
     STAC_TYPE_COLLECTION,
     STAC_TYPE_KEY,
+    STAC_VERSION,
     STAC_VERSION_KEY,
 )
 from backend.step_function import get_hash_key
@@ -87,7 +96,6 @@ from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
     MINIMAL_VALID_STAC_ITEM_OBJECT,
-    STAC_VERSION,
 )
 
 if TYPE_CHECKING:
@@ -176,17 +184,22 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         f'"{asset_name}": '
         f'{{"{STAC_HREF_KEY}": "{S3_URL_PREFIX}bucket/bar", "{STAC_FILE_CHECKSUM_KEY}": ""}}'
         "},"
+        f'"{LINZ_STAC_CREATED_KEY}": "2000-01-01T00:00:00+00:00",'
         f'"{STAC_DESCRIPTION_KEY}": "any description",'
+        f'"{STAC_EXTENSIONS_KEY}": ["{LATEST_LINZ_STAC_EXTENSION_URL}"],'
         f' "{STAC_EXTENT_KEY}": {{'
         f'"{STAC_EXTENT_SPATIAL_KEY}": {{"{STAC_EXTENT_BBOX_KEY}": [[-180, -90, 180, 90]]}},'
         f' "{STAC_EXTENT_TEMPORAL_KEY}":'
-        f' {{"{STAC_EXTENT_TEMPORAL_INTERVAL_KEY}": [["2000-01-01T00:00:00+00:00", null]]}}'
+        f' {{"{STAC_EXTENT_TEMPORAL_INTERVAL_KEY}": [["2000-01-02T00:00:00+00:00", null]]}}'
         "},"
         f' "{STAC_ID_KEY}": "{any_dataset_id()}",'
         f' "{STAC_LICENSE_KEY}": "MIT",'
         f' "{STAC_LINKS_KEY}": [],'
+        f' "{LINZ_STAC_SECURITY_CLASSIFICATION_KEY}": "Unclassified",'
         f' "{STAC_VERSION_KEY}": "{STAC_VERSION}",'
-        f' "{STAC_TYPE_KEY}": "{STAC_TYPE_COLLECTION}"'
+        f' "{STAC_TITLE_KEY}": "any title",'
+        f' "{STAC_TYPE_KEY}": "{STAC_TYPE_COLLECTION}",'
+        f' "{LINZ_STAC_UPDATED_KEY}": "2000-01-03T00:00:00+00:00"'
         "}"
     )
     metadata_url = any_s3_url()
@@ -452,6 +465,20 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                         actual_metadata_items.next().attribute_values
                         == expected_item.attribute_values
                     )
+
+
+def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
+    """
+    We need to make sure this repo updates the reference to the latest LINZ schema when updating the
+    submodule.
+    """
+    for path in glob(f"backend/check_stac_metadata/{LATEST_LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
+        with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
+            stac_object = load(file_handle)
+            url_reader = MockJSONURLReader({path: stac_object})
+            STACDatasetValidator(
+                any_hash_key(), url_reader, MockValidationResultFactory()
+            ).validate(path)
 
 
 def should_treat_minimal_catalog_as_valid() -> None:

@@ -5,6 +5,7 @@ from typing import List
 from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
 
+from ..stac_format import LATEST_LINZ_SCHEMA_PATH
 from ..types import JsonObject
 
 
@@ -50,6 +51,7 @@ class STACItemSchemaValidator(BaseSTACValidator):
 class STACCollectionSchemaValidator(BaseSTACValidator):
     def __init__(self) -> None:
         extra_schemas = [
+            LATEST_LINZ_SCHEMA_PATH,
             "stac-spec/catalog-spec/json-schema/catalog.json",
             "stac-spec/collection-spec/json-schema/collection.json",
             "stac-spec/item-spec/json-schema/basics.json",
@@ -60,7 +62,7 @@ class STACCollectionSchemaValidator(BaseSTACValidator):
             "stac-spec/item-spec/json-schema/provider.json",
         ]
 
-        super().__init__("stac-spec/collection-spec/json-schema/collection.json", extra_schemas)
+        super().__init__(LATEST_LINZ_SCHEMA_PATH, extra_schemas)
 
 
 class STACCatalogSchemaValidator(BaseSTACValidator):
