@@ -9,3 +9,4 @@
 [submodule "stac-spec"]
 	path = backend/check_stac_metadata/stac-spec
 	url = https://github.com/radiantearth/stac-spec.git
+	branch = gh-pages
