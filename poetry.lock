@@ -2607,7 +2607,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.25.6"
+version = "2.25.8"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -3601,8 +3601,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.0-py3-none-any.whl", hash = "sha256:9954d87dc982344bb2aad73a7fe505bdca72f89088ef653c4c40f52649183437"},
 ]
 types-requests = [
-    {file = "types-requests-2.25.6.tar.gz", hash = "sha256:e21541c0f55c066c491a639309159556dd8c5833e49fcde929c4c47bdb0002ee"},
-    {file = "types_requests-2.25.6-py3-none-any.whl", hash = "sha256:a5a305b43ea57bf64d6731f89816946a405b591eff6de28d4c0fd58422cee779"},
+    {file = "types-requests-2.25.8.tar.gz", hash = "sha256:225ac2e86549b6ef3a8a44bf955f80b4955855704a15d2883d8445c8df637242"},
+    {file = "types_requests-2.25.8-py3-none-any.whl", hash = "sha256:26e90866bcd773d76b316de7e6bd6e24641f9e1653cf27241c533886600f6824"},
 ]
 types-six = [
     {file = "types-six-1.16.1.tar.gz", hash = "sha256:a9e6769cb0808f920958ac95f75c5191f49e21e041eac127fa62e286e1005616"},
