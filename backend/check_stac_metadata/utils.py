@@ -31,6 +31,8 @@ from .stac_validators import (
     STACItemSchemaValidator,
 )
 
+NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
+
 LOGGER = set_up_logging(__name__)
 
 STAC_TYPE_VALIDATION_MAP: Dict[
@@ -100,7 +102,15 @@ class STACDatasetValidator:
             return
 
         if not self.dataset_assets:
-            raise NoAssetsInDatasetError
+            error_details = {MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE}
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.ASSETS_IN_DATASET,
+                ValidationResult.FAILED,
+                details=error_details,
+            )
+            LOGGER.error(dumps({SUCCESS_KEY: False, **error_details}))
+            return
 
         self.process_metadata()
         self.process_assets()
@@ -198,7 +208,3 @@ class STACDatasetValidator:
             return result
 
         return report_duplicate_object_names
-
-
-class NoAssetsInDatasetError(Exception):
-    pass
