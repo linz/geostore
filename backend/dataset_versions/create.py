@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from mypy_boto3_stepfunctions import SFNClient
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    SFNClient = object
+    SFNClient = object  # pragma: no mutate
 
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
 

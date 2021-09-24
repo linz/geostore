@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    S3Client = object
+    S3Client = object  # pragma: no mutate
 
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 

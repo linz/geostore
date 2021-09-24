@@ -16,8 +16,8 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
     from mypy_boto3_s3.type_defs import PutObjectOutputTypeDef
 else:
-    PutObjectOutputTypeDef = JsonObject
-    S3Client = object
+    PutObjectOutputTypeDef = JsonObject  # pragma: no mutate
+    S3Client = object  # pragma: no mutate
 
 TARGET_S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 LOGGER = set_up_logging(__name__)

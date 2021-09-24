@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from mypy_boto3_sns.type_defs import MessageAttributeValueTypeDef
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    SNSClient = object
-    MessageAttributeValueTypeDef = dict
+    SNSClient = object  # pragma: no mutate
+    MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
 
 SLACK_URL_ENV_NAME = "GEOSTORE_SLACK_NOTIFY_URL"
