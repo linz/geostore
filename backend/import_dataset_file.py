@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
     from mypy_boto3_s3.type_defs import PutObjectOutputTypeDef
 else:
-    PutObjectOutputTypeDef = JsonObject
-    S3Client = object
+    PutObjectOutputTypeDef = JsonObject  # pragma: no mutate
+    S3Client = object  # pragma: no mutate
 
 INVOCATION_ID_KEY = "invocationId"
 INVOCATION_SCHEMA_VERSION_KEY = "invocationSchemaVersion"

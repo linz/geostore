@@ -53,11 +53,13 @@ else:
         JobManifestSpecTypeDef
     ) = (
         JobManifestTypeDef
-    ) = JobOperationTypeDef = JobReportTypeDef = LambdaInvokeOperationTypeDef = dict
+    ) = (
+        JobOperationTypeDef
+    ) = JobReportTypeDef = LambdaInvokeOperationTypeDef = dict  # pragma: no mutate
     JobManifestFieldNameType = (
         JobManifestFormatType
-    ) = JobReportFormatType = JobReportScopeType = str
-    S3Client = S3ControlClient = object
+    ) = JobReportFormatType = JobReportScopeType = str  # pragma: no mutate
+    S3Client = S3ControlClient = object  # pragma: no mutate
 
 LOGGER = set_up_logging(__name__)
 

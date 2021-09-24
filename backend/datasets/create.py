@@ -29,8 +29,8 @@ if TYPE_CHECKING:
     from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
 else:
     # In production we want to avoid depending on a package which has no runtime impact
-    SQSServiceResource = object
-    MessageAttributeValueTypeDef = dict
+    SQSServiceResource = object  # pragma: no mutate
+    MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
 TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
 TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"

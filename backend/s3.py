@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
     from mypy_boto3_sts import STSClient
 else:
-    S3Client = STSClient = object
+    S3Client = STSClient = object  # pragma: no mutate
 
 
 S3_SCHEMA = "s3"
