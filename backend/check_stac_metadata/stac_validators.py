@@ -37,29 +37,29 @@ class STACItemSchemaValidator(BaseSTACValidator):
         extra_schemas = [
             "geojson-spec/Feature.json",
             "geojson-spec/Geometry.json",
-            "stac-spec/item-spec/json-schema/basics.json",
-            "stac-spec/item-spec/json-schema/datetime.json",
-            "stac-spec/item-spec/json-schema/instrument.json",
-            "stac-spec/item-spec/json-schema/item.json",
-            "stac-spec/item-spec/json-schema/licensing.json",
-            "stac-spec/item-spec/json-schema/provider.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/basics.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/datetime.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/instrument.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/item.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/licensing.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/provider.json",
         ]
 
-        super().__init__("stac-spec/item-spec/json-schema/item.json", extra_schemas)
+        super().__init__("stac-spec/v1.0.0/item-spec/json-schema/item.json", extra_schemas)
 
 
 class STACCollectionSchemaValidator(BaseSTACValidator):
     def __init__(self) -> None:
         extra_schemas = [
             LATEST_LINZ_SCHEMA_PATH,
-            "stac-spec/catalog-spec/json-schema/catalog.json",
-            "stac-spec/collection-spec/json-schema/collection.json",
-            "stac-spec/item-spec/json-schema/basics.json",
-            "stac-spec/item-spec/json-schema/datetime.json",
-            "stac-spec/item-spec/json-schema/instrument.json",
-            "stac-spec/item-spec/json-schema/item.json",
-            "stac-spec/item-spec/json-schema/licensing.json",
-            "stac-spec/item-spec/json-schema/provider.json",
+            "stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json",
+            "stac-spec/v1.0.0/collection-spec/json-schema/collection.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/basics.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/datetime.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/instrument.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/item.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/licensing.json",
+            "stac-spec/v1.0.0/item-spec/json-schema/provider.json",
         ]
 
         super().__init__(LATEST_LINZ_SCHEMA_PATH, extra_schemas)
@@ -68,7 +68,7 @@ class STACCollectionSchemaValidator(BaseSTACValidator):
 class STACCatalogSchemaValidator(BaseSTACValidator):
     def __init__(self) -> None:
         extra_schemas = [
-            "stac-spec/catalog-spec/json-schema/catalog.json",
+            "stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json",
         ]
 
-        super().__init__("stac-spec/catalog-spec/json-schema/catalog.json", extra_schemas)
+        super().__init__("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json", extra_schemas)
