@@ -17,7 +17,7 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.nodejs-14_x
     poetryEnv
-    pkgs.poetry
+    poetryEnv.python.pkgs.poetry
   ];
   shellHook = ''
     . activate-dev-env.bash
