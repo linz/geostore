@@ -17,6 +17,7 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.nodejs-14_x
     poetryEnv
+    poetryEnv.python.pkgs.pip
     poetryEnv.python.pkgs.poetry
   ];
   shellHook = ''
