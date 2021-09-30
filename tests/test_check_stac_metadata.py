@@ -35,7 +35,7 @@ from backend.processing_assets_model import ProcessingAssetType, processing_asse
 from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
-    LATEST_LINZ_SCHEMA_DIRECTORY,
+    LINZ_SCHEMA_DIRECTORY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -461,7 +461,7 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
     submodule.
     """
-    for path in glob(f"backend/check_stac_metadata/{LATEST_LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
+    for path in glob(f"backend/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
         with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
             stac_object = load(file_handle)
             url_reader = MockJSONURLReader({path: stac_object})
@@ -497,12 +497,10 @@ def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests
 def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTests) -> None:
     original_stac_object = MINIMAL_VALID_STAC_COLLECTION_OBJECT
     for key in original_stac_object:
-        with subtests.test(msg=key), raises(
-            ValidationError, match=f"^'{key}' is a required property"
-        ):
-            stac_object = deepcopy(original_stac_object)
-            stac_object.pop(key)
+        stac_object = deepcopy(original_stac_object)
+        stac_object.pop(key)
 
+        with subtests.test(msg=key), raises(ValidationError):
             STACCollectionSchemaValidator().validate(stac_object)
 
 

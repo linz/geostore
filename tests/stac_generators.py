@@ -1,13 +1,20 @@
 from hashlib import sha256
-from random import choice
+from random import choice, randrange
 from uuid import uuid4
 
 from multihash import SHA2_256
 
 from backend.datasets.create import TITLE_CHARACTERS
 from backend.datasets_model import DATASET_KEY_SEPARATOR
+from backend.types import JsonObject
 
-from .general_generators import _random_string_choices, random_string
+from .general_generators import (
+    _random_string_choices,
+    any_description,
+    any_https_url,
+    any_name,
+    random_string,
+)
 
 
 def any_hex_multihash() -> str:
@@ -64,3 +71,28 @@ def any_security_classification() -> str:
             "TOP-SECRET",
         ]
     )
+
+
+def any_linz_lifecycle() -> str:
+    return choice(["Under Development", "Preview", "Ongoing", "Completed", "Deprecated"])
+
+
+def any_linz_provider() -> JsonObject:
+    return {
+        "name": any_name(),
+        "description": any_description(),
+        "roles": [any_linz_provider_role()],
+        "url": any_https_url(),
+    }
+
+
+def any_linz_provider_role() -> str:
+    return choice(["manager", "custodian"])
+
+
+def any_quality_lineage() -> str:
+    return random_string(20)
+
+
+def any_version_version() -> str:
+    return f"{randrange(1_000)}.{randrange(1_000)}.{randrange(1_000)}"
