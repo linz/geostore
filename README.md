@@ -46,9 +46,17 @@ The settings are:
 
 ## Development setup
 
-One-time setup:
+One-time setup which generally assumes that you're in the project directory.
+
+### Common
 
 1. [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
+1. Configure Docker:
+   1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
+   1. Log out and back in to enable the new group
+
+### Ubuntu
+
 1. Install [`nvm`](https://github.com/nvm-sh/nvm#installing-and-updating):
    ```bash
    cd "$(mktemp --directory)"
@@ -112,17 +120,35 @@ to run it before every workday, with a crontab entry like this template:
 
 ```crontab
 HOME='/home/USERNAME'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "PATH_TO_GEOSTORE" && ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/run/current-system/sw/bin" && cd "PATH_TO_GEOSTORE" && ./reset-dev-env.bash --all
 ```
 
 Replace `USERNAME` and `PATH_TO_GEOSTORE` with your values, resulting in something like this:
 
 ```crontab
 HOME='/home/jdoe'
-0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin" && cd "${HOME}/dev/geostore" && ./reset-dev-env.bash --all
+0 2 * * 1-5 export PATH="${HOME}/.pyenv/shims:${HOME}/.pyenv/bin:${HOME}/.poetry/bin:/root/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/run/current-system/sw/bin" && cd "${HOME}/dev/geostore" && ./reset-dev-env.bash --all
 ```
 
 Re-run `. activate-dev-env.bash` in each shell.
+
+### Nix
+
+1. Run `nix-shell`.
+1. Optional: Install and [configure](https://direnv.net/docs/hook.html) `direnv` and
+   `direnv allow .` to load the Nix shell whenever you `cd` into the project.
+
+Restart your `nix-shell` when packages change.
+
+You can run your IDE within `nix-shell` to make it pick up the shell's Python interpreter. For
+example, with JetBrains IDEA, `nohup idea-ultimate &> /dev/null &`. When setting up the project SDK
+you can then just point it to `/run/current-system/sw/bin/python`.
+
+### Optional
+
+Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This is optional
+since it currently can't be set per repository or organisation, so it affects any repos where you
+have access to Dependabot alerts.)
 
 ## AWS Infrastructure deployment
 

@@ -108,9 +108,6 @@ then
         rm --force --recursive ./.venv
     fi
 
-    echo "Installing Python"
-    pyenv install --skip-existing "$(cat .python-version)"
-
     echo "Installing Python packages"
     poetry env use "$(cat .python-version)"
     poetry install \
