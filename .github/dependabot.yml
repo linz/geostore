@@ -21,11 +21,8 @@ updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
-      day: friday
-      time: '15:00'
-      timezone: Pacific/Auckland
+      interval: daily
   - package-ecosystem: pip
     directory: /infrastructure/constructs/lambda_layers/botocore
     schedule:
-      interval: weekly
+      interval: daily
