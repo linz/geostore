@@ -7,6 +7,16 @@ let
         sha256 = "1ckzhh24mgz6jd1xhfgx0i9mijk6xjqxwsshnvq789xsavrmsc36";
       })
     { };
+
+  nodejsVersion = pkgs.lib.fileContents ./.nvmrc;
+  buildNodeJs = pkgs.callPackage "${toString pkgs.path}/pkgs/development/web/nodejs/nodejs.nix" {
+    python = pkgs.python38;
+  };
+  nodejs = buildNodeJs {
+    version = nodejsVersion;
+    sha256 = "1k6bgs83s5iaawi63dcc826g23lfqr13phwbbzwx0pllqcyln49j";
+  };
+
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     python = pkgs.python38;
     projectDir = builtins.path { path = ./.; name = "geostore"; };
@@ -79,8 +89,8 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
+    nodejs
     pkgs.cargo
-    pkgs.nodejs-14_x
     pkgs.nodePackages.aws-azure-login
     pkgs.python38Packages.pip
     pkgs.python38Packages.poetry
