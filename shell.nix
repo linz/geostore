@@ -3,11 +3,20 @@ let
     (
       fetchTarball {
         # TODO: Pin to stable nixpkgs
-        name = "nixpkgs-2021-09-28";
-        url = "https://github.com/NixOS/nixpkgs/archive/ed8c752e13ef5a217806556a96b51ca7f7fb1007.tar.gz";
-        sha256 = "03yharwv0lal286d3zy6b7kj4px111s5h3a8nar8banpnqgml7v5";
+        name = "nixpkgs-2021-10-01";
+        url = "https://github.com/NixOS/nixpkgs/archive/9a23237031b385945132c8dac7d7ad97ece67408.tar.gz";
+        sha256 = "0g5ksps5pdhh1npv5vs6560gn0cdbvs536p54nm87lyvz50x7f6m";
       })
     { };
+
+  nodejsVersion = pkgs.lib.fileContents ./.nvmrc;
+  buildNodeJs = pkgs.callPackage "${toString pkgs.path}/pkgs/development/web/nodejs/nodejs.nix" { };
+  nodejs = buildNodeJs {
+    enableNpm = true;
+    version = nodejsVersion;
+    sha256 = "1vf989canwcx0wdpngvkbz2x232yccp7fzs1vcbr60rijgzmpq2n";
+  };
+
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     python = pkgs.python38;
     projectDir = builtins.path { path = ./.; name = "geostore"; };
@@ -15,7 +24,7 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
-    pkgs.nodejs-14_x
+    nodejs
     poetryEnv
     poetryEnv.python.pkgs.pip
     poetryEnv.python.pkgs.poetry
