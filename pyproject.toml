@@ -32,6 +32,7 @@ strict = true
 module = [
     "jsonschema",
     "jsonschema._utils",
+    "jsonschema.validators",
     "multihash",
     "pystac",
     "pystac.layout",

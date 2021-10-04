@@ -1,77 +1,74 @@
+from functools import cached_property
 from json import load
 from os.path import dirname, join
-from typing import List
 
 from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
+from jsonschema.validators import extend
 
 from ..stac_format import LINZ_SCHEMA_PATH, QUALITY_SCHEMA_PATH
 from ..types import JsonObject
 
 
-class BaseSTACValidator(Draft7Validator):  # type: ignore[misc]
-    def __init__(self, schema: str, extra_schemas: List[str]) -> None:
-        self.script_dir = dirname(__file__)
+class Schema:
+    def __init__(self, path: str):
+        self.path = path
 
-        item_schema = self.get_schema_dict(schema)
+    @cached_property
+    def as_dict(self) -> JsonObject:
+        with open(join(dirname(__file__), self.path), encoding="utf-8") as file_pointer:
+            result: JsonObject = load(file_pointer)
+            return result
 
-        schema_store = {}
-        uri_dictionary = URIDict()
-        for extra_schema in extra_schemas:
-            # Normalize URLs the same way as jsonschema does
-            schema_dict = self.get_schema_dict(extra_schema)
-            schema_store[uri_dictionary.normalize(schema_dict["$id"])] = schema_dict
+    @cached_property
+    def schema_id(self) -> str:
+        id_: str = self.as_dict["$id"]
+        return id_
 
-        resolver = RefResolver.from_schema(item_schema, store=schema_store)
-
-        super().__init__(item_schema, resolver=resolver, format_checker=FormatChecker())
-
-    def get_schema_dict(self, path: str) -> JsonObject:
-        with open(join(self.script_dir, path), encoding="utf-8") as file_pointer:
-            schema_dict: JsonObject = load(file_pointer)
-            return schema_dict
+    @cached_property
+    def uri(self) -> str:
+        uri_: str = URIDict().normalize(self.schema_id)
+        return uri_
 
 
-class STACItemSchemaValidator(BaseSTACValidator):
-    def __init__(self) -> None:
-        extra_schemas = [
-            "geojson-spec/Feature.json",
-            "geojson-spec/Geometry.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/basics.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/datetime.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/instrument.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/item.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/licensing.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/provider.json",
-        ]
+CATALOG_SCHEMA = Schema("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json")
+COLLECTION_SCHEMA = Schema(LINZ_SCHEMA_PATH)
+ITEM_SCHEMA = Schema("stac-spec/v1.0.0/item-spec/json-schema/item.json")
 
-        super().__init__("stac-spec/v1.0.0/item-spec/json-schema/item.json", extra_schemas)
+schema_store = {}
+for schema in [
+    CATALOG_SCHEMA,
+    COLLECTION_SCHEMA,
+    ITEM_SCHEMA,
+    Schema("geojson-spec/Feature.json"),
+    Schema("geojson-spec/Geometry.json"),
+    Schema("projection/v1.0.0/schema.json"),
+    Schema("stac-spec/v1.0.0/collection-spec/json-schema/collection.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/basics.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/datetime.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/instrument.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/licensing.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/provider.json"),
+    Schema("version/v1.0.0/schema.json"),
+    Schema(QUALITY_SCHEMA_PATH),
+]:
+    # Normalize URLs the same way as jsonschema does
+    schema_store[schema.uri] = schema.as_dict
 
+BaseSTACValidator = extend(Draft7Validator)
+BaseSTACValidator.format_checker = FormatChecker()
 
-class STACCollectionSchemaValidator(BaseSTACValidator):
-    def __init__(self) -> None:
-        extra_schemas = [
-            LINZ_SCHEMA_PATH,
-            QUALITY_SCHEMA_PATH,
-            "projection/v1.0.0/schema.json",
-            "stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json",
-            "stac-spec/v1.0.0/collection-spec/json-schema/collection.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/basics.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/datetime.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/instrument.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/item.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/licensing.json",
-            "stac-spec/v1.0.0/item-spec/json-schema/provider.json",
-            "version/v1.0.0/schema.json",
-        ]
+STACCatalogSchemaValidator = extend(BaseSTACValidator)(
+    resolver=RefResolver.from_schema(CATALOG_SCHEMA.as_dict, store=schema_store),
+    schema=CATALOG_SCHEMA.as_dict,
+)
 
-        super().__init__(LINZ_SCHEMA_PATH, extra_schemas)
+STACCollectionSchemaValidator = extend(BaseSTACValidator)(
+    resolver=RefResolver.from_schema(COLLECTION_SCHEMA.as_dict, store=schema_store),
+    schema=COLLECTION_SCHEMA.as_dict,
+)
 
-
-class STACCatalogSchemaValidator(BaseSTACValidator):
-    def __init__(self) -> None:
-        extra_schemas = [
-            "stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json",
-        ]
-
-        super().__init__("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json", extra_schemas)
+STACItemSchemaValidator = extend(BaseSTACValidator)(
+    resolver=RefResolver.from_schema(ITEM_SCHEMA.as_dict, store=schema_store),
+    schema=ITEM_SCHEMA.as_dict,
+)
