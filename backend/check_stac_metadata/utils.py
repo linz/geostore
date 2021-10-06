@@ -1,11 +1,11 @@
 from functools import lru_cache
 from json import JSONDecodeError, dumps, load
 from os.path import dirname
-from typing import Any, Callable, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Tuple
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
-from jsonschema import ValidationError
+from jsonschema import Draft7Validator, ValidationError
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
@@ -35,16 +35,9 @@ NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
 
 LOGGER = set_up_logging(__name__)
 
-STAC_TYPE_VALIDATION_MAP: Dict[
-    str,
-    Union[
-        Type[STACCatalogSchemaValidator],
-        Type[STACCollectionSchemaValidator],
-        Type[STACItemSchemaValidator],
-    ],
-] = {
-    STAC_TYPE_COLLECTION: STACCollectionSchemaValidator,
+STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
     STAC_TYPE_CATALOG: STACCatalogSchemaValidator,
+    STAC_TYPE_COLLECTION: STACCollectionSchemaValidator,
     STAC_TYPE_ITEM: STACItemSchemaValidator,
 }
 
@@ -137,7 +130,7 @@ class STACDatasetValidator:
         object_json = self.get_object(url)
 
         stac_type = object_json[STAC_TYPE_KEY]
-        validator = STAC_TYPE_VALIDATION_MAP[stac_type]()
+        validator = STAC_TYPE_VALIDATION_MAP[stac_type]
 
         try:
             validator.validate(object_json)
