@@ -21,6 +21,13 @@ pkgs.mkShell {
     poetryEnv.python.pkgs.poetry
   ];
   shellHook = ''
-    . activate-dev-env.bash
+        . activate-dev-env.bash
+        cat <<'EOF'
+    Welcome to the Geostore development environment!
+
+    Please run `npm install` to install Node.js packages, if you haven't already.
+
+    You should now be able to run `aws-azure-login`, `cdk` and `pytest`.
+    EOF
   '';
 }
