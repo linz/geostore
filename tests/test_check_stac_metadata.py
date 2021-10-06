@@ -471,15 +471,15 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
 
 
 def should_treat_minimal_catalog_as_valid() -> None:
-    STACCatalogSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
+    STACCatalogSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
 
 
 def should_treat_minimal_collection_as_valid() -> None:
-    STACCollectionSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
+    STACCollectionSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
 
 
 def should_treat_minimal_item_as_valid() -> None:
-    STACItemSchemaValidator().validate(deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT))
+    STACItemSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT))
 
 
 def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests) -> None:
@@ -491,7 +491,7 @@ def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests
             stac_object = deepcopy(original_stac_object)
             stac_object.pop(key)
 
-            STACCatalogSchemaValidator().validate(stac_object)
+            STACCatalogSchemaValidator.validate(stac_object)
 
 
 def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTests) -> None:
@@ -501,7 +501,7 @@ def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTe
         stac_object.pop(key)
 
         with subtests.test(msg=key), raises(ValidationError):
-            STACCollectionSchemaValidator().validate(stac_object)
+            STACCollectionSchemaValidator.validate(stac_object)
 
 
 def should_treat_any_missing_item_top_level_key_as_invalid(subtests: SubTests) -> None:
@@ -513,14 +513,14 @@ def should_treat_any_missing_item_top_level_key_as_invalid(subtests: SubTests) -
             stac_object = deepcopy(original_stac_object)
             stac_object.pop(key)
 
-            STACItemSchemaValidator().validate(stac_object)
+            STACItemSchemaValidator.validate(stac_object)
 
 
 def should_detect_invalid_datetime() -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
     with raises(ValidationError):
-        STACCollectionSchemaValidator().validate(stac_object)
+        STACCollectionSchemaValidator.validate(stac_object)
 
 
 def should_validate_metadata_files_recursively() -> None:

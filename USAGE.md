@@ -329,3 +329,11 @@ See
 ```
 
 Note: the output field will only be populated above when the Step Function has succeeded.
+
+## On STAC IDs
+
+- The root catalog has the ID `root_catalog`.
+- The dataset catalogs have IDs consisting of the dataset ID, a hyphen, and a Universally Unique
+  Lexicographically Sortable Identifier (ULID), for example
+  `Wellington_2020-01FACDTZWA6N2W9NVFEA30T57A`.
+- IDs within the dataset versions are unchanged.
