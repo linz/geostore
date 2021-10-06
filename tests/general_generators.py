@@ -74,3 +74,11 @@ def any_dictionary_key() -> str:
 def any_etag() -> str:
     """Arbitrary-length string"""
     return random_string(10)
+
+
+def any_name() -> str:
+    return random_string(10)
+
+
+def any_description() -> str:
+    return random_string(20)

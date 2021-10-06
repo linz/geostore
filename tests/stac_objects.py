@@ -1,10 +1,13 @@
 from typing import Any, Dict
 
 from backend.stac_format import (
-    LATEST_LINZ_STAC_EXTENSION_URL,
     LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_EXTENSION_URL,
+    LINZ_STAC_LIFECYCLE_KEY,
+    LINZ_STAC_PROVIDERS_KEY,
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
     LINZ_STAC_UPDATED_KEY,
+    QUALITY_LINEAGE_KEY,
     STAC_ASSETS_KEY,
     STAC_DESCRIPTION_KEY,
     STAC_EXTENSIONS_KEY,
@@ -28,6 +31,7 @@ from backend.stac_format import (
     STAC_TYPE_KEY,
     STAC_VERSION,
     STAC_VERSION_KEY,
+    VERSION_VERSION_KEY,
 )
 
 from .aws_utils import any_s3_url
@@ -38,27 +42,39 @@ from .stac_generators import (
     any_dataset_id,
     any_dataset_title,
     any_hex_multihash,
+    any_linz_lifecycle,
+    any_linz_provider,
+    any_quality_lineage,
     any_security_classification,
+    any_version_version,
 )
 
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+    LINZ_STAC_LIFECYCLE_KEY: any_linz_lifecycle(),
+    LINZ_STAC_PROVIDERS_KEY: [any_linz_provider()],
+    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_security_classification(),
+    LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
+    QUALITY_LINEAGE_KEY: any_quality_lineage(),
     STAC_DESCRIPTION_KEY: any_dataset_description(),
+    STAC_EXTENSIONS_KEY: [
+        LINZ_STAC_EXTENSION_URL,
+        "https://stac-extensions.github.io/projection/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/version/v1.0.0/schema.json",
+    ],
     STAC_EXTENT_KEY: {
         STAC_EXTENT_SPATIAL_KEY: {STAC_EXTENT_BBOX_KEY: [[-180, -90, 180, 90]]},
         STAC_EXTENT_TEMPORAL_KEY: {
             STAC_EXTENT_TEMPORAL_INTERVAL_KEY: [[any_past_datetime_string(), None]]
         },
     },
-    STAC_EXTENSIONS_KEY: [LATEST_LINZ_STAC_EXTENSION_URL],
     STAC_ID_KEY: any_dataset_id(),
     STAC_LICENSE_KEY: "MIT",
     STAC_LINKS_KEY: [],
-    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_security_classification(),
-    STAC_VERSION_KEY: STAC_VERSION,
     STAC_TITLE_KEY: any_dataset_title(),
     STAC_TYPE_KEY: STAC_TYPE_COLLECTION,
-    LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
+    STAC_VERSION_KEY: STAC_VERSION,
+    VERSION_VERSION_KEY: any_version_version(),
 }
 
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {

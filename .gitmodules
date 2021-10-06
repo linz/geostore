@@ -2,6 +2,10 @@
 	path = backend/check_stac_metadata/geojson-spec
 	url = https://github.com/geojson/schema.git
 	branch = gh-pages
+[submodule "projection"]
+	path = backend/check_stac_metadata/projection
+	url = https://github.com/stac-extensions/projection.git
+	branch = gh-pages
 [submodule "stac"]
 	path = backend/check_stac_metadata/stac
 	url = https://github.com/linz/stac.git
@@ -9,4 +13,8 @@
 [submodule "stac-spec"]
 	path = backend/check_stac_metadata/stac-spec
 	url = https://github.com/radiantearth/stac-spec.git
+	branch = gh-pages
+[submodule "version"]
+	path = backend/check_stac_metadata/version
+	url = https://github.com/stac-extensions/version.git
 	branch = gh-pages
