@@ -2405,14 +2405,14 @@ pytest = ">=5.3.0"
 
 [[package]]
 name = "pytest-timeout"
-version = "1.4.2"
-description = "py.test plugin to abort hanging tests"
+version = "2.0.0"
+description = "pytest plugin to abort hanging tests"
 category = "dev"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-pytest = ">=3.6.0"
+pytest = ">=5.0.0"
 
 [[package]]
 name = "python-dateutil"
@@ -3459,8 +3459,8 @@ pytest-subtests = [
     {file = "pytest_subtests-0.5.0-py3-none-any.whl", hash = "sha256:ae0e920b76f23acf28fb6265d5a83aa39b688af1cf30b2b402ac7094ccbc6bdf"},
 ]
 pytest-timeout = [
-    {file = "pytest-timeout-1.4.2.tar.gz", hash = "sha256:20b3113cf6e4e80ce2d403b6fb56e9e1b871b510259206d40ff8d609f48bda76"},
-    {file = "pytest_timeout-1.4.2-py2.py3-none-any.whl", hash = "sha256:541d7aa19b9a6b4e475c759fd6073ef43d7cdc9a92d95644c260076eb257a063"},
+    {file = "pytest-timeout-2.0.0.tar.gz", hash = "sha256:b0c96583f97f4caf349a317453cf82dd4fb8434b3b05bc8acff8716a6b86c034"},
+    {file = "pytest_timeout-2.0.0-py3-none-any.whl", hash = "sha256:fa04c8336fab9476e2ae71e9730f80b88490bc1d2899dec6e65e837e96f2d328"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
