@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
-from jsonschema import Draft7Validator, ValidationError
+from jsonschema import ValidationError
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
@@ -13,33 +13,14 @@ from ..log import set_up_logging
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
-from ..stac_format import (
-    STAC_ASSETS_KEY,
-    STAC_FILE_CHECKSUM_KEY,
-    STAC_HREF_KEY,
-    STAC_LINKS_KEY,
-    STAC_TYPE_CATALOG,
-    STAC_TYPE_COLLECTION,
-    STAC_TYPE_ITEM,
-    STAC_TYPE_KEY,
-)
+from ..stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY, STAC_LINKS_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
-from .stac_validators import (
-    STACCatalogSchemaValidator,
-    STACCollectionSchemaValidator,
-    STACItemSchemaValidator,
-)
+from .stac_validators import STACSchemaValidator
 
 NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
 
 LOGGER = set_up_logging(__name__)
-
-STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
-    STAC_TYPE_CATALOG: STACCatalogSchemaValidator,
-    STAC_TYPE_COLLECTION: STACCollectionSchemaValidator,
-    STAC_TYPE_ITEM: STACItemSchemaValidator,
-}
 
 PROCESSING_ASSET_ASSET_KEY = "asset"
 PROCESSING_ASSET_MULTIHASH_KEY = "multihash"
@@ -129,11 +110,8 @@ class STACDatasetValidator:
         self.traversed_urls.append(url)
         object_json = self.get_object(url)
 
-        stac_type = object_json[STAC_TYPE_KEY]
-        validator = STAC_TYPE_VALIDATION_MAP[stac_type]
-
         try:
-            validator.validate(object_json)
+            STACSchemaValidator.validate(object_json)
         except ValidationError as error:
             self.validation_result_factory.save(
                 url,

@@ -31,25 +31,27 @@ class Schema:
         return uri_
 
 
-CATALOG_SCHEMA = Schema("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json")
-COLLECTION_SCHEMA = Schema(LINZ_SCHEMA_PATH)
-ITEM_SCHEMA = Schema("stac-spec/v1.0.0/item-spec/json-schema/item.json")
+LINZ_SCHEMA = Schema(LINZ_SCHEMA_PATH)
+FILE_STAC_SCHEMA_PATH = "file/v2.0.0/schema.json"
+PROJECTION_STAC_SCHEMA_PATH = "projection/v1.0.0/schema.json"
+VERSION_STAC_SCHEMA_PATH = "version/v1.0.0/schema.json"
 
 schema_store = {}
 for schema in [
-    CATALOG_SCHEMA,
-    COLLECTION_SCHEMA,
-    ITEM_SCHEMA,
+    LINZ_SCHEMA,
+    Schema("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json"),
+    Schema("stac-spec/v1.0.0/item-spec/json-schema/item.json"),
+    Schema(FILE_STAC_SCHEMA_PATH),
     Schema("geojson-spec/Feature.json"),
     Schema("geojson-spec/Geometry.json"),
-    Schema("projection/v1.0.0/schema.json"),
+    Schema(PROJECTION_STAC_SCHEMA_PATH),
     Schema("stac-spec/v1.0.0/collection-spec/json-schema/collection.json"),
     Schema("stac-spec/v1.0.0/item-spec/json-schema/basics.json"),
     Schema("stac-spec/v1.0.0/item-spec/json-schema/datetime.json"),
     Schema("stac-spec/v1.0.0/item-spec/json-schema/instrument.json"),
     Schema("stac-spec/v1.0.0/item-spec/json-schema/licensing.json"),
     Schema("stac-spec/v1.0.0/item-spec/json-schema/provider.json"),
-    Schema("version/v1.0.0/schema.json"),
+    Schema(VERSION_STAC_SCHEMA_PATH),
     Schema(QUALITY_SCHEMA_PATH),
 ]:
     # Normalize URLs the same way as jsonschema does
@@ -58,17 +60,7 @@ for schema in [
 BaseSTACValidator = extend(Draft7Validator)
 BaseSTACValidator.format_checker = FormatChecker()
 
-STACCatalogSchemaValidator = extend(BaseSTACValidator)(
-    resolver=RefResolver.from_schema(CATALOG_SCHEMA.as_dict, store=schema_store),
-    schema=CATALOG_SCHEMA.as_dict,
-)
-
-STACCollectionSchemaValidator = extend(BaseSTACValidator)(
-    resolver=RefResolver.from_schema(COLLECTION_SCHEMA.as_dict, store=schema_store),
-    schema=COLLECTION_SCHEMA.as_dict,
-)
-
-STACItemSchemaValidator = extend(BaseSTACValidator)(
-    resolver=RefResolver.from_schema(ITEM_SCHEMA.as_dict, store=schema_store),
-    schema=ITEM_SCHEMA.as_dict,
+STACSchemaValidator = extend(BaseSTACValidator)(
+    resolver=RefResolver.from_schema(LINZ_SCHEMA.as_dict, store=schema_store),
+    schema=LINZ_SCHEMA.as_dict,
 )

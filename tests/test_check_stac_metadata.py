@@ -6,6 +6,7 @@ from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps, load
 from logging import getLogger
+from os.path import basename
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from unittest.mock import MagicMock, call, patch
 
@@ -16,11 +17,7 @@ from pytest_subtests import SubTests
 
 from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from backend.check import Check
-from backend.check_stac_metadata.stac_validators import (
-    STACCatalogSchemaValidator,
-    STACCollectionSchemaValidator,
-    STACItemSchemaValidator,
-)
+from backend.check_stac_metadata.stac_validators import STACSchemaValidator
 from backend.check_stac_metadata.task import lambda_handler
 from backend.check_stac_metadata.utils import (
     NO_ASSETS_FOUND_ERROR_MESSAGE,
@@ -36,6 +33,8 @@ from backend.resources import ResourceName
 from backend.s3 import S3_URL_PREFIX
 from backend.stac_format import (
     LINZ_SCHEMA_DIRECTORY,
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -67,6 +66,7 @@ from .general_generators import (
     any_error_message,
     any_file_contents,
     any_https_url,
+    any_past_datetime_string,
     any_program_name,
     any_safe_filename,
 )
@@ -460,10 +460,20 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     """
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
     submodule.
+
+    We only support fetching `s3://…` and relative URLs, so in the below we change all of them to be
+    relative.
     """
     for path in glob(f"backend/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
         with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
             stac_object = load(file_handle)
+
+            for asset in stac_object.get("assets", {}).values():
+                asset["href"] = basename(asset["href"])
+
+            for link in stac_object.get("links"):
+                link["href"] = basename(link["href"])
+
             url_reader = MockJSONURLReader({path: stac_object})
             STACDatasetValidator(
                 any_hash_key(), url_reader, MockValidationResultFactory()
@@ -471,15 +481,15 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
 
 
 def should_treat_minimal_catalog_as_valid() -> None:
-    STACCatalogSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
+    STACSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT))
 
 
 def should_treat_minimal_collection_as_valid() -> None:
-    STACCollectionSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
+    STACSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
 
 
 def should_treat_minimal_item_as_valid() -> None:
-    STACItemSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT))
+    STACSchemaValidator.validate(deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT))
 
 
 def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests) -> None:
@@ -491,7 +501,7 @@ def should_treat_any_missing_catalog_top_level_key_as_invalid(subtests: SubTests
             stac_object = deepcopy(original_stac_object)
             stac_object.pop(key)
 
-            STACCatalogSchemaValidator.validate(stac_object)
+            STACSchemaValidator.validate(stac_object)
 
 
 def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTests) -> None:
@@ -501,26 +511,26 @@ def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTe
         stac_object.pop(key)
 
         with subtests.test(msg=key), raises(ValidationError):
-            STACCollectionSchemaValidator.validate(stac_object)
+            STACSchemaValidator.validate(stac_object)
 
 
 def should_treat_any_missing_item_top_level_key_as_invalid(subtests: SubTests) -> None:
     original_stac_object = MINIMAL_VALID_STAC_ITEM_OBJECT
     for key in original_stac_object:
+        stac_object = deepcopy(original_stac_object)
+        stac_object.pop(key)
+
         with subtests.test(msg=key), raises(
             ValidationError, match=f"^'{key}' is a required property"
         ):
-            stac_object = deepcopy(original_stac_object)
-            stac_object.pop(key)
-
-            STACItemSchemaValidator.validate(stac_object)
+            STACSchemaValidator.validate(stac_object)
 
 
 def should_detect_invalid_datetime() -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     stac_object["extent"]["temporal"]["interval"][0][0] = "not a datetime"
     with raises(ValidationError):
-        STACCollectionSchemaValidator.validate(stac_object)
+        STACSchemaValidator.validate(stac_object)
 
 
 def should_validate_metadata_files_recursively() -> None:
@@ -596,10 +606,14 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_multihash = any_hex_multihash()
     stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: first_asset_url,
             STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
         },
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: second_asset_filename,
             STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },

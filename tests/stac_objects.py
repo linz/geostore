@@ -1,5 +1,10 @@
 from typing import Any, Dict
 
+from backend.check_stac_metadata.stac_validators import (
+    FILE_STAC_SCHEMA_PATH,
+    PROJECTION_STAC_SCHEMA_PATH,
+    VERSION_STAC_SCHEMA_PATH,
+)
 from backend.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_EXTENSION_URL,
@@ -8,6 +13,7 @@ from backend.stac_format import (
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
     LINZ_STAC_UPDATED_KEY,
     QUALITY_LINEAGE_KEY,
+    QUALITY_STAC_EXTENSION_URL,
     STAC_ASSETS_KEY,
     STAC_DESCRIPTION_KEY,
     STAC_EXTENSIONS_KEY,
@@ -24,6 +30,7 @@ from backend.stac_format import (
     STAC_LINKS_KEY,
     STAC_PROPERTIES_DATETIME_KEY,
     STAC_PROPERTIES_KEY,
+    STAC_PROVIDERS_KEY,
     STAC_TITLE_KEY,
     STAC_TYPE_CATALOG,
     STAC_TYPE_COLLECTION,
@@ -43,24 +50,31 @@ from .stac_generators import (
     any_dataset_title,
     any_hex_multihash,
     any_linz_lifecycle,
-    any_linz_provider,
+    any_linz_provider_custodian,
+    any_linz_provider_manager,
+    any_linz_security_classification,
+    any_provider_licensor,
+    any_provider_producer,
     any_quality_lineage,
-    any_security_classification,
     any_version_version,
 )
 
+FILE_STAC_EXTENSION_URL = f"https://stac-extensions.github.io/{FILE_STAC_SCHEMA_PATH}"
+PROJECTION_STAC_EXTENSION_URL = f"https://stac-extensions.github.io/{PROJECTION_STAC_SCHEMA_PATH}"
+VERSION_STAC_EXTENSION_URL = f"https://stac-extensions.github.io/{VERSION_STAC_SCHEMA_PATH}"
+
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
-    LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
     LINZ_STAC_LIFECYCLE_KEY: any_linz_lifecycle(),
-    LINZ_STAC_PROVIDERS_KEY: [any_linz_provider()],
-    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_security_classification(),
-    LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
+    LINZ_STAC_PROVIDERS_KEY: [any_linz_provider_custodian(), any_linz_provider_manager()],
+    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_linz_security_classification(),
     QUALITY_LINEAGE_KEY: any_quality_lineage(),
     STAC_DESCRIPTION_KEY: any_dataset_description(),
     STAC_EXTENSIONS_KEY: [
+        FILE_STAC_EXTENSION_URL,
         LINZ_STAC_EXTENSION_URL,
-        "https://stac-extensions.github.io/projection/v1.0.0/schema.json",
-        "https://stac-extensions.github.io/version/v1.0.0/schema.json",
+        QUALITY_STAC_EXTENSION_URL,
+        PROJECTION_STAC_EXTENSION_URL,
+        VERSION_STAC_EXTENSION_URL,
     ],
     STAC_EXTENT_KEY: {
         STAC_EXTENT_SPATIAL_KEY: {STAC_EXTENT_BBOX_KEY: [[-180, -90, 180, 90]]},
@@ -71,6 +85,7 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     STAC_ID_KEY: any_dataset_id(),
     STAC_LICENSE_KEY: "MIT",
     STAC_LINKS_KEY: [],
+    STAC_PROVIDERS_KEY: [any_provider_licensor(), any_provider_producer()],
     STAC_TITLE_KEY: any_dataset_title(),
     STAC_TYPE_KEY: STAC_TYPE_COLLECTION,
     STAC_VERSION_KEY: STAC_VERSION,
@@ -79,8 +94,19 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
 
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
     STAC_ASSETS_KEY: {
-        any_asset_name(): {STAC_HREF_KEY: any_s3_url(), STAC_FILE_CHECKSUM_KEY: any_hex_multihash()}
+        any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
+            STAC_HREF_KEY: any_s3_url(),
+            STAC_FILE_CHECKSUM_KEY: any_hex_multihash(),
+        },
     },
+    STAC_EXTENSIONS_KEY: [
+        FILE_STAC_EXTENSION_URL,
+        LINZ_STAC_EXTENSION_URL,
+        PROJECTION_STAC_EXTENSION_URL,
+        VERSION_STAC_EXTENSION_URL,
+    ],
     STAC_GEOMETRY_KEY: None,
     STAC_ID_KEY: any_dataset_id(),
     STAC_LINKS_KEY: [],

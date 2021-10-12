@@ -16,11 +16,22 @@ from backend.check_stac_metadata.utils import (
     STACDatasetValidator,
 )
 from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
+from backend.stac_format import (
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_UPDATED_KEY,
+    STAC_ASSETS_KEY,
+    STAC_FILE_CHECKSUM_KEY,
+    STAC_HREF_KEY,
+)
 
 from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
 from .dynamodb_generators import any_hash_key
-from .general_generators import any_error_message, any_https_url, any_safe_filename
+from .general_generators import (
+    any_error_message,
+    any_https_url,
+    any_past_datetime_string,
+    any_safe_filename,
+)
 from .stac_generators import any_asset_name, any_hex_multihash
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
@@ -43,6 +54,8 @@ def should_log_assets() -> None:
     asset_multihash = any_hex_multihash()
     stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: asset_url,
             STAC_FILE_CHECKSUM_KEY: asset_multihash,
         },
