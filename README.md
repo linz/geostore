@@ -51,9 +51,9 @@ One-time setup which generally assumes that you're in the project directory.
 ### Common
 
 1. [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
-1. Configure Docker:
+2. Configure Docker:
    1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
-   1. Log out and back in to enable the new group
+   2. Log out and back in to enable the new group
 
 ### Ubuntu
 
@@ -63,13 +63,13 @@ One-time setup which generally assumes that you're in the project directory.
    wget https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh
    echo 'b674516f001d331c517be63c1baeaf71de6cbb6d68a44112bf2cff39a6bc246a install.sh' | sha256sum --check && bash install.sh
    ```
-1. Install [Poetry](https://python-poetry.org/docs/master/#installation):
+2. Install [Poetry](https://python-poetry.org/docs/master/#installation):
    ```bash
    cd "$(mktemp --directory)"
    wget https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
    echo 'b35d059be6f343ac1f05ae56e8eaaaebb34da8c92424ee00133821d7f11e3a9c install-poetry.py' | sha256sum --check && python3 install-poetry.py
    ```
-1. Install [Pyenv](https://github.com/pyenv/pyenv#installation):
+3. Install [Pyenv](https://github.com/pyenv/pyenv#installation):
    ```bash
    sudo apt-get update
    sudo apt-get install --no-install-recommends build-essential curl libbz2-dev libffi-dev liblzma-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev llvm make tk-dev wget xz-utils zlib1g-dev
@@ -77,7 +77,7 @@ One-time setup which generally assumes that you're in the project directory.
    wget https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer
    echo '3aa49f2b3b77556272a80a01fe44d46733f4862dbbbc956002dc944c428bebd8 pyenv-installer' | sha256sum --check && bash pyenv-installer
    ```
-1. Enable the above by adding the following to your `~/.bashrc`:
+4. Enable the above by adding the following to your `~/.bashrc`:
 
    ```bash
    if [[ -e "${HOME}/.local/bin" ]]
@@ -105,15 +105,16 @@ One-time setup which generally assumes that you're in the project directory.
    fi
    ```
 
-1. Configure Docker:
+5. Configure Docker:
    1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
    1. Log out and back in to enable the new group
-1. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support): `nvm install`
-1. Run `./reset-dev-env.bash --all` to install packages.
-1. Enable the dev environment: `. activate-dev-env.bash`.
-1. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
+6. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support): `nvm install`
+7. Run `./reset-dev-env.bash --all` to install packages.
+8. Enable the dev environment: `. activate-dev-env.bash`.
+9. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
    is optional since it currently can't be set per repository or organisation, so it affects any
    repos where you have access to Dependabot alerts.)
+10. Install [`aws-azure-login`](https://github.com/sportradar/aws-azure-login#installation).
 
 Re-run `./reset-dev-env.bash` when packages change. One easy way to use it pretty much seamlessly is
 to run it before every workday, with a crontab entry like this template:

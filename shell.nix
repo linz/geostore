@@ -16,6 +16,7 @@ in
 pkgs.mkShell {
   buildInputs = [
     pkgs.nodejs-14_x
+    pkgs.nodePackages.aws-azure-login
     poetryEnv
     poetryEnv.python.pkgs.pip
     poetryEnv.python.pkgs.poetry
