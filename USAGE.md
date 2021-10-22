@@ -117,6 +117,115 @@ Example of AWS service account authentication and authorization in to Geostore u
   export AWS_PROFILE geostore-users
   ```
 
+## Command line
+
+The general synopsis is `geostore NOUN VERB [PARAMETER…]`. `NOUN` is the type of thing the command
+is operating on, for example `version` when dealing with dataset versions. `VERB` is the action it
+is telling the system to take, for example `list` to show a listing of the relevant objects, or
+`create` to create such an object. Verbs may have parameters in the form of key/value pairs.
+`--KEY=VALUE` means the parameter is mandatory, and `[--KEY=VALUE]` means the parameter is optional.
+
+To show the full synopsis, run `geostore --help`.
+
+Each action and its relevant options are explained in the following sections.
+
+### Dataset Space
+
+Synopsis: `geostore dataset VERB [PARAMETER…]`
+
+#### Create
+
+Synopsis: `geostore dataset create --title=TITLE --description=DESCRIPTION`
+
+This creates a new dataset space and prints the new dataset ID on standard output when successful.
+
+Example:
+
+```console
+$ geostore dataset create --title=Auckland_2020 --description='Aerial imagery from April 2020'
+Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+```
+
+#### List
+
+Synopsis: `geostore dataset list [--id=ID]`
+
+Prints a listing of datasets, optionally filtered by the dataset ID.
+
+Examples:
+
+- List all datasets:
+
+  ```console
+  $ geostore dataset list
+  Dataset ID                                 | Title           | Description
+  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65   | Auckland_2020   | Aerial imagery from April 2020
+  Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1 | Wellington_2020 | Aerial imagery from March 2020
+  ```
+
+- Filter to a single dataset:
+
+  ```console
+  $ geostore dataset list --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+  Dataset ID                               | Title         | Description
+  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65 | Auckland_2020 | Aerial imagery from April 2020
+  ```
+
+#### Delete
+
+Synopsis: `geostore dataset delete --id=ID`
+
+`ID` is the dataset ID.
+
+Deletes a dataset. Will only work if there are no versions in the dataset. This command does not
+print anything when successful.
+
+Example:
+
+```console
+$ geostore dataset delete --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+```
+
+### Dataset version
+
+Synopsis: `geostore version VERB [PARAMETER…]`
+
+#### Create
+
+Synopsis: `geostore version create --id=ID --s3-role=ROLE_ARN --url=URL`
+
+This creates a new dataset version. It returns immediately, while the import process continues in
+AWS. It prints the new dataset version ID and the ID of the import process on standard output in
+case of success.
+
+Example:
+
+```console
+$ geostore version create --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65 --s3-role=arn:aws:iam::1234567890:role/example-role --url='s3://example-bucket/example dataset/collection.json'
+Dataset version ID                        | Import process ID
+2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05 | arn:aws:batch:ap-southeast-2:xxxx:job/example-arn
+```
+
+#### Import process status
+
+Synopsis: `geostore version status --id=ID`
+
+`ID` is the import process ID printed by `geostore version create`.
+
+This prints the current status of the dataset version import process started by
+`geostore version create`.
+
+Example:
+
+```console
+$ geostore version status --id=arn:aws:batch:ap-southeast-2:xxxx:job/example-arn
+Validation status: SUCCEEDED
+Metadata upload status: Pending
+Metadata upload errors: None
+Asset upload status: Pending
+Asset upload errors: None
+```
+
 ## Endpoints
 
 There are several end user interaction points in Geostore:
