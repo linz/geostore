@@ -15,11 +15,12 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
+    pkgs.cargo
     pkgs.nodejs-14_x
     pkgs.nodePackages.aws-azure-login
+    pkgs.python38Packages.pip
+    pkgs.python38Packages.poetry
     poetryEnv
-    poetryEnv.python.pkgs.pip
-    poetryEnv.python.pkgs.poetry
   ];
   shellHook = ''
         . activate-dev-env.bash
