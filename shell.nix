@@ -18,8 +18,9 @@ pkgs.mkShell {
     pkgs.nodejs-14_x
     pkgs.nodePackages.aws-azure-login
     poetryEnv
-    poetryEnv.python.pkgs.pip
-    poetryEnv.python.pkgs.poetry
+    pkgs.python38Packages.pip
+    pkgs.python38Packages.poetry
+    pkgs.cargo
   ];
   shellHook = ''
         . activate-dev-env.bash
