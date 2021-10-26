@@ -141,9 +141,8 @@ Re-run `. activate-dev-env.bash` in each shell.
 
 Restart your `nix-shell` when packages change.
 
-You can run your IDE within `nix-shell` to make it pick up the shell's Python interpreter. For
-example, with JetBrains IDEA, `nohup idea-ultimate &> /dev/null &`. When setting up the project SDK
-you can then just point it to `/run/current-system/sw/bin/python`.
+When setting up the project SDK point it to `.run/python`, which is a symlink to the latest Nix
+shell Python executable.
 
 ### Optional
 

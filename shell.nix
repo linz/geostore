@@ -23,6 +23,7 @@ pkgs.mkShell {
   ];
   shellHook = ''
         . activate-dev-env.bash
+        ln --force --symbolic "$(type -p python)" .run/python
         cat <<'EOF'
     Welcome to the Geostore development environment!
 
