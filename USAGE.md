@@ -7,9 +7,9 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 "recommended", "may", and "optional" in this document are to be interpreted as described in
 [RFC 2119](https://tools.ietf.org/html/rfc2119).
 
-# Prerequisites
+## Prerequisites
 
-## Geostore account and resource names
+### Geostore account and resource names
 
 You'll need the following information to start using Geostore:
 
@@ -19,7 +19,7 @@ You'll need the following information to start using Geostore:
 Replace the `GEOSTORE_…` strings in the following documentation with the actual values given by the
 Geostore instance maintainer.
 
-## Dataset source S3 bucket
+### Dataset source S3 bucket
 
 Geostore needs to be able to read all the files in the dataset in the source bucket. This is
 achieved using role assumption: you need to create a role which `GEOSTORE_AWS_ACCOUNT_ID` is allowed
@@ -66,7 +66,7 @@ Template dataset source S3 bucket policy:
 }
 ```
 
-## Dataset format
+### Dataset format
 
 A dataset consists of a set of files in Amazon Web Services Simple Storage Service (AWS S3). The
 dataset consists of geospatial metadata files in
@@ -98,7 +98,7 @@ checks which are currently in place.
   considered invalid, even if both checksums are valid. This is to enable a simpler checksum
   validation.
 
-# Authentication and authorization
+## Authentication and authorization
 
 Geostore allows read/write access for users authorized by SAML identity provider
 (`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`) configured during deployment time (see
@@ -117,7 +117,7 @@ Example of AWS service account authentication and authorization in to Geostore u
   export AWS_PROFILE geostore-users
   ```
 
-# Endpoints
+## Endpoints
 
 There are several end user interaction points in Geostore:
 
@@ -135,16 +135,16 @@ There are several end user interaction points in Geostore:
 These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
 the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
 
-## Endpoint Request Format
+### Endpoint Request Format
 
 ```bash
 aws lambda invoke --function-name GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME \
     --payload 'REQUEST-PAYLOAD-JSON' /dev/stdout
 ```
 
-## Dataset Space Endpoint Usage Examples
+### Dataset Space Endpoint Usage Examples
 
-### Dataset creation request
+#### Dataset creation request
 
 ```console
 $ aws lambda invoke --function-name datasets \
@@ -160,7 +160,7 @@ and
 [changing the dataset title by renaming and moving the files](#Changing-the-dataset-title-by-renaming-and-moving-the-files)
 below.
 
-### All datasets listing request
+#### All datasets listing request
 
 ```console
 $ aws lambda invoke --function-name datasets \
@@ -169,7 +169,7 @@ $ aws lambda invoke --function-name datasets \
 {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
 ```
 
-### Single dataset listing request
+#### Single dataset listing request
 
 ```console
 $ aws lambda invoke --function-name datasets \
@@ -179,7 +179,7 @@ $ aws lambda invoke --function-name datasets \
 {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
 ```
 
-### Dataset delete request
+#### Dataset delete request
 
 ```console
 $ aws lambda invoke --function-name datasets \
@@ -189,7 +189,7 @@ $ aws lambda invoke --function-name datasets \
 {"status_code": 204, "body": {}}
 ```
 
-### Changing the dataset title by creating a copy of the latest dataset version
+#### Changing the dataset title by creating a copy of the latest dataset version
 
 This is the simplest way to change a dataset title, but there will be no explicit connection between
 the new and old datasets. Anyone wishing to go back beyond the rename of a dataset needs to be aware
@@ -202,7 +202,7 @@ of this rename and has to either know or find the original dataset title.
 1. Optional: if the original dataset can be removed at this point (or sometime in the future),
    please let the Geostore product team know, and we'll arrange it.
 
-### Changing the dataset title by renaming and moving the files
+#### Changing the dataset title by renaming and moving the files
 
 This process is more cumbersome and time-consuming than the above, and results links to the old
 dataset being broken rather than slowly phased out, but can be followed if necessary.
@@ -216,9 +216,9 @@ dataset being broken rather than slowly phased out, but can be followed if neces
    1. Re-enable external access and notify users.
    1. Notify requester about the name change completion.
 
-## Dataset Version Endpoint Usage Examples
+### Dataset Version Endpoint Usage Examples
 
-### Dataset Version creation request
+#### Dataset Version creation request
 
 ```console
 $ aws lambda invoke --function-name dataset-versions \
@@ -235,9 +235,9 @@ $ aws lambda invoke --function-name dataset-versions \
 {"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
 ```
 
-## Import Status Endpoint Usage Examples
+### Import Status Endpoint Usage Examples
 
-### Get Import Status request
+#### Get Import Status request
 
 ```console
 $ aws lambda invoke --function-name import-status \
@@ -247,7 +247,7 @@ $ aws lambda invoke --function-name import-status \
 {"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
 ```
 
-## Receive Import Status updates by subscribing to our AWS SNS Topic
+### Receive Import Status updates by subscribing to our AWS SNS Topic
 
 The ARN of our SNS Topic is
 `arn:aws:sns:ap-southeast-2:<GEOSTORE_AWS_ACCOUNT_ID>:geostore-import-status` which you may choose
@@ -330,7 +330,7 @@ See
 
 Note: the output field will only be populated above when the Step Function has succeeded.
 
-## On STAC IDs
+### On STAC IDs
 
 - The root catalog has the ID `root_catalog`.
 - The dataset catalogs have IDs consisting of the [dataset title](#dataset-creation-request), a
