@@ -1,5 +1,4 @@
 from json import dumps
-from logging import getLogger
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
@@ -47,8 +46,6 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = getLogger("geostore.import_dataset_file")
-
 
 @patch("geostore.import_metadata_file.task.importer")
 def should_log_payload(importer_mock: MagicMock) -> None:
@@ -74,7 +71,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
 
-    with patch.object(LOGGER, "debug") as logger_mock, patch(
+    with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         # When
@@ -125,7 +122,7 @@ def should_log_result(importer_mock: MagicMock) -> None:
         ],
     }
 
-    with patch.object(LOGGER, "debug") as logger_mock, patch(
+    with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         get_import_result(event, importer_mock)

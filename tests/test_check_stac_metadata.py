@@ -5,7 +5,6 @@ from glob import glob
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps, load
-from logging import getLogger
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from unittest.mock import MagicMock, call, patch
 
@@ -89,8 +88,6 @@ if TYPE_CHECKING:
     )
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
-
-LOGGER = getLogger("geostore.check_stac_metadata.utils")
 
 
 @patch("geostore.check_stac_metadata.task.STACDatasetValidator.validate")
@@ -705,7 +702,9 @@ def should_report_when_the_dataset_has_no_assets(
     url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
     expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE})
 
-    with patch.object(LOGGER, "error") as logger_mock, subtests.test(msg="Logging"):
+    with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(
+        msg="Logging"
+    ):
         STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).run(
             metadata_url
         )

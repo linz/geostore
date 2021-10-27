@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Callable, Optional
 from urllib.parse import unquote_plus
 
 from botocore.exceptions import ClientError
+from linz_logger import get_log
 
 from .aws_response import AWS_CODE_REQUEST_TIMEOUT
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from .log import set_up_logging
 from .s3 import get_s3_client_for_role
 from .step_function_keys import S3_ROLE_ARN_KEY
 from .types import JsonObject
@@ -36,7 +36,7 @@ RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 EXCEPTION_PREFIX = "Exception"
 RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def get_import_result(

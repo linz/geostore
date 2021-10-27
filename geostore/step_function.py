@@ -3,11 +3,11 @@ from json import dumps, loads
 from typing import TYPE_CHECKING, Optional
 
 import boto3
+from linz_logger import get_log
 
 from .api_keys import SUCCESS_KEY
 from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from .log import set_up_logging
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -59,7 +59,7 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def get_tasks_status(

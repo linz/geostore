@@ -6,10 +6,10 @@ from typing import Any, Callable, Dict, List, Tuple
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, ValidationError
+from linz_logger import get_log
 
 from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
 from ..check import Check
-from ..log import set_up_logging
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
@@ -33,7 +33,7 @@ from .stac_validators import (
 
 NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
     STAC_TYPE_CATALOG: STACCatalogSchemaValidator,

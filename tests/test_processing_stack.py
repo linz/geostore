@@ -3,7 +3,7 @@ from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load, loads
-from logging import INFO, basicConfig, getLogger
+from logging import INFO, basicConfig
 from time import sleep
 
 import smart_open
@@ -68,7 +68,6 @@ from .stac_objects import (
 )
 
 basicConfig(level=INFO)
-LOGGER = getLogger(__name__)
 
 
 @mark.infrastructure
@@ -224,15 +223,12 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_versions_body = dataset_versions_payload[BODY_KEY]
             with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
-
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
                         executionArn=dataset_versions_body[EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
-                    LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
                     sleep(5)  # pragma: no cover
 
                 assert execution["status"] == "SUCCEEDED", execution
@@ -463,15 +459,12 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             dataset_versions_body = dataset_versions_payload[BODY_KEY]
             with subtests.test(msg="Should complete Step Function successfully"):
 
-                LOGGER.info("Executed State Machine: %s", dataset_versions_payload)
-
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
                         executionArn=dataset_versions_body[EXECUTION_ARN_KEY]
                     )
                 )["status"] == "RUNNING":
-                    LOGGER.info("Polling for State Machine state %s", "." * 6)  # pragma: no cover
                     sleep(5)  # pragma: no cover
 
             assert (execution_output := execution.get("output")), execution
@@ -593,9 +586,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                     executionArn=state_machine_arn
                 )
             )["status"] == "RUNNING":
-                LOGGER.info(  # pragma: no cover
-                    "Polling for State Machine %s state", state_machine_arn
-                )
+
                 sleep(5)  # pragma: no cover
 
             assert execution["status"] == "SUCCEEDED", execution
