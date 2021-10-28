@@ -3,9 +3,9 @@ from os.path import join
 from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
 
-from backend.aws_keys import AWS_DEFAULT_REGION_KEY
-from backend.environment import ENV_NAME_VARIABLE_NAME
-from backend.resources import PRODUCTION_ENVIRONMENT_NAME
+from geostore.aws_keys import AWS_DEFAULT_REGION_KEY
+from geostore.environment import ENV_NAME_VARIABLE_NAME
+from geostore.resources import PRODUCTION_ENVIRONMENT_NAME
 
 from .backend import BACKEND_DIRECTORY
 

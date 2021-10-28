@@ -11,10 +11,10 @@ from aws_cdk import (
 )
 from aws_cdk.core import Construct
 
-from backend.environment import ENV_NAME_VARIABLE_NAME
-from backend.notify_status_update.task import SLACK_URL_ENV_NAME
-from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
+from geostore.environment import ENV_NAME_VARIABLE_NAME
+from geostore.notify_status_update.task import SLACK_URL_ENV_NAME
+from geostore.parameter_store import ParameterName
+from geostore.resources import ResourceName
 
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access

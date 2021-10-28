@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from backend.stac_format import (
+from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_EXTENSION_URL,
     LINZ_STAC_LIFECYCLE_KEY,

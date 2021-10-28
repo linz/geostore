@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, patch
 
-from backend.api_keys import SUCCESS_KEY
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
-from backend.validation_summary.task import lambda_handler
+from geostore.api_keys import SUCCESS_KEY
+from geostore.error_response_keys import ERROR_MESSAGE_KEY
+from geostore.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from geostore.validation_summary.task import lambda_handler
 
 from .aws_utils import any_lambda_context
 from .stac_generators import any_dataset_id, any_dataset_version_id
@@ -21,7 +21,7 @@ def should_require_dataset_version() -> None:
     assert response == {ERROR_MESSAGE_KEY: "'version_id' is a required property"}
 
 
-@patch("backend.validation_summary.task.validation_results_model_with_meta")
+@patch("geostore.validation_summary.task.validation_results_model_with_meta")
 def should_return_success_false_if_any_validation_results_are_unsuccessful(
     validation_results_model_mock: MagicMock,
 ) -> None:

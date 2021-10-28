@@ -4,10 +4,10 @@ from unittest.mock import MagicMock, patch
 from jsonschema import ValidationError
 from pytest import raises
 
-from backend.api_keys import SUCCESS_KEY
-from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.step_function import Outcome
-from backend.step_function_keys import (
+from geostore.api_keys import SUCCESS_KEY
+from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from geostore.step_function import Outcome
+from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     ERRORS_KEY,
@@ -19,8 +19,8 @@ from backend.step_function_keys import (
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
-from backend.types import JsonObject
-from backend.upload_status.task import lambda_handler
+from geostore.types import JsonObject
+from geostore.upload_status.task import lambda_handler
 
 from .aws_utils import any_account_id, any_batch_job_status, any_job_id, any_lambda_context
 from .stac_generators import any_dataset_id, any_dataset_version_id
@@ -31,9 +31,9 @@ def should_raise_exception_when_missing_mandatory_execution_arn() -> None:
         lambda_handler({}, any_lambda_context())
 
 
-@patch("backend.step_function.get_step_function_validation_results")
-@patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
-@patch("backend.step_function.get_account_number")
+@patch("geostore.step_function.get_step_function_validation_results")
+@patch("geostore.step_function.S3CONTROL_CLIENT.describe_job")
+@patch("geostore.step_function.get_account_number")
 def should_report_upload_statuses(
     get_account_number_mock: MagicMock,
     describe_job_mock: MagicMock,

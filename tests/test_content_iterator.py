@@ -6,7 +6,7 @@ from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from backend.content_iterator.task import (
+from geostore.content_iterator.task import (
     ASSETS_TABLE_NAME_KEY,
     CONTENT_KEY,
     FIRST_ITEM_KEY,
@@ -16,10 +16,10 @@ from backend.content_iterator.task import (
     RESULTS_TABLE_NAME_KEY,
     lambda_handler,
 )
-from backend.models import DB_KEY_SEPARATOR
-from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.step_function import get_hash_key
-from backend.step_function_keys import (
+from geostore.models import DB_KEY_SEPARATOR
+from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from geostore.step_function import get_hash_key
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
@@ -136,7 +136,7 @@ def should_raise_exception_if_first_item_is_not_a_multiple_of_iteration_size() -
         lambda_handler(event, any_lambda_context())
 
 
-@patch("backend.content_iterator.task.processing_assets_model_with_meta")
+@patch("geostore.content_iterator.task.processing_assets_model_with_meta")
 def should_return_zero_as_first_item_if_no_content(
     processing_assets_model_mock: MagicMock,
 ) -> None:
@@ -148,7 +148,7 @@ def should_return_zero_as_first_item_if_no_content(
     assert response[FIRST_ITEM_KEY] == "0", response
 
 
-@patch("backend.content_iterator.task.processing_assets_model_with_meta")
+@patch("geostore.content_iterator.task.processing_assets_model_with_meta")
 def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMock) -> None:
     event = deepcopy(SUBSEQUENT_EVENT)
     next_item_index = any_next_item_index()
@@ -160,8 +160,8 @@ def should_return_next_item_as_first_item(processing_assets_model_mock: MagicMoc
     assert response[FIRST_ITEM_KEY] == str(next_item_index), response
 
 
-@patch("backend.content_iterator.task.processing_assets_model_with_meta")
-@patch("backend.content_iterator.task.get_param")
+@patch("geostore.content_iterator.task.processing_assets_model_with_meta")
+@patch("geostore.content_iterator.task.get_param")
 def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_iteration_size(
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
@@ -190,8 +190,8 @@ def should_return_minus_one_next_item_if_remaining_item_count_is_less_than_itera
     assert response == expected_response, response
 
 
-@patch("backend.content_iterator.task.processing_assets_model_with_meta")
-@patch("backend.content_iterator.task.get_param")
+@patch("geostore.content_iterator.task.processing_assets_model_with_meta")
+@patch("geostore.content_iterator.task.get_param")
 def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_size(
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
@@ -220,8 +220,8 @@ def should_return_minus_one_next_item_if_remaining_item_count_matches_iteration_
     assert response == expected_response, response
 
 
-@patch("backend.content_iterator.task.processing_assets_model_with_meta")
-@patch("backend.content_iterator.task.get_param")
+@patch("geostore.content_iterator.task.processing_assets_model_with_meta")
+@patch("geostore.content_iterator.task.get_param")
 def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
     get_param_mock: MagicMock,
     processing_assets_model_mock: MagicMock,

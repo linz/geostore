@@ -12,7 +12,7 @@ from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_ssm import SSMClient
 from mypy_boto3_stepfunctions import SFNClient
 
-from backend.boto3_config import CONFIG
+from geostore.boto3_config import CONFIG
 
 basicConfig(level=INFO)
 logger = getLogger(__name__)

@@ -5,17 +5,17 @@ from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.aws_message_attributes import (
+from geostore.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     STRING_VALUE_KEY,
 )
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.step_function_keys import (
+from geostore.error_response_keys import ERROR_MESSAGE_KEY
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
@@ -23,7 +23,7 @@ from backend.step_function_keys import (
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
-from backend.update_dataset_catalog.task import lambda_handler
+from geostore.update_dataset_catalog.task import lambda_handler
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_filename
@@ -37,7 +37,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
     filename = f"{any_safe_filename()}.json"
 
     with Dataset() as dataset, patch(
-        "backend.update_dataset_catalog.task.SQS_RESOURCE"
+        "geostore.update_dataset_catalog.task.SQS_RESOURCE"
     ) as sqs_mock, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -86,7 +86,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
 
 
 @mark.infrastructure
-@patch("backend.update_dataset_catalog.task.validate")
+@patch("geostore.update_dataset_catalog.task.validate")
 def should_return_required_property_error_when_missing_mandatory_property(
     validate_url_mock: MagicMock,
 ) -> None:

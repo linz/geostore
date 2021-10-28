@@ -30,6 +30,6 @@ USER 10000:10000
 
 COPY --from=build /opt/.venv /opt/.venv
 
-COPY backend/*.py /src/
+COPY geostore/*.py /src/
 ARG task
-COPY backend/${task} /src/task/
+COPY geostore/${task} /src/task/

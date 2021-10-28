@@ -1,7 +1,7 @@
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 
-from backend.resources import ResourceName
+from geostore.resources import ResourceName
 
 
 @mark.infrastructure

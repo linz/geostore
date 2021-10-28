@@ -3,7 +3,7 @@ import textwrap
 from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam
 from aws_cdk.core import Construct, Fn
 
-from backend.resources import PRODUCTION_ENVIRONMENT_NAME
+from geostore.resources import PRODUCTION_ENVIRONMENT_NAME
 
 APPLICATION_NAME_TAG_NAME = "ApplicationName"
 APPLICATION_NAME = "geostore"

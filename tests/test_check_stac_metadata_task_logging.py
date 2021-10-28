@@ -9,11 +9,11 @@ from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 from pytest_subtests import SubTests
 
-from backend.api_keys import EVENT_KEY
-from backend.check_stac_metadata.task import lambda_handler
-from backend.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from backend.import_metadata_file.task import S3_BODY_KEY
-from backend.step_function_keys import (
+from geostore.api_keys import EVENT_KEY
+from geostore.check_stac_metadata.task import lambda_handler
+from geostore.error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+from geostore.import_metadata_file.task import S3_BODY_KEY
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
@@ -45,10 +45,10 @@ MINIMAL_PAYLOAD = {
     S3_ROLE_ARN_KEY: any_role_arn(),
 }
 
-LOGGER = getLogger("backend.check_stac_metadata.task")
+LOGGER = getLogger("geostore.check_stac_metadata.task")
 
 
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
 def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
     expected_log = dumps({EVENT_KEY: payload})
@@ -57,14 +57,14 @@ def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     }
 
     with patch.object(LOGGER, "debug") as logger_mock, patch(
-        "backend.check_stac_metadata.task.STACDatasetValidator.run"
+        "geostore.check_stac_metadata.task.STACDatasetValidator.run"
     ):
         lambda_handler(payload, any_lambda_context())
 
         logger_mock.assert_any_call(expected_log)
 
 
-@patch("backend.check_stac_metadata.task.validate")
+@patch("geostore.check_stac_metadata.task.validate")
 def should_return_error_when_schema_validation_fails(
     validate_schema_mock: MagicMock, subtests: SubTests
 ) -> None:
@@ -86,7 +86,7 @@ def should_return_error_when_schema_validation_fails(
             logger_mock.assert_any_call(expected_log)
 
 
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
 def should_log_error_when_assuming_s3_role_fails(
     get_s3_client_for_role_mock: MagicMock, subtests: SubTests
 ) -> None:

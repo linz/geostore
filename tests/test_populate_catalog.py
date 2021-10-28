@@ -7,8 +7,8 @@ from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.api_responses import BODY_KEY
-from backend.aws_message_attributes import (
+from geostore.api_responses import BODY_KEY
+from geostore.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
@@ -16,7 +16,7 @@ from backend.aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
     STRING_VALUE_KEY_LOWER,
 )
-from backend.populate_catalog.task import (
+from geostore.populate_catalog.task import (
     CATALOG_KEY,
     MESSAGE_ATTRIBUTES_KEY,
     RECORDS_KEY,
@@ -26,9 +26,9 @@ from backend.populate_catalog.task import (
     UnhandledSQSMessageException,
     lambda_handler,
 )
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import (
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.stac_format import (
     STAC_DESCRIPTION_KEY,
     STAC_HREF_KEY,
     STAC_ID_KEY,
@@ -43,7 +43,7 @@ from backend.stac_format import (
     STAC_TITLE_KEY,
     STAC_TYPE_KEY,
 )
-from backend.types import JsonList
+from geostore.types import JsonList
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_safe_filename
