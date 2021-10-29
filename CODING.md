@@ -209,6 +209,27 @@ validated automatically.
   lower than maximum of 15 minutes. This can be increased if a Lambda can be demonstrated to require
   more runtime than 60 seconds.
 
+### Command-line interfaces
+
+- Mandatory parameters should be named. This way commands are self-documenting, and users don't have
+  to remember the exact sequence.
+
+  Bad example: `geostore credentials create 1000 'Jane Doe'`
+
+  Good example: `geostore credentials create --account-id=1000 --comment='Jane Doe'`
+
+  In [Typer](https://typer.tiangolo.com/) you can use a default value of literally `Option(...)` to
+  make a mandatory parameter an option.
+
+- Progress and error messages should be printed to standard error.
+- Output should be scriptable by default. That means single values should be printed without any
+  decoration such as quotes or a title, table data should be printed as tab-separated lines, and
+  object data should be printed as JSON.
+- Output may be human-readable when the receiver is a terminal rather than another program. This
+  sacrifices some programming ease (because the terminal output is no longer identical to the piped
+  output) to enable more user-friendly formatting such as titles for single values, table headings
+  and aligned table columns, and pretty-printed JSON, any of which could be coloured.
+
 ### Code reuse
 
 - Group code by relatedness, not by reuse. Basically, putting a bunch of stuff in a single file
