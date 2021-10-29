@@ -23,13 +23,8 @@ delete_objects() {
         return
     fi
 
-    echo "Removing objects"
-    for index in $(seq 0 $(("$count" - 1)))
-    do
-        keys+=("$(jq --raw-output ".[${index}].Key" <<< "$1")")
-        version_ids+=("$(jq --raw-output ".[${index}].VersionId" <<< "$1")")
-    done
-    parallel --group aws s3api delete-object --bucket="$bucket" --key="{1}" --version-id="{2}" ::: "${keys[@]}" :::+ "${version_ids[@]}"
+    echo "Removing ${count} objects"
+    jq --raw-output '.[] | [.Key, .VersionId] | @tsv' <<< "$1" | parallel --colsep='\t' --group aws s3api delete-object --bucket="$bucket" --key='{1}' --version-id='{2}'
 }
 
 for bucket
