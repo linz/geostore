@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY, handle_request
+from geostore.api_responses import handle_request
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.types import JsonObject
 
 

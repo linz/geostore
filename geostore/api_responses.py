@@ -5,11 +5,8 @@ from typing import Callable, Mapping, Union
 from jsonschema import ValidationError, validate
 
 from .api_keys import MESSAGE_KEY
+from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from .types import JsonList, JsonObject
-
-BODY_KEY = "body"
-HTTP_METHOD_KEY = "http_method"
-STATUS_CODE_KEY = "status_code"
 
 
 def error_response(code: int, message: str) -> JsonObject:

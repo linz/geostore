@@ -16,7 +16,7 @@ from pytest import mark, raises
 from pytest_subtests import SubTests
 
 from geostore.api_keys import STATUS_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.datasets_model import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
 from geostore.resources import ResourceName

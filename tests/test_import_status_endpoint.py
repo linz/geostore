@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from geostore.api_keys import MESSAGE_KEY, STATUS_KEY, SUCCESS_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from geostore.import_status import entrypoint
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
