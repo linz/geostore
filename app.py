@@ -3,7 +3,7 @@ CDK application entry point file.
 """
 from aws_cdk.core import App, Tag
 
-from backend.environment import environment_name
+from geostore.environment import environment_name
 from infrastructure.application_stack import Application
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
 

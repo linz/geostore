@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda_python
 from aws_cdk.core import Construct
 
-from backend.environment import ENV_NAME_VARIABLE_NAME
+from geostore.environment import ENV_NAME_VARIABLE_NAME
 
 from .bundled_lambda_function import BundledLambdaFunction
 from .sts_policy import ALLOW_ASSUME_ANY_ROLE

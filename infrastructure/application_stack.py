@@ -4,7 +4,7 @@ import constructs
 from aws_cdk import aws_iam
 from aws_cdk.core import Environment, Stack
 
-from backend.environment import environment_name
+from geostore.environment import environment_name
 
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers

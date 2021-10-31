@@ -6,8 +6,8 @@ from urllib.parse import quote
 from mypy_boto3_s3 import S3Client
 from pytest import mark
 
-from backend.import_asset_file.task import lambda_handler
-from backend.import_dataset_file import (
+from geostore.import_asset_file.task import lambda_handler
+from geostore.import_dataset_file import (
     EXCEPTION_PREFIX,
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
@@ -20,10 +20,10 @@ from backend.import_dataset_file import (
     TASKS_KEY,
     TASK_ID_KEY,
 )
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from backend.resources import ResourceName
-from backend.s3 import CHUNK_SIZE
-from backend.step_function_keys import S3_ROLE_ARN_KEY
+from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from geostore.resources import ResourceName
+from geostore.s3 import CHUNK_SIZE
+from geostore.step_function_keys import S3_ROLE_ARN_KEY
 
 from .aws_utils import (
     S3Object,
@@ -45,7 +45,7 @@ from .general_generators import (
 )
 
 
-@patch("backend.import_asset_file.task.smart_open.open")
+@patch("geostore.import_asset_file.task.smart_open.open")
 def should_treat_unhandled_exception_as_permanent_failure(open_mock: MagicMock) -> None:
     # Given
     error_message = any_error_message()
@@ -72,7 +72,7 @@ def should_treat_unhandled_exception_as_permanent_failure(open_mock: MagicMock) 
         INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
 
-    with patch("backend.import_dataset_file.get_s3_client_for_role"):
+    with patch("geostore.import_dataset_file.get_s3_client_for_role"):
         response = lambda_handler(event, any_lambda_context())
 
     assert response[RESULTS_KEY] == [

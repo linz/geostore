@@ -252,7 +252,7 @@ deployed instances. At the moment the available versions are constrained by the 
 
 - The
   [Ubuntu packages](https://packages.ubuntu.com/search?keywords=python3&searchon=names&exact=1&suite=all&section=all)
-  used in the [Dockerfile](/linz/geostore/blob/master/backend/Dockerfile)
+  used in the [Dockerfile](/linz/geostore/blob/master/geostore/Dockerfile)
 - The [AWS base images](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html) used as
   [Lambda runtimes](/linz/geostore/blob/master/infrastructure/constructs/lambda_config.py)
 - The [pyenv versions](https://github.com/pyenv/pyenv) used for

@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Tags
 
-from backend.resources import ResourceName
+from geostore.resources import ResourceName
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint

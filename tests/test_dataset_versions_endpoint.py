@@ -11,11 +11,11 @@ from unittest.mock import patch
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.dataset_versions import entrypoint
-from backend.dataset_versions.create import create_dataset_version
-from backend.step_function_keys import (
+from geostore.api_keys import MESSAGE_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.dataset_versions import entrypoint
+from geostore.dataset_versions.create import create_dataset_version
+from geostore.step_function_keys import (
     DATASET_ID_SHORT_KEY,
     METADATA_URL_KEY,
     NOW_KEY,
@@ -82,7 +82,7 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
     now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
 
     with patch(
-        "backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
+        "geostore.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
     ), Dataset() as dataset:
         body = {
             DATASET_ID_SHORT_KEY: dataset.dataset_id,

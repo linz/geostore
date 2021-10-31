@@ -20,22 +20,22 @@ from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
 from pytest_subtests import SubTests
 
-from backend.boto3_config import CONFIG
-from backend.content_iterator.task import MAX_ITERATION_SIZE
-from backend.datasets_model import DatasetsModelBase, datasets_model_with_meta
-from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
-from backend.parameter_store import ParameterName, get_param
-from backend.populate_catalog.task import CONTENTS_KEY
-from backend.processing_assets_model import (
+from geostore.boto3_config import CONFIG
+from geostore.content_iterator.task import MAX_ITERATION_SIZE
+from geostore.datasets_model import DatasetsModelBase, datasets_model_with_meta
+from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from geostore.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
+from geostore.parameter_store import ParameterName, get_param
+from geostore.populate_catalog.task import CONTENTS_KEY
+from geostore.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.sts import get_account_number
-from backend.types import JsonObject
-from backend.validation_results_model import (
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.sts import get_account_number
+from geostore.types import JsonObject
+from geostore.validation_results_model import (
     ValidationResult,
     ValidationResultsModelBase,
     validation_results_model_with_meta,

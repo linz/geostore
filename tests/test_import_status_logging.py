@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
 
-from backend.api_keys import EVENT_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
-from backend.error_response_keys import ERROR_KEY
-from backend.import_status.get import get_import_status
-from backend.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
+from geostore.api_keys import EVENT_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY
+from geostore.error_response_keys import ERROR_KEY
+from geostore.import_status.get import get_import_status
+from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
 from .general_generators import any_error_message
@@ -20,9 +20,9 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = getLogger("backend.import_status.get")
+        cls.logger = getLogger("geostore.import_status.get")
 
-    @patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+    @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
     def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
         # Given
         event = {
@@ -40,7 +40,7 @@ class TestLogging:
         }
 
         with patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.step_function.get_step_function_validation_results"
+            "geostore.step_function.get_step_function_validation_results"
         ) as validation_mock:
             validation_mock.return_value = []
 
@@ -50,7 +50,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_payload_log)
 
-    @patch("backend.import_status.get.validate")
+    @patch("geostore.import_status.get.validate")
     def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
@@ -71,7 +71,7 @@ class TestLogging:
             logger_mock.assert_any_call(expected_log)
 
 
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 def should_log_stepfunctions_status_response(
     describe_execution_mock: MagicMock,
 ) -> None:
@@ -84,10 +84,10 @@ def should_log_stepfunctions_status_response(
     }
     expected_response_log = dumps({"step function response": describe_execution_response})
 
-    logger = getLogger("backend.step_function")
+    logger = getLogger("geostore.step_function")
     with patch.object(logger, "debug") as logger_mock, patch(
-        "backend.step_function.get_account_number"
-    ), patch("backend.step_function.get_step_function_validation_results") as validation_mock:
+        "geostore.step_function.get_account_number"
+    ), patch("geostore.step_function.get_step_function_validation_results") as validation_mock:
         validation_mock.return_value = []
         # When
         get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})

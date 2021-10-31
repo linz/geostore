@@ -6,11 +6,11 @@ from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.api_keys import EVENT_KEY
-from backend.error_response_keys import ERROR_KEY
-from backend.import_dataset.task import lambda_handler
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.step_function_keys import (
+from geostore.api_keys import EVENT_KEY
+from geostore.error_response_keys import ERROR_KEY
+from geostore.import_dataset.task import lambda_handler
+from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
@@ -29,20 +29,20 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = getLogger("backend.import_dataset.task")
+        cls.logger = getLogger("geostore.import_dataset.task")
 
-    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
+    @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_payload(self, head_object_mock: MagicMock) -> None:
         # Given
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with patch(
-            "backend.import_dataset.task.S3CONTROL_CLIENT.create_job"
+            "geostore.import_dataset.task.S3CONTROL_CLIENT.create_job"
         ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_dataset.task.validate"
+            "geostore.import_dataset.task.validate"
         ), patch(
-            "backend.import_dataset.task.smart_open.open"
+            "geostore.import_dataset.task.smart_open.open"
         ):
             event = {
                 DATASET_ID_KEY: dataset.dataset_id,
@@ -59,7 +59,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_payload_log)
 
-    @patch("backend.import_dataset.task.validate")
+    @patch("geostore.import_dataset.task.validate")
     def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
         # Given
 
@@ -74,7 +74,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
+    @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_assets_added_to_manifest(
         self,
@@ -99,9 +99,9 @@ class TestLogging:
             ) as processing_asset, patch.object(
                 self.logger, "debug"
             ) as logger_mock, patch(
-                "backend.import_dataset.task.smart_open.open"
+                "geostore.import_dataset.task.smart_open.open"
             ), patch(
-                "backend.import_dataset.task.S3CONTROL_CLIENT.create_job"
+                "geostore.import_dataset.task.S3CONTROL_CLIENT.create_job"
             ):
 
                 expected_asset_log = dumps({"Adding file to manifest": processing_asset.url})
@@ -127,8 +127,8 @@ class TestLogging:
                 with subtests.test():
                     logger_mock.assert_any_call(expected_metadata_log)
 
-    @patch("backend.import_dataset.task.S3CONTROL_CLIENT.create_job")
-    @patch("backend.import_dataset.task.S3_CLIENT.head_object")
+    @patch("geostore.import_dataset.task.S3CONTROL_CLIENT.create_job")
+    @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
     @mark.infrastructure
     def should_log_s3_batch_response(
         self, head_object_mock: MagicMock, create_job_mock: MagicMock
@@ -140,7 +140,7 @@ class TestLogging:
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock, patch(
-            "backend.import_dataset.task.smart_open.open"
+            "geostore.import_dataset.task.smart_open.open"
         ):
 
             # When

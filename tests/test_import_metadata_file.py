@@ -3,7 +3,7 @@ from json import dumps
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
-from backend.import_dataset_file import (
+from geostore.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
     RESULTS_KEY,
@@ -17,10 +17,10 @@ from backend.import_dataset_file import (
     TASK_ID_KEY,
     TREAT_MISSING_KEYS_AS_KEY,
 )
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from backend.import_metadata_file.task import S3_BODY_KEY, lambda_handler
-from backend.stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY
-from backend.step_function_keys import S3_ROLE_ARN_KEY
+from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from geostore.import_metadata_file.task import S3_BODY_KEY, lambda_handler
+from geostore.stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY
+from geostore.step_function_keys import S3_ROLE_ARN_KEY
 
 from .aws_utils import (
     any_invocation_id,
@@ -36,8 +36,8 @@ from .general_generators import any_safe_file_path
 from .stac_generators import any_asset_name
 
 
-@patch("backend.import_dataset_file.get_s3_client_for_role")
-@patch("backend.import_metadata_file.task.TARGET_S3_CLIENT")
+@patch("geostore.import_dataset_file.get_s3_client_for_role")
+@patch("geostore.import_metadata_file.task.TARGET_S3_CLIENT")
 def should_return_success_response(
     target_s3_client_mock: MagicMock, get_s3_client_for_role_mock: MagicMock
 ) -> None:
