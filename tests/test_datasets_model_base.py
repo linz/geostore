@@ -1,6 +1,6 @@
 from pytest import mark
 
-from backend.datasets_model import datasets_model_with_meta
+from geostore.datasets_model import datasets_model_with_meta
 
 
 @mark.infrastructure

@@ -11,10 +11,10 @@ from mypy_boto3_sns.type_defs import MessageAttributeValueTypeDef
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.api_keys import EVENT_KEY
-from backend.api_responses import STATUS_CODE_KEY
-from backend.aws_message_attributes import DATA_TYPE_STRING
-from backend.notify_status_update.task import (
+from geostore.api_keys import EVENT_KEY
+from geostore.api_responses import STATUS_CODE_KEY
+from geostore.aws_message_attributes import DATA_TYPE_STRING
+from geostore.notify_status_update.task import (
     EVENT_DETAIL_KEY,
     MESSAGE_ATTRIBUTE_DATASET_KEY,
     MESSAGE_ATTRIBUTE_STATUS_KEY,
@@ -26,9 +26,9 @@ from backend.notify_status_update.task import (
     lambda_handler,
     publish_sns_message,
 )
-from backend.resources import ResourceName
-from backend.step_function import Outcome
-from backend.step_function_keys import (
+from geostore.resources import ResourceName
+from geostore.step_function import Outcome
+from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
@@ -61,8 +61,8 @@ STEP_FUNCTION_START_MILLISECOND_TIMESTAMP = round(
 STEP_FUNCTION_STOP_MILLISECOND_TIMESTAMP = STEP_FUNCTION_START_MILLISECOND_TIMESTAMP + 10
 
 
-@patch("backend.notify_status_update.task.WebhookClient.send")
-@patch("backend.notify_status_update.task.get_import_status_given_arn")
+@patch("geostore.notify_status_update.task.WebhookClient.send")
+@patch("geostore.notify_status_update.task.get_import_status_given_arn")
 def should_notify_slack_with_finished_details_when_url_set(
     step_func_status_mock: MagicMock, webhook_client_mock: MagicMock
 ) -> None:
@@ -80,7 +80,7 @@ def should_notify_slack_with_finished_details_when_url_set(
     mock_slack_url = any_https_url()
 
     with patch.dict(environ, {SLACK_URL_ENV_NAME: mock_slack_url}), patch(
-        "backend.notify_status_update.task.publish_sns_message"
+        "geostore.notify_status_update.task.publish_sns_message"
     ):
         # When
         notify_status_update_input = {
@@ -116,7 +116,7 @@ def should_notify_slack_with_finished_details_when_url_set(
         assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 15
 
 
-@patch("backend.notify_status_update.task.WebhookClient.send")
+@patch("geostore.notify_status_update.task.WebhookClient.send")
 def should_not_notify_slack_when_step_function_running(webhook_client_mock: MagicMock) -> None:
     # Given
 
@@ -125,7 +125,7 @@ def should_not_notify_slack_when_step_function_running(webhook_client_mock: Magi
     mock_slack_url = any_https_url()
 
     with patch.dict(environ, {SLACK_URL_ENV_NAME: mock_slack_url}), patch(
-        "backend.notify_status_update.task.publish_sns_message"
+        "geostore.notify_status_update.task.publish_sns_message"
     ):
         # When
         notify_status_update_input = {
@@ -141,8 +141,8 @@ def should_not_notify_slack_when_step_function_running(webhook_client_mock: Magi
         webhook_client_mock.assert_not_called()
 
 
-@patch("backend.notify_status_update.task.WebhookClient.send")
-@patch("backend.notify_status_update.task.get_import_status_given_arn")
+@patch("geostore.notify_status_update.task.WebhookClient.send")
+@patch("geostore.notify_status_update.task.get_import_status_given_arn")
 def should_notify_slack_when_step_function_failed(
     step_func_status_mock: MagicMock, webhook_client_mock: MagicMock
 ) -> None:
@@ -159,7 +159,7 @@ def should_notify_slack_when_step_function_failed(
     }
 
     with patch.dict(environ, {SLACK_URL_ENV_NAME: mock_slack_url}), patch(
-        "backend.notify_status_update.task.publish_sns_message"
+        "geostore.notify_status_update.task.publish_sns_message"
     ):
         # When
         notify_status_update_input = {
@@ -186,14 +186,14 @@ def should_notify_slack_when_step_function_failed(
         assert len(webhook_client_mock.call_args[1][WEBHOOK_MESSAGE_BLOCKS_KEY]) == 13
 
 
-@patch("backend.notify_status_update.task.WebhookClient.send")
+@patch("geostore.notify_status_update.task.WebhookClient.send")
 def should_log_and_not_post_to_slack_when_url_not_set(
     webhook_client_mock: MagicMock, subtests: SubTests
 ) -> None:
     # Given
-    logger = getLogger("backend.notify_status_update.task")
+    logger = getLogger("geostore.notify_status_update.task")
 
-    with patch("backend.notify_status_update.task.publish_sns_message"), patch.object(
+    with patch("geostore.notify_status_update.task.publish_sns_message"), patch.object(
         logger, "debug"
     ) as logger_mock:
         # When
@@ -208,7 +208,7 @@ def should_log_and_not_post_to_slack_when_url_not_set(
         logger_mock.assert_any_call(expected_log)
 
 
-@patch("backend.notify_status_update.task.get_param")
+@patch("geostore.notify_status_update.task.get_param")
 def should_publish_sns_message(get_param_mock: MagicMock) -> None:
     # Given
     get_param_mock.return_value = topic_arn = any_arn_formatted_string()
@@ -238,7 +238,7 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
     }
 
     # When
-    with patch("backend.notify_status_update.task.SNS_CLIENT.publish") as sns_client_mock:
+    with patch("geostore.notify_status_update.task.SNS_CLIENT.publish") as sns_client_mock:
         publish_sns_message(publish_sns_message_input)
 
     # Then

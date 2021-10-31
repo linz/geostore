@@ -10,26 +10,26 @@ from mypy_boto3_s3control import S3ControlClient
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.error_response_keys import ERROR_MESSAGE_KEY
-from backend.import_dataset.task import lambda_handler
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import (
+from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.error_response_keys import ERROR_MESSAGE_KEY
+from geostore.import_dataset.task import lambda_handler
+from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
 )
-from backend.step_function_keys import (
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
-from backend.sts import get_account_number
+from geostore.sts import get_account_number
 
 from .aws_utils import (
     Dataset,

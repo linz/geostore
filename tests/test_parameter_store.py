@@ -4,9 +4,9 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 
-from backend import parameter_store
-from backend.error_response_keys import ERROR_KEY
-from backend.parameter_store import SSM_CLIENT, ParameterName, get_param
+from geostore import parameter_store
+from geostore.error_response_keys import ERROR_KEY
+from geostore.parameter_store import SSM_CLIENT, ParameterName, get_param
 
 
 @mark.infrastructure

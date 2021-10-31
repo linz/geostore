@@ -8,13 +8,13 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from backend.api_keys import MESSAGE_KEY, STATUS_KEY, SUCCESS_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from backend.import_status import entrypoint
-from backend.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from backend.step_function import Outcome
-from backend.step_function_keys import (
+from geostore.api_keys import MESSAGE_KEY, STATUS_KEY, SUCCESS_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from geostore.import_status import entrypoint
+from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from geostore.step_function import Outcome
+from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     ERRORS_KEY,
@@ -37,8 +37,8 @@ from backend.step_function_keys import (
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
-from backend.types import JsonObject
-from backend.validation_results_model import ValidationResult
+from geostore.types import JsonObject
+from geostore.validation_results_model import ValidationResult
 
 from .aws_utils import (
     ValidationItem,
@@ -64,7 +64,7 @@ def should_return_required_property_error_when_missing_mandatory_execution_arn()
     }
 
 
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 def should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock: MagicMock,
 ) -> None:
@@ -86,7 +86,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
         },
     }
 
-    with patch("backend.step_function.get_step_function_validation_results") as validation_mock:
+    with patch("geostore.step_function.get_step_function_validation_results") as validation_mock:
         validation_mock.return_value = []
         # When attempting to create the instance
         response = entrypoint.lambda_handler(
@@ -99,7 +99,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
 
 
 @mark.infrastructure
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
 def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) -> None:
     # Given
 
@@ -154,8 +154,8 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
         assert response == expected_response
 
 
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.S3CONTROL_CLIENT.describe_job")
 def should_report_s3_batch_upload_task_failures(
     describe_s3_job_mock: MagicMock,
     describe_step_function_mock: MagicMock,
@@ -212,8 +212,8 @@ def should_report_s3_batch_upload_task_failures(
             },
         },
     }
-    with patch("backend.step_function.get_account_number") as get_account_number_mock, patch(
-        "backend.step_function.get_step_function_validation_results"
+    with patch("geostore.step_function.get_account_number") as get_account_number_mock, patch(
+        "geostore.step_function.get_step_function_validation_results"
     ) as validation_mock:
         validation_mock.return_value = []
         get_account_number_mock.return_value = any_account_id()
@@ -228,8 +228,8 @@ def should_report_s3_batch_upload_task_failures(
         assert response == expected_response
 
 
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.S3CONTROL_CLIENT.describe_job")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.S3CONTROL_CLIENT.describe_job")
 def should_report_s3_batch_upload_failures(
     describe_s3_job_mock: MagicMock,
     describe_step_function_mock: MagicMock,
@@ -285,8 +285,8 @@ def should_report_s3_batch_upload_failures(
         },
     }
 
-    with patch("backend.step_function.get_account_number") as get_account_number_mock, patch(
-        "backend.step_function.get_step_function_validation_results"
+    with patch("geostore.step_function.get_account_number") as get_account_number_mock, patch(
+        "geostore.step_function.get_step_function_validation_results"
     ) as validation_mock:
         validation_mock.return_value = []
         get_account_number_mock.return_value = any_account_id()
@@ -301,9 +301,9 @@ def should_report_s3_batch_upload_failures(
         assert response == expected_response
 
 
-@patch("backend.step_function.get_step_function_validation_results")
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.get_account_number")
+@patch("geostore.step_function.get_step_function_validation_results")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.get_account_number")
 def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     get_account_number_mock: MagicMock,
     describe_step_function_mock: MagicMock,
@@ -339,9 +339,9 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     assert response == expected_response
 
 
-@patch("backend.step_function.get_step_function_validation_results")
-@patch("backend.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
-@patch("backend.step_function.get_account_number")
+@patch("geostore.step_function.get_step_function_validation_results")
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+@patch("geostore.step_function.get_account_number")
 def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_status(
     get_account_number_mock: MagicMock,
     describe_step_function_mock: MagicMock,

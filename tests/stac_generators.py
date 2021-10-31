@@ -4,9 +4,9 @@ from uuid import uuid4
 
 from multihash import SHA2_256
 
-from backend.datasets.create import TITLE_CHARACTERS
-from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.types import JsonObject
+from geostore.datasets.create import TITLE_CHARACTERS
+from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.types import JsonObject
 
 from .general_generators import (
     _random_string_choices,

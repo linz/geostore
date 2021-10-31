@@ -14,27 +14,27 @@ from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY, SUCCESS_KEY
-from backend.check import Check
-from backend.check_stac_metadata.stac_validators import (
+from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
+from geostore.check import Check
+from geostore.check_stac_metadata.stac_validators import (
     STACCatalogSchemaValidator,
     STACCollectionSchemaValidator,
     STACItemSchemaValidator,
 )
-from backend.check_stac_metadata.task import lambda_handler
-from backend.check_stac_metadata.utils import (
+from geostore.check_stac_metadata.task import lambda_handler
+from geostore.check_stac_metadata.utils import (
     NO_ASSETS_FOUND_ERROR_MESSAGE,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     STACDatasetValidator,
 )
-from backend.import_metadata_file.task import S3_BODY_KEY
-from backend.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
-from backend.parameter_store import ParameterName, get_param
-from backend.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import (
+from geostore.import_metadata_file.task import S3_BODY_KEY
+from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
+from geostore.parameter_store import ParameterName, get_param
+from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.stac_format import (
     LINZ_SCHEMA_DIRECTORY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
@@ -42,14 +42,14 @@ from backend.stac_format import (
     STAC_ID_KEY,
     STAC_LINKS_KEY,
 )
-from backend.step_function import get_hash_key
-from backend.step_function_keys import (
+from geostore.step_function import get_hash_key
+from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
-from backend.validation_results_model import ValidationResult, validation_results_model_with_meta
+from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
     MockJSONURLReader,
@@ -90,11 +90,11 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = getLogger("backend.check_stac_metadata.utils")
+LOGGER = getLogger("geostore.check_stac_metadata.utils")
 
 
-@patch("backend.check_stac_metadata.task.STACDatasetValidator.validate")
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.STACDatasetValidator.validate")
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
 def should_succeed_with_validation_failure(
     get_s3_client_for_role_mock: MagicMock, validate_url_mock: MagicMock
 ) -> None:
@@ -103,7 +103,7 @@ def should_succeed_with_validation_failure(
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         lambda_handler(
             {
                 DATASET_ID_KEY: any_dataset_id(),
@@ -115,9 +115,9 @@ def should_succeed_with_validation_failure(
         )
 
 
-@patch("backend.check_stac_metadata.task.ValidationResultFactory")
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
-@patch("backend.check_stac_metadata.task.get_param")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_param")
 def should_save_non_s3_url_validation_results(
     get_param_mock: MagicMock,
     get_s3_client_for_role_mock: MagicMock,
@@ -133,7 +133,7 @@ def should_save_non_s3_url_validation_results(
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
         lambda_handler(
             {
@@ -158,7 +158,7 @@ def should_save_non_s3_url_validation_results(
     ]
 
 
-@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMock) -> None:
     # Given
     asset_name = "name"
@@ -201,7 +201,7 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
     url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
         STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).validate(
             metadata_url
@@ -217,8 +217,8 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
 
 @mark.infrastructure
-@patch("backend.check_stac_metadata.task.get_s3_client_for_role")
-@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
     get_s3_client_for_role_mock: MagicMock,
@@ -461,7 +461,7 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
     submodule.
     """
-    for path in glob(f"backend/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
+    for path in glob(f"geostore/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
         with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
             stac_object = load(file_handle)
             url_reader = MockJSONURLReader({path: stac_object})
@@ -534,7 +534,7 @@ def should_validate_metadata_files_recursively() -> None:
         {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
     )
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
             parent_url
         )
@@ -576,7 +576,7 @@ def should_only_validate_each_file_once() -> None:
         call_limit=3,
     )
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
             root_url
         )
@@ -617,7 +617,7 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
 
     # When
@@ -661,7 +661,7 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
     url_reader = MockJSONURLReader({metadata_url: stac_object})
 
-    with patch("backend.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
 
     validator.validate(metadata_url)
@@ -672,7 +672,7 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         assert validator.dataset_metadata == expected_metadata
 
 
-@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> None:
     # Given
     metadata_url = any_s3_url()
@@ -697,7 +697,7 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     ]
 
 
-@patch("backend.check_stac_metadata.task.ValidationResultFactory")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_report_when_the_dataset_has_no_assets(
     validation_results_factory_mock: MagicMock, subtests: SubTests
 ) -> None:

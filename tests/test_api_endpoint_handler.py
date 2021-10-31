@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY, handle_request
-from backend.types import JsonObject
+from geostore.api_keys import MESSAGE_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY, handle_request
+from geostore.types import JsonObject
 
 
 def should_return_required_property_error_when_missing_http_method() -> None:

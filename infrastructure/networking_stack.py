@@ -1,7 +1,7 @@
 from aws_cdk import aws_ec2
 from aws_cdk.core import Construct, Stack, Tags
 
-from backend.resources import PRODUCTION_ENVIRONMENT_NAME
+from geostore.resources import PRODUCTION_ENVIRONMENT_NAME
 
 
 class NetworkingStack(Stack):

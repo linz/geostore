@@ -15,13 +15,13 @@ from mypy_boto3_stepfunctions import SFNClient
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from backend.api_keys import STATUS_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import (
+from geostore.api_keys import STATUS_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.parameter_store import ParameterName
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -31,8 +31,8 @@ from backend.stac_format import (
     STAC_REL_ROOT,
     STAC_REL_SELF,
 )
-from backend.step_function import Outcome
-from backend.step_function_keys import (
+from geostore.step_function import Outcome
+from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
     ERRORS_KEY,
@@ -47,7 +47,7 @@ from backend.step_function_keys import (
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
-from backend.sts import get_account_number
+from geostore.sts import get_account_number
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,

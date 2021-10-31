@@ -6,8 +6,8 @@ from urllib.parse import quote
 
 from botocore.exceptions import ClientError
 
-from backend.aws_response import AWS_CODE_REQUEST_TIMEOUT
-from backend.import_dataset_file import (
+from geostore.aws_response import AWS_CODE_REQUEST_TIMEOUT
+from geostore.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
     RESULTS_KEY,
@@ -24,9 +24,9 @@ from backend.import_dataset_file import (
     TREAT_MISSING_KEYS_AS_KEY,
     get_import_result,
 )
-from backend.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from backend.step_function_keys import S3_ROLE_ARN_KEY
-from backend.types import JsonObject
+from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from geostore.step_function_keys import S3_ROLE_ARN_KEY
+from geostore.types import JsonObject
 
 from .aws_utils import (
     any_invocation_id,
@@ -47,10 +47,10 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = getLogger("backend.import_dataset_file")
+LOGGER = getLogger("geostore.import_dataset_file")
 
 
-@patch("backend.import_metadata_file.task.importer")
+@patch("geostore.import_metadata_file.task.importer")
 def should_log_payload(importer_mock: MagicMock) -> None:
     # Given
     event = {
@@ -75,7 +75,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
     }
 
     with patch.object(LOGGER, "debug") as logger_mock, patch(
-        "backend.import_dataset_file.get_s3_client_for_role"
+        "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         # When
         get_import_result(event, importer_mock)
@@ -84,7 +84,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         logger_mock.assert_any_call(dumps(event))
 
 
-@patch("backend.import_metadata_file.task.importer")
+@patch("geostore.import_metadata_file.task.importer")
 def should_log_result(importer_mock: MagicMock) -> None:
     # Given
     importer_response: JsonObject = {}
@@ -126,7 +126,7 @@ def should_log_result(importer_mock: MagicMock) -> None:
     }
 
     with patch.object(LOGGER, "debug") as logger_mock, patch(
-        "backend.import_dataset_file.get_s3_client_for_role"
+        "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         get_import_result(event, importer_mock)
 
@@ -134,7 +134,7 @@ def should_log_result(importer_mock: MagicMock) -> None:
         logger_mock.assert_any_call(dumps(expected_log_entry))
 
 
-@patch("backend.import_metadata_file.task.importer")
+@patch("geostore.import_metadata_file.task.importer")
 def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> None:
     # Given
     task_id = any_task_id()
@@ -168,7 +168,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     }
 
     # When
-    with patch("backend.import_dataset_file.get_s3_client_for_role"):
+    with patch("geostore.import_dataset_file.get_s3_client_for_role"):
         response = get_import_result(event, importer_mock)
 
     # Then
@@ -186,7 +186,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     }
 
 
-@patch("backend.import_metadata_file.task.importer")
+@patch("geostore.import_metadata_file.task.importer")
 def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMock) -> None:
     # Given
     task_id = any_task_id()
@@ -226,7 +226,7 @@ def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMoc
     }
 
     # When
-    with patch("backend.import_dataset_file.get_s3_client_for_role"):
+    with patch("geostore.import_dataset_file.get_s3_client_for_role"):
         response = get_import_result(event, importer_mock)
 
     # Then

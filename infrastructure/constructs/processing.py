@@ -11,8 +11,8 @@ from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_stepfunctions import Wait, WaitTime
 from aws_cdk.core import Construct, Duration, Tags
 
-from backend.api_keys import SUCCESS_KEY
-from backend.content_iterator.task import (
+from geostore.api_keys import SUCCESS_KEY
+from geostore.content_iterator.task import (
     ASSETS_TABLE_NAME_KEY,
     CONTENT_KEY,
     FIRST_ITEM_KEY,
@@ -20,10 +20,10 @@ from backend.content_iterator.task import (
     NEXT_ITEM_KEY,
     RESULTS_TABLE_NAME_KEY,
 )
-from backend.environment import ENV_NAME_VARIABLE_NAME
-from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
-from backend.step_function_keys import (
+from geostore.environment import ENV_NAME_VARIABLE_NAME
+from geostore.parameter_store import ParameterName
+from geostore.resources import ResourceName
+from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,

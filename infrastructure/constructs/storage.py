@@ -4,10 +4,10 @@ Geostore AWS resources definitions.
 from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
 from aws_cdk.core import Construct, Tags
 
-from backend.datasets_model import DatasetsTitleIdx
-from backend.parameter_store import ParameterName
-from backend.resources import ResourceName
-from backend.validation_results_model import ValidationOutcomeIdx
+from geostore.datasets_model import DatasetsTitleIdx
+from geostore.parameter_store import ParameterName
+from geostore.resources import ResourceName
+from geostore.validation_results_model import ValidationOutcomeIdx
 
 from .removal_policy import REMOVAL_POLICY
 from .table import Table

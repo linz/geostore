@@ -1,6 +1,7 @@
 *.bak
 /cdk.out/
 /.coverage
+/dist/
 html/
 /htmlcov/
 /.idea/

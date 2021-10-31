@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, RemovalPolicy, Tags
 
-from backend.resources import ResourceName
+from geostore.resources import ResourceName
 
 
 class Staging(Construct):

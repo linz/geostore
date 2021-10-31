@@ -2,7 +2,7 @@ from io import BytesIO
 from json import dumps
 from typing import BinaryIO
 
-from backend.types import JsonObject
+from geostore.types import JsonObject
 
 
 def json_dict_to_file_object(value: JsonObject) -> BinaryIO:

@@ -1,1 +1,1 @@
-BACKEND_DIRECTORY = "backend"
+BACKEND_DIRECTORY = "geostore"

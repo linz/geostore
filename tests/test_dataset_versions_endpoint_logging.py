@@ -6,11 +6,11 @@ from jsonschema import ValidationError
 from pynamodb.exceptions import DoesNotExist
 from pytest import mark
 
-from backend.api_keys import EVENT_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY
-from backend.dataset_versions.create import create_dataset_version
-from backend.error_response_keys import ERROR_KEY
-from backend.step_function_keys import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY
+from geostore.api_keys import EVENT_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY
+from geostore.dataset_versions.create import create_dataset_version
+from geostore.error_response_keys import ERROR_KEY
+from geostore.step_function_keys import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY
 
 from .aws_utils import Dataset, any_role_arn, any_s3_url
 from .general_generators import any_error_message
@@ -22,13 +22,13 @@ class TestLogging:
 
     @classmethod
     def setup_class(cls) -> None:
-        cls.logger = getLogger("backend.dataset_versions.create")
+        cls.logger = getLogger("geostore.dataset_versions.create")
 
     @mark.infrastructure
     def should_log_payload(self) -> None:
         # Given
         with patch(
-            "backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
+            "geostore.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution"
         ), Dataset() as dataset, patch.object(self.logger, "debug") as logger_mock:
             event = {
                 HTTP_METHOD_KEY: "POST",
@@ -47,7 +47,7 @@ class TestLogging:
             logger_mock.assert_any_call(expected_payload_log)
 
     @mark.infrastructure
-    @patch("backend.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
+    @patch("geostore.dataset_versions.create.STEP_FUNCTIONS_CLIENT.start_execution")
     def should_log_step_function_state_machine_response(
         self, start_execution_mock: MagicMock
     ) -> None:
@@ -71,7 +71,7 @@ class TestLogging:
             # Then
             logger_mock.assert_any_call(expected_execution_log)
 
-    @patch("backend.dataset_versions.create.validate")
+    @patch("geostore.dataset_versions.create.validate")
     def should_log_missing_argument_warning(self, validate_schema_mock: MagicMock) -> None:
         # given
         error_message = any_error_message()
@@ -88,7 +88,7 @@ class TestLogging:
             # then
             logger_mock.assert_any_call(expected_log)
 
-    @patch("backend.dataset_versions.create.datasets_model_with_meta")
+    @patch("geostore.dataset_versions.create.datasets_model_with_meta")
     def should_log_warning_if_dataset_does_not_exist(self, datasets_model_mock: MagicMock) -> None:
         # given
         error_message = any_error_message()

@@ -14,24 +14,24 @@ from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
-from backend.api_keys import MESSAGE_KEY
-from backend.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from backend.aws_message_attributes import (
+from geostore.api_keys import MESSAGE_KEY
+from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
     STRING_VALUE_KEY,
 )
-from backend.datasets.create import TITLE_PATTERN
-from backend.datasets.entrypoint import lambda_handler
-from backend.datasets.get import get_dataset_filter, get_dataset_single, handle_get
-from backend.datasets_model import DATASET_KEY_SEPARATOR
-from backend.populate_catalog.task import CATALOG_KEY
-from backend.resources import ResourceName
-from backend.s3 import S3_URL_PREFIX
-from backend.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
-from backend.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
+from geostore.datasets.create import TITLE_PATTERN
+from geostore.datasets.entrypoint import lambda_handler
+from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
+from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.populate_catalog.task import CATALOG_KEY
+from geostore.resources import ResourceName
+from geostore.s3 import S3_URL_PREFIX
+from geostore.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
+from geostore.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
 
 from .aws_utils import (
     Dataset,
@@ -62,7 +62,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
 
     try:
 
-        with patch("backend.datasets.create.SQS_RESOURCE") as sqs_mock:
+        with patch("geostore.datasets.create.SQS_RESOURCE") as sqs_mock:
             response = lambda_handler(
                 {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
             )
