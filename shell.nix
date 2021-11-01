@@ -2,15 +2,79 @@ let
   pkgs = import
     (
       fetchTarball {
-        # TODO: Pin to stable nixpkgs
-        name = "nixpkgs-2021-09-28";
-        url = "https://github.com/NixOS/nixpkgs/archive/ed8c752e13ef5a217806556a96b51ca7f7fb1007.tar.gz";
-        sha256 = "03yharwv0lal286d3zy6b7kj4px111s5h3a8nar8banpnqgml7v5";
+        name = "21.05";
+        url = "https://github.com/NixOS/nixpkgs/archive/7e9b0dff974c89e070da1ad85713ff3c20b0ca97.tar.gz";
+        sha256 = "1ckzhh24mgz6jd1xhfgx0i9mijk6xjqxwsshnvq789xsavrmsc36";
       })
     { };
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     python = pkgs.python38;
     projectDir = builtins.path { path = ./.; name = "geostore"; };
+    overrides = pkgs.poetry2nix.overrides.withoutDefaults (self: super: {
+      astroid = super.astroid.overridePythonAttrs (
+        old: rec {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.typing-extensions ];
+        }
+      );
+
+      black = super.black.overridePythonAttrs (
+        old: {
+          dontPreferSetupPy = true;
+        }
+      );
+
+      importlib-metadata = super.importlib-metadata.overridePythonAttrs (old: {
+        postPatch = ''
+          substituteInPlace setup.py --replace 'setuptools.setup()' 'setuptools.setup(version="${old.version}")'
+        '';
+      });
+
+      mccabe = super.mccabe.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.pytest-runner ];
+        }
+      );
+
+      platformdirs = super.platformdirs.overridePythonAttrs (old: {
+        postPatch = ''
+          substituteInPlace setup.py --replace 'setup()' 'setup(version="${old.version}")'
+        '';
+      });
+
+      pylint = super.pylint.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.pytest-runner ];
+          propagatedBuildInputs = (old.propagatedBuildInputs or [ ]) ++ [ self.typing-extensions ];
+        }
+      );
+
+      pytest = super.pytest.overridePythonAttrs (
+        old: {
+          # Fixes https://github.com/pytest-dev/pytest/issues/7891
+          postPatch = old.postPatch or "" + ''
+            sed -i '/\[metadata\]/aversion = ${old.version}' setup.cfg
+          '';
+        }
+      );
+
+      pytest-randomly = super.pytest-randomly.overrideAttrs (old: {
+        propagatedBuildInputs = (old.propagatedBuildInputs or [ ]) ++ [
+          self.importlib-metadata
+        ];
+      });
+
+      ruamel-yaml = super.ruamel-yaml.overridePythonAttrs (
+        old: {
+          propagatedBuildInputs = (old.propagatedBuildInputs or [ ]) ++ [ self.ruamel-yaml-clib ];
+        }
+      );
+
+      zipp = super.zipp.overridePythonAttrs (old: {
+        postPatch = ''
+          substituteInPlace setup.py --replace 'setuptools.setup()' 'setuptools.setup(version="${old.version}")'
+        '';
+      });
+    });
   };
 in
 pkgs.mkShell {
