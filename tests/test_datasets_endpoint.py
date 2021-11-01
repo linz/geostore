@@ -5,7 +5,7 @@ required (run '$ cdk deploy' before running tests).
 from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load
-from logging import INFO, basicConfig, getLogger
+from logging import INFO, basicConfig
 from unittest.mock import patch
 
 import smart_open
@@ -51,7 +51,6 @@ from .stac_generators import (
 )
 
 basicConfig(level=INFO)
-logger = getLogger(__name__)
 
 
 @mark.infrastructure
@@ -66,8 +65,6 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             response = lambda_handler(
                 {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
             )
-
-        logger.info("Response: %s", response)
 
         with subtests.test(msg="status code"):
             assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
@@ -163,7 +160,6 @@ def should_return_single_dataset(subtests: SubTests) -> None:
 
         # When requesting the dataset by ID and type
         response = lambda_handler({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context())
-    logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
     with subtests.test(msg="status code"):
@@ -179,7 +175,6 @@ def should_return_all_datasets(subtests: SubTests) -> None:
     with Dataset() as first_dataset, Dataset() as second_dataset:
         # When requesting all datasets
         response = lambda_handler({HTTP_METHOD_KEY: "GET", BODY_KEY: {}}, any_lambda_context())
-        logger.info("Response: %s", response)
 
         # Then we should get both datasets in return
         with subtests.test(msg="status code"):
@@ -200,7 +195,6 @@ def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
         response = lambda_handler({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, any_lambda_context())
-        logger.info("Response: %s", response)
 
     with subtests.test(msg="ID"):
         # Then only the matching dataset should be returned
@@ -234,7 +228,6 @@ def should_update_dataset(subtests: SubTests) -> None:
     with Dataset() as dataset:
         body = {DATASET_ID_SHORT_KEY: dataset.dataset_id, TITLE_KEY: new_dataset_title}
         response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
-    logger.info("Response: %s", response)
 
     with subtests.test(msg="status code"):
         assert response[STATUS_CODE_KEY] == HTTPStatus.OK

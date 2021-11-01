@@ -1,7 +1,7 @@
 """
 Pytest configuration file.
 """
-from logging import INFO, basicConfig, getLogger
+from logging import INFO, basicConfig
 
 import boto3
 import pytest
@@ -15,7 +15,6 @@ from mypy_boto3_stepfunctions import SFNClient
 from geostore.boto3_config import CONFIG
 
 basicConfig(level=INFO)
-logger = getLogger(__name__)
 
 
 @pytest.fixture()

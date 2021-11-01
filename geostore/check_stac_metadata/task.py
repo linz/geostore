@@ -3,10 +3,10 @@ from json import dumps
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate
+from linz_logger import get_log
 
 from ..api_keys import EVENT_KEY
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..s3 import get_s3_client_for_role
 from ..s3_utils import get_bucket_and_key_from_url
@@ -16,7 +16,7 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

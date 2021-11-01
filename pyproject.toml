@@ -38,6 +38,7 @@ module = [
     "pystac.layout",
     "pytest_subtests",
     "smart_open",
+    "linz_logger"
 ]
 ignore_missing_imports = true
 
@@ -84,6 +85,7 @@ slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 ulid-py = {version = "*", optional = true}
+linz-logger = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -133,74 +135,88 @@ cdk = [
 ]
 check_files_checksums = [
     "boto3",
+    "linz-logger",
     "multihash",
     "pynamodb",
 ]
 check_stac_metadata = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "strict-rfc3339",
 ]
 content_iterator = [
     "jsonschema",
+    "linz-logger",
     "pynamodb",
 ]
 datasets = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "pystac",
     "ulid-py",
 ]
 dataset_versions = [
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "ulid-py",
 ]
 import_asset_file = [
     "boto3",
+    "linz-logger",
     "smart-open",
 ]
 import_dataset = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "smart-open",
     "ulid-py",
 ]
 import_metadata_file = [
     "boto3",
+    "linz-logger",
 ]
 import_status = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
 ]
 notify_status_update = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "slack-sdk"
 ]
 populate_catalog = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pystac",
 ]
 update_dataset_catalog = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
     "ulid-py"
 ]
 upload_status = [
     "boto3",
     "jsonschema",
+    "linz-logger",
     "pynamodb",
 ]
 validation_summary = [
     "jsonschema",
+    "linz-logger",
     "pynamodb",
 ]
 

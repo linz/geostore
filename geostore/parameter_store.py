@@ -4,11 +4,11 @@ from json import dumps
 from typing import TYPE_CHECKING, Sequence
 
 import boto3
+from linz_logger import get_log
 
 from .boto3_config import CONFIG
 from .environment import environment_name
 from .error_response_keys import ERROR_KEY
-from .log import set_up_logging
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -17,7 +17,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     SSMClient = object  # pragma: no mutate
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 SSM_CLIENT: SSMClient = boto3.client("ssm", config=CONFIG)
 
 

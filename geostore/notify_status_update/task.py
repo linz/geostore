@@ -5,6 +5,7 @@ from os import environ
 from typing import TYPE_CHECKING
 
 import boto3
+from linz_logger import get_log
 from slack_sdk.models.blocks import blocks
 from slack_sdk.webhook.client import WebhookClient
 
@@ -12,7 +13,6 @@ from ..api_keys import EVENT_KEY
 from ..api_responses import success_response
 from ..aws_message_attributes import DATA_TYPE_STRING
 from ..boto3_config import CONFIG
-from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..step_function import get_import_status_given_arn
 from ..step_function_keys import (
@@ -55,7 +55,7 @@ WEBHOOK_MESSAGE_BLOCKS_KEY = "blocks"
 WEBHOOK_MESSAGE_CHANNEL_KEY = "channel"
 
 SNS_CLIENT: SNSClient = boto3.client("sns", config=CONFIG)
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#section
 

@@ -2,6 +2,7 @@ from json import dumps
 from typing import TYPE_CHECKING
 
 import boto3
+from linz_logger import get_log
 from pystac import read_file
 from pystac.catalog import Catalog, CatalogType
 from pystac.collection import Collection
@@ -18,7 +19,6 @@ from ..aws_message_attributes import (
     STRING_VALUE_KEY_LOWER,
 )
 from ..boto3_config import CONFIG
-from ..log import set_up_logging
 from ..pystac_io_methods import S3StacIO
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
@@ -45,7 +45,7 @@ CONTENTS_KEY = "Contents"
 RECORDS_KEY = "Records"
 MESSAGE_ATTRIBUTES_KEY = "messageAttributes"
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 StacIO.set_default(S3StacIO)
 

@@ -1988,6 +1988,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "linz-logger"
+version = "0.5.0"
+description = "LINZ standard Logging format"
+category = "main"
+optional = true
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+structlog = ">=20.1.0,<21.0.0"
+
+[[package]]
 name = "mccabe"
 version = "0.6.1"
 description = "McCabe checker, plugin for flake8"
@@ -2619,6 +2630,19 @@ optional = true
 python-versions = "*"
 
 [[package]]
+name = "structlog"
+version = "20.2.0"
+description = "Structured Logging for Python"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.extras]
+dev = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio", "pytest-randomly", "pytest (>=6.0)", "simplejson", "furo", "sphinx", "sphinx-toolbox", "twisted", "pre-commit"]
+docs = ["furo", "sphinx", "sphinx-toolbox", "twisted"]
+tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio", "pytest-randomly", "pytest (>=6.0)", "simplejson"]
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -2804,25 +2828,25 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 
 [extras]
 cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-events", "aws-cdk.aws-events-targets", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-event-sources", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-sns", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
-check_files_checksums = ["boto3", "multihash", "pynamodb"]
-check_stac_metadata = ["boto3", "jsonschema", "pynamodb", "strict-rfc3339"]
-content_iterator = ["jsonschema", "pynamodb"]
-dataset_versions = ["jsonschema", "pynamodb", "ulid-py"]
-datasets = ["boto3", "jsonschema", "pynamodb", "pystac", "ulid-py"]
-import_asset_file = ["boto3", "smart-open"]
-import_dataset = ["boto3", "jsonschema", "pynamodb", "smart-open", "ulid-py"]
-import_metadata_file = ["boto3"]
-import_status = ["boto3", "jsonschema", "pynamodb"]
-notify_status_update = ["boto3", "jsonschema", "pynamodb", "slack-sdk"]
-populate_catalog = ["boto3", "jsonschema", "pystac"]
-update_dataset_catalog = ["boto3", "jsonschema", "pynamodb", "ulid-py"]
-upload_status = ["boto3", "jsonschema", "pynamodb"]
-validation_summary = ["jsonschema", "pynamodb"]
+check_files_checksums = ["boto3", "linz-logger", "multihash", "pynamodb"]
+check_stac_metadata = ["boto3", "jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
+content_iterator = ["jsonschema", "linz-logger", "pynamodb"]
+dataset_versions = ["jsonschema", "linz-logger", "pynamodb", "ulid-py"]
+datasets = ["boto3", "jsonschema", "linz-logger", "pynamodb", "pystac", "ulid-py"]
+import_asset_file = ["boto3", "linz-logger", "smart-open"]
+import_dataset = ["boto3", "jsonschema", "linz-logger", "pynamodb", "smart-open", "ulid-py"]
+import_metadata_file = ["boto3", "linz-logger"]
+import_status = ["boto3", "jsonschema", "linz-logger", "pynamodb"]
+notify_status_update = ["boto3", "jsonschema", "linz-logger", "pynamodb", "slack-sdk"]
+populate_catalog = ["boto3", "jsonschema", "linz-logger", "pystac"]
+update_dataset_catalog = ["boto3", "jsonschema", "linz-logger", "pynamodb", "ulid-py"]
+upload_status = ["boto3", "jsonschema", "linz-logger", "pynamodb"]
+validation_summary = ["jsonschema", "linz-logger", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "357c095fa49db5dce538947c8fcec02168981486cf40c6ed87a91c1358e843bf"
+content-hash = "7f83078cad5d6f1c54c5994ff7055f8ba1b0d11c371e9b454aae48a653aef0de"
 
 [metadata.files]
 appdirs = [
@@ -3321,6 +3345,10 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.5.2-cp39-cp39-win32.whl", hash = "sha256:ef3f5e288aa57b73b034ce9c1f1ac753d968f9069cd0742d1d69c698a0167166"},
     {file = "lazy_object_proxy-1.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:37d9c34b96cca6787fe014aeb651217944a967a5b165e2cacb6b858d2997ab84"},
 ]
+linz-logger = [
+    {file = "linz_logger-0.5.0-py3-none-any.whl", hash = "sha256:c3d84a4df3c901608782f09950d55cce3c67842ec16082761d21a6440d4c483c"},
+    {file = "linz_logger-0.5.0.tar.gz", hash = "sha256:972ac08c652938fc305c8adec3e9244c671fcae055b545b14fcf17b83bc261bf"},
+]
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
@@ -3670,6 +3698,10 @@ smart-open = [
 ]
 strict-rfc3339 = [
     {file = "strict-rfc3339-0.7.tar.gz", hash = "sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277"},
+]
+structlog = [
+    {file = "structlog-20.2.0-py2.py3-none-any.whl", hash = "sha256:33dd6bd5f49355e52c1c61bb6a4f20d0b48ce0328cc4a45fe872d38b97a05ccd"},
+    {file = "structlog-20.2.0.tar.gz", hash = "sha256:af79dfa547d104af8d60f86eac12fb54825f54a46bc998e4504ef66177103174"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

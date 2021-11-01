@@ -5,7 +5,7 @@ Dataset Versions endpoint Lambda function tests.
 from copy import deepcopy
 from datetime import datetime, timezone
 from http import HTTPStatus
-from logging import INFO, basicConfig, getLogger
+from logging import INFO, basicConfig
 from unittest.mock import patch
 
 from pytest import mark
@@ -27,7 +27,6 @@ from .aws_utils import Dataset, any_lambda_context, any_role_arn, any_s3_url
 from .stac_generators import any_dataset_id
 
 basicConfig(level=INFO)
-logger = getLogger(__name__)
 
 
 def should_return_error_when_missing_required_property(subtests: SubTests) -> None:
@@ -66,7 +65,6 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
     response = entrypoint.lambda_handler(
         {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
     )
-    logger.info("Response: %s", response)
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.NOT_FOUND,
@@ -93,7 +91,6 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
 
         # When requesting the dataset by ID and type
         response = create_dataset_version(body)
-    logger.info("Response: %s", response)
 
     # Then we should get the dataset in return
     with subtests.test(msg="Status code"):

@@ -1,5 +1,4 @@
 from json import dumps
-from logging import Logger, getLogger
 from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
@@ -15,60 +14,54 @@ from .general_generators import any_error_message
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
-class TestLogging:
-    logger: Logger
+@patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
+def should_log_payload(describe_step_function_mock: MagicMock) -> None:
+    # Given
+    event = {
+        HTTP_METHOD_KEY: "GET",
+        BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
+    }
 
-    @classmethod
-    def setup_class(cls) -> None:
-        cls.logger = getLogger("geostore.import_status.get")
+    expected_payload_log = dumps({EVENT_KEY: event})
 
-    @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
-    def should_log_payload(self, describe_step_function_mock: MagicMock) -> None:
-        # Given
-        event = {
-            HTTP_METHOD_KEY: "GET",
-            BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
-        }
+    describe_step_function_mock.return_value = {
+        "status": "RUNNING",
+        "input": dumps(
+            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+        ),
+    }
 
-        expected_payload_log = dumps({EVENT_KEY: event})
+    with patch("geostore.import_status.get.LOGGER.debug") as logger_mock, patch(
+        "geostore.step_function.get_step_function_validation_results"
+    ) as validation_mock:
+        validation_mock.return_value = []
 
-        describe_step_function_mock.return_value = {
-            "status": "RUNNING",
-            "input": dumps(
-                {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
-            ),
-        }
+        # When
+        get_import_status(event)
 
-        with patch.object(self.logger, "debug") as logger_mock, patch(
-            "geostore.step_function.get_step_function_validation_results"
-        ) as validation_mock:
-            validation_mock.return_value = []
+        # Then
+        logger_mock.assert_any_call(expected_payload_log)
 
-            # When
-            get_import_status(event)
 
-            # Then
-            logger_mock.assert_any_call(expected_payload_log)
+@patch("geostore.import_status.get.validate")
+def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> None:
+    # Given
 
-    @patch("geostore.import_status.get.validate")
-    def should_log_schema_validation_warning(self, validate_schema_mock: MagicMock) -> None:
-        # Given
+    error_message = any_error_message()
+    validate_schema_mock.side_effect = ValidationError(error_message)
+    expected_log = dumps({ERROR_KEY: error_message})
 
-        error_message = any_error_message()
-        validate_schema_mock.side_effect = ValidationError(error_message)
-        expected_log = dumps({ERROR_KEY: error_message})
+    with patch("geostore.import_status.get.LOGGER.warning") as logger_mock:
+        # When
+        get_import_status(
+            {
+                HTTP_METHOD_KEY: "GET",
+                BODY_KEY: {},
+            }
+        )
 
-        with patch.object(self.logger, "warning") as logger_mock:
-            # When
-            get_import_status(
-                {
-                    HTTP_METHOD_KEY: "GET",
-                    BODY_KEY: {},
-                }
-            )
-
-            # Then
-            logger_mock.assert_any_call(expected_log)
+        # Then
+        logger_mock.assert_any_call(expected_log)
 
 
 @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
@@ -84,8 +77,7 @@ def should_log_stepfunctions_status_response(
     }
     expected_response_log = dumps({"step function response": describe_execution_response})
 
-    logger = getLogger("geostore.step_function")
-    with patch.object(logger, "debug") as logger_mock, patch(
+    with patch("geostore.step_function.LOGGER.debug") as logger_mock, patch(
         "geostore.step_function.get_account_number"
     ), patch("geostore.step_function.get_step_function_validation_results") as validation_mock:
         validation_mock.return_value = []

@@ -1,10 +1,10 @@
 from json import dumps
 
 from jsonschema import validate
+from linz_logger import get_log
 
 from ..api_keys import EVENT_KEY, SUCCESS_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from ..log import set_up_logging
 from ..step_function import get_tasks_status
 from ..step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -20,7 +20,7 @@ from ..types import JsonObject
 INPUT_KEY = "input"
 EXECUTION_ID_KEY = "execution_id"
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

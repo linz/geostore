@@ -1,7 +1,6 @@
 from copy import deepcopy
 from io import StringIO
 from json import dumps
-from logging import getLogger
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -45,8 +44,6 @@ MINIMAL_PAYLOAD = {
     S3_ROLE_ARN_KEY: any_role_arn(),
 }
 
-LOGGER = getLogger("geostore.check_stac_metadata.task")
-
 
 @patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
 def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
@@ -56,7 +53,7 @@ def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
-    with patch.object(LOGGER, "debug") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.task.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.task.STACDatasetValidator.run"
     ):
         lambda_handler(payload, any_lambda_context())
@@ -74,7 +71,7 @@ def should_return_error_when_schema_validation_fails(
     validate_schema_mock.side_effect = error
     expected_log = dumps({ERROR_KEY: error}, default=str)
 
-    with patch.object(LOGGER, "warning") as logger_mock:
+    with patch("geostore.check_stac_metadata.task.LOGGER.warning") as logger_mock:
         # When
         with subtests.test(msg="response"):
             response = lambda_handler({}, any_lambda_context())
@@ -107,7 +104,7 @@ def should_log_error_when_assuming_s3_role_fails(
         f" operation: {error_message}"
     )
 
-    with patch.object(LOGGER, "warning") as logger_mock:
+    with patch("geostore.check_stac_metadata.task.LOGGER.warning") as logger_mock:
         # When
         with subtests.test(msg="response"):
             response = lambda_handler(deepcopy(MINIMAL_PAYLOAD), any_lambda_context())

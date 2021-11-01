@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 import boto3
 from jsonschema import ValidationError, validate
+from linz_logger import get_log
 
 from ..api_keys import EVENT_KEY
 from ..aws_message_attributes import (
@@ -13,7 +14,6 @@ from ..aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_KEY,
 )
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
-from ..log import set_up_logging
 from ..parameter_store import ParameterName, get_param
 from ..resources import ResourceName
 from ..s3 import S3_URL_PREFIX
@@ -35,7 +35,7 @@ else:
     S3Client = SQSServiceResource = object  # pragma: no mutate
     MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 

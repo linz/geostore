@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 from json import dumps, load
-from logging import getLogger
 from os import environ
 from unittest.mock import MagicMock, patch
 
@@ -191,10 +190,8 @@ def should_log_and_not_post_to_slack_when_url_not_set(
     webhook_client_mock: MagicMock, subtests: SubTests
 ) -> None:
     # Given
-    logger = getLogger("geostore.notify_status_update.task")
-
-    with patch("geostore.notify_status_update.task.publish_sns_message"), patch.object(
-        logger, "debug"
+    with patch("geostore.notify_status_update.task.publish_sns_message"), patch(
+        "geostore.notify_status_update.task.LOGGER.debug"
     ) as logger_mock:
         # When
         lambda_handler({}, any_lambda_context())
