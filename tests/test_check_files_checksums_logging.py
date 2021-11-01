@@ -1,6 +1,5 @@
 import sys
 from json import dumps
-from logging import getLogger
 from os import environ
 from unittest.mock import patch
 
@@ -19,8 +18,6 @@ from geostore.processing_assets_model import ProcessingAssetType, ProcessingAsse
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
 from .stac_generators import any_dataset_id, any_dataset_version_id
-
-LOGGER = getLogger("geostore.check_files_checksums.task")
 
 
 @mark.infrastructure
@@ -54,7 +51,7 @@ def should_log_missing_item(subtests: SubTests) -> None:
     ]
 
     # When/Then
-    with patch.object(LOGGER, "error") as logger_mock, patch.dict(
+    with patch("geostore.check_files_checksums.task.LOGGER.error") as logger_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
     ):
         with subtests.test(msg="Return code"), raises(DoesNotExist):

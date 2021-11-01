@@ -7,13 +7,13 @@ from uuid import uuid4
 import boto3
 import smart_open
 from jsonschema import ValidationError, validate
+from linz_logger import get_log
 
 from ..api_keys import EVENT_KEY
 from ..boto3_config import CONFIG
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -61,7 +61,7 @@ else:
     ) = JobReportFormatType = JobReportScopeType = str  # pragma: no mutate
     S3Client = S3ControlClient = object  # pragma: no mutate
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)

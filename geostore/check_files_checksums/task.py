@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, Namespace
 
-from ..log import set_up_logging
+from linz_logger import get_log
+
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType
 from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def parse_arguments() -> Namespace:

@@ -1,7 +1,6 @@
 from copy import deepcopy
 from io import StringIO
 from json import JSONDecodeError, dumps
-from logging import getLogger
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -32,8 +31,6 @@ if TYPE_CHECKING:
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
-LOGGER = getLogger("geostore.check_stac_metadata.utils")
-
 
 def should_log_assets() -> None:
     base_url = any_s3_url()
@@ -58,7 +55,7 @@ def should_log_assets() -> None:
         }
     )
 
-    with patch.object(LOGGER, "debug") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
@@ -79,7 +76,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
         }
     )
 
-    with patch.object(LOGGER, "error") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
@@ -102,7 +99,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
 
     expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
 
-    with patch.object(LOGGER, "error") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
@@ -122,7 +119,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
 
     expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: expected_error.message})
 
-    with patch.object(LOGGER, "error") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
@@ -142,7 +139,7 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
 
     expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
 
-    with patch.object(LOGGER, "error") as logger_mock, patch(
+    with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)

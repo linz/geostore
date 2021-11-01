@@ -1,16 +1,16 @@
 from json import dumps
 
 from jsonschema import ValidationError, validate
+from linz_logger import get_log
 
 from ..api_keys import EVENT_KEY, SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
-from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
-LOGGER = set_up_logging(__name__)
+LOGGER = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

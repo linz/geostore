@@ -1,7 +1,6 @@
 import sys
 from io import BytesIO
 from json import dumps
-from logging import Logger, getLogger
 from os import environ
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
@@ -96,7 +95,6 @@ def should_validate_given_index(
         )
 
     processing_assets_model_mock.return_value.get.side_effect = get_mock
-    logger = getLogger("geostore.check_files_checksums.task")
     validation_results_table_name = any_table_name()
     expected_calls = [
         call(hash_key, validation_results_table_name),
@@ -113,7 +111,7 @@ def should_validate_given_index(
         f"--results-table-name={validation_results_table_name}",
         f"--s3-role-arn={any_role_arn()}",
     ]
-    with patch.object(logger, "info") as info_log_mock, patch.dict(
+    with patch("geostore.check_files_checksums.task.LOGGER.info") as info_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}
     ), patch("geostore.check_files_checksums.utils.get_s3_client_for_role"):
         # Then
@@ -157,7 +155,6 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     }
     expected_log = dumps({SUCCESS_KEY: False, **expected_details})
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
-    logger = getLogger("geostore.check_files_checksums.task")
     # When
 
     validation_results_table_name = any_table_name()
@@ -172,7 +169,7 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     ]
 
     # Then
-    with patch.object(logger, "error") as error_log_mock, patch.dict(
+    with patch("geostore.check_files_checksums.task.LOGGER.error") as error_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
     ), patch("geostore.check_files_checksums.utils.get_s3_client_for_role"):
         main()
@@ -246,45 +243,37 @@ def should_save_staging_access_validation_results(
     ]
 
 
-class TestsWithLogger:
-    logger: Logger
+@patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
+def should_return_when_file_checksum_matches(get_s3_client_for_role_mock: MagicMock) -> None:
+    file_contents = b"x" * (CHUNK_SIZE + 1)
+    get_s3_client_for_role_mock.return_value.get_object.return_value = {
+        "Body": StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+    }
+    multihash = (
+        f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
+        "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
+    )
 
-    @classmethod
-    def setup_class(cls) -> None:
-        cls.logger = getLogger("geostore.check_files_checksums.task")
+    with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
+        ChecksumValidator(
+            any_table_name(), MockValidationResultFactory(), any_role_arn(), MagicMock()
+        ).validate_url_multihash(any_s3_url(), multihash)
 
-    @patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
-    def should_return_when_file_checksum_matches(
-        self, get_s3_client_for_role_mock: MagicMock
-    ) -> None:
-        file_contents = b"x" * (CHUNK_SIZE + 1)
-        get_s3_client_for_role_mock.return_value.get_object.return_value = {
-            "Body": StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
-        }
-        multihash = (
-            f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
-            "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
+
+@patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
+def should_raise_exception_when_checksum_does_not_match(
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+    get_s3_client_for_role_mock.return_value.get_object.return_value = {
+        "Body": StreamingBody(BytesIO(), 0)
+    }
+
+    checksum = "0" * 64
+    with raises(ChecksumMismatchError), patch(
+        "geostore.check_files_checksums.utils.processing_assets_model_with_meta"
+    ):
+        ChecksumValidator(
+            any_table_name(), MockValidationResultFactory(), any_role_arn(), MagicMock()
+        ).validate_url_multihash(
+            any_s3_url(), f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}"
         )
-
-        with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
-            ChecksumValidator(
-                any_table_name(), MockValidationResultFactory(), any_role_arn(), self.logger
-            ).validate_url_multihash(any_s3_url(), multihash)
-
-    @patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
-    def should_raise_exception_when_checksum_does_not_match(
-        self, get_s3_client_for_role_mock: MagicMock
-    ) -> None:
-        get_s3_client_for_role_mock.return_value.get_object.return_value = {
-            "Body": StreamingBody(BytesIO(), 0)
-        }
-
-        checksum = "0" * 64
-        with raises(ChecksumMismatchError), patch(
-            "geostore.check_files_checksums.utils.processing_assets_model_with_meta"
-        ):
-            ChecksumValidator(
-                any_table_name(), MockValidationResultFactory(), any_role_arn(), self.logger
-            ).validate_url_multihash(
-                any_s3_url(), f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}"
-            )

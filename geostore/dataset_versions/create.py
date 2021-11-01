@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import boto3
 from jsonschema import ValidationError, validate
+from linz_logger import get_log
 from pynamodb.exceptions import DoesNotExist
 from ulid import from_timestamp
 
@@ -14,7 +15,6 @@ from ..api_responses import error_response, success_response
 from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..error_response_keys import ERROR_KEY
-from ..log import set_up_logging
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function_keys import (
@@ -37,12 +37,12 @@ else:
     SFNClient = object  # pragma: no mutate
 
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
+LOGGER = get_log()
 
 
 def create_dataset_version(body: JsonObject) -> JsonObject:
-    logger = set_up_logging(__name__)
 
-    logger.debug(dumps({EVENT_KEY: body}))
+    LOGGER.debug(dumps({EVENT_KEY: body}))
 
     body_schema = {
         "type": "object",
@@ -59,7 +59,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        logger.warning(dumps({ERROR_KEY: err}, default=str))
+        LOGGER.warning(dumps({ERROR_KEY: err}, default=str))
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
@@ -70,7 +70,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
         )
     except DoesNotExist as err:
-        logger.warning(dumps({ERROR_KEY: err}, default=str))
+        LOGGER.warning(dumps({ERROR_KEY: err}, default=str))
         return error_response(
             HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
         )
@@ -96,7 +96,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         input=dumps(step_functions_input),
     )
 
-    logger.debug(dumps({"response": step_functions_response}, default=str))
+    LOGGER.debug(dumps({"response": step_functions_response}, default=str))
 
     # return arn of executing process
     return success_response(
