@@ -51,7 +51,7 @@ def should_log_missing_item(subtests: SubTests) -> None:
     ]
 
     # When/Then
-    with patch("geostore.check_files_checksums.task.LOGGER.debug") as logger_mock, patch.dict(
+    with patch("geostore.check_files_checksums.task.LOGGER.error") as logger_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
     ):
         with subtests.test(msg="Return code"), raises(DoesNotExist):
