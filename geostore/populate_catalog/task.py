@@ -10,7 +10,7 @@ from pystac.layout import HrefLayoutStrategy
 from pystac.stac_io import StacIO
 
 from ..api_keys import EVENT_KEY
-from ..api_responses import BODY_KEY
+from ..aws_keys import BODY_KEY
 from ..aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,

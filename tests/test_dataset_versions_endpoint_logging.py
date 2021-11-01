@@ -7,7 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 from pytest import mark
 
 from geostore.api_keys import EVENT_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
 from geostore.dataset_versions.create import create_dataset_version
 from geostore.error_response_keys import ERROR_KEY
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY

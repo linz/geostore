@@ -12,7 +12,7 @@ from pytest import mark
 from pytest_subtests import SubTests
 
 from geostore.api_keys import EVENT_KEY
-from geostore.api_responses import STATUS_CODE_KEY
+from geostore.aws_keys import STATUS_CODE_KEY
 from geostore.aws_message_attributes import DATA_TYPE_STRING
 from geostore.notify_status_update.task import (
     EVENT_DETAIL_KEY,

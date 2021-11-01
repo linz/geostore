@@ -15,7 +15,7 @@ from pytest import mark
 from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
