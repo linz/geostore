@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from jsonschema import ValidationError
 
 from geostore.api_keys import EVENT_KEY
-from geostore.api_responses import BODY_KEY, HTTP_METHOD_KEY
+from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
 from geostore.error_response_keys import ERROR_KEY
 from geostore.import_status.get import get_import_status
 from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY

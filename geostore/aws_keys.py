@@ -1,1 +1,4 @@
 AWS_DEFAULT_REGION_KEY = "AWS_DEFAULT_REGION"
+BODY_KEY = "body"
+HTTP_METHOD_KEY = "http_method"
+STATUS_CODE_KEY = "status_code"

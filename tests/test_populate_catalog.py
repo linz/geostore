@@ -7,7 +7,7 @@ from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
-from geostore.api_responses import BODY_KEY
+from geostore.aws_keys import BODY_KEY
 from geostore.aws_message_attributes import (
     DATA_TYPE_KEY,
     DATA_TYPE_STRING,
