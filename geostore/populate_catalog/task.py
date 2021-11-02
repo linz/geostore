@@ -40,7 +40,7 @@ ROOT_CATALOG_DESCRIPTION = (
     "geospatial data held by Land Information New Zealand (LINZ).<br/>"
     "Please browse this catalog to find and access our data."
 )
-CATALOG_KEY = "catalog.json"
+CATALOG_FILENAME = "catalog.json"
 CONTENTS_KEY = "Contents"
 RECORDS_KEY = "Records"
 MESSAGE_ATTRIBUTES_KEY = "messageAttributes"
@@ -92,7 +92,9 @@ def handle_dataset(version_metadata_key: str) -> None:
     """Handle writing a new dataset version to the dataset catalog"""
     storage_bucket_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
     dataset_prefix = version_metadata_key.split("/", maxsplit=1)[0]
-    dataset_catalog = Catalog.from_file(f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_KEY}")
+    dataset_catalog = Catalog.from_file(
+        f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_FILENAME}"
+    )
 
     dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
     assert isinstance(dataset_version_metadata, (Catalog, Collection))
@@ -107,13 +109,13 @@ def handle_dataset(version_metadata_key: str) -> None:
 def handle_root(dataset_prefix: str) -> None:
     """Handle writing a new dataset to the root catalog"""
     results = S3_CLIENT.list_objects(
-        Bucket=ResourceName.STORAGE_BUCKET_NAME.value, Prefix=CATALOG_KEY
+        Bucket=ResourceName.STORAGE_BUCKET_NAME.value, Prefix=CATALOG_FILENAME
     )
 
     # create root catalog if it doesn't exist
     if CONTENTS_KEY in results:
         root_catalog = Catalog.from_file(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}"
         )
 
     else:
@@ -124,11 +126,11 @@ def handle_root(dataset_prefix: str) -> None:
             catalog_type=CatalogType.SELF_CONTAINED,
         )
         root_catalog.set_self_href(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}"
+            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}"
         )
 
     dataset_path = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset_prefix}"
-    dataset_catalog = Catalog.from_file(f"{dataset_path}/{CATALOG_KEY}")
+    dataset_catalog = Catalog.from_file(f"{dataset_path}/{CATALOG_FILENAME}")
 
     root_catalog.add_child(dataset_catalog, strategy=GeostoreSTACLayoutStrategy())
     root_catalog.normalize_hrefs(
