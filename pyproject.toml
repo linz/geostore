@@ -56,6 +56,29 @@ authors = [
     "Victor Engmark <vengmark@linz.govt.nz>",
 ]
 license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/linz/geostore"
+repository = "https://github.com/linz/geostore"
+keywords = [
+    "SpatioTemporal Asset Catalog (STAC)",
+    "Toitū Te Whenua Land Information New Zealand",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Framework :: AWS CDK",
+    "Framework :: Pytest",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Communications :: File Sharing",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
