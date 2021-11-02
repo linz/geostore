@@ -17,7 +17,7 @@ from geostore.aws_message_attributes import (
     STRING_VALUE_KEY_LOWER,
 )
 from geostore.populate_catalog.task import (
-    CATALOG_KEY,
+    CATALOG_FILENAME,
     MESSAGE_ATTRIBUTES_KEY,
     RECORDS_KEY,
     ROOT_CATALOG_DESCRIPTION,
@@ -67,18 +67,18 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+        key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ):
 
         expected_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
+                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -102,7 +102,8 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             )
 
             with smart_open.open(
-                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}", mode="rb"
+                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}",
+                mode="rb",
             ) as new_root_metadata_file:
                 catalog_json = load(new_root_metadata_file)
 
@@ -116,7 +117,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
                     assert catalog_json[STAC_LINKS_KEY] == expected_links
 
         finally:
-            delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
+            delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
 
 
 @mark.infrastructure
@@ -131,18 +132,18 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=f"{existing_dataset.dataset_prefix}/{CATALOG_KEY}",
+        key=f"{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ):
 
         original_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{existing_dataset.dataset_prefix}/{CATALOG_KEY}",
+                STAC_HREF_KEY: f"./{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -156,7 +157,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 }
             ),
             bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-            key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+            key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
         ), S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -168,13 +169,13 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 }
             ),
             bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-            key=CATALOG_KEY,
+            key=CATALOG_FILENAME,
         ):
 
             expected_root_links: JsonList = original_links + [
                 {
                     STAC_REL_KEY: STAC_REL_CHILD,
-                    STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
+                    STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 }
             ]
@@ -182,12 +183,12 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             expected_dataset_links: JsonList = [
                 {
                     STAC_REL_KEY: STAC_REL_ROOT,
-                    STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                    STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 },
                 {
                     STAC_REL_KEY: STAC_REL_PARENT,
-                    STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                    STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 },
             ]
@@ -210,14 +211,15 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             )
 
             with smart_open.open(
-                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_KEY}", mode="rb"
+                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}",
+                mode="rb",
             ) as root_metadata_file, subtests.test(msg="root catalog links"):
                 root_catalog_json = load(root_metadata_file)
                 assert root_catalog_json[STAC_LINKS_KEY] == expected_root_links
 
             with smart_open.open(
                 f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
-                f"/{dataset.dataset_prefix}/{CATALOG_KEY}",
+                f"/{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                 mode="rb",
             ) as dataset_metadata_file, subtests.test(msg="dataset catalog links"):
                 dataset_catalog_json = load(dataset_metadata_file)
@@ -309,19 +311,19 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
                         STAC_REL_KEY: STAC_REL_PARENT,
-                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+        key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ), S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -332,30 +334,30 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
                         STAC_REL_KEY: STAC_REL_CHILD,
-                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=CATALOG_KEY,
+        key=CATALOG_FILENAME,
     ):
 
         expected_dataset_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -367,7 +369,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
         expected_dataset_version_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"../../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -377,7 +379,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -401,7 +403,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
 
         with subtests.test(msg="dataset catalog links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
-            f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+            f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
             mode="rb",
         ) as updated_dataset_metadata_file:
             catalog_json = load(updated_dataset_metadata_file)
@@ -474,19 +476,19 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
                         STAC_REL_KEY: STAC_REL_PARENT,
-                        STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+        key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ), S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -497,29 +499,29 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"./{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
                         STAC_REL_KEY: STAC_REL_CHILD,
-                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_KEY}",
+                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
         ),
         bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
-        key=CATALOG_KEY,
+        key=CATALOG_FILENAME,
     ):
         expected_dataset_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -531,7 +533,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
         expected_dataset_version_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"../../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -541,14 +543,14 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: f"../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
         expected_item_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: f"../../{CATALOG_KEY}",
+                STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -577,7 +579,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
 
         with subtests.test(msg="dataset catalog links"), smart_open.open(
             f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
-            f"{dataset.dataset_prefix}/{CATALOG_KEY}",
+            f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
             mode="rb",
         ) as updated_dataset_metadata_file:
             catalog_json = load(updated_dataset_metadata_file)
