@@ -27,7 +27,7 @@ from geostore.datasets.create import TITLE_PATTERN
 from geostore.datasets.entrypoint import lambda_handler
 from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
 from geostore.datasets_model import DATASET_KEY_SEPARATOR
-from geostore.populate_catalog.task import CATALOG_KEY
+from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import ResourceName
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
@@ -376,6 +376,6 @@ def should_launch_datasets_endpoint_lambda_function(
         assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
     finally:
-        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
-        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_KEY, s3_client)
+        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
         delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, title, s3_client)
