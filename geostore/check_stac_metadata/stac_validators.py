@@ -9,6 +9,12 @@ from jsonschema.validators import extend
 from ..stac_format import LINZ_SCHEMA_PATH, QUALITY_SCHEMA_PATH
 from ..types import JsonObject
 
+STAC_SPEC_PATH = "stac-spec/v1.0.0"
+STAC_ITEM_SPEC_PATH = f"{STAC_SPEC_PATH}/item-spec/json-schema"
+
+PROJECTION_STAC_SCHEMA_PATH = "projection/v1.0.0/schema.json"
+VERSION_STAC_SCHEMA_PATH = "version/v1.0.0/schema.json"
+
 
 class Schema:
     def __init__(self, path: str):
@@ -31,9 +37,9 @@ class Schema:
         return uri_
 
 
-CATALOG_SCHEMA = Schema("stac-spec/v1.0.0/catalog-spec/json-schema/catalog.json")
+CATALOG_SCHEMA = Schema(f"{STAC_SPEC_PATH}/catalog-spec/json-schema/catalog.json")
 COLLECTION_SCHEMA = Schema(LINZ_SCHEMA_PATH)
-ITEM_SCHEMA = Schema("stac-spec/v1.0.0/item-spec/json-schema/item.json")
+ITEM_SCHEMA = Schema(f"{STAC_ITEM_SPEC_PATH}/item.json")
 
 schema_store = {}
 for schema in [
@@ -42,14 +48,14 @@ for schema in [
     ITEM_SCHEMA,
     Schema("geojson-spec/Feature.json"),
     Schema("geojson-spec/Geometry.json"),
-    Schema("projection/v1.0.0/schema.json"),
-    Schema("stac-spec/v1.0.0/collection-spec/json-schema/collection.json"),
-    Schema("stac-spec/v1.0.0/item-spec/json-schema/basics.json"),
-    Schema("stac-spec/v1.0.0/item-spec/json-schema/datetime.json"),
-    Schema("stac-spec/v1.0.0/item-spec/json-schema/instrument.json"),
-    Schema("stac-spec/v1.0.0/item-spec/json-schema/licensing.json"),
-    Schema("stac-spec/v1.0.0/item-spec/json-schema/provider.json"),
-    Schema("version/v1.0.0/schema.json"),
+    Schema(PROJECTION_STAC_SCHEMA_PATH),
+    Schema(f"{STAC_SPEC_PATH}/collection-spec/json-schema/collection.json"),
+    Schema(f"{STAC_ITEM_SPEC_PATH}/basics.json"),
+    Schema(f"{STAC_ITEM_SPEC_PATH}/datetime.json"),
+    Schema(f"{STAC_ITEM_SPEC_PATH}/instrument.json"),
+    Schema(f"{STAC_ITEM_SPEC_PATH}/licensing.json"),
+    Schema(f"{STAC_ITEM_SPEC_PATH}/provider.json"),
+    Schema(VERSION_STAC_SCHEMA_PATH),
     Schema(QUALITY_SCHEMA_PATH),
 ]:
     # Normalize URLs the same way as jsonschema does

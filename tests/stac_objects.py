@@ -1,5 +1,9 @@
 from typing import Any, Dict
 
+from geostore.check_stac_metadata.stac_validators import (
+    PROJECTION_STAC_SCHEMA_PATH,
+    VERSION_STAC_SCHEMA_PATH,
+)
 from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_EXTENSION_URL,
@@ -49,6 +53,8 @@ from .stac_generators import (
     any_version_version,
 )
 
+STAC_EXTENSIONS_BASE_URL = "https://stac-extensions.github.io"
+
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
     LINZ_STAC_LIFECYCLE_KEY: any_linz_lifecycle(),
@@ -59,8 +65,8 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     STAC_DESCRIPTION_KEY: any_dataset_description(),
     STAC_EXTENSIONS_KEY: [
         LINZ_STAC_EXTENSION_URL,
-        "https://stac-extensions.github.io/projection/v1.0.0/schema.json",
-        "https://stac-extensions.github.io/version/v1.0.0/schema.json",
+        f"{STAC_EXTENSIONS_BASE_URL}/{PROJECTION_STAC_SCHEMA_PATH}",
+        f"{STAC_EXTENSIONS_BASE_URL}/{VERSION_STAC_SCHEMA_PATH}",
     ],
     STAC_EXTENT_KEY: {
         STAC_EXTENT_SPATIAL_KEY: {STAC_EXTENT_BBOX_KEY: [[-180, -90, 180, 90]]},
