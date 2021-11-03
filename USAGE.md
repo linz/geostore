@@ -119,6 +119,8 @@ Example of AWS service account authentication and authorization in to Geostore u
 
 ## Command line
 
+To install the Geostore CLI, run `pip3 install boto3 geostore typer`.
+
 The general synopsis is `geostore NOUN VERB [PARAMETER…]`. `NOUN` is the type of thing the command
 is operating on, for example `version` when dealing with dataset versions. `VERB` is the action it
 is telling the system to take, for example `list` to show a listing of the relevant objects, or
