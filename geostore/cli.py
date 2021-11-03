@@ -4,7 +4,7 @@ from http import HTTPStatus
 from json import dumps, load
 
 import boto3
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, NoRegionError
 from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
 
@@ -24,11 +24,20 @@ class ExitCode(IntEnum):
     # Exit code 2 is used by Typer to indicate usage error
     CONFLICT = 3
     NO_CREDENTIALS = 4
+    NO_REGION_SETTING = 5
 
 
 @dataset_app.command(name="create")
 def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
-    client = boto3.client("lambda")
+    try:
+        client = boto3.client("lambda")
+    except NoRegionError:
+        secho(
+            "Unable to locate region settings. Make sure to log in to AWS first.",
+            err=True,
+            fg=YELLOW,
+        )
+        sys.exit(ExitCode.NO_REGION_SETTING)
 
     request_object = {
         HTTP_METHOD_KEY: "POST",

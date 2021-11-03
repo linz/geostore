@@ -3,7 +3,7 @@ from io import BytesIO
 from json import dumps, loads
 from unittest.mock import MagicMock, patch
 
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, NoRegionError
 from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
 from mypy_boto3_s3 import S3Client
 from pytest import mark
@@ -165,6 +165,37 @@ def should_print_error_message_when_authentication_missing(
 
     with subtests.test(msg="should indicate failure via exit code"):
         assert result.exit_code == 4, result
+
+
+@patch("boto3.client")
+def should_print_error_message_when_region_missing(
+    boto3_client_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    boto3_client_mock.side_effect = NoRegionError()
+
+    # When
+    result = CLI_RUNNER.invoke(
+        app,
+        [
+            "dataset",
+            "create",
+            f"--title={any_dataset_title()}",
+            f"--description={any_dataset_description()}",
+        ],
+    )
+
+    # Then
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print error message to standard error"):
+        assert (
+            result.stderr == "Unable to locate region settings. Make sure to log in to AWS first.\n"
+        )
+
+    with subtests.test(msg="should indicate failure via exit code"):
+        assert result.exit_code == 5, result
 
 
 @patch("boto3.client")
