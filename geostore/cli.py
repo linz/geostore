@@ -74,14 +74,22 @@ def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
     handle_api_request({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, get_output)
 
 
-def handle_api_request(request_object: JsonObject, get_output: GetOutputFunctionType) -> None:
+@dataset_app.command(name="delete")
+def dataset_delete(id_: str = Option(..., "--id")) -> None:
+    handle_api_request({HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: id_}}, None)
+
+
+def handle_api_request(
+    request_object: JsonObject, get_output: Optional[GetOutputFunctionType]
+) -> None:
     response_payload = invoke_lambda(request_object)
     status_code = response_payload[STATUS_CODE_KEY]
     response_body = response_payload[BODY_KEY]
 
-    if status_code in [HTTPStatus.OK, HTTPStatus.CREATED]:
-        output = get_output(response_body)
-        secho(output, fg=GREEN)
+    if status_code in [HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT]:
+        if get_output is not None:
+            output = get_output(response_body)
+            secho(output, fg=GREEN)
         sys.exit(ExitCode.SUCCESS)
 
     if status_code == HTTPStatus.CONFLICT:
