@@ -82,7 +82,7 @@ def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTest
     with subtests.test(msg="should print nothing to standard output"):
         assert duplicate_result.stdout == ""
 
-    with subtests.test(msg="should print payload to standard error"):
+    with subtests.test(msg="should print error message to standard error"):
         assert duplicate_result.stderr == f"Conflict: dataset '{dataset_title}' already exists\n"
 
     with subtests.test(msg="should indicate failure via exit code"):
@@ -128,7 +128,7 @@ def should_report_dataset_creation_success(
     )
 
     # Then
-    with subtests.test(msg="should print response body to standard output"):
+    with subtests.test(msg="should print dataset ID to standard output"):
         assert result.stdout == f"{dataset_id}\n"
 
     with subtests.test(msg="should print nothing to standard error"):
