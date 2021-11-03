@@ -2,6 +2,7 @@ import sys
 from enum import IntEnum
 from http import HTTPStatus
 from json import dumps, load
+from typing import Callable, Union
 
 import boto3
 from botocore.exceptions import NoCredentialsError, NoRegionError
@@ -10,8 +11,10 @@ from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
+from .dataset_keys import DATASET_KEY_SEPARATOR
 from .resources import ResourceName
 from .step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
+from .types import JsonList, JsonObject
 
 app = Typer()
 dataset_app = Typer()
@@ -29,6 +32,53 @@ class ExitCode(IntEnum):
 
 @dataset_app.command(name="create")
 def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
+    request_object = {
+        HTTP_METHOD_KEY: "POST",
+        BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
+    }
+
+    def get_output(response_body: JsonObject) -> str:
+        dataset_id: str = response_body[DATASET_ID_SHORT_KEY]
+        return dataset_id
+
+    handle_api_request(request_object, get_output)
+
+
+@dataset_app.command(name="list")
+def dataset_list() -> None:
+    request_object = {HTTP_METHOD_KEY: "GET", BODY_KEY: {}}
+
+    def get_output(response_body: JsonList) -> str:
+        lines = []
+        for entry in response_body:
+            lines.append(f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}")
+        return "\n".join(lines)
+
+    handle_api_request(request_object, get_output)
+
+
+def handle_api_request(
+    request_object: JsonObject,
+    get_output: Union[Callable[[JsonList], str], Callable[[JsonObject], str]],
+) -> None:
+    response_payload = invoke_lambda(request_object)
+    status_code = response_payload[STATUS_CODE_KEY]
+    response_body = response_payload[BODY_KEY]
+
+    if status_code in [HTTPStatus.OK, HTTPStatus.CREATED]:
+        output = get_output(response_body)
+        secho(output, fg=GREEN)
+        sys.exit(ExitCode.SUCCESS)
+
+    if status_code == HTTPStatus.CONFLICT:
+        secho(response_body[MESSAGE_KEY], err=True, fg=YELLOW)
+        sys.exit(ExitCode.CONFLICT)
+
+    secho(dumps(response_body), err=True, fg=RED)
+    sys.exit(ExitCode.UNKNOWN)
+
+
+def invoke_lambda(request_object: JsonObject) -> JsonObject:
     try:
         client = boto3.client("lambda")
     except NoRegionError:
@@ -39,10 +89,6 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
         )
         sys.exit(ExitCode.NO_REGION_SETTING)
 
-    request_object = {
-        HTTP_METHOD_KEY: "POST",
-        BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
-    }
     request_payload = dumps(request_object).encode()
 
     try:
@@ -55,19 +101,8 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
         )
         sys.exit(ExitCode.NO_CREDENTIALS)
 
-    response_payload = load(response["Payload"])
-    exit_code = {HTTPStatus.CREATED: ExitCode.SUCCESS, HTTPStatus.CONFLICT: ExitCode.CONFLICT}.get(
-        response_payload[STATUS_CODE_KEY], ExitCode.UNKNOWN
-    )
-    color = {ExitCode.SUCCESS: GREEN, ExitCode.UNKNOWN: RED}.get(exit_code, YELLOW)
-    response_body = response_payload[BODY_KEY]
-    output = response_body.get(
-        DATASET_ID_SHORT_KEY, response_body.get(MESSAGE_KEY, dumps(response_body))
-    )
-
-    secho(output, err=exit_code != ExitCode.SUCCESS, fg=color)
-
-    sys.exit(exit_code)
+    response_payload: JsonObject = load(response["Payload"])
+    return response_payload
 
 
 if __name__ == "__main__":

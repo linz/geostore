@@ -18,7 +18,7 @@ from geostore.resources import ResourceName
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
 from geostore.types import JsonObject
 
-from .aws_utils import LAMBDA_EXECUTED_VERSION, delete_s3_key, wait_for_s3_key
+from .aws_utils import LAMBDA_EXECUTED_VERSION, Dataset, delete_s3_key, wait_for_s3_key
 from .general_generators import any_dictionary_key, any_name
 from .stac_generators import any_dataset_description, any_dataset_id, any_dataset_title
 
@@ -146,15 +146,7 @@ def should_print_error_message_when_authentication_missing(
     boto3_client_mock.return_value.invoke.side_effect = NoCredentialsError()
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -175,15 +167,7 @@ def should_print_error_message_when_region_missing(
     boto3_client_mock.side_effect = NoRegionError()
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -215,15 +199,7 @@ def should_report_arbitrary_dataset_creation_failure(
     )
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -234,6 +210,31 @@ def should_report_arbitrary_dataset_creation_failure(
 
     with subtests.test(msg="should indicate failure via exit code"):
         assert result.exit_code == 1
+
+
+@mark.infrastructure
+def should_list_datasets(subtests: SubTests) -> None:
+    # Given two datasets
+    with Dataset() as first_dataset, Dataset() as second_dataset:
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list"])
+
+    # Then
+    with subtests.test(msg="should print datasets to standard output"):
+        assert (
+            f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
+            in result.stdout
+        )
+        assert (
+            f"{second_dataset.title}{DATASET_KEY_SEPARATOR}{second_dataset.dataset_id}\n"
+            in result.stdout
+        )
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0
 
 
 def get_response_object(status_code: int, body: JsonObject) -> JsonObject:

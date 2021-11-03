@@ -160,17 +160,15 @@ Examples:
 
   ```console
   $ geostore dataset list
-  Dataset ID                                 | Title           | Description
-  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65   | Auckland_2020   | Aerial imagery from April 2020
-  Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1 | Wellington_2020 | Aerial imagery from March 2020
+  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+  Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1
   ```
 
 - Filter to a single dataset:
 
   ```console
   $ geostore dataset list --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
-  Dataset ID                               | Title         | Description
-  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65 | Auckland_2020 | Aerial imagery from April 2020
+  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
   ```
 
 #### Delete
