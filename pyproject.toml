@@ -107,6 +107,7 @@ pystac = {version = "*", optional = true}
 slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
+typer = {version = "*", optional = true}
 ulid-py = {version = "*", optional = true}
 linz-logger = {version = "*", optional = true}
 
@@ -168,6 +169,10 @@ check_stac_metadata = [
     "linz-logger",
     "pynamodb",
     "strict-rfc3339",
+]
+cli = [
+    "boto3",
+    "typer",
 ]
 content_iterator = [
     "jsonschema",
@@ -242,6 +247,9 @@ validation_summary = [
     "linz-logger",
     "pynamodb",
 ]
+
+[tool.poetry.scripts]
+geostore = "geostore.cli:app"
 
 [tool.pylint.MASTER]
 disable = [

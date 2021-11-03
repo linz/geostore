@@ -57,6 +57,8 @@ DELETE_OBJECTS_MAX_KEYS = 1000
 S3_BATCH_JOB_COMPLETED_STATE = "Complete"
 S3_BATCH_JOB_FINAL_STATES = [S3_BATCH_JOB_COMPLETED_STATE, "Failed", "Cancelled"]
 
+LAMBDA_EXECUTED_VERSION = "$LATEST"
+
 
 def any_arn_formatted_string() -> str:
     return f"arn:aws:states:{random_string(5)}:{digits}:execution:yy:xx"
