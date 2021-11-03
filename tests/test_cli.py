@@ -237,5 +237,26 @@ def should_list_datasets(subtests: SubTests) -> None:
         assert result.exit_code == 0
 
 
+@mark.infrastructure
+def should_filter_datasets_listing(subtests: SubTests) -> None:
+    # Given two datasets
+    with Dataset() as first_dataset, Dataset():
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list", f"--id={first_dataset.dataset_id}"])
+
+    # Then
+    with subtests.test(msg="should print dataset to standard output"):
+        assert (
+            result.stdout
+            == f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
+        )
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0
+
+
 def get_response_object(status_code: int, body: JsonObject) -> JsonObject:
     return {STATUS_CODE_KEY: status_code, BODY_KEY: body}

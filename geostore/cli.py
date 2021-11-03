@@ -2,7 +2,7 @@ import sys
 from enum import IntEnum
 from http import HTTPStatus
 from json import dumps, load
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import boto3
 from botocore.exceptions import NoCredentialsError, NoRegionError
@@ -19,6 +19,8 @@ from .types import JsonList, JsonObject
 app = Typer()
 dataset_app = Typer()
 app.add_typer(dataset_app, name="dataset")
+
+GetOutputFunctionType = Union[Callable[[JsonList], str], Callable[[JsonObject], str]]
 
 
 class ExitCode(IntEnum):
@@ -45,22 +47,34 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
 
 
 @dataset_app.command(name="list")
-def dataset_list() -> None:
-    request_object = {HTTP_METHOD_KEY: "GET", BODY_KEY: {}}
+def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
+    body = {}
+    get_output: GetOutputFunctionType
 
-    def get_output(response_body: JsonList) -> str:
-        lines = []
-        for entry in response_body:
-            lines.append(f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}")
-        return "\n".join(lines)
+    if id_ is None:
 
-    handle_api_request(request_object, get_output)
+        def get_list_output(response_body: JsonList) -> str:
+            lines = []
+            for entry in response_body:
+                lines.append(
+                    f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}"
+                )
+            return "\n".join(lines)
+
+        get_output = get_list_output
+
+    else:
+
+        def get_single_output(response_body: JsonObject) -> str:
+            return f"{response_body['title']}{DATASET_KEY_SEPARATOR}{response_body['id']}"
+
+        body[DATASET_ID_SHORT_KEY] = id_
+        get_output = get_single_output
+
+    handle_api_request({HTTP_METHOD_KEY: "GET", BODY_KEY: body}, get_output)
 
 
-def handle_api_request(
-    request_object: JsonObject,
-    get_output: Union[Callable[[JsonList], str], Callable[[JsonObject], str]],
-) -> None:
+def handle_api_request(request_object: JsonObject, get_output: GetOutputFunctionType) -> None:
     response_payload = invoke_lambda(request_object)
     status_code = response_payload[STATUS_CODE_KEY]
     response_body = response_payload[BODY_KEY]
