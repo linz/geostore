@@ -28,7 +28,7 @@ from geostore.datasets.create import TITLE_PATTERN
 from geostore.datasets.entrypoint import lambda_handler
 from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
 from geostore.populate_catalog.task import CATALOG_FILENAME
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
@@ -76,7 +76,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             assert response[BODY_KEY][TITLE_KEY] == dataset_title
 
         catalog = get_s3_prefix_versions(
-            ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client
+            Resource.STORAGE_BUCKET_NAME.resource_name, dataset_title, s3_client
         )[0]
 
         dataset_prefix = (
@@ -92,7 +92,8 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
             },
         }
         with smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{catalog['Key']}", mode="rb"
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{catalog['Key']}",
+            mode="rb",
         ) as new_catalog_metadata_file:
 
             catalog_json = load(new_catalog_metadata_file)
@@ -113,7 +114,7 @@ def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
                 )
 
     finally:
-        delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, dataset_title, s3_client)
+        delete_s3_prefix(Resource.STORAGE_BUCKET_NAME.resource_name, dataset_title, s3_client)
 
 
 @mark.infrastructure
@@ -278,7 +279,7 @@ def should_delete_dataset_with_no_versions() -> None:
 def should_return_error_when_trying_to_delete_dataset_with_versions() -> None:
     with Dataset() as dataset, S3Object(
         file_object=BytesIO(),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_id}/{any_dataset_version_id()}/{any_safe_filename()}",
     ):
         response = lambda_handler(
@@ -368,7 +369,7 @@ def should_launch_datasets_endpoint_lambda_function(
         body = {TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
 
         resp = lambda_client.invoke(
-            FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
+            FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
             Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
         )
         json_resp = load(resp["Payload"])
@@ -376,6 +377,6 @@ def should_launch_datasets_endpoint_lambda_function(
         assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
 
     finally:
-        wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
-        delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
-        delete_s3_prefix(ResourceName.STORAGE_BUCKET_NAME.value, title, s3_client)
+        wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
+        delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
+        delete_s3_prefix(Resource.STORAGE_BUCKET_NAME.resource_name, title, s3_client)
