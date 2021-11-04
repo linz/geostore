@@ -8,10 +8,9 @@ from ulid import ULID, new
 
 from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .clock import now
+from .dataset_keys import DATASET_KEY_SEPARATOR
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from .parameter_store import ParameterName, get_param
-
-DATASET_KEY_SEPARATOR = "-"
 
 
 def human_readable_ulid(ulid: ULID) -> str:
