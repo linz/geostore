@@ -2,6 +2,7 @@ import sys
 from enum import IntEnum
 from http import HTTPStatus
 from json import dumps, load
+from os import environ
 from typing import Callable, Optional, Union
 
 import boto3
@@ -10,6 +11,7 @@ from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
 
 from geostore.datasets.create import TITLE_CHARACTERS
+from geostore.environment import ENV_NAME_VARIABLE_NAME
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
@@ -46,6 +48,14 @@ class ExitCode(IntEnum):
     CONFLICT = 3
     NO_CREDENTIALS = 4
     NO_REGION_SETTING = 5
+
+
+@app.callback()
+def main(
+    environment_name: Optional[str] = Option(None, help="Set environment name, such as 'test'.")
+) -> None:
+    if environment_name:
+        environ[ENV_NAME_VARIABLE_NAME] = environment_name
 
 
 @dataset_app.command(name="create", help="Create a new dataset.")
