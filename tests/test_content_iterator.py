@@ -254,7 +254,7 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
 def should_count_only_asset_files() -> None:
     # Given a single metadata and asset entry in the database
     event = deepcopy(INITIAL_EVENT)
-    hash_key = get_hash_key(event["dataset_id"], event["version_id"])
+    hash_key = get_hash_key(event[DATASET_ID_KEY], event[VERSION_ID_KEY])
     processing_assets_model = processing_assets_model_with_meta()
     processing_assets_model(
         hash_key=hash_key,

@@ -3,7 +3,7 @@ from io import BytesIO
 from json import dumps, loads
 from unittest.mock import MagicMock, patch
 
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, NoRegionError
 from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
 from mypy_boto3_s3 import S3Client
 from pytest import mark
@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 from geostore.aws_keys import BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
-from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import ResourceName
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
@@ -82,7 +82,7 @@ def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTest
     with subtests.test(msg="should print nothing to standard output"):
         assert duplicate_result.stdout == ""
 
-    with subtests.test(msg="should print payload to standard error"):
+    with subtests.test(msg="should print error message to standard error"):
         assert duplicate_result.stderr == f"Conflict: dataset '{dataset_title}' already exists\n"
 
     with subtests.test(msg="should indicate failure via exit code"):
@@ -128,7 +128,7 @@ def should_report_dataset_creation_success(
     )
 
     # Then
-    with subtests.test(msg="should print response body to standard output"):
+    with subtests.test(msg="should print dataset ID to standard output"):
         assert result.stdout == f"{dataset_id}\n"
 
     with subtests.test(msg="should print nothing to standard error"):
@@ -143,7 +143,7 @@ def should_print_error_message_when_authentication_missing(
     boto3_client_mock: MagicMock, subtests: SubTests
 ) -> None:
     # Given
-    boto3_client_mock.side_effect = NoCredentialsError()
+    boto3_client_mock.return_value.invoke.side_effect = NoCredentialsError()
 
     # When
     result = CLI_RUNNER.invoke(
@@ -165,6 +165,37 @@ def should_print_error_message_when_authentication_missing(
 
     with subtests.test(msg="should indicate failure via exit code"):
         assert result.exit_code == 4, result
+
+
+@patch("boto3.client")
+def should_print_error_message_when_region_missing(
+    boto3_client_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    boto3_client_mock.side_effect = NoRegionError()
+
+    # When
+    result = CLI_RUNNER.invoke(
+        app,
+        [
+            "dataset",
+            "create",
+            f"--title={any_dataset_title()}",
+            f"--description={any_dataset_description()}",
+        ],
+    )
+
+    # Then
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print error message to standard error"):
+        assert (
+            result.stderr == "Unable to locate region settings. Make sure to log in to AWS first.\n"
+        )
+
+    with subtests.test(msg="should indicate failure via exit code"):
+        assert result.exit_code == 5, result
 
 
 @patch("boto3.client")

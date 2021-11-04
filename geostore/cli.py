@@ -4,12 +4,12 @@ from http import HTTPStatus
 from json import dumps, load
 
 import boto3
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, NoRegionError
 from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
-from .aws_keys import BODY_KEY, HTTP_METHOD_KEY
+from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from .resources import ResourceName
 from .step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
 
@@ -24,17 +24,20 @@ class ExitCode(IntEnum):
     # Exit code 2 is used by Typer to indicate usage error
     CONFLICT = 3
     NO_CREDENTIALS = 4
+    NO_REGION_SETTING = 5
 
 
-@dataset_app.command()
-def create(title: str = Option(...), description: str = Option(...)) -> None:
+@dataset_app.command(name="create")
+def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
     try:
         client = boto3.client("lambda")
-    except NoCredentialsError:
+    except NoRegionError:
         secho(
-            "Unable to locate credentials. Make sure to log in to AWS first.", err=True, fg=YELLOW
+            "Unable to locate region settings. Make sure to log in to AWS first.",
+            err=True,
+            fg=YELLOW,
         )
-        sys.exit(ExitCode.NO_CREDENTIALS)
+        sys.exit(ExitCode.NO_REGION_SETTING)
 
     request_object = {
         HTTP_METHOD_KEY: "POST",
@@ -42,12 +45,19 @@ def create(title: str = Option(...), description: str = Option(...)) -> None:
     }
     request_payload = dumps(request_object).encode()
 
-    response = client.invoke(
-        FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value, Payload=request_payload
-    )
+    try:
+        response = client.invoke(
+            FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value, Payload=request_payload
+        )
+    except NoCredentialsError:
+        secho(
+            "Unable to locate credentials. Make sure to log in to AWS first.", err=True, fg=YELLOW
+        )
+        sys.exit(ExitCode.NO_CREDENTIALS)
+
     response_payload = load(response["Payload"])
     exit_code = {HTTPStatus.CREATED: ExitCode.SUCCESS, HTTPStatus.CONFLICT: ExitCode.CONFLICT}.get(
-        response_payload["status_code"], ExitCode.UNKNOWN
+        response_payload[STATUS_CODE_KEY], ExitCode.UNKNOWN
     )
     color = {ExitCode.SUCCESS: GREEN, ExitCode.UNKNOWN: RED}.get(exit_code, YELLOW)
     response_body = response_payload[BODY_KEY]
