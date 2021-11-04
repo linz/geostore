@@ -1,8 +1,6 @@
 from enum import Enum
 
-from .environment import environment_name
-
-PRODUCTION_ENVIRONMENT_NAME = "prod"
+from .environment import PRODUCTION_ENVIRONMENT_NAME, environment_name
 
 
 def prefix_non_prod_name(name: str) -> str:
