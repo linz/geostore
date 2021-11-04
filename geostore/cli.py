@@ -28,13 +28,7 @@ class ExitCode(IntEnum):
 
 @dataset_app.command(name="create")
 def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
-    try:
-        client = boto3.client("lambda")
-    except NoCredentialsError:
-        secho(
-            "Unable to locate credentials. Make sure to log in to AWS first.", err=True, fg=YELLOW
-        )
-        sys.exit(ExitCode.NO_CREDENTIALS)
+    client = boto3.client("lambda")
 
     request_object = {
         HTTP_METHOD_KEY: "POST",
@@ -42,9 +36,16 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
     }
     request_payload = dumps(request_object).encode()
 
-    response = client.invoke(
-        FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value, Payload=request_payload
-    )
+    try:
+        response = client.invoke(
+            FunctionName=ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value, Payload=request_payload
+        )
+    except NoCredentialsError:
+        secho(
+            "Unable to locate credentials. Make sure to log in to AWS first.", err=True, fg=YELLOW
+        )
+        sys.exit(ExitCode.NO_CREDENTIALS)
+
     response_payload = load(response["Payload"])
     exit_code = {HTTPStatus.CREATED: ExitCode.SUCCESS, HTTPStatus.CONFLICT: ExitCode.CONFLICT}.get(
         response_payload["status_code"], ExitCode.UNKNOWN

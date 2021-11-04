@@ -143,7 +143,7 @@ def should_print_error_message_when_authentication_missing(
     boto3_client_mock: MagicMock, subtests: SubTests
 ) -> None:
     # Given
-    boto3_client_mock.side_effect = NoCredentialsError()
+    boto3_client_mock.return_value.invoke.side_effect = NoCredentialsError()
 
     # When
     result = CLI_RUNNER.invoke(
