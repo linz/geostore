@@ -26,8 +26,8 @@ class ExitCode(IntEnum):
     NO_CREDENTIALS = 4
 
 
-@dataset_app.command()
-def create(title: str = Option(...), description: str = Option(...)) -> None:
+@dataset_app.command(name="create")
+def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
     try:
         client = boto3.client("lambda")
     except NoCredentialsError:
