@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 from geostore.aws_keys import BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
-from geostore.datasets_model import DATASET_KEY_SEPARATOR
+from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import ResourceName
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
