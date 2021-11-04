@@ -26,7 +26,7 @@ from .types import JsonList, JsonObject
 
 HTTP_METHOD_CREATE = "POST"
 
-app = Typer()
+app = Typer(context_settings=dict(max_content_width=sys.maxsize))
 dataset_app = Typer()
 dataset_version_app = Typer()
 app.add_typer(dataset_app, name="dataset")
