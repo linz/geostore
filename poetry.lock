@@ -1265,7 +1265,7 @@ name = "boto3"
 version = "1.17.53"
 description = "The AWS SDK for Python"
 category = "main"
-optional = true
+optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
@@ -1590,7 +1590,7 @@ name = "botocore"
 version = "1.20.53"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
-optional = true
+optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
@@ -1903,7 +1903,7 @@ name = "jmespath"
 version = "0.10.0"
 description = "JSON Matching Expressions"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
@@ -2567,7 +2567,7 @@ name = "s3transfer"
 version = "0.3.4"
 description = "An Amazon S3 Transfer Manager"
 category = "main"
-optional = true
+optional = false
 python-versions = "*"
 
 [package.dependencies]
@@ -2697,7 +2697,7 @@ name = "typer"
 version = "0.4.0"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -2845,26 +2845,25 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 
 [extras]
 cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-events", "aws-cdk.aws-events-targets", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-event-sources", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-sns", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
-check_files_checksums = ["boto3", "linz-logger", "multihash", "pynamodb"]
-check_stac_metadata = ["boto3", "jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
-cli = ["boto3", "typer"]
+check_files_checksums = ["linz-logger", "multihash", "pynamodb"]
+check_stac_metadata = ["jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "linz-logger", "pynamodb"]
 dataset_versions = ["jsonschema", "linz-logger", "pynamodb", "ulid-py"]
-datasets = ["boto3", "jsonschema", "linz-logger", "pynamodb", "pystac", "ulid-py"]
-import_asset_file = ["boto3", "linz-logger", "smart-open"]
-import_dataset = ["boto3", "jsonschema", "linz-logger", "pynamodb", "smart-open", "ulid-py"]
-import_metadata_file = ["boto3", "linz-logger"]
-import_status = ["boto3", "jsonschema", "linz-logger", "pynamodb"]
-notify_status_update = ["boto3", "jsonschema", "linz-logger", "pynamodb", "slack-sdk"]
-populate_catalog = ["boto3", "jsonschema", "linz-logger", "pystac"]
-update_dataset_catalog = ["boto3", "jsonschema", "linz-logger", "pynamodb", "ulid-py"]
-upload_status = ["boto3", "jsonschema", "linz-logger", "pynamodb"]
+datasets = ["jsonschema", "linz-logger", "pynamodb", "pystac", "ulid-py"]
+import_asset_file = ["linz-logger", "smart-open"]
+import_dataset = ["jsonschema", "linz-logger", "pynamodb", "smart-open", "ulid-py"]
+import_metadata_file = ["linz-logger"]
+import_status = ["jsonschema", "linz-logger", "pynamodb"]
+notify_status_update = ["jsonschema", "linz-logger", "pynamodb", "slack-sdk"]
+populate_catalog = ["jsonschema", "linz-logger", "pystac"]
+update_dataset_catalog = ["jsonschema", "linz-logger", "pynamodb", "ulid-py"]
+upload_status = ["jsonschema", "linz-logger", "pynamodb"]
 validation_summary = ["jsonschema", "linz-logger", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6fec6ad8ae2976a96a75a933b5b03c103b353a30ef4ed8dedb6f0f1cbd6121c2"
+content-hash = "6c2052a0479b8e58ecce60168c8aafa4c47686a485b09d206144e586b5f45b55"
 
 [metadata.files]
 appdirs = [

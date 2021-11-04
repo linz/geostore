@@ -98,7 +98,7 @@ python = "^3.8"
 "aws-cdk.aws-stepfunctions" = {version = "*", optional = true}
 "aws-cdk.aws-stepfunctions_tasks" = {version = "*", optional = true}
 awscli = {version = "*", optional = true}
-boto3 = {version = "*", optional = true}
+boto3 = "*"
 cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
 multihash = {version = "*", optional = true}
@@ -107,7 +107,7 @@ pystac = {version = "*", optional = true}
 slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
-typer = {version = "*", optional = true}
+typer = "*"
 ulid-py = {version = "*", optional = true}
 linz-logger = {version = "*", optional = true}
 
@@ -158,21 +158,15 @@ cdk = [
     "cattrs",
 ]
 check_files_checksums = [
-    "boto3",
     "linz-logger",
     "multihash",
     "pynamodb",
 ]
 check_stac_metadata = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
     "strict-rfc3339",
-]
-cli = [
-    "boto3",
-    "typer",
 ]
 content_iterator = [
     "jsonschema",
@@ -180,7 +174,6 @@ content_iterator = [
     "pynamodb",
 ]
 datasets = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
@@ -194,12 +187,10 @@ dataset_versions = [
     "ulid-py",
 ]
 import_asset_file = [
-    "boto3",
     "linz-logger",
     "smart-open",
 ]
 import_dataset = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
@@ -207,37 +198,31 @@ import_dataset = [
     "ulid-py",
 ]
 import_metadata_file = [
-    "boto3",
     "linz-logger",
 ]
 import_status = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
 ]
 notify_status_update = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
     "slack-sdk"
 ]
 populate_catalog = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pystac",
 ]
 update_dataset_catalog = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",
     "ulid-py"
 ]
 upload_status = [
-    "boto3",
     "jsonschema",
     "linz-logger",
     "pynamodb",

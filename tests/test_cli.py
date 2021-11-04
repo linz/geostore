@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from io import BytesIO
 from json import dumps, loads
+from os import environ
+from re import MULTILINE, match
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import NoCredentialsError, NoRegionError
@@ -10,7 +12,7 @@ from pytest import mark
 from pytest_subtests import SubTests
 from typer.testing import CliRunner
 
-from geostore.aws_keys import BODY_KEY, STATUS_CODE_KEY
+from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
 from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.populate_catalog.task import CATALOG_FILENAME
@@ -18,9 +20,21 @@ from geostore.resources import ResourceName
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
 from geostore.types import JsonObject
 
-from .aws_utils import LAMBDA_EXECUTED_VERSION, delete_s3_key, wait_for_s3_key
+from .aws_utils import (
+    LAMBDA_EXECUTED_VERSION,
+    Dataset,
+    any_role_arn,
+    any_s3_url,
+    delete_s3_key,
+    wait_for_s3_key,
+)
 from .general_generators import any_dictionary_key, any_name
 from .stac_generators import any_dataset_description, any_dataset_id, any_dataset_title
+
+DATASET_VERSION_ID_REGEX = (
+    r"\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{16}"
+)
+AWS_REGION = environ[AWS_DEFAULT_REGION_KEY]
 
 CLI_RUNNER = CliRunner(mix_stderr=False)
 
@@ -146,15 +160,7 @@ def should_print_error_message_when_authentication_missing(
     boto3_client_mock.return_value.invoke.side_effect = NoCredentialsError()
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -175,15 +181,7 @@ def should_print_error_message_when_region_missing(
     boto3_client_mock.side_effect = NoRegionError()
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -215,15 +213,7 @@ def should_report_arbitrary_dataset_creation_failure(
     )
 
     # When
-    result = CLI_RUNNER.invoke(
-        app,
-        [
-            "dataset",
-            "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
-        ],
-    )
+    result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -234,6 +224,100 @@ def should_report_arbitrary_dataset_creation_failure(
 
     with subtests.test(msg="should indicate failure via exit code"):
         assert result.exit_code == 1
+
+
+@mark.infrastructure
+def should_list_datasets(subtests: SubTests) -> None:
+    # Given two datasets
+    with Dataset() as first_dataset, Dataset() as second_dataset:
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list"])
+
+    # Then
+    with subtests.test(msg="should print datasets to standard output"):
+        assert (
+            f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
+            in result.stdout
+        )
+        assert (
+            f"{second_dataset.title}{DATASET_KEY_SEPARATOR}{second_dataset.dataset_id}\n"
+            in result.stdout
+        )
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0
+
+
+@mark.infrastructure
+def should_filter_datasets_listing(subtests: SubTests) -> None:
+    # Given two datasets
+    with Dataset() as first_dataset, Dataset():
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list", f"--id={first_dataset.dataset_id}"])
+
+    # Then
+    with subtests.test(msg="should print dataset to standard output"):
+        assert (
+            result.stdout
+            == f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
+        )
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0
+
+
+@mark.infrastructure
+def should_delete_dataset(subtests: SubTests) -> None:
+    # Given
+    with Dataset() as dataset:
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "delete", f"--id={dataset.dataset_id}"])
+
+    # Then
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0
+
+
+@mark.infrastructure
+def should_create_dataset_version(subtests: SubTests) -> None:
+    # Given
+    with Dataset() as dataset:
+        result = CLI_RUNNER.invoke(
+            app,
+            [
+                "version",
+                "create",
+                f"--dataset-id={dataset.dataset_id}",
+                f"--metadata-url={any_s3_url()}",
+                f"--s3-role-arn={any_role_arn()}",
+            ],
+        )
+
+    # Then
+    with subtests.test(msg="should print dataset version ID and execution ARN to standard output"):
+        assert match(
+            f"^({DATASET_VERSION_ID_REGEX})\tarn:aws:states:{AWS_REGION}:\\d+:execution:.*:\\1\n$",
+            result.stdout,
+            flags=MULTILINE,
+        )
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0, result
 
 
 def get_response_object(status_code: int, body: JsonObject) -> JsonObject:
