@@ -142,7 +142,7 @@ jobs:
         with:
           name: test-report
           path: junit.xml
-        if: ${{ failure() }}
+        if: ${{ always() }}
 
       - name: Verify test coverage
         run: |
