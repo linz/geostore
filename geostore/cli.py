@@ -11,7 +11,7 @@ from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
 
 from geostore.datasets.create import TITLE_CHARACTERS
-from geostore.environment import ENV_NAME_VARIABLE_NAME
+from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
@@ -52,10 +52,17 @@ class ExitCode(IntEnum):
 
 @app.callback()
 def main(
-    environment_name: Optional[str] = Option(None, help="Set environment name, such as 'test'.")
+    environment_name: Optional[str] = Option(
+        None,
+        help="Set environment name, such as 'test'."
+        f" Overrides the value of ${ENV_NAME_VARIABLE_NAME}."
+        f"  [default: {PRODUCTION_ENVIRONMENT_NAME}]",
+    )
 ) -> None:
     if environment_name:
         environ[ENV_NAME_VARIABLE_NAME] = environment_name
+    elif ENV_NAME_VARIABLE_NAME not in environ:
+        environ[ENV_NAME_VARIABLE_NAME] = PRODUCTION_ENVIRONMENT_NAME
 
 
 @dataset_app.command(name="create", help="Create a new dataset.")

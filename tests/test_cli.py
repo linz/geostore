@@ -349,3 +349,26 @@ def should_call_given_environment_function(
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""
+
+
+@patch("geostore.cli.handle_api_request")
+def should_default_to_production_environment(
+    handle_api_request_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    with patch.dict(environ):
+        del environ[ENV_NAME_VARIABLE_NAME]
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list"])
+
+    # Then
+    with subtests.test(msg="should call the function in the given environment"):
+        handle_api_request_mock.assert_called_once_with(
+            Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value, ANY, ANY
+        )
+
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
