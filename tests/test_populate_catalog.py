@@ -26,7 +26,7 @@ from geostore.populate_catalog.task import (
     UnhandledSQSMessageException,
     lambda_handler,
 )
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     STAC_DESCRIPTION_KEY,
@@ -66,7 +66,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
                 STAC_TITLE_KEY: dataset.title,
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ):
 
@@ -102,7 +102,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             )
 
             with smart_open.open(
-                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}",
+                f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}",
                 mode="rb",
             ) as new_root_metadata_file:
                 catalog_json = load(new_root_metadata_file)
@@ -117,7 +117,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
                     assert catalog_json[STAC_LINKS_KEY] == expected_links
 
         finally:
-            delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
 
 
 @mark.infrastructure
@@ -131,7 +131,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 STAC_TITLE_KEY: existing_dataset.title,
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ):
 
@@ -156,7 +156,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                     STAC_TITLE_KEY: dataset.title,
                 }
             ),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
             key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
         ), S3Object(
             file_object=json_dict_to_file_object(
@@ -168,7 +168,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                     STAC_LINKS_KEY: original_links,
                 }
             ),
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
             key=CATALOG_FILENAME,
         ):
 
@@ -211,14 +211,14 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             )
 
             with smart_open.open(
-                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{CATALOG_FILENAME}",
+                f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}",
                 mode="rb",
             ) as root_metadata_file, subtests.test(msg="root catalog links"):
                 root_catalog_json = load(root_metadata_file)
                 assert root_catalog_json[STAC_LINKS_KEY] == expected_root_links
 
             with smart_open.open(
-                f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
+                f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
                 f"/{dataset.dataset_prefix}/{CATALOG_FILENAME}",
                 mode="rb",
             ) as dataset_metadata_file, subtests.test(msg="dataset catalog links"):
@@ -251,7 +251,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{item_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -278,7 +278,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{collection_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -300,7 +300,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{catalog_filename}",
     ) as dataset_version_metadata, S3Object(
         file_object=json_dict_to_file_object(
@@ -322,7 +322,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -345,7 +345,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=CATALOG_FILENAME,
     ):
 
@@ -402,7 +402,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
         )
 
         with subtests.test(msg="dataset catalog links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
             f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
             mode="rb",
         ) as updated_dataset_metadata_file:
@@ -410,7 +410,7 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             assert catalog_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
 
         with subtests.test(msg="dataset version links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
             f"/{dataset_version_metadata.key}",
             mode="rb",
         ) as updated_dataset_metadata_file:
@@ -443,7 +443,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{item_filename}",
     ) as item_metadata, S3Object(
         file_object=json_dict_to_file_object(
@@ -465,7 +465,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{collection_filename}",
     ) as dataset_version_metadata, S3Object(
         file_object=json_dict_to_file_object(
@@ -487,7 +487,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -510,7 +510,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
                 ],
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=CATALOG_FILENAME,
     ):
         expected_dataset_catalog_links: JsonList = [
@@ -578,7 +578,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
         )
 
         with subtests.test(msg="dataset catalog links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
             f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
             mode="rb",
         ) as updated_dataset_metadata_file:
@@ -586,7 +586,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             assert catalog_json[STAC_LINKS_KEY] == expected_dataset_catalog_links
 
         with subtests.test(msg="dataset version links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}"
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
             f"/{dataset_version_metadata.key}",
             mode="rb",
         ) as updated_dataset_metadata_file:
@@ -594,7 +594,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
 
         with subtests.test(msg="item links"), smart_open.open(
-            f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{item_metadata.key}",
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{item_metadata.key}",
             mode="rb",
         ) as updated_item_metadata_file:
             item_json = load(updated_item_metadata_file)

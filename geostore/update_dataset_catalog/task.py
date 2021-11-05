@@ -15,7 +15,7 @@ from ..aws_message_attributes import (
 )
 from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
 from ..parameter_store import ParameterName, get_param
-from ..resources import ResourceName
+from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
 from ..step_function_keys import (
     DATASET_ID_KEY,
@@ -81,6 +81,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     return {
         NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
-        f"{ResourceName.STORAGE_BUCKET_NAME.value}/"
+        f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
         f"{new_version_metadata_key}"
     }

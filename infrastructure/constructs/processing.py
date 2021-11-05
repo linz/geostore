@@ -22,7 +22,7 @@ from geostore.content_iterator.task import (
 )
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.parameter_store import ParameterName
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
@@ -394,7 +394,7 @@ class Processing(Construct):
             "staging-users-role",
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
-            role_name=ResourceName.STAGING_USERS_ROLE_NAME.value,
+            role_name=Resource.STAGING_USERS_ROLE_NAME.resource_name,
         )
 
         ############################################################################################

@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
 from aws_cdk.core import Construct, Tags
 
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
@@ -36,7 +36,7 @@ class API(Construct):
         api_users_role = aws_iam.Role(
             self,
             "api-users-role",
-            role_name=ResourceName.API_USERS_ROLE_NAME.value,
+            role_name=Resource.API_USERS_ROLE_NAME.resource_name,
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
         )
@@ -105,7 +105,7 @@ class API(Construct):
         s3_users_role = aws_iam.Role(
             self,
             "s3-users-role",
-            role_name=ResourceName.S3_USERS_ROLE_NAME.value,
+            role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
             assumed_by=principal,  # type: ignore[arg-type]
             max_session_duration=MAX_SESSION_DURATION,
         )

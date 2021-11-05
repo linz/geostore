@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, RemovalPolicy, Tags
 
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 
 
 class Staging(Construct):
@@ -14,7 +14,7 @@ class Staging(Construct):
         staging_bucket = aws_s3.Bucket(
             self,
             "dataset-staging-bucket",
-            bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+            bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,

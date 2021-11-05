@@ -16,7 +16,7 @@ from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
 from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.populate_catalog.task import CATALOG_FILENAME
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
 from geostore.types import JsonObject
 
@@ -58,13 +58,13 @@ def should_create_dataset(s3_client: S3Client) -> None:
 
     # Cleanup
     dataset_id = result.stdout.rstrip()
-    wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+    wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
     delete_s3_key(
-        ResourceName.STORAGE_BUCKET_NAME.value,
+        Resource.STORAGE_BUCKET_NAME.resource_name,
         f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{CATALOG_FILENAME}",
         s3_client,
     )
-    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
 
 
 @mark.infrastructure
@@ -103,13 +103,13 @@ def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTest
         assert duplicate_result.exit_code == 3, duplicate_result
 
     # Cleanup
-    wait_for_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+    wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
     delete_s3_key(
-        ResourceName.STORAGE_BUCKET_NAME.value,
+        Resource.STORAGE_BUCKET_NAME.resource_name,
         f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{CATALOG_FILENAME}",
         s3_client,
     )
-    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, CATALOG_FILENAME, s3_client)
+    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
 
 
 @patch("boto3.client")
