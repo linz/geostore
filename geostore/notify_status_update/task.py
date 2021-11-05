@@ -9,10 +9,10 @@ from linz_logger import get_log
 from slack_sdk.models.blocks import blocks
 from slack_sdk.webhook.client import WebhookClient
 
-from ..api_keys import EVENT_KEY
 from ..api_responses import success_response
 from ..aws_message_attributes import DATA_TYPE_STRING
 from ..boto3_config import CONFIG
+from ..logging_keys import LOG_MESSAGE_LAMBDA_START
 from ..parameter_store import ParameterName, get_param
 from ..step_function import get_import_status_given_arn
 from ..step_function_keys import (
@@ -61,7 +61,7 @@ BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     if (SLACK_URL_ENV_NAME in environ) and (event[EVENT_DETAIL_KEY][STEP_FUNCTION_STOPDATE_KEY]):
         post_to_slack(event)

@@ -1,8 +1,7 @@
-from json import dumps
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
+from geostore.logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE
 from geostore.step_function import get_s3_batch_copy_status
-from geostore.step_function_keys import S3_BATCH_RESPONSE_KEY
 
 from .aws_utils import any_account_id
 
@@ -19,7 +18,7 @@ def should_log_s3_batch_response(
             "ProgressSummary": {"NumberOfTasksFailed": 0},
         }
     }
-    expected_response_log = dumps({S3_BATCH_RESPONSE_KEY: s3_batch_response})
+    expected_response_log_call = call(LOG_MESSAGE_S3_BATCH_RESPONSE, response=s3_batch_response)
 
     with patch("geostore.step_function.LOGGER.debug") as logger_mock, patch(
         "geostore.step_function.get_account_number"
@@ -30,4 +29,4 @@ def should_log_s3_batch_response(
         get_s3_batch_copy_status("test")
 
         # Then
-        logger_mock.assert_any_call(expected_response_log)
+        logger_mock.assert_has_calls([expected_response_log_call])

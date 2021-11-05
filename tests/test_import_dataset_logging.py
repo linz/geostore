@@ -1,19 +1,20 @@
-from json import dumps
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from jsonschema import ValidationError
 from pytest import mark
 from pytest_subtests import SubTests
 
-from geostore.api_keys import EVENT_KEY
-from geostore.error_response_keys import ERROR_KEY
 from geostore.import_dataset.task import lambda_handler
+from geostore.logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_S3_BATCH_RESPONSE,
+)
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
-    S3_BATCH_RESPONSE_KEY,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
@@ -45,13 +46,13 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
             S3_ROLE_ARN_KEY: any_role_arn(),
             VERSION_ID_KEY: any_dataset_version_id(),
         }
-        expected_payload_log = dumps({EVENT_KEY: event})
+        expected_payload_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
         # When
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(expected_payload_log)
+        logger_mock.assert_has_calls([expected_payload_log_call])
 
 
 @patch("geostore.import_dataset.task.validate")
@@ -60,14 +61,14 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
 
     error_message = any_error_message()
     validate_schema_mock.side_effect = ValidationError(error_message)
-    expected_log = dumps({ERROR_KEY: error_message})
+    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
     with patch("geostore.import_dataset.task.LOGGER.warning") as logger_mock:
         # When
         lambda_handler({}, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(expected_log)
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
@@ -99,10 +100,8 @@ def should_log_assets_added_to_manifest(
             "geostore.import_dataset.task.S3CONTROL_CLIENT.create_job"
         ):
 
-            expected_asset_log = dumps({"Adding file to manifest": processing_asset.url})
-            expected_metadata_log = dumps(
-                {"Adding file to manifest": metadata_processing_asset.url}
-            )
+            expected_asset_log = f"Adding {processing_asset.url} to manifest"
+            expected_metadata_log = f"Adding {metadata_processing_asset.url} to manifest"
 
             # When
             lambda_handler(
@@ -130,7 +129,7 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
     # Given
 
     create_job_mock.return_value = response = {"JobId": "Some Response"}
-    expected_response_log = dumps({S3_BATCH_RESPONSE_KEY: response})
+    expected_response_log_call = call(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)
     head_object_mock.return_value = {"ETag": any_etag()}
 
     with Dataset() as dataset, patch(
@@ -150,4 +149,4 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
         )
 
         # Then
-        logger_mock.assert_any_call(expected_response_log)
+        logger_mock.assert_has_calls([expected_response_log_call])

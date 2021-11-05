@@ -1,12 +1,14 @@
-from json import dumps
-
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
-from ..api_keys import EVENT_KEY
-from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+from ..error_response_keys import ERROR_MESSAGE_KEY
+from ..logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_VALIDATION_FAILURE,
+)
 from ..parameter_store import ParameterName, get_param
 from ..s3 import get_s3_client_for_role
 from ..s3_utils import get_bucket_and_key_from_url
@@ -20,7 +22,7 @@ LOGGER = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     # validate input
     try:
@@ -39,13 +41,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        LOGGER.warning(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
         s3_client = get_s3_client_for_role(event[S3_ROLE_ARN_KEY])
     except ClientError as error:
-        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
         return {ERROR_MESSAGE_KEY: str(error)}
 
     def s3_url_reader(url: str) -> StreamingBody:

@@ -1,8 +1,8 @@
-from json import dumps
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
-from geostore.api_keys import EVENT_KEY, SUCCESS_KEY
+from geostore.api_keys import SUCCESS_KEY
 from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,
@@ -29,11 +29,11 @@ def should_log_event(get_tasks_status_mock: MagicMock) -> None:
             ASSET_JOB_ID_KEY: any_job_id(),
         },
     }
-    expected_log = dumps({EVENT_KEY: event})
+    expected_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     with patch("geostore.upload_status.task.LOGGER.debug") as logger_mock:
         # When
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(expected_log)
+        logger_mock.assert_has_calls([expected_log_call])

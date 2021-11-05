@@ -1,4 +1,3 @@
-from json import dumps
 from os.path import basename
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -7,13 +6,13 @@ import boto3
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
-from ..api_keys import EVENT_KEY
 from ..aws_message_attributes import (
     DATA_TYPE_STRING,
     MESSAGE_ATTRIBUTE_TYPE_DATASET,
     MESSAGE_ATTRIBUTE_TYPE_KEY,
 )
-from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+from ..error_response_keys import ERROR_MESSAGE_KEY
+from ..logging_keys import LOG_MESSAGE_LAMBDA_FAILURE, LOG_MESSAGE_LAMBDA_START
 from ..parameter_store import ParameterName, get_param
 from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
@@ -41,7 +40,7 @@ SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     # validate input
     try:
@@ -59,7 +58,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
         return {ERROR_MESSAGE_KEY: error.message}
 
     new_version_metadata_key = (

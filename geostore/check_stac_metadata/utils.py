@@ -1,5 +1,5 @@
 from functools import lru_cache
-from json import JSONDecodeError, dumps, load
+from json import JSONDecodeError, load
 from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -8,8 +8,9 @@ from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, ValidationError
 from linz_logger import get_log
 
-from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
+from ..api_keys import MESSAGE_KEY
 from ..check import Check
+from ..logging_keys import LOG_MESSAGE_VALIDATION_FAILURE
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
@@ -46,6 +47,7 @@ PROCESSING_ASSET_MULTIHASH_KEY = "multihash"
 PROCESSING_ASSET_URL_KEY = "url"
 
 EXPLICITLY_RELATIVE_PATH_PREFIX = "./"
+LOG_MESSAGE_STAC_ASSET_INFO = "STACAsset:Info"
 
 
 @lru_cache
@@ -85,13 +87,13 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={MESSAGE_KEY: error_message},
             )
-            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: error_message}))
+            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=error_message)
             return
 
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(error)}))
+            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
             return
 
         if not self.dataset_assets:
@@ -102,7 +104,7 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details=error_details,
             )
-            LOGGER.error(dumps({SUCCESS_KEY: False, **error_details}))
+            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=NO_ASSETS_FOUND_ERROR_MESSAGE)
             return
 
         self.process_metadata()
@@ -152,7 +154,7 @@ class STACDatasetValidator:
                 PROCESSING_ASSET_URL_KEY: asset_url,
                 PROCESSING_ASSET_MULTIHASH_KEY: asset[STAC_FILE_CHECKSUM_KEY],
             }
-            LOGGER.debug(dumps({PROCESSING_ASSET_ASSET_KEY: asset_dict}))
+            LOGGER.debug(LOG_MESSAGE_STAC_ASSET_INFO, asset=asset_dict)
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json[STAC_LINKS_KEY]:

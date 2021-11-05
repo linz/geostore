@@ -1,4 +1,3 @@
-from json import dumps
 from logging import Logger
 from os import environ
 from urllib.parse import urlparse
@@ -6,9 +5,10 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 from multihash import FUNCS, decode
 
-from ..api_keys import MESSAGE_KEY, SUCCESS_KEY
+from ..api_keys import MESSAGE_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
+from ..logging_keys import LOG_MESSAGE_VALIDATION_FAILURE, LOG_MESSAGE_VALIDATION_SUCCESS
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE, get_s3_client_for_role
 from ..types import JsonObject
@@ -42,7 +42,7 @@ class ChecksumValidator:
         self.s3_client = get_s3_client_for_role(s3_role_arn)
 
     def log_failure(self, content: JsonObject) -> None:
-        self.logger.error(dumps({SUCCESS_KEY: False, **content}))
+        self.logger.error(LOG_MESSAGE_VALIDATION_FAILURE, error=content)
 
     def validate(self, hash_key: str, range_key: str) -> None:
 
@@ -69,7 +69,7 @@ class ChecksumValidator:
                 item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
         else:
-            self.logger.info(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
+            self.logger.info(LOG_MESSAGE_VALIDATION_SUCCESS)
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:

@@ -1,4 +1,4 @@
-from json import dumps, loads
+from json import loads
 from typing import TYPE_CHECKING, Callable, Optional
 from urllib.parse import unquote_plus
 
@@ -7,6 +7,7 @@ from linz_logger import get_log
 
 from .aws_response import AWS_CODE_REQUEST_TIMEOUT
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from .logging_keys import LOG_MESSAGE_LAMBDA_START
 from .s3 import get_s3_client_for_role
 from .step_function_keys import S3_ROLE_ARN_KEY
 from .types import JsonObject
@@ -37,13 +38,14 @@ EXCEPTION_PREFIX = "Exception"
 RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
 LOGGER = get_log()
+LOG_MESSAGE_S3_BATCH_COPY_RESULT = "S3Batch:Result"
 
 
 def get_import_result(
     event: JsonObject,
     importer: Callable[[str, str, str, str, S3Client], Optional[PutObjectOutputTypeDef]],
 ) -> JsonObject:
-    LOGGER.debug(dumps(event))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     task = event[TASKS_KEY][0]
     source_bucket_name = task[S3_BUCKET_ARN_KEY].split(":::", maxsplit=1)[-1]
@@ -85,5 +87,5 @@ def get_import_result(
             }
         ],
     }
-    LOGGER.debug(dumps(result))
+    LOGGER.debug(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=result)
     return result

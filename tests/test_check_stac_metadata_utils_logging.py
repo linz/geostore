@@ -1,19 +1,19 @@
 from copy import deepcopy
 from io import StringIO
-from json import JSONDecodeError, dumps
+from json import JSONDecodeError
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 
-from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from geostore.check_stac_metadata.utils import (
-    PROCESSING_ASSET_ASSET_KEY,
+    LOG_MESSAGE_STAC_ASSET_INFO,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     STACDatasetValidator,
 )
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_FAILURE
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
@@ -59,13 +59,12 @@ def should_log_assets() -> None:
     }
 
     url_reader = MockJSONURLReader({metadata_url: stac_object})
-    expected_message = dumps(
-        {
-            PROCESSING_ASSET_ASSET_KEY: {
-                PROCESSING_ASSET_URL_KEY: asset_url,
-                PROCESSING_ASSET_MULTIHASH_KEY: asset_multihash,
-            }
-        }
+    expected_message = call(
+        LOG_MESSAGE_STAC_ASSET_INFO,
+        asset={
+            PROCESSING_ASSET_URL_KEY: asset_url,
+            PROCESSING_ASSET_MULTIHASH_KEY: asset_multihash,
+        },
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
@@ -75,18 +74,16 @@ def should_log_assets() -> None:
             metadata_url
         )
 
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_has_calls([expected_message])
 
 
 def should_log_non_s3_url_prefix_validation() -> None:
     metadata_url = any_https_url()
     hash_key = any_hash_key()
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
-    expected_message = dumps(
-        {
-            SUCCESS_KEY: False,
-            MESSAGE_KEY: f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
-        }
+    expected_message = call(
+        LOG_MESSAGE_VALIDATION_FAILURE,
+        error=f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
@@ -94,7 +91,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_has_calls([expected_message])
 
 
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
@@ -110,14 +107,14 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
 
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
 
-    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
+    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_error)
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
@@ -130,14 +127,14 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
 
     url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
 
-    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: expected_error.message})
+    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_error)
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
@@ -150,11 +147,11 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     expected_error = JSONDecodeError(any_error_message(), "", 0)
     validate_mock.side_effect = expected_error
 
-    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: str(expected_error)})
+    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_error)
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_has_calls([expected_log_call])

@@ -1,12 +1,15 @@
 from json import dumps
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from jsonschema import ValidationError
 
-from geostore.api_keys import EVENT_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
-from geostore.error_response_keys import ERROR_KEY
 from geostore.import_status.get import get_import_status
+from geostore.logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+)
 from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
@@ -22,7 +25,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
     }
 
-    expected_payload_log = dumps({EVENT_KEY: event})
+    expected_payload_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     describe_step_function_mock.return_value = {
         "status": "RUNNING",
@@ -40,7 +43,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         get_import_status(event)
 
         # Then
-        logger_mock.assert_any_call(expected_payload_log)
+        logger_mock.assert_has_calls([expected_payload_log_call])
 
 
 @patch("geostore.import_status.get.validate")
@@ -49,7 +52,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
 
     error_message = any_error_message()
     validate_schema_mock.side_effect = ValidationError(error_message)
-    expected_log = dumps({ERROR_KEY: error_message})
+    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
     with patch("geostore.import_status.get.LOGGER.warning") as logger_mock:
         # When
@@ -61,7 +64,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         )
 
         # Then
-        logger_mock.assert_any_call(expected_log)
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
@@ -75,7 +78,9 @@ def should_log_stepfunctions_status_response(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
-    expected_response_log = dumps({"step function response": describe_execution_response})
+    expected_response_log_call = call(
+        LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=describe_execution_response
+    )
 
     with patch("geostore.step_function.LOGGER.debug") as logger_mock, patch(
         "geostore.step_function.get_account_number"
@@ -85,4 +90,4 @@ def should_log_stepfunctions_status_response(
         get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
 
         # Then
-        logger_mock.assert_any_call(expected_response_log)
+        logger_mock.assert_has_calls([expected_response_log_call])

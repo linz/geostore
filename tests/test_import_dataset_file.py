@@ -1,6 +1,6 @@
 from json import dumps
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 from urllib.parse import quote
 
 from botocore.exceptions import ClientError
@@ -9,6 +9,7 @@ from geostore.aws_response import AWS_CODE_REQUEST_TIMEOUT
 from geostore.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
+    LOG_MESSAGE_S3_BATCH_COPY_RESULT,
     RESULTS_KEY,
     RESULT_CODE_KEY,
     RESULT_CODE_PERMANENT_FAILURE,
@@ -24,6 +25,7 @@ from geostore.import_dataset_file import (
     get_import_result,
 )
 from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
 from geostore.step_function_keys import S3_ROLE_ARN_KEY
 from geostore.types import JsonObject
 
@@ -70,6 +72,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         INVOCATION_ID_KEY: any_invocation_id(),
         INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
+    expected_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
@@ -78,7 +81,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(dumps(event))
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -122,13 +125,15 @@ def should_log_result(importer_mock: MagicMock) -> None:
         ],
     }
 
+    expected_log_call = call(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=expected_log_entry)
+
     with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(dumps(expected_log_entry))
+        logger_mock.assert_has_calls([expected_log_call])
 
 
 @patch("geostore.import_metadata_file.task.importer")

@@ -1,6 +1,5 @@
 from enum import Enum, auto
 from functools import lru_cache
-from json import dumps
 from typing import TYPE_CHECKING, Sequence
 
 import boto3
@@ -8,7 +7,6 @@ from linz_logger import get_log
 
 from .boto3_config import CONFIG
 from .environment import environment_name
-from .error_response_keys import ERROR_KEY
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -19,6 +17,7 @@ else:
 
 LOGGER = get_log()
 SSM_CLIENT: SSMClient = boto3.client("ssm", config=CONFIG)
+LOG_MESSAGE_PARAMETER_NOT_FOUND = "Parameter:DoesNotExist"
 
 
 class ParameterName(Enum):
@@ -45,5 +44,5 @@ def get_param(parameter: ParameterName) -> str:
     try:
         return SSM_CLIENT.get_parameter(Name=parameter.value)["Parameter"]["Value"]
     except SSM_CLIENT.exceptions.ParameterNotFound:
-        LOGGER.error(dumps({ERROR_KEY: f"Parameter not found: “{parameter.value}”"}))
+        LOGGER.error(LOG_MESSAGE_PARAMETER_NOT_FOUND, parameter_value=parameter.value)
         raise

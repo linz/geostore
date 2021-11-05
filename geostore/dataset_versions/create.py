@@ -10,11 +10,14 @@ from linz_logger import get_log
 from pynamodb.exceptions import DoesNotExist
 from ulid import from_timestamp
 
-from ..api_keys import EVENT_KEY
 from ..api_responses import error_response, success_response
 from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
-from ..error_response_keys import ERROR_KEY
+from ..logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+)
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function_keys import (
@@ -42,7 +45,7 @@ LOGGER = get_log()
 
 def create_dataset_version(body: JsonObject) -> JsonObject:
 
-    LOGGER.debug(dumps({EVENT_KEY: body}))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=body)
 
     body_schema = {
         "type": "object",
@@ -59,7 +62,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        LOGGER.warning(dumps({ERROR_KEY: err}, default=str))
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=err.message)
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
@@ -70,7 +73,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
         )
     except DoesNotExist as err:
-        LOGGER.warning(dumps({ERROR_KEY: err}, default=str))
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=err.msg)
         return error_response(
             HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
         )
@@ -96,7 +99,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         input=dumps(step_functions_input),
     )
 
-    LOGGER.debug(dumps({"response": step_functions_response}, default=str))
+    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_functions_response)
 
     # return arn of executing process
     return success_response(
