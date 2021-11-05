@@ -17,7 +17,7 @@ from ..aws_message_attributes import (
 from ..datasets_model import datasets_model_with_meta
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import S3StacIO
-from ..resources import ResourceName
+from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
 from ..stac_format import STAC_DESCRIPTION_KEY, STAC_ID_KEY, STAC_TITLE_KEY
 from ..step_function_keys import DESCRIPTION_KEY, TITLE_KEY
@@ -79,7 +79,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
         catalog_type=CatalogType.SELF_CONTAINED,
     )
     dataset_catalog.normalize_hrefs(
-        f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/{dataset.dataset_prefix}"
+        f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{dataset.dataset_prefix}"
     )
     dataset_catalog.save()
 

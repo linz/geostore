@@ -4,8 +4,7 @@ from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY
-from geostore.environment import ENV_NAME_VARIABLE_NAME
-from geostore.resources import PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 
 from .backend import BACKEND_DIRECTORY
 

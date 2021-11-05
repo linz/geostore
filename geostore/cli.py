@@ -12,7 +12,7 @@ from typer.colors import GREEN, RED, YELLOW
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from .dataset_keys import DATASET_KEY_SEPARATOR
-from .resources import ResourceName
+from .resources import Resource
 from .step_function_keys import (
     DATASET_ID_SHORT_KEY,
     DESCRIPTION_KEY,
@@ -56,7 +56,7 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
         return dataset_id
 
     handle_api_request(
-        ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value, request_object, get_output
+        Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name, request_object, get_output
     )
 
 
@@ -86,7 +86,7 @@ def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
         get_output = get_single_output
 
     handle_api_request(
-        ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
+        Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: "GET", BODY_KEY: body},
         get_output,
     )
@@ -95,7 +95,7 @@ def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
 @dataset_app.command(name="delete")
 def dataset_delete(id_: str = Option(..., "--id")) -> None:
     handle_api_request(
-        ResourceName.DATASETS_ENDPOINT_FUNCTION_NAME.value,
+        Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: id_}},
         None,
     )
@@ -109,7 +109,7 @@ def dataset_version_create(
         return f"{response_body[VERSION_ID_KEY]}\t{response_body[EXECUTION_ARN_KEY]}"
 
     handle_api_request(
-        ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+        Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
         {
             HTTP_METHOD_KEY: HTTP_METHOD_CREATE,
             BODY_KEY: {

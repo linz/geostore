@@ -14,7 +14,7 @@ from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.import_dataset.task import lambda_handler
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     STAC_ASSETS_KEY,
@@ -101,11 +101,11 @@ def should_batch_copy_files_to_storage(
 
     with S3Object(
         BytesIO(initial_bytes=root_asset_content),
-        ResourceName.STAGING_BUCKET_NAME.value,
+        Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{root_asset_filename}",
     ) as root_asset_s3_object, S3Object(
         BytesIO(initial_bytes=child_asset_content),
-        ResourceName.STAGING_BUCKET_NAME.value,
+        Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{child_asset_filename}",
     ) as child_asset_s3_object, S3Object(
         BytesIO(
@@ -121,7 +121,7 @@ def should_batch_copy_files_to_storage(
                 }
             ).encode()
         ),
-        ResourceName.STAGING_BUCKET_NAME.value,
+        Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{child_metadata_filename}",
     ) as child_metadata_s3_object, S3Object(
         BytesIO(
@@ -138,7 +138,7 @@ def should_batch_copy_files_to_storage(
                 }
             ).encode()
         ),
-        ResourceName.STAGING_BUCKET_NAME.value,
+        Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{root_metadata_filename}",
     ) as root_metadata_s3_object, Dataset() as dataset:
         version_id = any_dataset_version_id()
@@ -180,7 +180,9 @@ def should_batch_copy_files_to_storage(
                 new_prefix = (
                     f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}/{version_id}"
                 )
-                storage_bucket_prefix = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+                storage_bucket_prefix = (
+                    f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
+                )
 
                 new_root_metadata_key = f"{new_prefix}/{root_metadata_filename}"
                 expected_root_metadata = dumps(
@@ -202,7 +204,7 @@ def should_batch_copy_files_to_storage(
 
                 with subtests.test(msg="Delete root metadata object"):
                     delete_s3_key(
-                        ResourceName.STORAGE_BUCKET_NAME.value, new_root_metadata_key, s3_client
+                        Resource.STORAGE_BUCKET_NAME.resource_name, new_root_metadata_key, s3_client
                     )
 
                 new_child_metadata_key = f"{new_prefix}/{child_metadata_filename}"
@@ -224,13 +226,15 @@ def should_batch_copy_files_to_storage(
 
                 with subtests.test(msg="Delete child metadata object"):
                     delete_s3_key(
-                        ResourceName.STORAGE_BUCKET_NAME.value, new_child_metadata_key, s3_client
+                        Resource.STORAGE_BUCKET_NAME.resource_name,
+                        new_child_metadata_key,
+                        s3_client,
                     )
 
                 # Then the root asset file is in the root prefix
                 with subtests.test(msg="Delete root asset object"):
                     delete_s3_key(
-                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        Resource.STORAGE_BUCKET_NAME.resource_name,
                         f"{new_prefix}/{root_asset_filename}",
                         s3_client,
                     )
@@ -238,7 +242,7 @@ def should_batch_copy_files_to_storage(
                 # Then the child asset file is in the root prefix
                 with subtests.test(msg="Delete child asset object"):
                     delete_s3_key(
-                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        Resource.STORAGE_BUCKET_NAME.resource_name,
                         f"{new_prefix}/{child_asset_filename}",
                         s3_client,
                     )
@@ -248,7 +252,7 @@ def should_batch_copy_files_to_storage(
                     delete_copy_job_files(
                         metadata_copy_job_result,
                         asset_copy_job_result,
-                        ResourceName.STORAGE_BUCKET_NAME.value,
+                        Resource.STORAGE_BUCKET_NAME.resource_name,
                         s3_client,
                         subtests,
                     )
