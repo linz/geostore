@@ -6,6 +6,7 @@ html/
 /htmlcov/
 /.idea/
 *.isorted
+/junit.xml
 .mutmut-cache
 mutmut.xml
 /.mypy_cache/
