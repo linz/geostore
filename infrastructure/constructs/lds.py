@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, Tags
 
-from geostore.resources import PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import PRODUCTION_ENVIRONMENT_NAME
 
 from .roles import MAX_SESSION_DURATION
 

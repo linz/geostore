@@ -13,7 +13,7 @@ from geostore.aws_message_attributes import (
     STRING_VALUE_KEY,
 )
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
@@ -44,7 +44,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
             }
         ),
-        bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.dataset_prefix}/{dataset_version}/{filename}",
     ) as dataset_version_metadata:
         response = lambda_handler(
@@ -71,7 +71,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
         with subtests.test(msg="success"):
             assert response == {
                 NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
-                f"{ResourceName.STORAGE_BUCKET_NAME.value}/"
+                f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
                 f"{dataset_version_metadata.key}"
             }
 

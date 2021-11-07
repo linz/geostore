@@ -19,7 +19,7 @@ from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_keys import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     STAC_ASSETS_KEY,
@@ -120,7 +120,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     catalog_metadata_filename = any_safe_filename()
     item_metadata_filename = any_safe_filename()
 
-    metadata_url_prefix = f"{S3_URL_PREFIX}{ResourceName.STAGING_BUCKET_NAME.value}/{key_prefix}"
+    metadata_url_prefix = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
+    )
     collection_metadata_url = f"{metadata_url_prefix}/{collection_metadata_filename}"
     catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
     item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
@@ -140,11 +142,11 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{first_asset_filename}",
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_contents),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{second_asset_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -157,7 +159,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 ],
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{catalog_metadata_filename}",
     ) as catalog_metadata_file, S3Object(
         file_object=json_dict_to_file_object(
@@ -176,7 +178,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 ],
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{collection_metadata_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
@@ -194,14 +196,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 ],
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ), Dataset() as dataset:
 
         # When
         try:
             dataset_versions_response = lambda_client.invoke(
-                FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                 Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
@@ -246,7 +248,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 f"/{dataset_versions_body[VERSION_ID_KEY]}/"
             )
-            storage_bucket_prefix = f"{S3_URL_PREFIX}{ResourceName.STORAGE_BUCKET_NAME.value}/"
+            storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
@@ -342,13 +344,13 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 imported_second_asset_key,
             ]:
                 with subtests.test(msg=f"Delete {key}"):
-                    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, key, s3_client)
+                    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, key, s3_client)
 
             with subtests.test(msg="Delete copy job files"):
                 delete_copy_job_files(
                     metadata_copy_job_result,
                     asset_copy_job_result,
-                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    Resource.STORAGE_BUCKET_NAME.resource_name,
                     s3_client,
                     subtests,
                 )
@@ -370,7 +372,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             },
         }
         status_response = lambda_client.invoke(
-            FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
+            FunctionName=Resource.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.resource_name,
             Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "GET",
@@ -403,7 +405,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
     with S3Object(
         file_object=BytesIO(initial_bytes=asset_contents),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{asset_filename}",
     ) as asset_s3_object, S3Object(
         file_object=json_dict_to_file_object(
@@ -419,7 +421,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 },
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{child_metadata_filename}",
     ) as child_metadata_file, S3Object(
         file_object=json_dict_to_file_object(
@@ -430,14 +432,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 ],
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{root_metadata_filename}",
     ) as root_metadata_file, Dataset() as dataset:
 
         # When
         try:
             dataset_versions_response = lambda_client.invoke(
-                FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+                FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                 Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
@@ -484,13 +486,13 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
                 new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
-                    delete_s3_key(ResourceName.STORAGE_BUCKET_NAME.value, new_key, s3_client)
+                    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, new_key, s3_client)
 
             with subtests.test(msg="Delete copy job files"):
                 delete_copy_job_files(
                     metadata_copy_job_result,
                     asset_copy_job_result,
-                    ResourceName.STORAGE_BUCKET_NAME.value,
+                    Resource.STORAGE_BUCKET_NAME.resource_name,
                     s3_client,
                     subtests,
                 )
@@ -512,7 +514,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             },
         }
         status_response = lambda_client.invoke(
-            FunctionName=ResourceName.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.value,
+            FunctionName=Resource.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.resource_name,
             Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "GET",
@@ -540,7 +542,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
 
     with S3Object(
         file_object=BytesIO(),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{asset_filename}",
     ) as asset_s3_object, S3Object(
         file_object=json_dict_to_file_object(
@@ -554,13 +556,13 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 },
             }
         ),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{metadata_filename}",
     ) as s3_metadata_file, Dataset() as dataset:
 
         # When creating a dataset version
         dataset_version_creation_response = lambda_client.invoke(
-            FunctionName=ResourceName.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.value,
+            FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
             Payload=dumps(
                 {
                     HTTP_METHOD_KEY: "POST",
@@ -597,7 +599,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
     for filename in [metadata_filename, asset_filename]:
         with subtests.test(msg=filename), raises(AssertionError):
             delete_s3_key(
-                ResourceName.STORAGE_BUCKET_NAME.value,
+                Resource.STORAGE_BUCKET_NAME.resource_name,
                 f"{dataset_prefix}/{dataset_version}/{filename}",
                 s3_client,
             )

@@ -14,7 +14,7 @@ from aws_cdk.core import Construct
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.notify_status_update.task import SLACK_URL_ENV_NAME
 from geostore.parameter_store import ParameterName
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
@@ -60,7 +60,7 @@ class Notify(Construct):
         step_function_topic = aws_sns.Topic(
             scope,
             "geostore-stepfunction-status-topic",
-            topic_name=ResourceName.SNS_TOPIC_NAME.value,
+            topic_name=Resource.SNS_TOPIC_NAME.resource_name,
         )
         sns_topic_arn_parameter = aws_ssm.StringParameter(
             self,
@@ -93,7 +93,7 @@ class Notify(Construct):
             scope,
             "geostore-cloudwatch-stepfunctions-rule",
             enabled=True,
-            rule_name=ResourceName.CLOUDWATCH_RULE_NAME.value,
+            rule_name=Resource.CLOUDWATCH_RULE_NAME.resource_name,
             description="Cloudwatch rule to detect import status updates",
             event_pattern=aws_events.EventPattern(
                 source=["aws.states"],

@@ -1,8 +1,8 @@
 from os import environ
 from unittest.mock import patch
 
-from geostore.environment import ENV_NAME_VARIABLE_NAME
-from geostore.resources import PRODUCTION_ENVIRONMENT_NAME, prefix_non_prod_name
+from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
+from geostore.resources import prefix_non_prod_name
 
 
 def should_return_original_name_when_production() -> None:

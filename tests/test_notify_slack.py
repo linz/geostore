@@ -25,7 +25,7 @@ from geostore.notify_status_update.task import (
     lambda_handler,
     publish_sns_message,
 )
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -248,7 +248,7 @@ def should_launch_notify_slack_endpoint_lambda_function(
 ) -> None:
 
     notify_status_lambda_arn = events_client.list_targets_by_rule(
-        Rule=ResourceName.CLOUDWATCH_RULE_NAME.value
+        Rule=Resource.CLOUDWATCH_RULE_NAME.resource_name
     )["Targets"][0]["Arn"]
 
     # When
