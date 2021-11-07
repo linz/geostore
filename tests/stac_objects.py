@@ -48,8 +48,8 @@ from .stac_generators import (
     any_hex_multihash,
     any_linz_lifecycle,
     any_linz_provider,
+    any_linz_security_classification,
     any_quality_lineage,
-    any_security_classification,
     any_version_version,
 )
 
@@ -59,7 +59,7 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
     LINZ_STAC_LIFECYCLE_KEY: any_linz_lifecycle(),
     LINZ_STAC_PROVIDERS_KEY: [any_linz_provider()],
-    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_security_classification(),
+    LINZ_STAC_SECURITY_CLASSIFICATION_KEY: any_linz_security_classification(),
     LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
     QUALITY_LINEAGE_KEY: any_quality_lineage(),
     STAC_DESCRIPTION_KEY: any_dataset_description(),
