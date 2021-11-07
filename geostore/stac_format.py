@@ -30,7 +30,8 @@ STAC_TYPE_KEY = "type"
 STAC_VERSION = "1.0.0"
 STAC_VERSION_KEY = "stac_version"
 
-LINZ_SCHEMA_DIRECTORY = "stac/v0.0.7/linz"
+LINZ_STAC_EXTENSIONS_PATH = "stac/v0.0.7"
+LINZ_SCHEMA_DIRECTORY = f"{LINZ_STAC_EXTENSIONS_PATH}/linz"
 LINZ_SCHEMA_PATH = f"{LINZ_SCHEMA_DIRECTORY}/schema.json"
 LINZ_STAC_EXTENSION_URL = f"https://linz.github.io/{LINZ_SCHEMA_PATH}"
 LINZ_STAC_CREATED_KEY = "linz:created"
@@ -39,7 +40,7 @@ LINZ_STAC_LIFECYCLE_KEY = "linz:lifecycle"
 LINZ_STAC_PROVIDERS_KEY = "linz:providers"
 LINZ_STAC_UPDATED_KEY = "linz:updated"
 
-QUALITY_SCHEMA_PATH = "stac/v0.0.7/quality/schema.json"
+QUALITY_SCHEMA_PATH = f"{LINZ_STAC_EXTENSIONS_PATH}/quality/schema.json"
 QUALITY_LINEAGE_KEY = "quality:lineage"
 
 VERSION_VERSION_KEY = "version"
