@@ -5,6 +5,7 @@ from glob import glob
 from hashlib import sha256, sha512
 from io import BytesIO, StringIO
 from json import JSONDecodeError, dumps, load
+from os.path import basename
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from unittest.mock import MagicMock, call, patch
 
@@ -35,6 +36,8 @@ from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     LINZ_SCHEMA_DIRECTORY,
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -66,6 +69,7 @@ from .general_generators import (
     any_error_message,
     any_file_contents,
     any_https_url,
+    any_past_datetime_string,
     any_program_name,
     any_safe_filename,
 )
@@ -371,10 +375,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
         metadata_stac_object[STAC_ASSETS_KEY] = {
             any_asset_name(): {
+                LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+                LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
                 STAC_HREF_KEY: first_asset_s3_object.url,
                 STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
             },
             any_asset_name(): {
+                LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+                LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
                 STAC_HREF_KEY: second_asset_s3_object.url,
                 STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
             },
@@ -456,10 +464,21 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     """
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
     submodule.
+
+
+    We only support fetching `s3://…` and relative URLs, so in the below we change all of them to be
+    relative.
     """
     for path in glob(f"geostore/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
         with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
             stac_object = load(file_handle)
+
+            for asset in stac_object.get("assets", {}).values():
+                asset["href"] = basename(asset["href"])
+
+            for link in stac_object.get("links"):
+                link["href"] = basename(link["href"])
+
             url_reader = MockJSONURLReader({path: stac_object})
             STACDatasetValidator(
                 any_hash_key(), url_reader, MockValidationResultFactory()
@@ -503,9 +522,7 @@ def should_treat_any_missing_collection_top_level_key_as_invalid(subtests: SubTe
 def should_treat_any_missing_item_top_level_key_as_invalid(subtests: SubTests) -> None:
     original_stac_object = MINIMAL_VALID_STAC_ITEM_OBJECT
     for key in original_stac_object:
-        with subtests.test(msg=key), raises(
-            ValidationError, match=f"^'{key}' is a required property"
-        ):
+        with subtests.test(msg=key), raises(ValidationError):
             stac_object = deepcopy(original_stac_object)
             stac_object.pop(key)
 
@@ -592,10 +609,14 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     second_asset_multihash = any_hex_multihash()
     stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: first_asset_url,
             STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
         },
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: second_asset_filename,
             STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },
@@ -636,10 +657,14 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     second_asset_multihash = any_hex_multihash()
     stac_object[STAC_ASSETS_KEY] = {
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: first_asset_url,
             STAC_FILE_CHECKSUM_KEY: first_asset_multihash,
         },
         any_asset_name(): {
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
             STAC_HREF_KEY: second_asset_filename,
             STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
         },

@@ -22,6 +22,8 @@ from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -59,7 +61,12 @@ from .aws_utils import (
     wait_for_copy_jobs,
 )
 from .file_utils import json_dict_to_file_object
-from .general_generators import any_file_contents, any_safe_file_path, any_safe_filename
+from .general_generators import (
+    any_file_contents,
+    any_past_datetime_string,
+    any_safe_file_path,
+    any_safe_filename,
+)
 from .stac_generators import any_asset_name, any_hex_multihash, sha256_hex_digest_to_multihash
 from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
@@ -133,12 +140,16 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     first_asset_hex_digest = sha256_hex_digest_to_multihash(
         sha256(first_asset_contents).hexdigest()
     )
+    first_asset_created = any_past_datetime_string()
+    first_asset_updated = any_past_datetime_string()
     second_asset_contents = any_file_contents()
     second_asset_filename = any_safe_filename()
     second_asset_name = any_asset_name()
     second_asset_hex_digest = sha256_hex_digest_to_multihash(
         sha256(second_asset_contents).hexdigest()
     )
+    second_asset_created = any_past_datetime_string()
+    second_asset_updated = any_past_datetime_string()
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
@@ -167,6 +178,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 STAC_ASSETS_KEY: {
                     second_asset_name: {
+                        LINZ_STAC_CREATED_KEY: second_asset_created,
+                        LINZ_STAC_UPDATED_KEY: second_asset_updated,
                         STAC_HREF_KEY: f"./{second_asset_filename}",
                         STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
                     },
@@ -186,6 +199,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
                 STAC_ASSETS_KEY: {
                     first_asset_name: {
+                        LINZ_STAC_CREATED_KEY: first_asset_created,
+                        LINZ_STAC_UPDATED_KEY: first_asset_updated,
                         STAC_HREF_KEY: first_asset_s3_object.url,
                         STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                     },
@@ -282,6 +297,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     STAC_ASSETS_KEY: {
                         second_asset_name: {
+                            LINZ_STAC_CREATED_KEY: second_asset_created,
+                            LINZ_STAC_UPDATED_KEY: second_asset_updated,
                             STAC_HREF_KEY: second_asset_filename,
                             STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
                         },
@@ -311,6 +328,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
                     STAC_ASSETS_KEY: {
                         first_asset_name: {
+                            LINZ_STAC_CREATED_KEY: first_asset_created,
+                            LINZ_STAC_UPDATED_KEY: first_asset_updated,
                             STAC_HREF_KEY: first_asset_filename,
                             STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                         },
@@ -413,6 +432,8 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 STAC_ASSETS_KEY: {
                     any_asset_name(): {
+                        LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+                        LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
                         STAC_HREF_KEY: asset_s3_object.url,
                         STAC_FILE_CHECKSUM_KEY: sha256_hex_digest_to_multihash(
                             sha256(asset_contents).hexdigest()
@@ -550,6 +571,8 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 STAC_ASSETS_KEY: {
                     any_asset_name(): {
+                        LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
+                        LINZ_STAC_UPDATED_KEY: any_past_datetime_string(),
                         STAC_HREF_KEY: asset_s3_object.url,
                         STAC_FILE_CHECKSUM_KEY: any_hex_multihash(),
                     },
