@@ -6,7 +6,7 @@ from aws_cdk.core import Construct, Tags
 
 from geostore.datasets_model import DatasetsTitleIdx
 from geostore.parameter_store import ParameterName
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.validation_results_model import ValidationOutcomeIdx
 
 from .removal_policy import REMOVAL_POLICY
@@ -52,7 +52,7 @@ class Storage(Construct):
         self.storage_bucket = aws_s3.Bucket(
             self,
             "storage-bucket",
-            bucket_name=ResourceName.STORAGE_BUCKET_NAME.value,
+            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,

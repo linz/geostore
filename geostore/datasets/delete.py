@@ -10,7 +10,7 @@ from ..api_responses import error_response, success_response
 from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
-from ..resources import ResourceName
+from ..resources import Resource
 from ..step_function_keys import DATASET_ID_SHORT_KEY
 from ..types import JsonObject
 
@@ -52,7 +52,7 @@ def delete_dataset(body: JsonObject) -> JsonObject:
 
     # Verify that the dataset is empty
     list_objects_response = S3_CLIENT.list_objects_v2(
-        Bucket=ResourceName.STORAGE_BUCKET_NAME.value, MaxKeys=1, Prefix=f"{dataset_id}/"
+        Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, MaxKeys=1, Prefix=f"{dataset_id}/"
     )
     if list_objects_response["KeyCount"]:
         return error_response(

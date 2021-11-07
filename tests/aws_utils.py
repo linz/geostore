@@ -31,7 +31,7 @@ from geostore.processing_assets_model import (
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.sts import get_account_number
 from geostore.types import JsonObject
@@ -445,4 +445,4 @@ def delete_copy_job_files(
 
 def get_s3_role_arn() -> str:
     account_id = get_account_number()
-    return f"arn:aws:iam::{account_id}:role/{ResourceName.STAGING_USERS_ROLE_NAME.value}"
+    return f"arn:aws:iam::{account_id}:role/{Resource.STAGING_USERS_ROLE_NAME.resource_name}"

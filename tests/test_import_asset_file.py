@@ -21,7 +21,7 @@ from geostore.import_dataset_file import (
     TASK_ID_KEY,
 )
 from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from geostore.resources import ResourceName
+from geostore.resources import Resource
 from geostore.s3 import CHUNK_SIZE
 from geostore.step_function_keys import S3_ROLE_ARN_KEY
 
@@ -88,11 +88,11 @@ def should_treat_unhandled_exception_as_permanent_failure(open_mock: MagicMock) 
 def should_copy_empty_file(s3_client: S3Client) -> None:
     # Given a single-chunk asset file
     target_filename = any_safe_filename()
-    target_bucket = ResourceName.STORAGE_BUCKET_NAME.value
+    target_bucket = Resource.STORAGE_BUCKET_NAME.resource_name
 
     with S3Object(
         file_object=BytesIO(),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=any_safe_filename(),
     ) as asset_file:
         event = {
@@ -128,11 +128,11 @@ def should_copy_multi_chunk_file(s3_client: S3Client) -> None:
     # Given a multi-chunk asset file
     asset_contents = any_file_contents(byte_count=CHUNK_SIZE + 1)
     target_filename = any_safe_filename()
-    target_bucket = ResourceName.STORAGE_BUCKET_NAME.value
+    target_bucket = Resource.STORAGE_BUCKET_NAME.resource_name
 
     with S3Object(
         file_object=BytesIO(initial_bytes=asset_contents),
-        bucket_name=ResourceName.STAGING_BUCKET_NAME.value,
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=any_safe_filename(),
     ) as asset_file:
         event = {

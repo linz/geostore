@@ -17,6 +17,7 @@ fail_under = 100
 branch = true
 omit = [
     ".venv/*",
+    "/nix/*",
 ]
 
 [tool.isort]
