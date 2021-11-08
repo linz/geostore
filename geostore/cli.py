@@ -10,12 +10,10 @@ from botocore.exceptions import NoCredentialsError, NoRegionError
 from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
 
-from geostore.datasets.create import TITLE_CHARACTERS
-from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
-
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from .dataset_keys import DATASET_KEY_SEPARATOR
+from .dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from .environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 from .resources import Resource
 from .step_function_keys import (
     DATASET_ID_SHORT_KEY,
