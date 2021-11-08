@@ -2,12 +2,16 @@ import sys
 from enum import IntEnum
 from http import HTTPStatus
 from json import dumps, load
+from os import environ
 from typing import Callable, Optional, Union
 
 import boto3
 from botocore.exceptions import NoCredentialsError, NoRegionError
 from typer import Option, Typer, secho
 from typer.colors import GREEN, RED, YELLOW
+
+from geostore.datasets.create import TITLE_CHARACTERS
+from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
@@ -24,11 +28,13 @@ from .step_function_keys import (
 )
 from .types import JsonList, JsonObject
 
+DATASET_ID_HELP = "Dataset ID, as printed when running `geostore dataset create`."
+
 HTTP_METHOD_CREATE = "POST"
 
-app = Typer()
-dataset_app = Typer()
-dataset_version_app = Typer()
+app = Typer(context_settings=dict(max_content_width=sys.maxsize))
+dataset_app = Typer(help="Operate on entire datasets.")
+dataset_version_app = Typer(help="Operate on dataset versions.")
 app.add_typer(dataset_app, name="dataset")
 app.add_typer(dataset_version_app, name="version")
 
@@ -44,8 +50,26 @@ class ExitCode(IntEnum):
     NO_REGION_SETTING = 5
 
 
-@dataset_app.command(name="create")
-def dataset_create(title: str = Option(...), description: str = Option(...)) -> None:
+@app.callback()
+def main(
+    environment_name: Optional[str] = Option(
+        None,
+        help="Set environment name, such as 'test'."
+        f" Overrides the value of ${ENV_NAME_VARIABLE_NAME}."
+        f"  [default: {PRODUCTION_ENVIRONMENT_NAME}]",
+    )
+) -> None:
+    if environment_name:
+        environ[ENV_NAME_VARIABLE_NAME] = environment_name
+    elif ENV_NAME_VARIABLE_NAME not in environ:
+        environ[ENV_NAME_VARIABLE_NAME] = PRODUCTION_ENVIRONMENT_NAME
+
+
+@dataset_app.command(name="create", help="Create a new dataset.")
+def dataset_create(
+    title: str = Option(..., help=f"Allowed characters: '{TITLE_CHARACTERS}'."),
+    description: str = Option(...),
+) -> None:
     request_object = {
         HTTP_METHOD_KEY: HTTP_METHOD_CREATE,
         BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
@@ -60,8 +84,8 @@ def dataset_create(title: str = Option(...), description: str = Option(...)) -> 
     )
 
 
-@dataset_app.command(name="list")
-def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
+@dataset_app.command(name="list", help="List datasets.")
+def dataset_list(id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)) -> None:
     body = {}
     get_output: GetOutputFunctionType
 
@@ -92,8 +116,8 @@ def dataset_list(id_: Optional[str] = Option(None, "--id")) -> None:
     )
 
 
-@dataset_app.command(name="delete")
-def dataset_delete(id_: str = Option(..., "--id")) -> None:
+@dataset_app.command(name="delete", help="Delete a dataset.")
+def dataset_delete(id_: str = Option(..., "--id", help=DATASET_ID_HELP)) -> None:
     handle_api_request(
         Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: id_}},
@@ -101,9 +125,19 @@ def dataset_delete(id_: str = Option(..., "--id")) -> None:
     )
 
 
-@dataset_version_app.command(name="create")
+@dataset_version_app.command(name="create", help="Create a dataset version.")
 def dataset_version_create(
-    dataset_id: str = Option(...), metadata_url: str = Option(...), s3_role_arn: str = Option(...)
+    dataset_id: str = Option(..., help=DATASET_ID_HELP),
+    metadata_url: str = Option(
+        ...,
+        help="S3 URL to the top level metadata file,"
+        " for example 's3://my-bucket/my-dataset/collection.json'.",
+    ),
+    s3_role_arn: str = Option(
+        ...,
+        help="ARN of the role which the Geostore should assume to read your dataset,"
+        " for example 'arn:aws:iam::1234567890:role/s3-reader'.",
+    ),
 ) -> None:
     def get_output(response_body: JsonObject) -> str:
         return f"{response_body[VERSION_ID_KEY]}\t{response_body[EXECUTION_ARN_KEY]}"
