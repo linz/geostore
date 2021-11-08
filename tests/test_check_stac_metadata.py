@@ -379,9 +379,8 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 STAC_FILE_CHECKSUM_KEY: second_asset_multihash,
             },
         }
-        metadata_content = dumps(metadata_stac_object).encode()
         with S3Object(
-            file_object=BytesIO(initial_bytes=metadata_content),
+            file_object=json_dict_to_file_object(metadata_stac_object),
             bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
             key=any_safe_filename(),
         ) as metadata_s3_object:
