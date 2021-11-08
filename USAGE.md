@@ -207,9 +207,9 @@ $ geostore version create --dataset-id=01FKPEP0SQG4W2QF8KSQB6EJCD --metadata-url
 
 #### Import process status
 
-Synopsis: `geostore version status --id=ID`
+Synopsis: `geostore version status --execution-arn=EXECUTION_ARN`
 
-`ID` is the import process ID printed by `geostore version create`.
+`EXECUTION_ARN` is the import process ID printed by `geostore version create`.
 
 This prints the current status of the dataset version import process started by
 `geostore version create`.
@@ -217,12 +217,8 @@ This prints the current status of the dataset version import process started by
 Example:
 
 ```console
-$ geostore version status --id=arn:aws:batch:ap-southeast-2:xxxx:job/example-arn
-Validation status: SUCCEEDED
-Metadata upload status: Pending
-Metadata upload errors: None
-Asset upload status: Pending
-Asset upload errors: None
+$ geostore version status --execution-arn=arn:aws:states:ap-southeast-2:702361495692:execution:processingdatasetversioncreation55809360-7likTQJZBsBG:2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA
+{"step_function": {"status": "Failed"}, "validation": {"status": "Failed", "errors": [{"check": "staging bucket access", "result": "Failed", "url": "s3://victor-linz-geostore/nfxmMIAJWntVmNO1syGD-01FKY7BE0Q1001AFQ8FSXSPREK/catalog.json", "details": {"message": "An error occurred (AccessDenied) when calling the GetObject operation: Access Denied"}}]}, "metadata_upload": {"status": "Skipped", "errors": []}, "asset_upload": {"status": "Skipped", "errors": []}}
 ```
 
 ## Endpoints
