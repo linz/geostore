@@ -59,7 +59,7 @@ def any_dataset_description() -> str:
     return random_string(100)
 
 
-def any_security_classification() -> str:
+def any_linz_security_classification() -> str:
     return choice(
         [
             "Unclassified",

@@ -43,6 +43,7 @@ from .aws_utils import (
     get_s3_role_arn,
     wait_for_copy_jobs,
 )
+from .file_utils import json_dict_to_file_object
 from .general_generators import any_file_contents, any_safe_filename
 from .stac_generators import (
     any_asset_name,
@@ -108,35 +109,31 @@ def should_batch_copy_files_to_storage(
         Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{child_asset_filename}",
     ) as child_asset_s3_object, S3Object(
-        BytesIO(
-            initial_bytes=dumps(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    STAC_ASSETS_KEY: {
-                        child_asset_name: {
-                            STAC_HREF_KEY: f"./{child_asset_filename}",
-                            STAC_FILE_CHECKSUM_KEY: child_asset_multihash,
-                        }
-                    },
-                }
-            ).encode()
+        json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_ASSETS_KEY: {
+                    child_asset_name: {
+                        STAC_HREF_KEY: f"./{child_asset_filename}",
+                        STAC_FILE_CHECKSUM_KEY: child_asset_multihash,
+                    }
+                },
+            }
         ),
         Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{child_metadata_filename}",
     ) as child_metadata_s3_object, S3Object(
-        BytesIO(
-            initial_bytes=dumps(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                    STAC_ASSETS_KEY: {
-                        root_asset_name: {
-                            STAC_HREF_KEY: root_asset_s3_object.url,
-                            STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
-                        },
+        json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_ASSETS_KEY: {
+                    root_asset_name: {
+                        STAC_HREF_KEY: root_asset_s3_object.url,
+                        STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                     },
-                    STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_s3_object.url, "rel": "child"}],
-                }
-            ).encode()
+                },
+                STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_s3_object.url, "rel": "child"}],
+            }
         ),
         Resource.STAGING_BUCKET_NAME.resource_name,
         f"{original_prefix}/{root_metadata_filename}",
