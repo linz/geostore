@@ -3,7 +3,7 @@ from io import BytesIO
 from json import dumps, loads
 from os import environ
 from re import MULTILINE, match
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from botocore.exceptions import NoCredentialsError, NoRegionError
 from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
@@ -15,6 +15,7 @@ from typer.testing import CliRunner
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
 from geostore.dataset_keys import DATASET_KEY_SEPARATOR
+from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY
@@ -322,3 +323,52 @@ def should_create_dataset_version(subtests: SubTests) -> None:
 
 def get_response_object(status_code: int, body: JsonObject) -> JsonObject:
     return {STATUS_CODE_KEY: status_code, BODY_KEY: body}
+
+
+@patch("geostore.cli.handle_api_request")
+def should_call_given_environment_function(
+    handle_api_request_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    environment_name = "any environment name"
+
+    with patch.dict(environ, {ENV_NAME_VARIABLE_NAME: environment_name}):
+        # When
+        result = CLI_RUNNER.invoke(
+            app, [f"--environment-name={environment_name}", "dataset", "list"]
+        )
+
+    # Then
+    with subtests.test(msg="should call the function in the given environment"):
+        handle_api_request_mock.assert_called_once_with(
+            f"{environment_name}-{Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value}", ANY, ANY
+        )
+
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+
+@patch("geostore.cli.handle_api_request")
+def should_default_to_production_environment(
+    handle_api_request_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    with patch.dict(environ):
+        del environ[ENV_NAME_VARIABLE_NAME]
+        # When
+        result = CLI_RUNNER.invoke(app, ["dataset", "list"])
+
+    # Then
+    with subtests.test(msg="should call the function in the given environment"):
+        handle_api_request_mock.assert_called_once_with(
+            Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value, ANY, ANY
+        )
+
+    with subtests.test(msg="should print nothing to standard output"):
+        assert result.stdout == ""
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
