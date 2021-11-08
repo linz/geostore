@@ -23,8 +23,7 @@ from geostore.aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
     STRING_VALUE_KEY,
 )
-from geostore.dataset_keys import DATASET_KEY_SEPARATOR
-from geostore.datasets.create import TITLE_PATTERN
+from geostore.dataset_properties import DATASET_KEY_SEPARATOR, TITLE_PATTERN
 from geostore.datasets.entrypoint import lambda_handler
 from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
 from geostore.populate_catalog.task import CATALOG_FILENAME

@@ -17,7 +17,7 @@ from pytest_subtests import SubTests
 
 from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from geostore.dataset_keys import DATASET_KEY_SEPARATOR
+from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX

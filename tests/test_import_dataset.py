@@ -10,7 +10,7 @@ from mypy_boto3_s3control import S3ControlClient
 from pytest import mark
 from pytest_subtests import SubTests
 
-from geostore.dataset_keys import DATASET_KEY_SEPARATOR
+from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.import_dataset.task import lambda_handler
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX

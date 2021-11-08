@@ -4,8 +4,7 @@ from uuid import uuid4
 
 from multihash import SHA2_256
 
-from geostore.dataset_keys import DATASET_KEY_SEPARATOR
-from geostore.datasets.create import TITLE_CHARACTERS
+from geostore.dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
 from geostore.types import JsonObject
 
 from .general_generators import (

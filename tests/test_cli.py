@@ -13,7 +13,7 @@ from typer.testing import CliRunner
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
-from geostore.dataset_keys import DATASET_KEY_SEPARATOR
+from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource

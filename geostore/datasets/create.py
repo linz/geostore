@@ -1,6 +1,5 @@
 """Create dataset function."""
 from http import HTTPStatus
-from string import ascii_letters, digits
 from typing import TYPE_CHECKING
 
 import boto3
@@ -14,6 +13,7 @@ from ..aws_message_attributes import (
     MESSAGE_ATTRIBUTE_TYPE_KEY,
     MESSAGE_ATTRIBUTE_TYPE_ROOT,
 )
+from ..dataset_properties import TITLE_PATTERN
 from ..datasets_model import datasets_model_with_meta
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import S3StacIO
@@ -31,9 +31,6 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     SQSServiceResource = object  # pragma: no mutate
     MessageAttributeValueTypeDef = dict  # pragma: no mutate
-
-TITLE_CHARACTERS = f"{ascii_letters}{digits}_-"
-TITLE_PATTERN = f"^[{TITLE_CHARACTERS}]+$"
 
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
