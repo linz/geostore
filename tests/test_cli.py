@@ -1,6 +1,5 @@
 from http import HTTPStatus
-from io import BytesIO
-from json import dumps, loads
+from json import loads
 from os import environ
 from re import MULTILINE, match
 from unittest.mock import MagicMock, patch
@@ -28,6 +27,7 @@ from .aws_utils import (
     delete_s3_key,
     wait_for_s3_key,
 )
+from .file_utils import json_dict_to_file_object
 from .general_generators import any_dictionary_key, any_name
 from .stac_generators import any_dataset_description, any_dataset_id, any_dataset_title
 
@@ -121,7 +121,7 @@ def should_report_dataset_creation_success(
     response_payload_object = get_response_object(
         HTTPStatus.CREATED, {DATASET_ID_SHORT_KEY: dataset_id}
     )
-    response_payload = BytesIO(initial_bytes=dumps(response_payload_object).encode())
+    response_payload = json_dict_to_file_object(response_payload_object)
     boto3_client_mock.return_value.invoke.return_value = InvocationResponseTypeDef(
         StatusCode=HTTPStatus.OK,
         FunctionError="",
@@ -203,12 +203,11 @@ def should_report_arbitrary_dataset_creation_failure(
     # Given an arbitrary error
     response_body = {any_dictionary_key(): any_name()}
     response_object = get_response_object(HTTPStatus.TOO_MANY_REQUESTS, response_body)
-    response_payload = dumps(response_object).encode()
     boto3_client_mock.return_value.invoke.return_value = InvocationResponseTypeDef(
         StatusCode=HTTPStatus.BAD_REQUEST,
         FunctionError="",
         LogResult="",
-        Payload=BytesIO(initial_bytes=response_payload),
+        Payload=json_dict_to_file_object(response_object),
         ExecutedVersion=LAMBDA_EXECUTED_VERSION,
     )
 
