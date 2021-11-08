@@ -1,3 +1,7 @@
+[submodule "file"]
+	path = geostore/check_stac_metadata/file
+	url = git@github.com:stac-extensions/file.git
+	branch = gh-pages
 [submodule "geojson-spec"]
 	path = geostore/check_stac_metadata/geojson-spec
 	url = https://github.com/geojson/schema.git

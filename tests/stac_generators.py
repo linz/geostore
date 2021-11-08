@@ -61,36 +61,84 @@ def any_dataset_description() -> str:
 def any_linz_security_classification() -> str:
     return choice(
         [
-            "Unclassified",
-            "IN-CONFIDENCE",
-            "SENSITIVE",
-            "RESTRICTED",
-            "CONFIDENTIAL",
-            "SECRET",
-            "TOP-SECRET",
+            "unclassified",
+            "in-confidence",
+            "sensitive",
+            "restricted",
+            "confidential",
+            "secret",
+            "top-secret",
         ]
     )
 
 
+def any_linz_geospatial_type() -> str:
+    return choice(
+        [
+            "black and white image",
+            "circular string",
+            "color image",
+            "compound curve",
+            "curve polygon",
+            "geometry",
+            "geometry collection",
+            "grayscale",
+            "grid",
+            "hyperspectral",
+            "multicurve",
+            "multilinestring",
+            "multipoint",
+            "multipolygon",
+            "multispectral",
+            "multisurface",
+            "linestring",
+            "point",
+            "point cloud",
+            "polygon",
+            "polyhedral surface",
+            "rgb",
+            "tin",
+            "triangle",
+        ]
+    )
+
+
+def any_linz_history() -> str:
+    """Arbitrary-length string"""
+    return random_string(20)
+
+
 def any_linz_lifecycle() -> str:
-    return choice(["Under Development", "Preview", "Ongoing", "Completed", "Deprecated"])
+    return choice(["under development", "preview", "ongoing", "completed", "deprecated"])
 
 
-def any_linz_provider() -> JsonObject:
+def any_provider(role: str) -> JsonObject:
     return {
         "name": any_name(),
         "description": any_description(),
-        "roles": [any_linz_provider_role()],
+        "roles": [role],
         "url": any_https_url(),
     }
 
 
-def any_linz_provider_role() -> str:
-    return choice(["manager", "custodian"])
+def any_linz_provider_custodian() -> JsonObject:
+    return any_provider("custodian")
 
 
-def any_quality_lineage() -> str:
-    return random_string(20)
+def any_linz_provider_manager() -> JsonObject:
+    return any_provider("manager")
+
+
+def any_provider_licensor() -> JsonObject:
+    return any_provider("licensor")
+
+
+def any_provider_producer() -> JsonObject:
+    return any_provider("producer")
+
+
+def any_epsg() -> int:
+    return randrange(1_000_000)
 
 
 def any_version_version() -> str:
