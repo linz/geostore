@@ -29,6 +29,7 @@ from .types import JsonList, JsonObject
 DATASET_ID_HELP = "Dataset ID, as printed when running `geostore dataset create`."
 
 HTTP_METHOD_CREATE = "POST"
+HTTP_METHOD_RETRIEVE = "GET"
 
 app = Typer(context_settings=dict(max_content_width=sys.maxsize))
 dataset_app = Typer(help="Operate on entire datasets.")
@@ -109,7 +110,7 @@ def dataset_list(id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)
 
     handle_api_request(
         Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
-        {HTTP_METHOD_KEY: "GET", BODY_KEY: body},
+        {HTTP_METHOD_KEY: HTTP_METHOD_RETRIEVE, BODY_KEY: body},
         get_output,
     )
 
@@ -150,6 +151,22 @@ def dataset_version_create(
                 S3_ROLE_ARN_KEY: s3_role_arn,
             },
         },
+        get_output,
+    )
+
+
+@dataset_version_app.command(name="status", help="Get status of dataset version creation.")
+def dataset_version_status(
+    execution_arn: str = Option(
+        ..., help="Execution ARN, as printed when running `geostore version create`."
+    )
+) -> None:
+    def get_output(response_body: JsonObject) -> str:
+        return dumps(response_body)
+
+    handle_api_request(
+        Resource.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.resource_name,
+        {HTTP_METHOD_KEY: HTTP_METHOD_RETRIEVE, BODY_KEY: {EXECUTION_ARN_KEY: execution_arn}},
         get_output,
     )
 
