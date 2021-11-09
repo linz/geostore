@@ -214,7 +214,7 @@ Examples:
 - Filter to a single dataset using the CLI:
 
   ```console
-  $ geostore dataset list --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+  $ geostore dataset list --id=01F9ZFRK12V0WFXJ94S0DHCP65
   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
   ```
 
