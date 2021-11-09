@@ -10,10 +10,11 @@ from geostore.api_keys import MESSAGE_KEY
 from geostore.check_files_checksums.task import main
 from geostore.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from geostore.error_response_keys import ERROR_KEY
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_FAILURE
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+from geostore.step_function import Outcome
 
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
@@ -55,4 +56,6 @@ def should_log_missing_item(subtests: SubTests) -> None:
             main()
 
         with subtests.test(msg="Log message"):
-            logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_log)
+            logger_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_log
+            )

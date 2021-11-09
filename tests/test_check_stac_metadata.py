@@ -29,7 +29,7 @@ from geostore.check_stac_metadata.utils import (
     STACDatasetValidator,
 )
 from geostore.import_metadata_file.task import S3_BODY_KEY
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_FAILURE
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -45,7 +45,7 @@ from geostore.stac_format import (
     STAC_ID_KEY,
     STAC_LINKS_KEY,
 )
-from geostore.step_function import get_hash_key
+from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
@@ -733,7 +733,9 @@ def should_report_when_the_dataset_has_no_assets(
             metadata_url
         )
         logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_FAILURE, error=NO_ASSETS_FOUND_ERROR_MESSAGE
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            outcome=Outcome.FAILED,
+            error=NO_ASSETS_FOUND_ERROR_MESSAGE,
         )
 
     with subtests.test(msg="Validation results"):

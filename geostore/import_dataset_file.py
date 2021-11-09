@@ -38,7 +38,7 @@ EXCEPTION_PREFIX = "Exception"
 RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
 LOGGER = get_log()
-LOG_MESSAGE_S3_BATCH_COPY_RESULT = "S3Batch:Result"
+LOG_MESSAGE_S3_BATCH_COPY_RESULT = "S3 Batch Result"
 
 
 def get_import_result(

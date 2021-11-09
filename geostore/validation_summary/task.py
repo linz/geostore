@@ -3,14 +3,14 @@ from linz_logger import get_log
 
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
-from ..logging_keys import LOG_MESSAGE_LAMBDA_START
+from ..logging_keys import LOG_MESSAGE_LAMBDA_START, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from ..step_function import Outcome
 from ..step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
 LOGGER = get_log()
-LOG_MESSAGE_VALIDATION_SUCCESS = "ValidationOutcome"
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -44,5 +44,5 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     )
 
     result = {SUCCESS_KEY: success}
-    LOGGER.debug(LOG_MESSAGE_VALIDATION_SUCCESS, details=success)
+    LOGGER.debug(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
     return result

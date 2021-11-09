@@ -14,8 +14,9 @@ from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import (
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
-    LOG_MESSAGE_VALIDATION_FAILURE,
+    LOG_MESSAGE_VALIDATION_COMPLETE,
 )
+from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
@@ -82,7 +83,9 @@ def should_return_error_when_schema_validation_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
+            logger_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=error
+            )
 
 
 @patch("geostore.check_stac_metadata.task.get_s3_client_for_role")

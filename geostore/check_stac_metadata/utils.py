@@ -10,7 +10,7 @@ from linz_logger import get_log
 
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
-from ..logging_keys import LOG_MESSAGE_VALIDATION_FAILURE
+from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
@@ -24,6 +24,7 @@ from ..stac_format import (
     STAC_TYPE_ITEM,
     STAC_TYPE_KEY,
 )
+from ..step_function import Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 from .stac_validators import (
@@ -87,13 +88,15 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details={MESSAGE_KEY: error_message},
             )
-            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=error_message)
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=error_message
+            )
             return
 
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=str(error))
+            LOGGER.error(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=str(error))
             return
 
         if not self.dataset_assets:
@@ -104,7 +107,11 @@ class STACDatasetValidator:
                 ValidationResult.FAILED,
                 details=error_details,
             )
-            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=NO_ASSETS_FOUND_ERROR_MESSAGE)
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                outcome=Outcome.FAILED,
+                error=NO_ASSETS_FOUND_ERROR_MESSAGE,
+            )
             return
 
         self.process_metadata()

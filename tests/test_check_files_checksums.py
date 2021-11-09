@@ -19,11 +19,11 @@ from geostore.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_FAILURE, LOG_MESSAGE_VALIDATION_SUCCESS
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from geostore.s3 import CHUNK_SIZE
-from geostore.step_function import get_hash_key
+from geostore.step_function import Outcome, get_hash_key
 from geostore.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -118,7 +118,7 @@ def should_validate_given_index(
         main()
 
         with subtests.test(msg="Log message"):
-            info_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_SUCCESS)
+            info_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
 
     with subtests.test(msg="Validate checksums"):
         assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
@@ -174,7 +174,9 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
         main()
 
         with subtests.test(msg="Log message"):
-            error_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_details)
+            error_log_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_details
+            )
 
     with subtests.test(msg="Validation result"):
         assert validation_results_factory_mock.mock_calls == [
