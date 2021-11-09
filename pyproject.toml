@@ -102,6 +102,7 @@ awscli = {version = "*", optional = true}
 boto3 = "*"
 cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
+linz-logger = {version = "*", optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
 pystac = {version = "*", optional = true}
@@ -110,7 +111,6 @@ smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 typer = "*"
 ulid-py = {version = "*", optional = true}
-linz-logger = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
