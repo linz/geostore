@@ -93,7 +93,7 @@ class STACDatasetValidator:
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
+            LOGGER.error(LOG_MESSAGE_VALIDATION_FAILURE, error=str(error))
             return
 
         if not self.dataset_assets:

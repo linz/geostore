@@ -153,7 +153,6 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     expected_details = {
         MESSAGE_KEY: f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
     }
-    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_details)
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     # When
 
@@ -175,7 +174,7 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
         main()
 
         with subtests.test(msg="Log message"):
-            error_log_mock.assert_has_calls([expected_log_call])
+            error_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_details)
 
     with subtests.test(msg="Validation result"):
         assert validation_results_factory_mock.mock_calls == [

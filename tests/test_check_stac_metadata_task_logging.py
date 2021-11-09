@@ -2,7 +2,7 @@ from copy import deepcopy
 from io import StringIO
 from json import dumps
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError
@@ -52,7 +52,6 @@ MINIMAL_PAYLOAD = {
 @patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
 def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=payload)
     get_s3_client_for_role_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
@@ -62,7 +61,7 @@ def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     ):
         lambda_handler(payload, any_lambda_context())
 
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=payload)
 
 
 @patch("geostore.check_stac_metadata.task.validate")
@@ -73,7 +72,6 @@ def should_return_error_when_schema_validation_fails(
     error_message = any_error_message()
     error = ValidationError(error_message)
     validate_schema_mock.side_effect = error
-    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
 
     with patch("geostore.check_stac_metadata.task.LOGGER.warning") as logger_mock:
         # When
@@ -84,7 +82,7 @@ def should_return_error_when_schema_validation_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_has_calls([expected_log_call])
+            logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=error)
 
 
 @patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
@@ -102,7 +100,6 @@ def should_log_error_when_assuming_s3_role_fails(
         operation_name,
     )
     get_s3_client_for_role_mock.side_effect = error
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
     expected_message = (
         f"An error occurred ({error_code}) when calling the {operation_name}"
         f" operation: {error_message}"
@@ -117,4 +114,4 @@ def should_log_error_when_assuming_s3_role_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_has_calls([expected_log_call])
+            logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error)

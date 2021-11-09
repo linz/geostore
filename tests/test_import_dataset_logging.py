@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
 from pytest import mark
@@ -46,13 +46,12 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
             S3_ROLE_ARN_KEY: any_role_arn(),
             VERSION_ID_KEY: any_dataset_version_id(),
         }
-        expected_payload_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
         # When
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_has_calls([expected_payload_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
 
 @patch("geostore.import_dataset.task.validate")
@@ -61,14 +60,13 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
 
     error_message = any_error_message()
     validate_schema_mock.side_effect = ValidationError(error_message)
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
     with patch("geostore.import_dataset.task.LOGGER.warning") as logger_mock:
         # When
         lambda_handler({}, any_lambda_context())
 
         # Then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
 
 @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
@@ -129,7 +127,6 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
     # Given
 
     create_job_mock.return_value = response = {"JobId": "Some Response"}
-    expected_response_log_call = call(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)
     head_object_mock.return_value = {"ETag": any_etag()}
 
     with Dataset() as dataset, patch(
@@ -149,4 +146,4 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
         )
 
         # Then
-        logger_mock.assert_has_calls([expected_response_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)

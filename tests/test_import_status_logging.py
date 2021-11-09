@@ -1,5 +1,5 @@
 from json import dumps
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
 
@@ -25,8 +25,6 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         BODY_KEY: {EXECUTION_ARN_KEY: any_arn_formatted_string()},
     }
 
-    expected_payload_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
-
     describe_step_function_mock.return_value = {
         "status": "RUNNING",
         "input": dumps(
@@ -43,7 +41,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         get_import_status(event)
 
         # Then
-        logger_mock.assert_has_calls([expected_payload_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
 
 @patch("geostore.import_status.get.validate")
@@ -52,7 +50,6 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
 
     error_message = any_error_message()
     validate_schema_mock.side_effect = ValidationError(error_message)
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
     with patch("geostore.import_status.get.LOGGER.warning") as logger_mock:
         # When
@@ -64,7 +61,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         )
 
         # Then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
 
 @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
@@ -78,9 +75,6 @@ def should_log_stepfunctions_status_response(
             {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
-    expected_response_log_call = call(
-        LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=describe_execution_response
-    )
 
     with patch("geostore.step_function.LOGGER.debug") as logger_mock, patch(
         "geostore.step_function.get_account_number"
@@ -90,4 +84,6 @@ def should_log_stepfunctions_status_response(
         get_import_status({EXECUTION_ARN_KEY: any_arn_formatted_string()})
 
         # Then
-        logger_mock.assert_has_calls([expected_response_log_call])
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=describe_execution_response
+        )

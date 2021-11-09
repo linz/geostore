@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from jsonschema import ValidationError
 from pynamodb.exceptions import DoesNotExist
@@ -32,13 +32,12 @@ def should_log_payload() -> None:
                 S3_ROLE_ARN_KEY: any_role_arn(),
             },
         }
-        expected_payload_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
         # When
         create_dataset_version(event)
 
         # Then
-        logger_mock.assert_has_calls([expected_payload_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
 
 @mark.infrastructure
@@ -46,10 +45,6 @@ def should_log_payload() -> None:
 def should_log_step_function_state_machine_response(start_execution_mock: MagicMock) -> None:
     # Given
     start_execution_mock.return_value = step_function_response = {"executionArn": "Some Response"}
-
-    expected_execution_log_call = call(
-        LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_function_response
-    )
 
     with Dataset() as dataset, patch(
         "geostore.dataset_versions.create.LOGGER.debug"
@@ -64,7 +59,9 @@ def should_log_step_function_state_machine_response(start_execution_mock: MagicM
         create_dataset_version(event)
 
         # Then
-        logger_mock.assert_has_calls([expected_execution_log_call])
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_function_response
+        )
 
 
 @patch("geostore.dataset_versions.create.validate")
@@ -75,14 +72,12 @@ def should_log_missing_argument_warning(validate_schema_mock: MagicMock) -> None
 
     payload = {HTTP_METHOD_KEY: "POST", BODY_KEY: {}}
 
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
-
     with patch("geostore.dataset_versions.create.LOGGER.warning") as logger_mock:
         # when
         create_dataset_version(payload)
 
         # then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
 
 
 @patch("geostore.dataset_versions.create.datasets_model_with_meta")
@@ -97,11 +92,9 @@ def should_log_warning_if_dataset_does_not_exist(datasets_model_mock: MagicMock)
         S3_ROLE_ARN_KEY: any_role_arn(),
     }
 
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
-
     with patch("geostore.dataset_versions.create.LOGGER.warning") as logger_mock:
         # when
         create_dataset_version(payload)
 
         # then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)

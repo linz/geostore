@@ -725,7 +725,6 @@ def should_report_when_the_dataset_has_no_assets(
 ) -> None:
     metadata_url = any_s3_url()
     url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
-    expected_message = call(LOG_MESSAGE_VALIDATION_FAILURE, error=NO_ASSETS_FOUND_ERROR_MESSAGE)
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(
         msg="Logging"
@@ -733,7 +732,9 @@ def should_report_when_the_dataset_has_no_assets(
         STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).run(
             metadata_url
         )
-        logger_mock.assert_has_calls([expected_message])
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_FAILURE, error=NO_ASSETS_FOUND_ERROR_MESSAGE
+        )
 
     with subtests.test(msg="Validation results"):
         validation_results_factory_mock.save.assert_any_call(

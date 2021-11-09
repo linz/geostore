@@ -1,6 +1,6 @@
 import sys
 from os import environ
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 from pynamodb.exceptions import DoesNotExist
 from pytest import mark, raises
@@ -37,8 +37,6 @@ def should_log_missing_item(subtests: SubTests) -> None:
         },
     }
 
-    expected_log_call = call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_log)
-
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
@@ -57,4 +55,4 @@ def should_log_missing_item(subtests: SubTests) -> None:
             main()
 
         with subtests.test(msg="Log message"):
-            logger_mock.assert_has_calls([expected_log_call])
+            logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_FAILURE, error=expected_log)

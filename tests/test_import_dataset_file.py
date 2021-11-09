@@ -1,6 +1,6 @@
 from json import dumps
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
 from botocore.exceptions import ClientError
@@ -72,7 +72,6 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         INVOCATION_ID_KEY: any_invocation_id(),
         INVOCATION_SCHEMA_VERSION_KEY: any_invocation_schema_version(),
     }
-    expected_log_call = call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
@@ -81,7 +80,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -125,15 +124,13 @@ def should_log_result(importer_mock: MagicMock) -> None:
         ],
     }
 
-    expected_log_call = call(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=expected_log_entry)
-
     with patch("geostore.import_dataset_file.LOGGER.debug") as logger_mock, patch(
         "geostore.import_dataset_file.get_s3_client_for_role"
     ):
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=expected_log_entry)
 
 
 @patch("geostore.import_metadata_file.task.importer")

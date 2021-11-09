@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 
@@ -21,5 +21,4 @@ def should_log_missing_parameter_name(parameter_name_mock: MagicMock) -> None:
         with raises(SSM_CLIENT.exceptions.ParameterNotFound):
             get_param(parameter_name_mock.INVALID)
 
-        expected_log_call = call(LOG_MESSAGE_PARAMETER_NOT_FOUND, parameter_value=parameter_name)
-        logger_mock.assert_has_calls([expected_log_call])
+        logger_mock.assert_any_call(LOG_MESSAGE_PARAMETER_NOT_FOUND, parameter_value=parameter_name)
