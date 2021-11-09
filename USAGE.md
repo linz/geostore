@@ -117,21 +117,49 @@ Example of AWS service account authentication and authorization in to Geostore u
   export AWS_PROFILE geostore-users
   ```
 
-## Command line
+## Use
 
-To install the Geostore CLI, run `pip3 install geostore`.
+You can communicate with a Geostore instance using either the low-level application programming
+interface (API) or the high-level command-line interface (CLI). The following documentation explains
+how to work with both.
 
-The general synopsis is `geostore NOUN VERB [PARAMETER…]`. `NOUN` is the type of thing the command
-is operating on, for example `version` when dealing with dataset versions. `VERB` is the action it
-is telling the system to take, for example `list` to show a listing of the relevant objects, or
-`create` to create such an object. Verbs may have parameters in the form of key/value pairs.
-`--KEY=VALUE` means the parameter is mandatory, and `[--KEY=VALUE]` means the parameter is optional.
+### API introduction
 
-To show the full synopsis, run `geostore --help`.
+The API endpoints include:
 
-Each action and its relevant options are explained in the following sections.
+- [Dataset space](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/datasets),
+  to create, get, update or delete individual datasets, and to list all datasets.
+- [Dataset versions](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/dataset-versions),
+  to create new versions of datasets. The S3 files which constitute the dataset are all linked to a
+  specific dataset version.
+- [Import status](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/import-status),
+  to get information about the status of dataset version import, including errors and issues.
 
-### Dataset Space
+These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
+the AWS web interface (links above) or via any tool using the AWS API, such as the
+[official AWS CLI](https://aws.amazon.com/cli/). AWS CLI API requests have the form
+`aws lambda invoke --function-name=LAMBDA-FUNCTION-NAME --payload=JSON /dev/stdout`.
+
+### CLI introduction
+
+The CLI is a convenience function built on top of the API for easier use. Rather than using JSON as
+the primary input and output format it takes only the minimal input necessary and prints only the
+minimal new information. In cases of more complex output like the dataset version import status the
+JSON response is output verbatim, since it can contain an arbitrary amount of relevant information.
+
+To _install_ the Geostore CLI, run `pip3 install geostore`.
+
+The general _synopsis_ is `geostore [GLOBAL_PARAMETER…] NOUN VERB [ACTION_PARAMETER…]`. `NOUN` is
+the type of thing the command is operating on, for example `version` when dealing with dataset
+versions. `VERB` is the action it is telling the system to take, for example `list` to show a
+listing of the relevant objects, or `create` to create such an object. Verbs may have parameters in
+the form of key/value pairs. `--KEY=VALUE` means the parameter is mandatory, and `[--KEY=VALUE]`
+means the parameter is optional.
+
+Run `geostore --help` to show the overall synopsis. `geostore NOUN --help` and
+`geostore NOUN VERB --help` show subcommand synopsis.
+
+### Dataset space
 
 Synopsis: `geostore dataset VERB [PARAMETER…]`
 
@@ -141,11 +169,25 @@ Synopsis: `geostore dataset create --title=TITLE --description=DESCRIPTION`
 
 This creates a new dataset space and prints the new dataset ID on standard output when successful.
 
-Example:
+**Note:** it is important to choose an accurate and stable title. Changing the title is complex,
+time-consuming, risky and lossy. If you need to change the title, choose between
+[changing the dataset title by creating a copy of the latest dataset version](#Changing-the-dataset-title-by-creating-a-copy-of-the-latest-dataset-version)
+and
+[changing the dataset title by renaming and moving the files](#Changing-the-dataset-title-by-renaming-and-moving-the-files)
+below.
+
+CLI example:
 
 ```console
 $ geostore dataset create --title=Auckland_2020 --description='Aerial imagery from April 2020'
 Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+```
+
+API example:
+
+```console
+$ aws lambda invoke --function-name=datasets --payload='{"http_method": "POST", "body": {"title": "Auckland_2020", "description": "Aerial imagery from April 2020"}}' /dev/stdout
+{"status_code": 201, "body": {"created_at": "2021-05-26T21:17:47.758448+0000", "pk": "DATASET#01F6N8MSVEY2Y6EPFZ5XR0KFW1", "title": "Auckland_2020", "updated_at": "2021-05-26T21:17:47.758538+0000", "id": "01F6N8MSVEY2Y6EPFZ5XR0KFW1"}}
 ```
 
 #### List
@@ -156,7 +198,7 @@ Prints a listing of datasets, optionally filtered by the dataset ID.
 
 Examples:
 
-- List all datasets:
+- List all datasets using the CLI:
 
   ```console
   $ geostore dataset list
@@ -164,11 +206,22 @@ Examples:
   Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1
   ```
 
-- Filter to a single dataset:
+- List all datasets using the API:
+  ```console
+  $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
+  {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+  ```
+- Filter to a single dataset using the CLI:
 
   ```console
   $ geostore dataset list --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+  ```
+
+- Filter to a single dataset using the API:
+  ```console
+  $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+  {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
   ```
 
 #### Delete
@@ -180,10 +233,17 @@ Synopsis: `geostore dataset delete --id=ID`
 Deletes a dataset. Will only work if there are no versions in the dataset. This command does not
 print anything when successful.
 
-Example:
+CLI example:
 
 ```console
 $ geostore dataset delete --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+```
+
+API example:
+
+```console
+$ aws lambda invoke --function-name=datasets --payload='{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+{"status_code": 204, "body": {}}
 ```
 
 ### Dataset version
@@ -198,11 +258,18 @@ Creates a new dataset version. It returns immediately, while the import process 
 prints the new dataset version ID and the ID of the import process on standard output in case of
 success.
 
-Example:
+CLI example:
 
 ```console
 $ geostore version create --dataset-id=01FKPEP0SQG4W2QF8KSQB6EJCD --metadata-url=s3://my-staging/Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65/catalog.json --s3-role-arn=arn:aws:iam::702361495692:role/s3-readers
 2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA	arn:aws:states:ap-southeast-2:702361495692:execution:processingdatasetversioncreation55809360-7likTQJZBsBG:2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA
+```
+
+API example:
+
+```console
+$ aws lambda invoke --function-name=dataset-versions --payload='{"http_method": "POST","body": {"id": "cb8a197e649211eb955843c1de66417d","metadata_url": "s3://example-s3-url","s3_role_arn": "arn:aws:iam::1234567890:role/example-role"}}' /dev/stdout
+{"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
 ```
 
 #### Import process status
@@ -214,141 +281,18 @@ Synopsis: `geostore version status --execution-arn=EXECUTION_ARN`
 This prints the current status of the dataset version import process started by
 `geostore version create`.
 
-Example:
+CLI example:
 
 ```console
 $ geostore version status --execution-arn=arn:aws:states:ap-southeast-2:702361495692:execution:processingdatasetversioncreation55809360-7likTQJZBsBG:2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA
 {"step_function": {"status": "Succeeded"}, "validation": {"status": "Passed", "errors": []}, "metadata_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}, "asset_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}}
 ```
 
-## Endpoints
-
-There are several end user interaction points in Geostore:
-
-- A
-  [dataset space endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/datasets),
-  to create, get, update or delete individual datasets, and to list all datasets
-- A
-  [dataset versions endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/dataset-versions),
-  to create new versions of datasets. The S3 files which constitute the dataset are all linked to a
-  specific dataset version.
-- An
-  [import status endpoint](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/import-status),
-  to get information about the status of dataset version import, including errors and issues
-
-These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
-the AWS web interface (links above) or via any tool using the AWS API, such as the commands below.
-
-### Endpoint Request Format
-
-```bash
-aws lambda invoke --function-name GEOSTORE-LAMBDA-FUNCTION-ENDPOINT-NAME \
-    --payload 'REQUEST-PAYLOAD-JSON' /dev/stdout
-```
-
-### Dataset Space Endpoint Usage Examples
-
-#### Dataset creation request
+API example:
 
 ```console
-$ aws lambda invoke --function-name datasets \
-    --payload '{"http_method": "POST", "body": {"title": "Auckland_2020", "description": "Aerial Imagery from APR 2020"}}' /dev/stdout
-
-{"status_code": 201, "body": {"created_at": "2021-05-26T21:17:47.758448+0000", "pk": "DATASET#01F6N8MSVEY2Y6EPFZ5XR0KFW1", "title": "Auckland_2020", "updated_at": "2021-05-26T21:17:47.758538+0000", "id": "01F6N8MSVEY2Y6EPFZ5XR0KFW1"}}
-```
-
-Please note that it is important to choose an accurate and stable title. Changing the title is
-complex, time-consuming, risky and lossy. If you need to change the title, choose between
-[changing the dataset title by creating a copy of the latest dataset version](#Changing-the-dataset-title-by-creating-a-copy-of-the-latest-dataset-version)
-and
-[changing the dataset title by renaming and moving the files](#Changing-the-dataset-title-by-renaming-and-moving-the-files)
-below.
-
-#### All datasets listing request
-
-```console
-$ aws lambda invoke --function-name datasets \
-    --payload '{"http_method": "GET", "body": {}}' /dev/stdout
-
-{"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
-```
-
-#### Single dataset listing request
-
-```console
-$ aws lambda invoke --function-name datasets \
-    --payload '{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
-    /dev/stdout
-
-{"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-```
-
-#### Dataset delete request
-
-```console
-$ aws lambda invoke --function-name datasets \
-    --payload '{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' \
-    /dev/stdout
-
-{"status_code": 204, "body": {}}
-```
-
-#### Changing the dataset title by creating a copy of the latest dataset version
-
-This is the simplest way to change a dataset title, but there will be no explicit connection between
-the new and old datasets. Anyone wishing to go back beyond the rename of a dataset needs to be aware
-of this rename and has to either know or find the original dataset title.
-
-1. [Create a new dataset](#Dataset-creation-request)
-1. [Create a new dataset version](#Dataset-Version-creation-request) for the dataset created above,
-   using a `metadata_url` pointing to the latest version of the original dataset.
-1. [Wait for the import to finish](#Import-Status-Endpoint-Usage-Examples).
-1. Optional: if the original dataset can be removed at this point (or sometime in the future),
-   please let the Geostore product team know, and we'll arrange it.
-
-#### Changing the dataset title by renaming and moving the files
-
-This process is more cumbersome and time-consuming than the above, and results links to the old
-dataset being broken rather than slowly phased out, but can be followed if necessary.
-
-1. Send a request to the product team asking for a rename, specifying the current and new title of
-   the dataset. The product team then takes care of the rest of the process:
-   1. Schedule necessary downtime and notify users.
-   1. Turn off external access to the whole or part of the system to avoid any conflicts.
-   1. Run a manual rename of all the files in the relevant dataset.
-   1. Use the `${ENV}-datasets` endpoint to rename the dataset in the database.
-   1. Re-enable external access and notify users.
-   1. Notify requester about the name change completion.
-
-### Dataset Version Endpoint Usage Examples
-
-#### Dataset Version creation request
-
-```console
-$ aws lambda invoke --function-name dataset-versions \
-   --payload '{
-     "http_method": "POST",
-     "body": {
-       "id": "cb8a197e649211eb955843c1de66417d",
-       "metadata_url": "s3://example-s3-url",
-       "s3_role_arn": "arn:aws:iam::1234567890:role/example-role"
-     }
-   }' \
-   /dev/stdout
-
-{"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
-```
-
-### Import Status Endpoint Usage Examples
-
-#### Get Import Status request
-
-```console
-$ aws lambda invoke --function-name import-status \
-   --payload '{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' \
-   /dev/stdout
-
-{"status_code": 200, "body": {"validation":{ "status": "SUCCEEDED"}, "metadata_upload":{"status": "Pending", "errors":[]}, "asset_upload":{"status": "Pending", "errors":[]}}}
+$ aws lambda invoke --function-name=import-status --payload='{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' /dev/stdout
+{"step_function": {"status": "Succeeded"}, "validation": {"status": "Passed", "errors": []}, "metadata_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}, "asset_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}}
 ```
 
 ### Receive Import Status updates by subscribing to our AWS SNS Topic
@@ -433,6 +377,33 @@ See
 ```
 
 Note: the output field will only be populated above when the Step Function has succeeded.
+
+#### Changing the dataset title by creating a copy of the latest dataset version
+
+This is the simplest way to change a dataset title, but there will be no explicit connection between
+the new and old datasets. Anyone wishing to go back beyond the rename of a dataset needs to be aware
+of this rename and has to either know or find the original dataset title.
+
+1. [Create a new dataset](#Dataset-creation-request)
+1. [Create a new dataset version](#Dataset-Version-creation-request) for the dataset created above,
+   using a `metadata_url` pointing to the latest version of the original dataset.
+1. [Wait for the import to finish](#Import-Status-Endpoint-Usage-Examples).
+1. Optional: if the original dataset can be removed at this point (or sometime in the future),
+   please let the Geostore product team know, and we'll arrange it.
+
+#### Changing the dataset title by renaming and moving the files
+
+This process is more cumbersome and time-consuming than the above, and results links to the old
+dataset being broken rather than slowly phased out, but can be followed if necessary.
+
+1. Send a request to the product team asking for a rename, specifying the current and new title of
+   the dataset. The product team then takes care of the rest of the process:
+   1. Schedule necessary downtime and notify users.
+   1. Turn off external access to the whole or part of the system to avoid any conflicts.
+   1. Run a manual rename of all the files in the relevant dataset.
+   1. Use the `${ENV}-datasets` endpoint to rename the dataset in the database.
+   1. Re-enable external access and notify users.
+   1. Notify requester about the name change completion.
 
 ### On STAC IDs
 
