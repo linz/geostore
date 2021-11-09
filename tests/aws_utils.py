@@ -11,8 +11,6 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
-from botocore.auth import EMPTY_SHA256_HASH
-from multihash import SHA2_256
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
@@ -48,9 +46,6 @@ from .general_generators import (
     random_string,
 )
 from .stac_generators import any_dataset_id, any_dataset_title
-
-SHA256_BYTE_COUNT = len(EMPTY_SHA256_HASH) >> 1
-EMPTY_FILE_MULTIHASH = f"{SHA2_256:x}{SHA256_BYTE_COUNT:x}{EMPTY_SHA256_HASH}"
 
 DELETE_OBJECTS_MAX_KEYS = 1000
 
