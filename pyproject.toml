@@ -45,7 +45,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "geostore"
-version = "0.1.6"
+version = "0.1.7"
 description = "Central storage, management and access for important geospatial datasets developed by LINZ"
 authors = [
     "Bill M. Nelson <bmnelson@linz.govt.nz>",
@@ -106,6 +106,7 @@ linz-logger = {version = "*", optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
 pystac = {version = "*", optional = true}
+single-source = "*"
 slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
