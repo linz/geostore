@@ -180,7 +180,7 @@ CLI example:
 
 ```console
 $ geostore dataset create --title=Auckland_2020 --description='Aerial imagery from April 2020'
-Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+01F9ZFRK12V0WFXJ94S0DHCP65
 ```
 
 API example:
