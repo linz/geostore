@@ -153,8 +153,9 @@ class STACDatasetValidator:
             )
             raise
 
-        if object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY) != "unclassified":
-            raise InvalidSecurityClassificationError()
+        security_classification = object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY)
+        if security_classification != "unclassified":
+            raise InvalidSecurityClassificationError(security_classification)
 
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
         self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})

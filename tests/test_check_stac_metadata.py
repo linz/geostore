@@ -699,13 +699,15 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
 def should_raise_exception_when_loading_not_unclassified_dataset() -> None:
     metadata_url = any_s3_url()
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = "in-confidence"
+
+    security_classification = "in-confidence"
+    stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = security_classification
 
     url_reader = MockJSONURLReader({metadata_url: stac_object})
     validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
 
     # When
-    with raises(InvalidSecurityClassificationError):
+    with raises(InvalidSecurityClassificationError, match=security_classification):
         validator.validate(metadata_url)
 
 
