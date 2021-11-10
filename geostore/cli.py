@@ -1,13 +1,16 @@
 import sys
 from enum import IntEnum
 from http import HTTPStatus
+from importlib.metadata import version
 from json import dumps, load
 from os import environ
+from pathlib import Path
 from typing import Callable, Optional, Union
 
 import boto3
 from botocore.exceptions import NoCredentialsError, NoRegionError
-from typer import Option, Typer, secho
+from single_source import get_version
+from typer import Exit, Option, Typer, echo, secho
 from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
@@ -49,6 +52,18 @@ class ExitCode(IntEnum):
     NO_REGION_SETTING = 5
 
 
+def print_version(value: bool) -> None:
+    if value:
+        # Only works in dev env
+        version_string = get_version(__name__, Path(__file__).parent.parent)
+        if not version_string:  # pragma: no cover
+            # Only works when package is installed
+            version_string = version("geostore")
+
+        echo(version_string)
+        raise Exit()
+
+
 @app.callback()
 def main(
     environment_name: Optional[str] = Option(
@@ -56,7 +71,8 @@ def main(
         help="Set environment name, such as 'test'."
         f" Overrides the value of ${ENV_NAME_VARIABLE_NAME}."
         f"  [default: {PRODUCTION_ENVIRONMENT_NAME}]",
-    )
+    ),
+    __version: Optional[bool] = Option(None, "--version", callback=print_version, is_eager=True),
 ) -> None:
     if environment_name:
         environ[ENV_NAME_VARIABLE_NAME] = environment_name
