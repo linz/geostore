@@ -495,3 +495,18 @@ def should_default_to_production_environment(
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""
+
+
+def should_print_version_information(subtests: SubTests) -> None:
+    # When
+    result = CLI_RUNNER.invoke(app, ["--version"])
+
+    # Then
+    with subtests.test(msg="should print version number to standard output"):
+        assert match(r"^\d+\.\d+\.\d+\n$", result.stdout, flags=MULTILINE)
+
+    with subtests.test(msg="should print nothing to standard error"):
+        assert result.stderr == ""
+
+    with subtests.test(msg="should indicate success via exit code"):
+        assert result.exit_code == 0, result
