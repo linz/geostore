@@ -26,6 +26,7 @@ from geostore.check_stac_metadata.utils import (
     NO_ASSETS_FOUND_ERROR_MESSAGE,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
 from geostore.import_metadata_file.task import S3_BODY_KEY
@@ -38,6 +39,7 @@ from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     LINZ_SCHEMA_DIRECTORY,
     LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
     LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
@@ -692,6 +694,19 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
     with subtests.test():
         assert validator.dataset_metadata == expected_metadata
+
+
+def should_raise_exception_when_loading_not_unclassified_dataset() -> None:
+    metadata_url = any_s3_url()
+    stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
+    stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = "in-confidence"
+
+    url_reader = MockJSONURLReader({metadata_url: stac_object})
+    validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
+
+    # When
+    with raises(InvalidSecurityClassificationError):
+        validator.validate(metadata_url)
 
 
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
