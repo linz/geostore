@@ -16,6 +16,7 @@ from ..processing_assets_model import ProcessingAssetType, processing_assets_mod
 from ..s3 import S3_URL_PREFIX
 from ..stac_format import (
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
+    LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
@@ -154,7 +155,17 @@ class STACDatasetValidator:
             raise
 
         security_classification = object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY)
-        if security_classification != "unclassified":
+        if security_classification != LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED:
+            self.validation_result_factory.save(
+                url,
+                Check.SECURITY_CLASSIFICATION,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: "Expected security classification of "
+                    f"'{LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED}'. "
+                    f"Got '{security_classification}'."
+                },
+            )
             raise InvalidSecurityClassificationError(security_classification)
 
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)

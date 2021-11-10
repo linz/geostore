@@ -40,6 +40,7 @@ from geostore.stac_format import (
     LINZ_SCHEMA_DIRECTORY,
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
+    LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED,
     LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
@@ -696,7 +697,7 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         assert validator.dataset_metadata == expected_metadata
 
 
-def should_raise_exception_when_loading_not_unclassified_dataset() -> None:
+def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTests) -> None:
     metadata_url = any_s3_url()
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
 
@@ -704,11 +705,26 @@ def should_raise_exception_when_loading_not_unclassified_dataset() -> None:
     stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = security_classification
 
     url_reader = MockJSONURLReader({metadata_url: stac_object})
-    validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
+    mock_validation_result_factory = MockValidationResultFactory()
+    validator = STACDatasetValidator(any_hash_key(), url_reader, mock_validation_result_factory)
 
-    # When
-    with raises(InvalidSecurityClassificationError, match=security_classification):
-        validator.validate(metadata_url)
+    with subtests.test("Error raised is correct"):
+        with raises(InvalidSecurityClassificationError, match=security_classification):
+            validator.validate(metadata_url)
+
+    with subtests.test("Error is part of results"):
+        assert mock_validation_result_factory.mock_calls == [
+            call.save(
+                metadata_url,
+                Check.SECURITY_CLASSIFICATION,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: "Expected security classification of "
+                    f"'{LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED}'. "
+                    f"Got '{security_classification}'."
+                },
+            ),
+        ]
 
 
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
