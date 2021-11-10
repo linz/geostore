@@ -9,11 +9,15 @@ import smart_open
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
-from ..api_keys import EVENT_KEY
 from ..boto3_config import CONFIG
-from ..error_response_keys import ERROR_KEY, ERROR_MESSAGE_KEY
+from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from ..logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_S3_BATCH_RESPONSE,
+)
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -24,7 +28,6 @@ from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
-    S3_BATCH_RESPONSE_KEY,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
@@ -114,7 +117,7 @@ class Importer:
                 ),
                 consistent_read=True,
             ):
-                LOGGER.debug(dumps({"Adding file to manifest": item.url}))
+                LOGGER.debug(f"Adding {item.url} to manifest")
                 _, key = get_bucket_and_key_from_url(item.url)
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -159,14 +162,14 @@ class Importer:
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
             ClientRequestToken=uuid4().hex,
         )
-        LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: response}, default=str))
+        LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)
 
         return response["JobId"]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
     # validate input
     try:
@@ -191,7 +194,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(dumps({ERROR_KEY: error}, default=str))
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error.message)
         return {ERROR_MESSAGE_KEY: error.message}
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc

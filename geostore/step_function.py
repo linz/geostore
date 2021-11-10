@@ -1,5 +1,5 @@
 from enum import Enum
-from json import dumps, loads
+from json import loads
 from typing import TYPE_CHECKING, Optional
 
 import boto3
@@ -8,6 +8,7 @@ from linz_logger import get_log
 from .api_keys import SUCCESS_KEY
 from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
+from .logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE, LOG_MESSAGE_STEP_FUNCTION_RESPONSE
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -23,7 +24,6 @@ from .step_function_keys import (
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
-    S3_BATCH_RESPONSE_KEY,
     S3_BATCH_STATUS_FAILED,
     STATUS_KEY,
     STEP_FUNCTION_KEY,
@@ -95,7 +95,7 @@ def get_tasks_status(
 def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(executionArn=execution_arn_key)
     assert "status" in step_function_resp, step_function_resp
-    LOGGER.debug(dumps({"step function response": step_function_resp}, default=str))
+    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_function_resp)
 
     step_function_input = loads(step_function_resp["input"])
     step_function_output = loads(step_function_resp.get("output", "{}"))
@@ -162,7 +162,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    LOGGER.debug(dumps({S3_BATCH_RESPONSE_KEY: s3_batch_copy_resp}, default=str))
+    LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, response=s3_batch_copy_resp)
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
     failure_reasons = s3_batch_copy_resp["Job"]["FailureReasons"]

@@ -1,6 +1,5 @@
 import sys
 from io import BytesIO
-from json import dumps
 from os import environ
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
@@ -11,7 +10,7 @@ from multihash import SHA2_256
 from pytest import raises
 from pytest_subtests import SubTests
 
-from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
+from geostore.api_keys import MESSAGE_KEY
 from geostore.check import Check
 from geostore.check_files_checksums.task import main
 from geostore.check_files_checksums.utils import (
@@ -20,10 +19,11 @@ from geostore.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from geostore.s3 import CHUNK_SIZE
-from geostore.step_function import get_hash_key
+from geostore.step_function import Outcome, get_hash_key
 from geostore.validation_results_model import ValidationResult
 
 from .aws_utils import (
@@ -118,7 +118,7 @@ def should_validate_given_index(
         main()
 
         with subtests.test(msg="Log message"):
-            info_log_mock.assert_any_call(dumps({SUCCESS_KEY: True, MESSAGE_KEY: ""}))
+            info_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
 
     with subtests.test(msg="Validate checksums"):
         assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
@@ -153,7 +153,6 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
     expected_details = {
         MESSAGE_KEY: f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
     }
-    expected_log = dumps({SUCCESS_KEY: False, **expected_details})
     validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
     # When
 
@@ -175,7 +174,9 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
         main()
 
         with subtests.test(msg="Log message"):
-            error_log_mock.assert_any_call(expected_log)
+            error_log_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_details
+            )
 
     with subtests.test(msg="Validation result"):
         assert validation_results_factory_mock.mock_calls == [

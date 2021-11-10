@@ -14,7 +14,7 @@ from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
+from geostore.api_keys import MESSAGE_KEY
 from geostore.check import Check
 from geostore.check_stac_metadata.stac_validators import (
     STACCatalogSchemaValidator,
@@ -29,6 +29,7 @@ from geostore.check_stac_metadata.utils import (
     STACDatasetValidator,
 )
 from geostore.import_metadata_file.task import S3_BODY_KEY
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -44,7 +45,7 @@ from geostore.stac_format import (
     STAC_ID_KEY,
     STAC_LINKS_KEY,
 )
-from geostore.step_function import get_hash_key
+from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
@@ -724,7 +725,6 @@ def should_report_when_the_dataset_has_no_assets(
 ) -> None:
     metadata_url = any_s3_url()
     url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
-    expected_message = dumps({SUCCESS_KEY: False, MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE})
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(
         msg="Logging"
@@ -732,7 +732,11 @@ def should_report_when_the_dataset_has_no_assets(
         STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).run(
             metadata_url
         )
-        logger_mock.assert_any_call(expected_message)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            outcome=Outcome.FAILED,
+            error=NO_ASSETS_FOUND_ERROR_MESSAGE,
+        )
 
     with subtests.test(msg="Validation results"):
         validation_results_factory_mock.save.assert_any_call(

@@ -1,5 +1,4 @@
 import sys
-from json import dumps
 from os import environ
 from unittest.mock import patch
 
@@ -7,13 +6,15 @@ from pynamodb.exceptions import DoesNotExist
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
+from geostore.api_keys import MESSAGE_KEY
 from geostore.check_files_checksums.task import main
 from geostore.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from geostore.error_response_keys import ERROR_KEY
+from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+from geostore.step_function import Outcome
 
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
@@ -26,19 +27,16 @@ def should_log_missing_item(subtests: SubTests) -> None:
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     index = 0
-    expected_log = dumps(
-        {
-            SUCCESS_KEY: False,
-            ERROR_KEY: {MESSAGE_KEY: ProcessingAssetsModelBase.DoesNotExist.msg},
-            "parameters": {
-                "hash_key": (
-                    f"{DATASET_ID_PREFIX}{dataset_id}"
-                    f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
-                ),
-                "range_key": f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
-            },
-        }
-    )
+    expected_log = {
+        ERROR_KEY: {MESSAGE_KEY: ProcessingAssetsModelBase.DoesNotExist.msg},
+        "parameters": {
+            "hash_key": (
+                f"{DATASET_ID_PREFIX}{dataset_id}"
+                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
+            ),
+            "range_key": f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
+        },
+    }
 
     sys.argv = [
         any_program_name(),
@@ -58,4 +56,6 @@ def should_log_missing_item(subtests: SubTests) -> None:
             main()
 
         with subtests.test(msg="Log message"):
-            logger_mock.assert_any_call(expected_log)
+            logger_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_log
+            )

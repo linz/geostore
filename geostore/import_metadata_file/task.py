@@ -3,7 +3,6 @@ from os.path import basename
 from typing import TYPE_CHECKING, Dict, Iterable
 
 import boto3
-from linz_logger import get_log
 
 from ..boto3_config import CONFIG
 from ..import_dataset_file import get_import_result
@@ -20,7 +19,6 @@ else:
     S3Client = object  # pragma: no mutate
 
 TARGET_S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
-LOGGER = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:

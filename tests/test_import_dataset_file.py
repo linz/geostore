@@ -9,6 +9,7 @@ from geostore.aws_response import AWS_CODE_REQUEST_TIMEOUT
 from geostore.import_dataset_file import (
     INVOCATION_ID_KEY,
     INVOCATION_SCHEMA_VERSION_KEY,
+    LOG_MESSAGE_S3_BATCH_COPY_RESULT,
     RESULTS_KEY,
     RESULT_CODE_KEY,
     RESULT_CODE_PERMANENT_FAILURE,
@@ -24,6 +25,7 @@ from geostore.import_dataset_file import (
     get_import_result,
 )
 from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
+from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
 from geostore.step_function_keys import S3_ROLE_ARN_KEY
 from geostore.types import JsonObject
 
@@ -78,7 +80,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(dumps(event))
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -128,7 +130,7 @@ def should_log_result(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(dumps(expected_log_entry))
+        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=expected_log_entry)
 
 
 @patch("geostore.import_metadata_file.task.importer")
