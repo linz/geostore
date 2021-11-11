@@ -9,3 +9,4 @@ class Check(Enum):
     JSON_SCHEMA = "JSON schema"
     STAGING_ACCESS = "staging bucket access"
     NON_S3_URL = "not an s3 url"
+    SECURITY_CLASSIFICATION = "security classification"

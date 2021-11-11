@@ -58,20 +58,6 @@ def any_dataset_description() -> str:
     return random_string(100)
 
 
-def any_linz_security_classification() -> str:
-    return choice(
-        [
-            "unclassified",
-            "in-confidence",
-            "sensitive",
-            "restricted",
-            "confidential",
-            "secret",
-            "top-secret",
-        ]
-    )
-
-
 def any_linz_geospatial_type() -> str:
     return choice(
         [
