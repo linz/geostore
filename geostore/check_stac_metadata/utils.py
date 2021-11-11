@@ -155,7 +155,10 @@ class STACDatasetValidator:
             raise
 
         security_classification = object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY)
-        if security_classification != LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED:
+        if (
+            security_classification is not None
+            and security_classification != LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED
+        ):
             self.validation_result_factory.save(
                 url,
                 Check.SECURITY_CLASSIFICATION,
