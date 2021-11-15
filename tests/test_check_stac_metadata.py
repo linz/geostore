@@ -1,4 +1,3 @@
-import sys
 from copy import deepcopy
 from datetime import timedelta
 from glob import glob
@@ -74,7 +73,6 @@ from .general_generators import (
     any_file_contents,
     any_https_url,
     any_past_datetime_string,
-    any_program_name,
     any_safe_filename,
 )
 from .stac_generators import (
@@ -197,12 +195,6 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     metadata = dumps(TupleArrayDict(list(MINIMAL_VALID_STAC_COLLECTION_OBJECT.items()) + assets))
 
     metadata_url = any_s3_url()
-    sys.argv = [
-        any_program_name(),
-        f"--metadata-url={metadata_url}",
-        f"--dataset-id={any_dataset_id()}",
-        f"--version-id={any_dataset_version_id()}",
-    ]
 
     url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
 
