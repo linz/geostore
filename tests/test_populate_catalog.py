@@ -74,11 +74,13 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -139,11 +141,13 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: existing_dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -176,6 +180,7 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 {
                     STAC_REL_KEY: STAC_REL_CHILD,
                     STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{CATALOG_FILENAME}",
+                    STAC_TITLE_KEY: dataset.title,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 }
             ]
@@ -184,11 +189,13 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
                 {
                     STAC_REL_KEY: STAC_REL_ROOT,
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 },
                 {
                     STAC_REL_KEY: STAC_REL_PARENT,
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 },
             ]
@@ -353,16 +360,19 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{dataset_version}/{catalog_filename}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -370,16 +380,19 @@ def should_update_dataset_catalog_with_new_version_catalog(subtests: SubTests) -
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{collection_filename}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -517,16 +530,19 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{dataset_version}/{collection_filename}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -534,6 +550,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -544,6 +561,7 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -551,11 +569,13 @@ def should_update_dataset_catalog_with_new_version_collection(subtests: SubTests
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"./{collection_filename}",
+                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
