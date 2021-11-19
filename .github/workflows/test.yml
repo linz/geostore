@@ -17,7 +17,7 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v2.3.0
         with:
           python-version: ${{ steps.python-version.outputs.id }}
 
@@ -84,7 +84,7 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v2.3.0
         with:
           python-version: ${{ steps.python-version.outputs.id }}
 
