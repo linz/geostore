@@ -91,6 +91,10 @@ jobs:
           name: mutation-test-report
           path: mutmut.xml
         if: failure()
+      - uses: mikepenz/action-junit-report@v2
+        if: failure()
+        with:
+          report_paths: mutmut.xml
 
       - name: Destroy AWS stacks used for testing
         run: poetry run cdk destroy --force --all
