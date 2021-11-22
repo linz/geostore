@@ -85,12 +85,12 @@ jobs:
 
       - run: poetry run mutmut run
       - run: poetry run mutmut junitxml > mutmut.xml
-        if: ${{ failure() }}
+        if: failure()
       - uses: actions/upload-artifact@v2
         with:
           name: mutation-test-report
           path: mutmut.xml
-        if: ${{ failure() }}
+        if: failure()
 
       - name: Destroy AWS stacks used for testing
         run: poetry run cdk destroy --force --all
