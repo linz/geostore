@@ -13,7 +13,7 @@ from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
-from geostore.api_keys import MESSAGE_KEY
+from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from geostore.check import Check
 from geostore.check_stac_metadata.stac_validators import (
     STACCatalogSchemaValidator,
@@ -298,7 +298,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
                 },
                 any_lambda_context(),
             )
-            == {}
+            == {SUCCESS_KEY: True}
         )
 
     hash_key = get_hash_key(dataset_id, version_id)
@@ -424,7 +424,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     },
                     any_lambda_context(),
                 )
-                == {}
+                == {SUCCESS_KEY: True}
             )
 
             # Then

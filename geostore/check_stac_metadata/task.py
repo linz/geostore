@@ -3,6 +3,7 @@ from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
+from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import (
     LOG_MESSAGE_LAMBDA_FAILURE,
@@ -63,4 +64,4 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     validator = STACDatasetValidator(hash_key, s3_url_reader, validation_result_factory)
 
     validator.run(event[METADATA_URL_KEY])
-    return {}
+    return {SUCCESS_KEY: True}
