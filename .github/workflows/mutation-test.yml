@@ -20,7 +20,7 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Node.js ${{ steps.node-version.outputs.id }}
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: ${{ steps.node-version.outputs.id }}
           registry-url: https://registry.npmjs.org

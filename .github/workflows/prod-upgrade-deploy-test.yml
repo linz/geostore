@@ -45,7 +45,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: ${{ env.PROD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -125,7 +125,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: ${{ env.HEAD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
