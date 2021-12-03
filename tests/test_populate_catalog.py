@@ -22,15 +22,13 @@ from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_ID_KEY,
     STAC_LINKS_KEY,
-    STAC_MEDIA_TYPE_GEOJSON,
     STAC_MEDIA_TYPE_JSON,
     STAC_REL_CHILD,
-    STAC_REL_ITEM,
     STAC_REL_KEY,
     STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_TITLE_KEY,
-    STAC_TYPE_KEY,
+    STAC_TYPE_KEY, STAC_REL_ITEM, STAC_MEDIA_TYPE_GEOJSON,
 )
 from geostore.types import JsonList
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key, wait_for_s3_key

@@ -26,7 +26,6 @@ from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 @mark.infrastructure
 def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None:
-    dataset_version = any_dataset_version_id()
     filename = f"{any_safe_filename()}.json"
 
     with Dataset() as dataset, patch(
@@ -38,26 +37,26 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{dataset_version}/{filename}",
-    ) as dataset_version_metadata:
+        key=f"{dataset.dataset_prefix}/{filename}",
+    ) as dataset_metadata:
         response = lambda_handler(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
                 DATASET_PREFIX_KEY: dataset.dataset_prefix,
-                VERSION_ID_KEY: dataset_version,
+                VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
                 S3_ROLE_ARN_KEY: any_role_arn(),
             },
             any_lambda_context(),
         )
 
-        expected_sqs_call = {"MessageBody": dataset_version_metadata.key}
+        expected_sqs_call = {"MessageBody": dataset_metadata.key}
 
         with subtests.test(msg="success"):
             assert response == {
                 NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
                 f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
-                f"{dataset_version_metadata.key}"
+                f"{dataset_metadata.key}"
             }
 
         with subtests.test(msg="sqs called"):
