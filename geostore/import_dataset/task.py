@@ -123,7 +123,7 @@ class Importer:
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
                     ORIGINAL_KEY_KEY: key,
-                    NEW_KEY_KEY: f"{self.dataset_prefix}/{self.version_id}/{basename(key)}",
+                    NEW_KEY_KEY: f"{self.dataset_prefix}/{basename(key)}",
                     S3_ROLE_ARN_KEY: self.s3_role_arn,
                 }
                 row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
