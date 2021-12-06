@@ -271,6 +271,27 @@ jsii = ">=1.24.0,<2.0.0"
 publication = ">=0.0.3"
 
 [[package]]
+name = "aws-cdk.aws-cloudtrail"
+version = "1.92.0"
+description = "The CDK Construct Library for AWS::CloudTrail"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+"aws-cdk.aws-events" = "1.92.0"
+"aws-cdk.aws-iam" = "1.92.0"
+"aws-cdk.aws-kms" = "1.92.0"
+"aws-cdk.aws-lambda" = "1.92.0"
+"aws-cdk.aws-logs" = "1.92.0"
+"aws-cdk.aws-s3" = "1.92.0"
+"aws-cdk.aws-sns" = "1.92.0"
+"aws-cdk.core" = "1.92.0"
+constructs = ">=3.2.0,<4.0.0"
+jsii = ">=1.24.0,<2.0.0"
+publication = ">=0.0.3"
+
+[[package]]
 name = "aws-cdk.aws-cloudwatch"
 version = "1.92.0"
 description = "The CDK Construct Library for AWS::CloudWatch"
@@ -2905,7 +2926,7 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
-cdk = ["aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-events", "aws-cdk.aws-events-targets", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-event-sources", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-sns", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
+cdk = ["aws-cdk.aws-batch", "aws-cdk.aws-cloudtrail", "aws-cdk.aws-dynamodb", "aws-cdk.aws-ec2", "aws-cdk.aws-ecr", "aws-cdk.aws-ecr_assets", "aws-cdk.aws-ecs", "aws-cdk.aws-events", "aws-cdk.aws-events-targets", "aws-cdk.aws-iam", "aws-cdk.aws-lambda", "aws-cdk.aws-lambda-event-sources", "aws-cdk.aws-lambda-python", "aws-cdk.aws-s3", "aws-cdk.aws-sns", "aws-cdk.aws-stepfunctions", "aws-cdk.aws-stepfunctions_tasks", "awscli", "cattrs"]
 check_files_checksums = ["linz-logger", "multihash", "pynamodb"]
 check_stac_metadata = ["jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
 content_iterator = ["jsonschema", "linz-logger", "pynamodb"]
@@ -2924,7 +2945,7 @@ validation_summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "ad1997839541f0a3c74aa031ca6f3be46682405b6870902efeb89a91136e4a41"
+content-hash = "8584e8d8519f185ef6244abbd3b3a73e9fb4ebd4df5d0172739852b7d259e25f"
 
 [metadata.files]
 appdirs = [
@@ -2994,6 +3015,10 @@ attrs = [
 "aws-cdk.aws-cloudfront" = [
     {file = "aws-cdk.aws-cloudfront-1.92.0.tar.gz", hash = "sha256:fc125dff13f0795a994647a10631d2fbf4f73a8a79f0235da9516b427a8b4c10"},
     {file = "aws_cdk.aws_cloudfront-1.92.0-py3-none-any.whl", hash = "sha256:c8c827cc5a1640e6479030a8e76efef098b7e055bbc130240fd3b0415f61c723"},
+]
+"aws-cdk.aws-cloudtrail" = [
+    {file = "aws-cdk.aws-cloudtrail-1.92.0.tar.gz", hash = "sha256:164ffad2e67bd15f03485f4f3887aa016df2d3b832026a262033f89619c5a3e7"},
+    {file = "aws_cdk.aws_cloudtrail-1.92.0-py3-none-any.whl", hash = "sha256:ed58f5688ec731fea2e3ba02cfecfbe7dc5fb8b27bd2ab66646492041eb888bd"},
 ]
 "aws-cdk.aws-cloudwatch" = [
     {file = "aws-cdk.aws-cloudwatch-1.92.0.tar.gz", hash = "sha256:f37fa8a1d5ca219b89c04d68446a60d048c8819ecd335a64d1f5cb05157d20af"},

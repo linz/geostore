@@ -1,4 +1,13 @@
-from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
+from aws_cdk import (
+    aws_cloudtrail,
+    aws_iam,
+    aws_lambda_python,
+    aws_logs,
+    aws_s3,
+    aws_sqs,
+    aws_ssm,
+    aws_stepfunctions,
+)
 from aws_cdk.core import Construct, Tags
 
 from geostore.resources import Resource
@@ -96,6 +105,25 @@ class API(Construct):
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
                 sqs_queue_parameter: [datasets_endpoint_lambda],
             }
+        )
+
+        trail = aws_cloudtrail.Trail(
+            self,
+            "cloudtrail",
+            send_to_cloud_watch_logs=True,
+            cloud_watch_log_group=aws_logs.LogGroup(
+                self,
+                "api-user-log",
+                log_group_name=Resource.CLOUDTRAIL_LOG_GROUP_NAME.resource_name,
+            ),  # type: ignore[arg-type]
+        )
+        trail.add_lambda_event_selector(
+            [
+                import_status_endpoint_lambda,
+                dataset_versions_endpoint_lambda,
+                datasets_endpoint_lambda,
+            ],
+            include_management_events=False,
         )
 
         ############################################################################################
