@@ -40,6 +40,12 @@ let
         '';
       });
 
+      importlib-resources = super.importlib-resources.overridePythonAttrs (
+        old: {
+          dontPreferSetupPy = true;
+        }
+      );
+
       mccabe = super.mccabe.overridePythonAttrs (
         old: {
           buildInputs = (old.buildInputs or [ ]) ++ [ self.pytest-runner ];
