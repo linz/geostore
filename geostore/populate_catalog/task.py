@@ -101,5 +101,4 @@ def handle_message(metadata_key: str) -> None:
         f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}",
         strategy=GeostoreSTACLayoutStrategy(),
     )
-
     root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
