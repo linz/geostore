@@ -259,7 +259,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_payload = load(dataset_response["Payload"])
 
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/"
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,

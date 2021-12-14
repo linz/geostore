@@ -128,15 +128,15 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
 def should_update_existing_root_catalog(subtests: SubTests) -> None:
 
     with Dataset() as existing_dataset, S3Object(
-            file_object=json_dict_to_file_object(
-                {
-                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                    STAC_ID_KEY: existing_dataset.dataset_prefix,
-                    STAC_TITLE_KEY: existing_dataset.title,
-                }
-            ),
-            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-            key=f"{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: existing_dataset.dataset_prefix,
+                STAC_TITLE_KEY: existing_dataset.title,
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{existing_dataset.dataset_prefix}/{CATALOG_FILENAME}",
     ):
 
         original_links: JsonList = [
@@ -155,15 +155,15 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
         ]
 
         with Dataset() as dataset, S3Object(
-                file_object=json_dict_to_file_object(
-                    {
-                        **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                        STAC_ID_KEY: dataset.dataset_prefix,
-                        STAC_TITLE_KEY: dataset.title,
-                    }
-                ),
-                bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-                key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
+            file_object=json_dict_to_file_object(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    STAC_ID_KEY: dataset.dataset_prefix,
+                    STAC_TITLE_KEY: dataset.title,
+                }
+            ),
+            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+            key=f"{dataset.dataset_prefix}/{CATALOG_FILENAME}",
         ) as new_dataset_metadata, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -214,16 +214,16 @@ def should_update_existing_root_catalog(subtests: SubTests) -> None:
             )
 
             with smart_open.open(
-                    f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}",
-                    mode="rb",
+                f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}",
+                mode="rb",
             ) as root_metadata_file, subtests.test(msg="root catalog links"):
                 root_catalog_json = load(root_metadata_file)
                 assert root_catalog_json[STAC_LINKS_KEY] == expected_root_links
 
             with smart_open.open(
-                    f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
-                    f"/{new_dataset_metadata.key}",
-                    mode="rb",
+                f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
+                f"/{new_dataset_metadata.key}",
+                mode="rb",
             ) as dataset_metadata_file, subtests.test(msg="dataset catalog links"):
                 dataset_catalog_json = load(dataset_metadata_file)
                 assert dataset_catalog_json[STAC_LINKS_KEY] == expected_dataset_links
