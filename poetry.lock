@@ -2002,7 +2002,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "jsonschema"
-version = "4.2.1"
+version = "4.3.0"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = true
@@ -3409,8 +3409,8 @@ jsonpointer = [
     {file = "jsonpointer-2.0.tar.gz", hash = "sha256:c192ba86648e05fdae4f08a17ec25180a9aef5008d973407b581798a83975362"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.2.1-py3-none-any.whl", hash = "sha256:2a0f162822a64d95287990481b45d82f096e99721c86534f48201b64ebca6e8c"},
-    {file = "jsonschema-4.2.1.tar.gz", hash = "sha256:390713469ae64b8a58698bb3cbc3859abe6925b565a973f87323ef21b09a27a8"},
+    {file = "jsonschema-4.3.0-py3-none-any.whl", hash = "sha256:ab7069946a3ad2037e79a5cdc8d0e9a74cd00721d426d75c5d69a6707c778218"},
+    {file = "jsonschema-4.3.0.tar.gz", hash = "sha256:cb7f57b40f870409d7571844d0623f66d8078c90a9c255d9a4d4314b5ec3fc7c"},
 ]
 junit-xml = [
     {file = "junit-xml-1.8.tar.gz", hash = "sha256:602f1c480a19d64edb452bf7632f76b5f2cb92c1938c6e071dcda8ff9541dc21"},
