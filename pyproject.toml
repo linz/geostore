@@ -83,6 +83,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+"aws-cdk.aws-batch" = {version = "*", optional = true}
+"aws-cdk.aws-cloudtrail" = {version = "*", optional = true}
 "aws-cdk.aws-dynamodb" = {version = "*", optional = true}
 "aws-cdk.aws-ec2" = {version = "*", optional = true}
 "aws-cdk.aws-ecr" = {version = "*", optional = true}
@@ -141,6 +143,8 @@ extras = ["toml"]
 
 [tool.poetry.extras]
 cdk = [
+    "aws-cdk.aws-batch",
+    "aws-cdk.aws-cloudtrail",
     "aws-cdk.aws-dynamodb",
     "aws-cdk.aws-ec2",
     "aws-cdk.aws-ecr",

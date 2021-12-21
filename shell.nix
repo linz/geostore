@@ -2,9 +2,9 @@
     (
       fetchTarball
         {
-          name = "21.05";
-          url = "https://github.com/NixOS/nixpkgs/archive/7e9b0dff974c89e070da1ad85713ff3c20b0ca97.tar.gz";
-          sha256 = "1ckzhh24mgz6jd1xhfgx0i9mijk6xjqxwsshnvq789xsavrmsc36";
+          name = "21.11";
+          url = "https://github.com/NixOS/nixpkgs/archive/a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31.tar.gz";
+          sha256 = "162dywda2dvfj1248afxc45kcrg83appjd0nmdb541hl7rnncf02";
         })
     { }
 }:
@@ -39,6 +39,12 @@ let
           substituteInPlace setup.py --replace 'setuptools.setup()' 'setuptools.setup(version="${old.version}")'
         '';
       });
+
+      importlib-resources = super.importlib-resources.overridePythonAttrs (
+        old: {
+          dontPreferSetupPy = true;
+        }
+      );
 
       mccabe = super.mccabe.overridePythonAttrs (
         old: {
