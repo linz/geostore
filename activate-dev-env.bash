@@ -24,7 +24,7 @@ then
 fi
 PATH="${script_dir}/node_modules/.bin:${PATH}"
 
-if ! diff <(node --version | cut --delimiter=. --fields=1-2 | tr --delete v) <(cut --delimiter=. --fields=1-2 .nvmrc)
+if ! diff <(node --version | cut --delimiter=. --fields=1-2 | tr --delete v) <(cut --delimiter=. --fields=1-2 "${script_dir}/.nvmrc")
 then
     # shellcheck disable=SC2016
     echo 'Wrong major/minor version of Node.js detected. Please run `nvm install` to update Node.js and then reset the dev env.' >&2
@@ -32,13 +32,13 @@ then
 fi
 
 set +o errexit +o nounset
-if [[ -e .venv/bin/activate ]]
+if [[ -e "${script_dir}/.venv/bin/activate" ]]
 then
     # shellcheck source=/dev/null
-    . .venv/bin/activate
+    . "${script_dir}/.venv/bin/activate"
 fi
 
-if ! diff <(python <<< 'import platform; print(platform.python_version())' | cut --delimiter=. --fields=1-2) <(cut --delimiter=. --fields=1-2 .python-version)
+if ! diff <(python <<< 'import platform; print(platform.python_version())' | cut --delimiter=. --fields=1-2) <(cut --delimiter=. --fields=1-2 "${script_dir}/.python-version")
 then
     # shellcheck disable=SC2016
     echo 'Wrong major/minor version of Python detected. Please run `pyenv install` to update Python and then reset the dev env.' >&2
