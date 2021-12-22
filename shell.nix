@@ -9,7 +9,8 @@
     { }
 }:
 let
-  nodejsVersion = pkgs.lib.fileContents ./.nvmrc;
+  projectDir = builtins.path { path = ./.; name = "geostore"; };
+  nodejsVersion = pkgs.lib.fileContents (projectDir + "/.nvmrc");
   buildNodeJs = pkgs.callPackage "${toString pkgs.path}/pkgs/development/web/nodejs/nodejs.nix" {
     python = pkgs.python38;
   };
@@ -20,7 +21,7 @@ let
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     python = pkgs.python38;
-    projectDir = builtins.path { path = ./.; name = "geostore"; };
+    inherit projectDir;
     overrides = pkgs.poetry2nix.overrides.withoutDefaults (self: super: {
       astroid = super.astroid.overridePythonAttrs (
         old: rec {
@@ -104,8 +105,8 @@ pkgs.mkShell {
     poetryEnv
   ];
   shellHook = ''
-        . activate-dev-env.bash
-        ln --force --symbolic "$(type -p python)" .run/python
+        . ${projectDir + "/activate-dev-env.bash"}
+        ln --force --symbolic ${poetryEnv.python.interpreter} ${projectDir}/.run/python
         cat <<'EOF'
     Welcome to the Geostore development environment!
 
