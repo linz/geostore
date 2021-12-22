@@ -37,6 +37,13 @@ jobs:
           clean: false
           submodules: true
 
+      # TODO: Remove step once this code is in production
+      - name: Temporarily monkeypatch Poetry installer checksum
+        run:
+          sed -i -e
+          's/86aeebaa16fabfecfccea823b6c587aa5055be70da299b7e76578e8df78cd016/13c8d82f7cd273d0722c1516f99f64f3bcabd5a841587e084f9245db9f703202/'
+          backend/Dockerfile
+
       # TODO: Remove `|| […]` once this code is in production
       - name: Get production configuration
         run: |
