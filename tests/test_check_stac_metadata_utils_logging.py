@@ -70,9 +70,11 @@ def should_log_assets() -> None:
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_STAC_ASSET_INFO,
-            asset={
-                PROCESSING_ASSET_URL_KEY: asset_url,
-                PROCESSING_ASSET_MULTIHASH_KEY: asset_multihash,
+            extra={
+                "asset": {
+                    PROCESSING_ASSET_URL_KEY: asset_url,
+                    PROCESSING_ASSET_MULTIHASH_KEY: asset_multihash,
+                }
             },
         )
 
@@ -89,8 +91,10 @@ def should_log_non_s3_url_prefix_validation() -> None:
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
-            outcome=Outcome.FAILED,
-            error=f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
+            },
         )
 
 
@@ -113,7 +117,8 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=str(expected_error)
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={"outcome": Outcome.FAILED, "error": str(expected_error)},
         )
 
 
@@ -133,7 +138,8 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=str(expected_error)
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={"outcome": Outcome.FAILED, "error": str(expected_error)},
         )
 
 
@@ -153,5 +159,6 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
         STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
 
         logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=str(expected_error)
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={"outcome": Outcome.FAILED, "error": str(expected_error)},
         )

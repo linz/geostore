@@ -1,5 +1,6 @@
 from enum import Enum, auto
 from functools import lru_cache
+from logging import Logger
 from typing import TYPE_CHECKING, Sequence
 
 import boto3
@@ -15,7 +16,7 @@ else:
     # In production we want to avoid depending on a package which has no runtime impact
     SSMClient = object  # pragma: no mutate
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 SSM_CLIENT: SSMClient = boto3.client("ssm", config=CONFIG)
 LOG_MESSAGE_PARAMETER_NOT_FOUND = "Parameter:DoesNotExist"
 
@@ -44,5 +45,5 @@ def get_param(parameter: ParameterName) -> str:
     try:
         return SSM_CLIENT.get_parameter(Name=parameter.value)["Parameter"]["Value"]
     except SSM_CLIENT.exceptions.ParameterNotFound:
-        LOGGER.error(LOG_MESSAGE_PARAMETER_NOT_FOUND, parameter_value=parameter.value)
+        LOGGER.error(LOG_MESSAGE_PARAMETER_NOT_FOUND, extra={"parameter_value": parameter.value})
         raise

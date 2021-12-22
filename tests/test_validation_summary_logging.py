@@ -20,7 +20,7 @@ def should_log_event() -> None:
         task.lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
 
 @patch("geostore.validation_summary.task.validation_results_model_with_meta")
@@ -34,7 +34,9 @@ def should_log_failure_result(validation_results_model_mock: MagicMock) -> None:
         task.lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
+        )
 
 
 @patch("geostore.validation_summary.task.validation_results_model_with_meta")
@@ -48,4 +50,6 @@ def should_log_success_result(validation_results_model_mock: MagicMock) -> None:
         task.lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
+        )

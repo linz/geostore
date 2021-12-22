@@ -1,3 +1,5 @@
+from logging import Logger
+
 from jsonschema import validate
 from linz_logger import get_log
 
@@ -19,11 +21,11 @@ from ..types import JsonObject
 INPUT_KEY = "input"
 EXECUTION_ID_KEY = "execution_id"
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     validate(
         event,
