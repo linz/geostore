@@ -51,7 +51,7 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
 
 @patch("geostore.import_dataset.task.validate")
@@ -66,7 +66,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         lambda_handler({}, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
 
 
 @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
@@ -146,4 +146,6 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
         )
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response}
+        )

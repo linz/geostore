@@ -1,3 +1,5 @@
+from logging import Logger
+
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
@@ -10,11 +12,11 @@ from ..step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     try:
         validate(
@@ -44,5 +46,5 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     )
 
     result = {SUCCESS_KEY: success}
-    LOGGER.debug(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
+    LOGGER.debug(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
     return result

@@ -80,7 +80,7 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -130,7 +130,9 @@ def should_log_result(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=expected_log_entry)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_S3_BATCH_COPY_RESULT, extra={"result": expected_log_entry}
+        )
 
 
 @patch("geostore.import_metadata_file.task.importer")

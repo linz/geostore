@@ -1,4 +1,5 @@
 from json import loads
+from logging import Logger
 from typing import TYPE_CHECKING, Callable, Optional
 from urllib.parse import unquote_plus
 
@@ -37,7 +38,7 @@ RESULT_CODE_TEMPORARY_FAILURE = "TemporaryFailure"
 EXCEPTION_PREFIX = "Exception"
 RETRY_RESULT_STRING = "Retry request to Amazon S3 due to timeout."
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 LOG_MESSAGE_S3_BATCH_COPY_RESULT = "S3 Batch Result"
 
 
@@ -45,7 +46,7 @@ def get_import_result(
     event: JsonObject,
     importer: Callable[[str, str, str, str, S3Client], Optional[PutObjectOutputTypeDef]],
 ) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     task = event[TASKS_KEY][0]
     source_bucket_name = task[S3_BUCKET_ARN_KEY].split(":::", maxsplit=1)[-1]
@@ -87,5 +88,5 @@ def get_import_result(
             }
         ],
     }
-    LOGGER.debug(LOG_MESSAGE_S3_BATCH_COPY_RESULT, result=result)
+    LOGGER.debug(LOG_MESSAGE_S3_BATCH_COPY_RESULT, extra={"result": result})
     return result

@@ -21,4 +21,6 @@ def should_log_missing_parameter_name(parameter_name_mock: MagicMock) -> None:
         with raises(SSM_CLIENT.exceptions.ParameterNotFound):
             get_param(parameter_name_mock.INVALID)
 
-        logger_mock.assert_any_call(LOG_MESSAGE_PARAMETER_NOT_FOUND, parameter_value=parameter_name)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_PARAMETER_NOT_FOUND, extra={"parameter_value": parameter_name}
+        )

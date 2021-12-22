@@ -28,4 +28,6 @@ def should_log_s3_batch_response(
         get_s3_batch_copy_status("test")
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_S3_BATCH_RESPONSE, response=s3_batch_response)
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"response": s3_batch_response}
+        )
