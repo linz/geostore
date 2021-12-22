@@ -57,5 +57,6 @@ def should_log_missing_item(subtests: SubTests) -> None:
 
         with subtests.test(msg="Log message"):
             logger_mock.assert_any_call(
-                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_log
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={"outcome": Outcome.FAILED, "error": expected_log},
             )

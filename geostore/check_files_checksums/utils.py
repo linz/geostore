@@ -43,7 +43,9 @@ class ChecksumValidator:
         self.s3_client = get_s3_client_for_role(s3_role_arn)
 
     def log_failure(self, content: JsonObject) -> None:
-        self.logger.error(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=content)
+        self.logger.error(
+            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": content}
+        )
 
     def validate(self, hash_key: str, range_key: str) -> None:
 
@@ -70,7 +72,7 @@ class ChecksumValidator:
                 item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
         else:
-            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
+            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:

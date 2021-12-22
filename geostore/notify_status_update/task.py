@@ -1,6 +1,7 @@
 from datetime import datetime
 from http import HTTPStatus
 from json import dumps, loads
+from logging import Logger
 from os import environ
 from typing import TYPE_CHECKING
 
@@ -55,13 +56,13 @@ WEBHOOK_MESSAGE_BLOCKS_KEY = "blocks"
 WEBHOOK_MESSAGE_CHANNEL_KEY = "channel"
 
 SNS_CLIENT: SNSClient = boto3.client("sns", config=CONFIG)
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#section
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     if (SLACK_URL_ENV_NAME in environ) and (event[EVENT_DETAIL_KEY][STEP_FUNCTION_STOPDATE_KEY]):
         post_to_slack(event)

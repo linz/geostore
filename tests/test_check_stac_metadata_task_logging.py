@@ -62,7 +62,7 @@ def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
     ):
         lambda_handler(payload, any_lambda_context())
 
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=payload)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": payload})
 
 
 @patch("geostore.check_stac_metadata.task.validate")
@@ -84,7 +84,7 @@ def should_return_error_when_schema_validation_fails(
         # Then
         with subtests.test(msg="log"):
             logger_mock.assert_any_call(
-                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=error
+                LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": error}
             )
 
 
@@ -117,4 +117,4 @@ def should_log_error_when_assuming_s3_role_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
+            logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})

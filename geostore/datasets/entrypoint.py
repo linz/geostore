@@ -1,6 +1,7 @@
 """
 Dataset endpoint Lambda function.
 """
+from logging import Logger
 from typing import Callable, MutableMapping
 
 from linz_logger import get_log
@@ -20,10 +21,10 @@ REQUEST_HANDLERS: MutableMapping[str, Callable[[JsonObject], JsonObject]] = {
     "POST": create_dataset,
 }
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     return handle_request(event, REQUEST_HANDLERS)

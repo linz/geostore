@@ -1,5 +1,6 @@
 from enum import Enum
 from json import loads
+from logging import Logger
 from typing import TYPE_CHECKING, Optional
 
 import boto3
@@ -59,7 +60,7 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
 
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def get_tasks_status(
@@ -95,7 +96,7 @@ def get_tasks_status(
 def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(executionArn=execution_arn_key)
     assert "status" in step_function_resp, step_function_resp
-    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_function_resp)
+    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": step_function_resp})
 
     step_function_input = loads(step_function_resp["input"])
     step_function_output = loads(step_function_resp.get("output", "{}"))
@@ -162,7 +163,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, response=s3_batch_copy_resp)
+    LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"response": s3_batch_copy_resp})
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
     failure_reasons = s3_batch_copy_resp["Job"]["FailureReasons"]

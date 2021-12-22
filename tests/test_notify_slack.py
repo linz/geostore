@@ -201,7 +201,7 @@ def should_log_and_not_post_to_slack_when_url_not_set(
         assert not webhook_client_mock.called
 
     with subtests.test("log created"):
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input={})
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": {}})
 
 
 @patch("geostore.notify_status_update.task.get_param")

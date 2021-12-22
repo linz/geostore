@@ -35,4 +35,4 @@ def should_log_event(get_tasks_status_mock: MagicMock) -> None:
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
