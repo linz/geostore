@@ -1,4 +1,5 @@
 from json import dumps
+from logging import Logger
 from os.path import basename
 from typing import TYPE_CHECKING, List
 from urllib.parse import quote, urlparse
@@ -64,7 +65,7 @@ else:
     ) = JobReportFormatType = JobReportScopeType = str  # pragma: no mutate
     S3Client = S3ControlClient = object  # pragma: no mutate
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
@@ -162,14 +163,14 @@ class Importer:
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
             ClientRequestToken=uuid4().hex,
         )
-        LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, s3_batch_response=response)
+        LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response})
 
         return response["JobId"]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     # validate input
     try:
@@ -194,7 +195,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error.message)
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error.message})
         return {ERROR_MESSAGE_KEY: error.message}
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc

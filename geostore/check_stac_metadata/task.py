@@ -1,3 +1,5 @@
+from logging import Logger
+
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError, validate
@@ -19,11 +21,11 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     # validate input
     try:
@@ -42,13 +44,15 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=error)
+        LOGGER.warning(
+            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": error}
+        )
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
         s3_client = get_s3_client_for_role(event[S3_ROLE_ARN_KEY])
     except ClientError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}
 
     def s3_url_reader(url: str) -> StreamingBody:
