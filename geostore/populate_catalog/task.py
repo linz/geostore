@@ -1,4 +1,5 @@
 from json import dumps
+from logging import Logger
 from typing import TYPE_CHECKING
 
 import boto3
@@ -45,7 +46,7 @@ CONTENTS_KEY = "Contents"
 RECORDS_KEY = "Records"
 MESSAGE_ATTRIBUTES_KEY = "messageAttributes"
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 StacIO.set_default(S3StacIO)
 

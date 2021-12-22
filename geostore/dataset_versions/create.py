@@ -2,6 +2,7 @@
 from datetime import datetime
 from http import HTTPStatus
 from json import dumps
+from logging import Logger
 from typing import TYPE_CHECKING
 
 import boto3
@@ -40,12 +41,12 @@ else:
     SFNClient = object  # pragma: no mutate
 
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def create_dataset_version(body: JsonObject) -> JsonObject:
 
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=body)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": body})
 
     body_schema = {
         "type": "object",
@@ -62,7 +63,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=err.message)
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.message})
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     datasets_model_class = datasets_model_with_meta()
@@ -73,7 +74,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
         )
     except DoesNotExist as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=err.msg)
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.msg})
         return error_response(
             HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
         )
@@ -99,7 +100,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         input=dumps(step_functions_input),
     )
 
-    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=step_functions_response)
+    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": step_functions_response})
 
     # return arn of executing process
     return success_response(
