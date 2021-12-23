@@ -1,3 +1,4 @@
+from logging import Logger
 from os.path import basename
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -34,13 +35,13 @@ else:
     S3Client = SQSServiceResource = object  # pragma: no mutate
     MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
     # validate input
     try:
@@ -58,7 +59,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, error=error)
+        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: error.message}
 
     new_version_metadata_key = (

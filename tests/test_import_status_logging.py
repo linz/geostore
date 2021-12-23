@@ -41,7 +41,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         get_import_status(event)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, lambda_input=event)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
 
 
 @patch("geostore.import_status.get.validate")
@@ -61,7 +61,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         )
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, error=error_message)
+        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
 
 
 @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
@@ -85,5 +85,5 @@ def should_log_stepfunctions_status_response(
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, response=describe_execution_response
+            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": describe_execution_response}
         )

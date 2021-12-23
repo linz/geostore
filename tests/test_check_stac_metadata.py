@@ -759,8 +759,7 @@ def should_report_when_the_dataset_has_no_assets(
         )
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
-            outcome=Outcome.FAILED,
-            error=NO_ASSETS_FOUND_ERROR_MESSAGE,
+            extra={"outcome": Outcome.FAILED, "error": NO_ASSETS_FOUND_ERROR_MESSAGE},
         )
 
     with subtests.test(msg="Validation results"):

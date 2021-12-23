@@ -60,7 +60,7 @@ def should_return_offset_from_array_index_variable() -> None:
 
 
 def should_return_default_offset_to_zero() -> None:
-    environ.pop(ARRAY_INDEX_VARIABLE_NAME, default=None)
+    environ.pop(ARRAY_INDEX_VARIABLE_NAME, default="")
 
     assert get_job_offset() == 0
 
@@ -118,7 +118,9 @@ def should_validate_given_index(
         main()
 
         with subtests.test(msg="Log message"):
-            info_log_mock.assert_any_call(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.PASSED)
+            info_log_mock.assert_any_call(
+                LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
+            )
 
     with subtests.test(msg="Validate checksums"):
         assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
@@ -175,7 +177,8 @@ def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
 
         with subtests.test(msg="Log message"):
             error_log_mock.assert_any_call(
-                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=expected_details
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={"outcome": Outcome.FAILED, "error": expected_details},
             )
 
     with subtests.test(msg="Validation result"):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, Namespace
+from logging import Logger
 
 from linz_logger import get_log
 
@@ -9,7 +10,7 @@ from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 
 def parse_arguments() -> Namespace:

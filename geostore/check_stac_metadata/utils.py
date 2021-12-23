@@ -1,5 +1,6 @@
 from functools import lru_cache
 from json import JSONDecodeError, load
+from logging import Logger
 from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -37,7 +38,7 @@ from .stac_validators import (
 
 NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
 
-LOGGER = get_log()
+LOGGER: Logger = get_log()
 
 STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
     STAC_TYPE_CATALOG: STACCatalogSchemaValidator,
@@ -91,14 +92,18 @@ class STACDatasetValidator:
                 details={MESSAGE_KEY: error_message},
             )
             LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=error_message
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={"outcome": Outcome.FAILED, "error": error_message},
             )
             return
 
         try:
             self.validate(metadata_url)
         except (ValidationError, ClientError, JSONDecodeError) as error:
-            LOGGER.error(LOG_MESSAGE_VALIDATION_COMPLETE, outcome=Outcome.FAILED, error=str(error))
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={"outcome": Outcome.FAILED, "error": str(error)},
+            )
             return
 
         if not self.dataset_assets:
@@ -111,8 +116,7 @@ class STACDatasetValidator:
             )
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
-                outcome=Outcome.FAILED,
-                error=NO_ASSETS_FOUND_ERROR_MESSAGE,
+                extra={"outcome": Outcome.FAILED, "error": NO_ASSETS_FOUND_ERROR_MESSAGE},
             )
             return
 
@@ -181,7 +185,7 @@ class STACDatasetValidator:
                 PROCESSING_ASSET_URL_KEY: asset_url,
                 PROCESSING_ASSET_MULTIHASH_KEY: asset[STAC_FILE_CHECKSUM_KEY],
             }
-            LOGGER.debug(LOG_MESSAGE_STAC_ASSET_INFO, asset=asset_dict)
+            LOGGER.debug(LOG_MESSAGE_STAC_ASSET_INFO, extra={"asset": asset_dict})
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json[STAC_LINKS_KEY]:
