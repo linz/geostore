@@ -87,6 +87,10 @@ let
         }
       );
 
+      tomli = super.tomli.overridePythonAttrs (old: {
+        nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
+      });
+
       zipp = super.zipp.overridePythonAttrs (old: {
         postPatch = ''
           substituteInPlace setup.py --replace 'setuptools.setup()' 'setuptools.setup(version="${old.version}")'
