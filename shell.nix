@@ -9,10 +9,11 @@
     { }
 }:
 let
+  python = pkgs.python38;
   projectDir = builtins.path { path = ./.; name = "geostore"; };
   nodejsVersion = pkgs.lib.fileContents (projectDir + "/.nvmrc");
   buildNodeJs = pkgs.callPackage "${toString pkgs.path}/pkgs/development/web/nodejs/nodejs.nix" {
-    python = pkgs.python38;
+    inherit python;
   };
   nodejs = buildNodeJs {
     version = nodejsVersion;
@@ -20,8 +21,7 @@ let
   };
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
-    python = pkgs.python38;
-    inherit projectDir;
+    inherit python projectDir;
     extraPackages = ps: [ ps.pip ];
     overrides = pkgs.poetry2nix.overrides.withoutDefaults (self: super: {
       astroid = super.astroid.overridePythonAttrs (
@@ -106,7 +106,7 @@ pkgs.mkShell {
     pkgs.cargo
     pkgs.nodePackages.aws-azure-login
     (pkgs.poetry.override {
-      python = pkgs.python38;
+      inherit python;
     })
     poetryEnv
   ];
