@@ -22,6 +22,7 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     python = pkgs.python38;
     inherit projectDir;
+    extraPackages = ps: [ ps.pip ];
     overrides = pkgs.poetry2nix.overrides.withoutDefaults (self: super: {
       astroid = super.astroid.overridePythonAttrs (
         old: rec {
@@ -104,8 +105,9 @@ pkgs.mkShell {
     nodejs
     pkgs.cargo
     pkgs.nodePackages.aws-azure-login
-    pkgs.python38Packages.pip
-    pkgs.python38Packages.poetry
+    (pkgs.poetry.override {
+      python = pkgs.python38;
+    })
     poetryEnv
   ];
   shellHook = ''
