@@ -113,7 +113,6 @@ class API(Construct):
             bucket_name=Resource.CLOUDTRAIL_BUCKET_NAME.resource_name,
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
-            versioned=True,
             auto_delete_objects=True,
             removal_policy=RemovalPolicy.DESTROY,
         )
