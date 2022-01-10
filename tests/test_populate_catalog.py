@@ -31,7 +31,7 @@ from geostore.stac_format import (
     STAC_TYPE_KEY,
 )
 from geostore.types import JsonList
-from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
+from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key, wait_for_s3_key
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_safe_filename
 from tests.stac_generators import any_dataset_version_id
@@ -42,13 +42,12 @@ from tests.stac_objects import (
 
 @mark.infrastructure
 def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client: S3Client) -> None:
-    dataset_version = any_dataset_version_id()
     catalog_filename = f"{any_safe_filename()}.json"
     with Dataset() as dataset, S3Object(
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                STAC_ID_KEY: dataset_version,
+                STAC_ID_KEY: any_dataset_version_id(),
                 STAC_TITLE_KEY: dataset.title,
                 STAC_LINKS_KEY: [
                     {
