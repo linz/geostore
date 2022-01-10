@@ -14,6 +14,7 @@ from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
+from .removal_policy import REMOVAL_POLICY
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -107,10 +108,21 @@ class API(Construct):
             }
         )
 
+        trail_bucket = aws_s3.Bucket(
+            self,
+            "cloudtrail-bucket",
+            bucket_name=Resource.CLOUDTRAIL_BUCKET_NAME.resource_name,
+            access_control=aws_s3.BucketAccessControl.PRIVATE,
+            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
+            versioned=True,
+            removal_policy=REMOVAL_POLICY,
+        )
+
         trail = aws_cloudtrail.Trail(
             self,
             "cloudtrail",
             send_to_cloud_watch_logs=True,
+            bucket=trail_bucket,  # type: ignore[arg-type]
             cloud_watch_log_group=aws_logs.LogGroup(
                 self,
                 "api-user-log",
