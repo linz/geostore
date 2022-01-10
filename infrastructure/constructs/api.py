@@ -8,13 +8,12 @@ from aws_cdk import (
     aws_ssm,
     aws_stepfunctions,
 )
-from aws_cdk.core import Construct, Tags
+from aws_cdk.core import Construct, RemovalPolicy, Tags
 
 from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
-from .removal_policy import REMOVAL_POLICY
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -115,7 +114,8 @@ class API(Construct):
             access_control=aws_s3.BucketAccessControl.PRIVATE,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
-            removal_policy=REMOVAL_POLICY,
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         trail = aws_cloudtrail.Trail(
