@@ -2789,7 +2789,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.5"
+version = "2.8.6"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -2805,7 +2805,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-six"
-version = "1.16.7"
+version = "1.16.9"
 description = "Typing stubs for six"
 category = "dev"
 optional = false
@@ -3787,16 +3787,16 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.5.tar.gz", hash = "sha256:6f68d7eddb5830c61f102ee5d402e60e593df5bc4185cb27a3ce74947cdbcbf1"},
-    {file = "types_python_dateutil-2.8.5-py3-none-any.whl", hash = "sha256:da5a062026097116b9ce70ccd362f522d8be9c1908e39bf663e200231c276c75"},
+    {file = "types-python-dateutil-2.8.6.tar.gz", hash = "sha256:83bc1424f7675c23f6d9a7673cc04e5acdb4aca885962c4d6d631bd114aa4c5f"},
+    {file = "types_python_dateutil-2.8.6-py3-none-any.whl", hash = "sha256:716ead66982fe3c601de3bcc934ee1ad3be27d7f975e1e2116594568a8c39c6c"},
 ]
 types-requests = [
     {file = "types-requests-2.26.2.tar.gz", hash = "sha256:0e22d9cdeff4c3eb068eb883d59b127c98d80525f3d0412a1c4499c6ae1f711e"},
     {file = "types_requests-2.26.2-py3-none-any.whl", hash = "sha256:fabe1acc784708ac798ced6373568465b93642c8aa1ebd33e2921b60d4e7aa29"},
 ]
 types-six = [
-    {file = "types-six-1.16.7.tar.gz", hash = "sha256:eae01f3fe99f9a6653a03685cf685fcda281271f643da61b7669d82fb8b80060"},
-    {file = "types_six-1.16.7-py2.py3-none-any.whl", hash = "sha256:059da3f7c0f87c064c4bfa06da617ed5f8ce9ab195ec8a43fa5abb1aa918ef9b"},
+    {file = "types-six-1.16.9.tar.gz", hash = "sha256:04da8bad920aea300e13d99c8948fd0914abdfc5d9421bad636137f9829dcbf6"},
+    {file = "types_six-1.16.9-py2.py3-none-any.whl", hash = "sha256:da5748f10eec44accbd393e7f5a834991aff8f37522472166fbc8233cc735b84"},
 ]
 types-toml = [
     {file = "types-toml-0.10.3.tar.gz", hash = "sha256:215a7a79198651ec5bdfd66193c1e71eb681a42f3ef7226c9af3123ced62564a"},
