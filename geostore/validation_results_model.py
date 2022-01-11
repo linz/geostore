@@ -18,10 +18,9 @@ class ValidationResult(Enum):
     PASSED = "Passed"
 
 
-# TODO: Remove inherit-non-class when astroid is at version 2.6 or later pylint:disable=fixme
 class ValidationOutcomeIdx(
     GlobalSecondaryIndex["ValidationResultsModelBase"]
-):  # pylint:disable=too-few-public-methods,inherit-non-class
+):  # pylint:disable=too-few-public-methods
     class Meta:  # pylint:disable=too-few-public-methods
 
         index_name = "validation_outcome"
