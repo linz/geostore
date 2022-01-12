@@ -8,7 +8,7 @@ from aws_cdk import (
     aws_ssm,
     aws_stepfunctions,
 )
-from aws_cdk.core import Construct, Tags
+from aws_cdk.core import Construct, RemovalPolicy, Tags
 
 from geostore.resources import Resource
 
@@ -107,10 +107,21 @@ class API(Construct):
             }
         )
 
+        trail_bucket = aws_s3.Bucket(
+            self,
+            "cloudtrail-bucket",
+            bucket_name=Resource.CLOUDTRAIL_BUCKET_NAME.resource_name,
+            access_control=aws_s3.BucketAccessControl.PRIVATE,
+            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         trail = aws_cloudtrail.Trail(
             self,
             "cloudtrail",
             send_to_cloud_watch_logs=True,
+            bucket=trail_bucket,  # type: ignore[arg-type]
             cloud_watch_log_group=aws_logs.LogGroup(
                 self,
                 "api-user-log",
