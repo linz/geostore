@@ -36,6 +36,12 @@ let
         }
       );
 
+      filelock = super.filelock.overridePythonAttrs (old: {
+        postPatch = ''
+          substituteInPlace setup.py --replace 'setup()' 'setup(version="${old.version}")'
+        '';
+      });
+
       importlib-metadata = super.importlib-metadata.overridePythonAttrs (old: {
         postPatch = ''
           substituteInPlace setup.py --replace 'setuptools.setup()' 'setuptools.setup(version="${old.version}")'
@@ -89,6 +95,10 @@ let
       );
 
       tomli = super.tomli.overridePythonAttrs (old: {
+        nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
+      });
+
+      typing-extensions = super.typing-extensions.overridePythonAttrs (old: {
         nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
       });
 
