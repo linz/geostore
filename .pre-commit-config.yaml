@@ -74,6 +74,7 @@ repos:
     rev: 148ec47877499e3d671f6366f9eed812db181b40 # v1.2.0
     hooks:
       - id: nixpkgs-fmt
+        stages: [commit]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: a99a3fbe79a9d346cabd02a5e167ad0edafe616b # v2.3.0
