@@ -18,7 +18,7 @@ class ValidationResult(Enum):
     PASSED = "Passed"
 
 
-class ValidationOutcomeIdx(
+class ValidationOutcomeIdx(  # type: ignore[no-untyped-call]
     GlobalSecondaryIndex["ValidationResultsModelBase"]
 ):  # pylint:disable=too-few-public-methods
     class Meta:  # pylint:disable=too-few-public-methods
