@@ -112,7 +112,7 @@ pkgs.mkShell {
   ];
   shellHook = ''
         . ${projectDir + "/activate-dev-env.bash"}
-        ln --force --symbolic ${poetryEnv.python.interpreter} ${projectDir}/.run/python
+        ln --force --symbolic ${poetryEnv.python.interpreter} ./.run/python
         cat <<'EOF'
     Welcome to the Geostore development environment!
 
