@@ -2425,7 +2425,7 @@ typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""
 
 [[package]]
 name = "pynamodb"
-version = "5.1.0"
+version = "5.2.0"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = true
@@ -2503,11 +2503,11 @@ pytest = "*"
 
 [[package]]
 name = "pytest-socket"
-version = "0.4.1"
+version = "0.5.0"
 description = "Pytest Plugin to disable socket calls during tests"
 category = "dev"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 pytest = ">=3.6.3"
@@ -3616,8 +3616,8 @@ pylint = [
     {file = "pylint-2.12.2.tar.gz", hash = "sha256:9d945a73640e1fec07ee34b42f5669b770c759acd536ec7b16d7e4b87a9c9ff9"},
 ]
 pynamodb = [
-    {file = "pynamodb-5.1.0-py3-none-any.whl", hash = "sha256:8a38fa76522878ef1a8a0b62e6dcc1f883af73182a6c30a050481d316f589d34"},
-    {file = "pynamodb-5.1.0.tar.gz", hash = "sha256:7f351d70b9f4da95ea2d7e50299640e4c46c83b7b24bea5daf110acd2e5aef2b"},
+    {file = "pynamodb-5.2.0-py3-none-any.whl", hash = "sha256:b3cb6470754b0f1b732f2425938321fbe682e72af8164772487a0a9a9c8fa1ac"},
+    {file = "pynamodb-5.2.0.tar.gz", hash = "sha256:6c9bec5946949d07c76230187cdb9126e8247c94499bbc8e79ded11d17060a60"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
@@ -3639,8 +3639,8 @@ pytest-randomly = [
     {file = "pytest_randomly-3.11.0-py3-none-any.whl", hash = "sha256:a3c680d2b8150cf766311a80a1f92da64c3dd819045cda834fbf1b0ac4891610"},
 ]
 pytest-socket = [
-    {file = "pytest-socket-0.4.1.tar.gz", hash = "sha256:b5abcfd14d9c03e7d4e2875bb5e190af28bf5b4162d0a83e3d7aee6d79f1c85d"},
-    {file = "pytest_socket-0.4.1-py3-none-any.whl", hash = "sha256:e3bc6cc9c2534289c6a5b9748ca733f6ae8c8d34f1fdab5115ca17a47860bf5e"},
+    {file = "pytest-socket-0.5.0.tar.gz", hash = "sha256:1a3b92c4889118c688610a8d2991b51e2893e1e519db9e4226261ce5e24f70e2"},
+    {file = "pytest_socket-0.5.0-py3-none-any.whl", hash = "sha256:fc2bfe4020255431dd9583dd657aa8b75c4f9e0c53c46566cf06ce40fe9ea0ce"},
 ]
 pytest-subtests = [
     {file = "pytest-subtests-0.5.0.tar.gz", hash = "sha256:5bd1e4bf0eda4c89a6cd42b0ee28e1d2ca0848de3fd67ad8cdd6d559ed00f120"},
