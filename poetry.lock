@@ -2515,7 +2515,7 @@ pytest = "*"
 
 [[package]]
 name = "pytest-socket"
-version = "0.5.0"
+version = "0.5.1"
 description = "Pytest Plugin to disable socket calls during tests"
 category = "dev"
 optional = false
@@ -3655,8 +3655,8 @@ pytest-randomly = [
     {file = "pytest_randomly-3.11.0-py3-none-any.whl", hash = "sha256:a3c680d2b8150cf766311a80a1f92da64c3dd819045cda834fbf1b0ac4891610"},
 ]
 pytest-socket = [
-    {file = "pytest-socket-0.5.0.tar.gz", hash = "sha256:1a3b92c4889118c688610a8d2991b51e2893e1e519db9e4226261ce5e24f70e2"},
-    {file = "pytest_socket-0.5.0-py3-none-any.whl", hash = "sha256:fc2bfe4020255431dd9583dd657aa8b75c4f9e0c53c46566cf06ce40fe9ea0ce"},
+    {file = "pytest-socket-0.5.1.tar.gz", hash = "sha256:7c4b81dc6a51cbc0093f11791de00ff4a15ac698f5da96879a80f5d9ad4179b6"},
+    {file = "pytest_socket-0.5.1-py3-none-any.whl", hash = "sha256:8726fd47b83b127451532b6d570c5b6c4cd204fca363936509b1f53195de6f4f"},
 ]
 pytest-subtests = [
     {file = "pytest-subtests-0.6.0.tar.gz", hash = "sha256:3ebd306a8dcf75133f1742f288c82f36426ebcf8a132d4ee89782d20e84fc13a"},
