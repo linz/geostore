@@ -2801,7 +2801,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.6"
+version = "2.8.8"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -3814,8 +3814,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.6.tar.gz", hash = "sha256:83bc1424f7675c23f6d9a7673cc04e5acdb4aca885962c4d6d631bd114aa4c5f"},
-    {file = "types_python_dateutil-2.8.6-py3-none-any.whl", hash = "sha256:716ead66982fe3c601de3bcc934ee1ad3be27d7f975e1e2116594568a8c39c6c"},
+    {file = "types-python-dateutil-2.8.8.tar.gz", hash = "sha256:efe0207836d3b09e3a2986064a5c7f36e79ea423ab9b6676a62bf5dd51fb261b"},
+    {file = "types_python_dateutil-2.8.8-py3-none-any.whl", hash = "sha256:f704c2b7981e140eac7d626424e6232c1594d392c57c252d81a90fe53c2be896"},
 ]
 types-requests = [
     {file = "types-requests-2.27.7.tar.gz", hash = "sha256:f38bd488528cdcbce5b01dc953972f3cead0d060cfd9ee35b363066c25bab13c"},
