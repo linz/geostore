@@ -103,11 +103,15 @@ in
 pkgs.mkShell {
   buildInputs = [
     nodejs
+    pkgs.cacert
     pkgs.cargo
+    pkgs.docker
+    pkgs.gitFull
     pkgs.nodePackages.aws-azure-login
     (pkgs.poetry.override {
       inherit python;
     })
+    pkgs.which
     poetryEnv
   ];
   shellHook = ''
