@@ -288,18 +288,15 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
     ) as invalid_child_s3_object:
 
         # When
-        assert (
-            lambda_handler(
-                {
-                    DATASET_ID_KEY: dataset_id,
-                    VERSION_ID_KEY: version_id,
-                    METADATA_URL_KEY: root_s3_object.url,
-                    S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                },
-                any_lambda_context(),
-            )
-            == {SUCCESS_KEY: True}
-        )
+        assert lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+                METADATA_URL_KEY: root_s3_object.url,
+                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+            },
+            any_lambda_context(),
+        ) == {SUCCESS_KEY: True}
 
     hash_key = get_hash_key(dataset_id, version_id)
     validation_results_model = validation_results_model_with_meta()
@@ -414,18 +411,15 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                 ),
             ]
 
-            assert (
-                lambda_handler(
-                    {
-                        DATASET_ID_KEY: dataset_id,
-                        VERSION_ID_KEY: version_id,
-                        METADATA_URL_KEY: metadata_s3_object.url,
-                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                    },
-                    any_lambda_context(),
-                )
-                == {SUCCESS_KEY: True}
-            )
+            assert lambda_handler(
+                {
+                    DATASET_ID_KEY: dataset_id,
+                    VERSION_ID_KEY: version_id,
+                    METADATA_URL_KEY: metadata_s3_object.url,
+                    S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                },
+                any_lambda_context(),
+            ) == {SUCCESS_KEY: True}
 
             # Then
             actual_asset_items = processing_assets_model.query(
