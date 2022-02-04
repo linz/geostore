@@ -45,11 +45,11 @@ from .general_generators import (
 )
 
 
-@patch("geostore.import_asset_file.task.smart_open.open")
-def should_treat_unhandled_exception_as_permanent_failure(open_mock: MagicMock) -> None:
+@patch("geostore.import_asset_file.task.TARGET_S3_CLIENT.upload_fileobj")
+def should_treat_unhandled_exception_as_permanent_failure(upload_fileobj_mock: MagicMock) -> None:
     # Given
     error_message = any_error_message()
-    open_mock.side_effect = Exception(error_message)
+    upload_fileobj_mock.side_effect = Exception(error_message)
     task_id = any_task_id()
     event = {
         TASKS_KEY: [
