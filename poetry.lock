@@ -2094,7 +2094,7 @@ python-versions = "*"
 
 [[package]]
 name = "mutmut"
-version = "2.2.0"
+version = "2.4.0"
 description = "mutation testing for Python 3"
 category = "dev"
 optional = false
@@ -2106,6 +2106,7 @@ glob2 = "*"
 junit-xml = "1.8"
 parso = "*"
 pony = "*"
+toml = "*"
 
 [package.extras]
 coverage = ["coverage"]
@@ -2824,7 +2825,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-toml"
-version = "0.10.3"
+version = "0.10.4"
 description = "Typing stubs for toml"
 category = "dev"
 optional = false
@@ -3492,7 +3493,7 @@ multihash = [
     {file = "multihash-0.1.1.tar.gz", hash = "sha256:65d31ad24eeae0bb1ed016464afba26e269bd1c1f8af056fe4ed2a76b2e85ccb"},
 ]
 mutmut = [
-    {file = "mutmut-2.2.0.tar.gz", hash = "sha256:d78bb3324a4da736c31c9fb19c197290ededaca76c8eac2c2e40e70b59f38720"},
+    {file = "mutmut-2.4.0.tar.gz", hash = "sha256:5ab05ffc04ed98c98d5da982a6d425875db5ca59cb7835ef55d1d694aea7d2f2"},
 ]
 mypy = [
     {file = "mypy-0.931-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3c5b42d0815e15518b1f0990cff7a705805961613e701db60387e6fb663fe78a"},
@@ -3837,8 +3838,8 @@ types-six = [
     {file = "types_six-1.16.10-py2.py3-none-any.whl", hash = "sha256:1038d7a9a7d70004d69c94df97aa375ec177c0ee604bccb91465b1506c3972aa"},
 ]
 types-toml = [
-    {file = "types-toml-0.10.3.tar.gz", hash = "sha256:215a7a79198651ec5bdfd66193c1e71eb681a42f3ef7226c9af3123ced62564a"},
-    {file = "types_toml-0.10.3-py3-none-any.whl", hash = "sha256:988457744d9774d194e3539388772e3a685d8057b7c4a89407afeb0a6cbd1b14"},
+    {file = "types-toml-0.10.4.tar.gz", hash = "sha256:9340e7c1587715581bb13905b3af30b79fe68afaccfca377665d5e63b694129a"},
+    {file = "types_toml-0.10.4-py3-none-any.whl", hash = "sha256:4a9ffd47bbcec49c6fde6351a889b2c1bd3c0ef309fa0eed60dc28e58c8b9ea6"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.7.tar.gz", hash = "sha256:cfd1fbbe4ba9a605ed148294008aac8a7b8b7472651d1cc357d507ae5962e3d2"},
