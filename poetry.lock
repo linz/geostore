@@ -2032,7 +2032,7 @@ six = "*"
 
 [[package]]
 name = "language-formatters-pre-commit-hooks"
-version = "2.2.0"
+version = "2.3.0"
 description = "List of pre-commit hooks meant to format your source code."
 category = "dev"
 optional = false
@@ -3448,8 +3448,8 @@ junit-xml = [
     {file = "junit-xml-1.8.tar.gz", hash = "sha256:602f1c480a19d64edb452bf7632f76b5f2cb92c1938c6e071dcda8ff9541dc21"},
 ]
 language-formatters-pre-commit-hooks = [
-    {file = "language_formatters_pre_commit_hooks-2.2.0-py2.py3-none-any.whl", hash = "sha256:4f82cc07d39cdbc9004fd22c701c796375702aea760f6f41cd672e3973f2aae8"},
-    {file = "language_formatters_pre_commit_hooks-2.2.0.tar.gz", hash = "sha256:fd1ca84da53d7415116f11b142224ebab0942952b79edf86ae7c9a1d3d5110cd"},
+    {file = "language_formatters_pre_commit_hooks-2.3.0-py2.py3-none-any.whl", hash = "sha256:0cf9586460b0157a41a48385e85dffb3c51f15ac49cb0fe02151bd7aab9ac7d4"},
+    {file = "language_formatters_pre_commit_hooks-2.3.0.tar.gz", hash = "sha256:86e729219e0a86457b9fe856642bf8b8045da44b0c875275525cd96b2705318b"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.5.2.tar.gz", hash = "sha256:5944a9b95e97de1980c65f03b79b356f30a43de48682b8bdd90aa5089f0ec1f4"},
