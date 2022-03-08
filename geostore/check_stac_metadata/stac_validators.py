@@ -6,7 +6,7 @@ from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
 from jsonschema.validators import extend
 
-from ..stac_format import LINZ_SCHEMA_PATH, QUALITY_SCHEMA_PATH
+from ..stac_format import LINZ_SCHEMA_URL_PATH, LINZ_STAC_EXTENSIONS_LOCAL_PATH, QUALITY_SCHEMA_PATH
 from ..types import JsonObject
 
 
@@ -38,7 +38,7 @@ FILE_SCHEMA = Schema(FILE_STAC_SCHEMA_PATH)
 
 STAC_SPEC_PATH = "stac-spec/v1.0.0"
 CATALOG_SCHEMA = Schema(f"{STAC_SPEC_PATH}/catalog-spec/json-schema/catalog.json")
-LINZ_SCHEMA = Schema(LINZ_SCHEMA_PATH)
+LINZ_SCHEMA = Schema(join(LINZ_STAC_EXTENSIONS_LOCAL_PATH, LINZ_SCHEMA_URL_PATH))
 STAC_ITEM_SPEC_PATH = f"{STAC_SPEC_PATH}/item-spec/json-schema"
 ITEM_SCHEMA = Schema(f"{STAC_ITEM_SPEC_PATH}/item.json")
 
@@ -58,7 +58,7 @@ for schema in [
     LINZ_SCHEMA,
     Schema(PROJECTION_STAC_SCHEMA_PATH),
     Schema(VERSION_STAC_SCHEMA_PATH),
-    Schema(QUALITY_SCHEMA_PATH),
+    Schema(join(LINZ_STAC_EXTENSIONS_LOCAL_PATH, QUALITY_SCHEMA_PATH)),
 ]:
     # Normalize URLs the same way as jsonschema does
     schema_store[schema.uri] = schema.as_dict

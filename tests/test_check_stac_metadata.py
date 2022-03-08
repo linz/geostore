@@ -36,8 +36,9 @@ from geostore.processing_assets_model import ProcessingAssetType, processing_ass
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
-    LINZ_SCHEMA_DIRECTORY,
+    LINZ_SCHEMA_URL_DIRECTORY,
     LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_EXTENSIONS_LOCAL_PATH,
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
     LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED,
     LINZ_STAC_UPDATED_KEY,
@@ -459,7 +460,10 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     We only support fetching `s3://…` and relative URLs, so in the below we change all of them to be
     relative.
     """
-    for path in glob(f"geostore/check_stac_metadata/{LINZ_SCHEMA_DIRECTORY}/examples/*.json"):
+    for path in glob(
+        "geostore/check_stac_metadata/"
+        f"{LINZ_STAC_EXTENSIONS_LOCAL_PATH}/{LINZ_SCHEMA_URL_DIRECTORY}/examples/*.json"
+    ):
         with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
             stac_object = load(file_handle)
 
