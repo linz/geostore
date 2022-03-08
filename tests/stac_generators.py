@@ -5,6 +5,12 @@ from uuid import uuid4
 from multihash import SHA2_256
 
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from geostore.stac_format import (
+    LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_UPDATED_KEY,
+    STAC_MAXIMUM_KEY,
+    STAC_MINIMUM_KEY,
+)
 from geostore.types import JsonObject
 
 from .general_generators import (
@@ -12,6 +18,7 @@ from .general_generators import (
     any_description,
     any_https_url,
     any_name,
+    any_past_datetime,
     random_string,
 )
 
@@ -56,6 +63,27 @@ def any_asset_name() -> str:
 def any_dataset_description() -> str:
     """Arbitrary-length string"""
     return random_string(100)
+
+
+def any_linz_asset_summaries() -> JsonObject:
+    """
+    Semi-arbitrary dates:
+
+    - The first creation date can't be after any of the other dates
+    - The last created and first updated dates can be anywhere within the range
+    - The last updated date can't be before any of the other dates
+    """
+    datetimes = [any_past_datetime(), any_past_datetime(), any_past_datetime(), any_past_datetime()]
+    return {
+        LINZ_STAC_CREATED_KEY: {
+            STAC_MINIMUM_KEY: min(datetimes).isoformat(),
+            STAC_MAXIMUM_KEY: choice(datetimes).isoformat(),
+        },
+        LINZ_STAC_UPDATED_KEY: {
+            STAC_MINIMUM_KEY: choice(datetimes).isoformat(),
+            STAC_MAXIMUM_KEY: max(datetimes).isoformat(),
+        },
+    }
 
 
 def any_linz_geospatial_type() -> str:
