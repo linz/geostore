@@ -37,7 +37,7 @@ class Notify(Construct):
 
         slack_notify_function = BundledLambdaFunction(
             scope,
-            f"{env_name}-notify-status-update-function",
+            "GetStatusUpdate",
             directory="notify_status_update",
             extra_environment={
                 ENV_NAME_VARIABLE_NAME: env_name,
