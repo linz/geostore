@@ -116,7 +116,7 @@ class Processing(Construct):
 
         populate_catalog_lambda = BundledLambdaFunction(
             self,
-            "populate-catalog-bundled-lambda-function",
+            "PopulateCatalog",
             directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
@@ -132,7 +132,7 @@ class Processing(Construct):
 
         check_stac_metadata_task = LambdaTask(
             self,
-            "check-stac-metadata-task",
+            "CheckStacMetadata",
             directory="check_stac_metadata",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -152,7 +152,7 @@ class Processing(Construct):
 
         content_iterator_task = LambdaTask(
             self,
-            "content-iterator-task",
+            "ContentIterator",
             directory="content_iterator",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{CONTENT_KEY}",
@@ -246,7 +246,7 @@ class Processing(Construct):
 
         validation_summary_task = LambdaTask(
             self,
-            "validation-summary-task",
+            "GetValidationSummary",
             directory="validation_summary",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
@@ -284,7 +284,7 @@ class Processing(Construct):
 
         import_dataset_task = LambdaTask(
             self,
-            "import-dataset-task",
+            "ImportDataset",
             directory="import_dataset",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{IMPORT_DATASET_KEY}",
@@ -313,7 +313,7 @@ class Processing(Construct):
         )
         upload_status_task = LambdaTask(
             self,
-            "upload-status",
+            "GetUploadStatus",
             directory="upload_status",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{UPLOAD_STATUS_KEY}",
@@ -350,7 +350,7 @@ class Processing(Construct):
 
         update_dataset_catalog = LambdaTask(
             self,
-            "update-dataset-catalog",
+            "UpdateDatasetCatalog",
             directory="update_dataset_catalog",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
