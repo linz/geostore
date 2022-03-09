@@ -6,7 +6,7 @@ from aws_cdk.core import Construct
 from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
 from .common import LOG_LEVEL
-from .lambda_config import LAMBDA_TIMEOUT, PYTHON_RUNTIME
+from .lambda_config import DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES, LAMBDA_TIMEOUT, PYTHON_RUNTIME
 
 
 class BundledLambdaFunction(aws_lambda.Function):
@@ -32,4 +32,5 @@ class BundledLambdaFunction(aws_lambda.Function):
             environment=environment,
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
             timeout=LAMBDA_TIMEOUT,
+            memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES,
         )
