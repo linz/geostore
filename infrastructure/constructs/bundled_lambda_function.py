@@ -18,6 +18,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         directory: str,
         extra_environment: Optional[Mapping[str, str]],
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        max_memory_megabytes: int = DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES,
     ):
         environment = {"LOGLEVEL": LOG_LEVEL}
         if extra_environment is not None:
@@ -32,5 +33,5 @@ class BundledLambdaFunction(aws_lambda.Function):
             environment=environment,
             layers=[botocore_lambda_layer],  # type: ignore[list-item]
             timeout=LAMBDA_TIMEOUT,
-            memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES,
+            memory_size=max_memory_megabytes,
         )

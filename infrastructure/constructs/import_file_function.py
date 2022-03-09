@@ -4,6 +4,7 @@ from aws_cdk.core import Construct
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 
 from .bundled_lambda_function import BundledLambdaFunction
+from .lambda_config import DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES
 from .sts_policy import ALLOW_ASSUME_ANY_ROLE
 
 
@@ -16,6 +17,7 @@ class ImportFileFunction(BundledLambdaFunction):
         invoker: aws_iam.Role,
         env_name: str,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        max_memory_megabytes: int = DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES,
     ):
         super().__init__(
             scope,
@@ -23,6 +25,7 @@ class ImportFileFunction(BundledLambdaFunction):
             directory=directory,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
+            max_memory_megabytes=max_memory_megabytes,
         )
 
         self.add_to_role_policy(
