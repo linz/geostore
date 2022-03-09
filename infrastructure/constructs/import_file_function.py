@@ -19,7 +19,7 @@ class ImportFileFunction(BundledLambdaFunction):
     ):
         super().__init__(
             scope,
-            directory.replace("_", "-"),
+            directory.title().replace("_", ""),
             directory=directory,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
