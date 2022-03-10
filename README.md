@@ -159,7 +159,7 @@ have access to Dependabot alerts.)
 ## AWS Infrastructure deployment
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
-1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
+1. Get AWS credentials for 12 hours:
 
    ```bash
    aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
