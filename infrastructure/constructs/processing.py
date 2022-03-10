@@ -271,7 +271,6 @@ class Processing(Construct):
             invoker=import_dataset_role,
             env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
-            max_memory_megabytes=512,
             timeout=Duration.minutes(15),
         )
         import_metadata_file_function = ImportFileFunction(
