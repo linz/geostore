@@ -19,7 +19,7 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
-        uses: actions/setup-python@v2.3.1
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ steps.python-version.outputs.id }}
 
