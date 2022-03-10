@@ -35,10 +35,9 @@ repos:
       - id: mypy
         name: mypy
         entry: mypy
-        args: [--no-incremental]
         language: system
         stages: [commit]
-        types: [python]
+        types_or: [python, pyi]
         require_serial: true
 
       - id: pretty-format-ini

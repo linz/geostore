@@ -44,7 +44,7 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
-from .lambda_config import LAMBDA_TIMEOUT
+from .lambda_config import DEFAULT_LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -97,13 +97,13 @@ class Processing(Construct):
         dead_letter_queue = aws_sqs.Queue(
             self,
             "dead-letter-queue",
-            visibility_timeout=LAMBDA_TIMEOUT,
+            visibility_timeout=DEFAULT_LAMBDA_TIMEOUT,
         )
 
         self.message_queue = aws_sqs.Queue(
             self,
             "update-catalog-message-queue",
-            visibility_timeout=LAMBDA_TIMEOUT,
+            visibility_timeout=DEFAULT_LAMBDA_TIMEOUT,
             dead_letter_queue=aws_sqs.DeadLetterQueue(max_receive_count=3, queue=dead_letter_queue),
         )
         self.message_queue_name_parameter = aws_ssm.StringParameter(
@@ -116,7 +116,7 @@ class Processing(Construct):
 
         populate_catalog_lambda = BundledLambdaFunction(
             self,
-            "populate-catalog-bundled-lambda-function",
+            "PopulateCatalog",
             directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
@@ -132,7 +132,7 @@ class Processing(Construct):
 
         check_stac_metadata_task = LambdaTask(
             self,
-            "check-stac-metadata-task",
+            "CheckStacMetadata",
             directory="check_stac_metadata",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -152,7 +152,7 @@ class Processing(Construct):
 
         content_iterator_task = LambdaTask(
             self,
-            "content-iterator-task",
+            "ContentIterator",
             directory="content_iterator",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{CONTENT_KEY}",
@@ -246,7 +246,7 @@ class Processing(Construct):
 
         validation_summary_task = LambdaTask(
             self,
-            "validation-summary-task",
+            "GetValidationSummary",
             directory="validation_summary",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
@@ -271,6 +271,8 @@ class Processing(Construct):
             invoker=import_dataset_role,
             env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
+            max_memory_megabytes=512,
+            timeout=Duration.minutes(15),
         )
         import_metadata_file_function = ImportFileFunction(
             self,
@@ -282,7 +284,7 @@ class Processing(Construct):
 
         import_dataset_task = LambdaTask(
             self,
-            "import-dataset-task",
+            "ImportDataset",
             directory="import_dataset",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{IMPORT_DATASET_KEY}",
@@ -311,7 +313,7 @@ class Processing(Construct):
         )
         upload_status_task = LambdaTask(
             self,
-            "upload-status",
+            "GetUploadStatus",
             directory="upload_status",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{UPLOAD_STATUS_KEY}",
@@ -348,7 +350,7 @@ class Processing(Construct):
 
         update_dataset_catalog = LambdaTask(
             self,
-            "update-dataset-catalog",
+            "UpdateDatasetCatalog",
             directory="update_dataset_catalog",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},

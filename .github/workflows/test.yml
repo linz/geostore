@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
           submodules: 'true'
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           submodules: 'true'
 
@@ -63,7 +63,7 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Node.js ${{ steps.node-version.outputs.id }}
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ steps.node-version.outputs.id }}
           registry-url: https://registry.npmjs.org
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
 
       - uses: cachix/install-nix-action@v16
       - uses: cachix/cachix-action@v10

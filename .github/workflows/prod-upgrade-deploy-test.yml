@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -31,7 +31,7 @@ jobs:
           echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
       - name: Checkout to current production version
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.PROD_VERSION }}
           clean: false
@@ -45,7 +45,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.PROD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -112,7 +112,7 @@ jobs:
           poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
       - name: Checkout to current pull request version
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.GITHUB_SHA }}
           clean: false
@@ -125,7 +125,7 @@ jobs:
 
       # dependencies installation
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.HEAD_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
