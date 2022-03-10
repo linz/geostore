@@ -6,8 +6,9 @@ from geostore.check_stac_metadata.stac_validators import (
     VERSION_STAC_SCHEMA_PATH,
 )
 from geostore.stac_format import (
-    LINZ_EXTENSION_BASE_URL,
+    LINZ_STAC_ASSET_SUMMARIES_KEY,
     LINZ_STAC_CREATED_KEY,
+    LINZ_STAC_EXTENSIONS_BASE_URL,
     LINZ_STAC_EXTENSION_URL,
     LINZ_STAC_GEOSPATIAL_TYPE_KEY,
     LINZ_STAC_HISTORY_KEY,
@@ -54,6 +55,7 @@ from .stac_generators import (
     any_dataset_title,
     any_epsg,
     any_hex_multihash,
+    any_linz_asset_summaries,
     any_linz_geospatial_type,
     any_linz_history,
     any_linz_lifecycle,
@@ -70,6 +72,8 @@ PROJECTION_STAC_EXTENSION_URL = f"{STAC_EXTENSIONS_BASE_URL}/{PROJECTION_STAC_SC
 VERSION_STAC_EXTENSION_URL = f"{STAC_EXTENSIONS_BASE_URL}/{VERSION_STAC_SCHEMA_PATH}"
 
 MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
+    LINZ_STAC_ASSET_SUMMARIES_KEY: any_linz_asset_summaries(),
+    LINZ_STAC_GEOSPATIAL_TYPE_KEY: any_linz_geospatial_type(),
     LINZ_STAC_HISTORY_KEY: any_linz_history(),
     LINZ_STAC_LIFECYCLE_KEY: any_linz_lifecycle(),
     LINZ_STAC_PROVIDERS_KEY: [any_linz_provider_custodian(), any_linz_provider_manager()],
@@ -78,7 +82,7 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     STAC_EXTENSIONS_KEY: [
         FILE_STAC_EXTENSION_URL,
         LINZ_STAC_EXTENSION_URL,
-        f"{LINZ_EXTENSION_BASE_URL}/{QUALITY_SCHEMA_PATH}",
+        f"{LINZ_STAC_EXTENSIONS_BASE_URL}/{QUALITY_SCHEMA_PATH}",
         PROJECTION_STAC_EXTENSION_URL,
         VERSION_STAC_EXTENSION_URL,
     ],
@@ -99,7 +103,6 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
 }
 
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
-    LINZ_STAC_GEOSPATIAL_TYPE_KEY: any_linz_geospatial_type(),
     STAC_ASSETS_KEY: {
         any_asset_name(): {
             LINZ_STAC_CREATED_KEY: any_past_datetime_string(),

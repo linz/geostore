@@ -1,9 +1,10 @@
 from aws_cdk import aws_iam, aws_lambda_python
-from aws_cdk.core import Construct
+from aws_cdk.core import Construct, Duration
 
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 
 from .bundled_lambda_function import BundledLambdaFunction
+from .lambda_config import DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES, DEFAULT_LAMBDA_TIMEOUT
 from .sts_policy import ALLOW_ASSUME_ANY_ROLE
 
 
@@ -16,13 +17,17 @@ class ImportFileFunction(BundledLambdaFunction):
         invoker: aws_iam.Role,
         env_name: str,
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        max_memory_megabytes: int = DEFAULT_LAMBDA_MAX_MEMORY_MEGABYTES,
+        timeout: Duration = DEFAULT_LAMBDA_TIMEOUT,
     ):
         super().__init__(
             scope,
-            directory.replace("_", "-"),
+            directory.title().replace("_", ""),
             directory=directory,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
+            max_memory_megabytes=max_memory_megabytes,
+            timeout=timeout,
         )
 
         self.add_to_role_policy(

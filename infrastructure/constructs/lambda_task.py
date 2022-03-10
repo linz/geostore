@@ -20,7 +20,7 @@ class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
     ):
         self.lambda_function = BundledLambdaFunction(
             scope,
-            f"{construct_id}-bundled-lambda-function",
+            f"{construct_id}Function",
             directory=directory,
             extra_environment=extra_environment,
             botocore_lambda_layer=botocore_lambda_layer,
@@ -28,7 +28,7 @@ class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
 
         super().__init__(
             scope,
-            f"{construct_id}-lambda-invoke",
+            construct_id,
             lambda_function=self.lambda_function,
             result_path=result_path,
             payload_response_only=True,
