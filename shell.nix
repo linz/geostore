@@ -100,29 +100,30 @@ let
     });
   };
 in
-pkgs.mkShell {
-  buildInputs = [
-    nodejs
-    pkgs.cacert
-    pkgs.cargo
-    pkgs.docker
-    pkgs.gitFull
-    pkgs.nodePackages.aws-azure-login
-    (pkgs.poetry.override {
-      inherit python;
-    })
-    pkgs.which
-    poetryEnv
-  ];
-  shellHook = ''
-    . ${projectDir + "/activate-dev-env.bash"}
-    ln --force --no-dereference --symbolic ${poetryEnv.python.interpreter} ./.run/python
-    cat <<'EOF'
-    Welcome to the Geostore development environment!
+poetryEnv.env.overrideAttrs (
+  oldAttrs: {
+    buildInputs = [
+      nodejs
+      pkgs.cacert
+      pkgs.cargo
+      pkgs.docker
+      pkgs.gitFull
+      pkgs.nodePackages.aws-azure-login
+      (pkgs.poetry.override {
+        inherit python;
+      })
+      pkgs.which
+    ];
+    shellHook = ''
+      . ${projectDir + "/activate-dev-env.bash"}
+      ln --force --no-dereference --symbolic ${poetryEnv.interpreter} ./.run/python
+      cat <<'EOF'
+      Welcome to the Geostore development environment!
 
-    Please run `npm install` to install Node.js packages, if you haven't already.
+      Please run `npm install` to install Node.js packages, if you haven't already.
 
-    You should now be able to run `aws-azure-login`, `cdk` and `pytest`.
-    EOF
-  '';
-}
+      You should now be able to run `aws-azure-login`, `cdk` and `pytest`.
+      EOF
+    '';
+  }
+)
