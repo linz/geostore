@@ -115,9 +115,9 @@ pkgs.mkShell {
     poetryEnv
   ];
   shellHook = ''
-        . ${projectDir + "/activate-dev-env.bash"}
-        ln --force --symbolic ${poetryEnv.python.interpreter} ./.run/python
-        cat <<'EOF'
+    . ${projectDir + "/activate-dev-env.bash"}
+    ln --force --symbolic ${poetryEnv.python.interpreter} ./.run/python
+    cat <<'EOF'
     Welcome to the Geostore development environment!
 
     Please run `npm install` to install Node.js packages, if you haven't already.
