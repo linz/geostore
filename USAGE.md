@@ -114,7 +114,7 @@ Example of AWS service account authentication and authorization in to Geostore u
 
 - Set Geostore AWS profile for subsequent commands
   ```bash
-  export AWS_PROFILE geostore-users
+  export AWS_PROFILE=geostore-users
   ```
 
 ## Use
