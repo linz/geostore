@@ -30,7 +30,7 @@ class BatchSubmitJobTask(Construct):
             managed_policies=[s3_policy],
         )
 
-        self.job_definition_arn = TaskJobDefinition(
+        job_definition_arn = TaskJobDefinition(
             self,
             f"{construct_id}-task-definition",
             env_name=env_name,
@@ -47,7 +47,7 @@ class BatchSubmitJobTask(Construct):
             scope,
             f"{construct_id}-batch-submit-job",
             job_name=f"{construct_id}-job",
-            job_definition_arn=self.job_definition_arn,
+            job_definition_arn=job_definition_arn,
             job_queue_arn=job_queue.job_queue_arn,
             array_size=array_size,
             result_path=aws_stepfunctions.JsonPath.DISCARD,
