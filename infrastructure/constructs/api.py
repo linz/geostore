@@ -14,6 +14,7 @@ from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
+from .removal_policy import REMOVAL_POLICY
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -126,6 +127,7 @@ class API(Construct):
                 self,
                 "api-user-log",
                 log_group_name=Resource.CLOUDTRAIL_LOG_GROUP_NAME.resource_name,
+                removal_policy=REMOVAL_POLICY,
             ),  # type: ignore[arg-type]
         )
         trail.add_lambda_event_selector(
