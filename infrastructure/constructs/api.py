@@ -47,7 +47,7 @@ class API(Construct):
             self,
             "api-users-role",
             role_name=Resource.API_USERS_ROLE_NAME.resource_name,
-            assumed_by=principal,  # type: ignore[arg-type]
+            assumed_by=principal,
             max_session_duration=MAX_SESSION_DURATION,
         )
 
@@ -147,9 +147,9 @@ class API(Construct):
             self,
             "s3-users-role",
             role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
-            assumed_by=principal,  # type: ignore[arg-type]
+            assumed_by=principal,
             max_session_duration=MAX_SESSION_DURATION,
         )
-        storage_bucket.grant_read(s3_users_role)  # type: ignore[arg-type]
+        storage_bucket.grant_read(s3_users_role)
 
-        Tags.of(self).add("ApplicationLayer", "api")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "api")

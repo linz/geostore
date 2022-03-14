@@ -20,6 +20,6 @@ class Staging(Construct):
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
         )
-        staging_bucket.grant_read(users_role)  # type: ignore[arg-type]
+        staging_bucket.grant_read(users_role)
 
-        Tags.of(self).add("ApplicationLayer", "staging")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "staging")

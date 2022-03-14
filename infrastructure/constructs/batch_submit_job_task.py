@@ -26,19 +26,17 @@ class BatchSubmitJobTask(Construct):
         self.job_role = aws_iam.Role(
             self,
             f"{construct_id}-batch-job-role",
-            assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
-                "ecs-tasks.amazonaws.com"
-            ),
+            assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             managed_policies=[s3_policy],
         )
 
-        self.job_definition = TaskJobDefinition(
+        self.job_definition_arn = TaskJobDefinition(
             self,
             f"{construct_id}-task-definition",
             env_name=env_name,
             directory=directory,
             job_role=self.job_role,
-        )
+        ).job_definition_arn
 
         container_overrides = aws_stepfunctions_tasks.BatchContainerOverrides(
             command=container_overrides_command,
@@ -49,8 +47,8 @@ class BatchSubmitJobTask(Construct):
             scope,
             f"{construct_id}-batch-submit-job",
             job_name=f"{construct_id}-job",
-            job_definition=self.job_definition,  # type: ignore[arg-type]
-            job_queue=job_queue,  # type: ignore[arg-type]
+            job_definition_arn=self.job_definition_arn,
+            job_queue_arn=job_queue.job_queue_arn,
             array_size=array_size,
             result_path=aws_stepfunctions.JsonPath.DISCARD,
             container_overrides=container_overrides,
