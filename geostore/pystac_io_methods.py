@@ -18,7 +18,9 @@ S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 
 class S3StacIO(StacIO):
-    def read_text(self, source: Union[str, Link], *_args: Any, **_kwargs: Any) -> str:
+    def read_text(  # type: ignore[override]
+        self, source: Union[str, Link], *_args: Any, **_kwargs: Any
+    ) -> str:
         url = source.href if isinstance(source, Link) else source
         bucket, key = get_bucket_and_key_from_url(url)
         obj = S3_CLIENT.get_object(Bucket=bucket, Key=key)
@@ -26,7 +28,9 @@ class S3StacIO(StacIO):
 
         return result
 
-    def write_text(self, dest: Union[str, Link], txt: str, *_args: Any, **_kwargs: Any) -> None:
+    def write_text(  # type: ignore[override]
+        self, dest: Union[str, Link], txt: str, *_args: Any, **_kwargs: Any
+    ) -> None:
         url = dest.href if isinstance(dest, Link) else dest
         bucket, key = get_bucket_and_key_from_url(url)
         S3_CLIENT.put_object(Bucket=bucket, Key=key, Body=txt.encode())
