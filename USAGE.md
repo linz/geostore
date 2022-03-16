@@ -102,7 +102,7 @@ checks which are currently in place.
 
 Geostore allows read/write access for users authorized by SAML identity provider
 (`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`) configured during deployment time (see
-[README](/linz/geostore/blob/master/README.md#aws-infrastructure-deployment-cdk-stack)).
+[README](README.md#aws-infrastructure-deployment-cdk-stack)).
 
 Example of AWS service account authentication and authorization in to Geostore users role via Azure:
 
