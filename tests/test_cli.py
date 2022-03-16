@@ -480,12 +480,12 @@ def should_default_to_production_environment(
 ) -> None:
     # Given
     with patch.dict(environ):
-        del environ[ENV_NAME_VARIABLE_NAME]
+        environ.pop(ENV_NAME_VARIABLE_NAME, None)
         # When
         result = CLI_RUNNER.invoke(app, ["dataset", "list"])
 
     # Then
-    with subtests.test(msg="should call the function in the given environment"):
+    with subtests.test(msg="should call the function in the production environment"):
         handle_api_request_mock.assert_called_once_with(
             Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value, ANY, ANY
         )

@@ -3,7 +3,7 @@ import textwrap
 from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam
 from aws_cdk.core import Construct, Fn
 
-from geostore.environment import PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import is_production
 
 APPLICATION_NAME_TAG_NAME = "ApplicationName"
 APPLICATION_NAME = "geostore"
@@ -21,7 +21,7 @@ class BatchJobQueue(Construct):
         # pylint: disable=too-many-locals
         super().__init__(scope, construct_id)
 
-        if env_name == PRODUCTION_ENVIRONMENT_NAME:
+        if is_production():
             instance_types = [
                 aws_ec2.InstanceType("c5.xlarge"),
                 aws_ec2.InstanceType("c5.2xlarge"),
