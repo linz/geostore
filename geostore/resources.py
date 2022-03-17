@@ -1,14 +1,13 @@
 from enum import Enum
 
-from .environment import PRODUCTION_ENVIRONMENT_NAME, environment_name
+from .environment import environment_name, is_production
 
 
 def prefix_non_prod_name(name: str) -> str:
-    env_name = environment_name()
-    if env_name == PRODUCTION_ENVIRONMENT_NAME:
+    if is_production():
         return name
 
-    return f"{env_name}-{name}"
+    return f"{environment_name()}-{name}"
 
 
 class Resource(Enum):

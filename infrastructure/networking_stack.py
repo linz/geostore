@@ -1,11 +1,11 @@
 from aws_cdk import aws_ec2
 from aws_cdk.core import Construct, Stack, Tags
 
-from geostore.environment import PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import is_production
 
 
 class NetworkingStack(Stack):
-    def __init__(self, scope: Construct, stack_id: str, env_name: str) -> None:
+    def __init__(self, scope: Construct, stack_id: str) -> None:
         super().__init__(scope, stack_id)
 
         ############################################################################################
@@ -30,7 +30,7 @@ class NetworkingStack(Stack):
                     reserved=True,
                 ),
             ],
-            max_azs=99 if env_name == PRODUCTION_ENVIRONMENT_NAME else 1,
+            max_azs=99 if is_production() else 1,
         )
 
         Tags.of(self).add("ApplicationLayer", "networking")  # type: ignore[arg-type]

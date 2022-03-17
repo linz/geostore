@@ -4,7 +4,7 @@ from aws_cdk import aws_batch, aws_ecs, aws_iam
 from aws_cdk.core import Construct
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY
-from geostore.environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
 
 from .backend import BACKEND_DIRECTORY
 
@@ -19,7 +19,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
         directory: str,
         job_role: aws_iam.Role,
     ):
-        if env_name == PRODUCTION_ENVIRONMENT_NAME:
+        if is_production():
             batch_job_definition_memory_limit = 3900
         else:
             batch_job_definition_memory_limit = 500
