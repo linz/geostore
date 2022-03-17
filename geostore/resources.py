@@ -1,14 +1,13 @@
 from enum import Enum
 
-from .environment import PRODUCTION_ENVIRONMENT_NAME, environment_name
+from .environment import environment_name, is_production
 
 
 def prefix_non_prod_name(name: str) -> str:
-    env_name = environment_name()
-    if env_name == PRODUCTION_ENVIRONMENT_NAME:
+    if is_production():
         return name
 
-    return f"{env_name}-{name}"
+    return f"{environment_name()}-{name}"
 
 
 class Resource(Enum):
@@ -17,8 +16,6 @@ class Resource(Enum):
         return prefix_non_prod_name(self.value)
 
     API_USERS_ROLE_NAME = "api-users"
-    CLOUDTRAIL_BUCKET_NAME = "geostore-cloudtrail-bucket"
-    CLOUDTRAIL_LOG_GROUP_NAME = "geostore-cloudtrail-api"
     CLOUDWATCH_RULE_NAME = "geostore-cloudwatch-rule"
     DATASETS_ENDPOINT_FUNCTION_NAME = "datasets"
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = "dataset-versions"

@@ -1,7 +1,7 @@
 from aws_cdk import aws_iam, aws_s3
 from aws_cdk.core import Construct, Tags
 
-from geostore.environment import PRODUCTION_ENVIRONMENT_NAME
+from geostore.environment import is_production
 
 from .roles import MAX_SESSION_DURATION
 
@@ -13,9 +13,10 @@ class LDS(Construct):
         super().__init__(scope, stack_id)
 
         account_principal = aws_iam.AccountPrincipal(account_id=276514628126)
-        external_id = {PRODUCTION_ENVIRONMENT_NAME: "koordinates-jAddR"}.get(
-            env_name, "koordinates-4BnJQ"
-        )
+        if is_production():
+            external_id = "koordinates-jAddR"
+        else:
+            external_id = "koordinates-4BnJQ"
         role = aws_iam.Role(
             self,
             "koordinates-read-role",

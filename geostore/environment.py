@@ -6,3 +6,7 @@ PRODUCTION_ENVIRONMENT_NAME = "prod"
 
 def environment_name() -> str:
     return environ.get(ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME)
+
+
+def is_production() -> bool:
+    return environment_name() == PRODUCTION_ENVIRONMENT_NAME
