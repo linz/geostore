@@ -1,20 +1,10 @@
-from aws_cdk import (
-    aws_cloudtrail,
-    aws_iam,
-    aws_lambda_python,
-    aws_logs,
-    aws_s3,
-    aws_sqs,
-    aws_ssm,
-    aws_stepfunctions,
-)
-from aws_cdk.core import Construct, RemovalPolicy, Tags
+from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
+from aws_cdk.core import Construct, Tags
 
 from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
-from .removal_policy import REMOVAL_POLICY
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
@@ -106,37 +96,6 @@ class API(Construct):
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
                 sqs_queue_parameter: [datasets_endpoint_lambda],
             }
-        )
-
-        trail_bucket = aws_s3.Bucket(
-            self,
-            "cloudtrail-bucket",
-            bucket_name=Resource.CLOUDTRAIL_BUCKET_NAME.resource_name,
-            access_control=aws_s3.BucketAccessControl.PRIVATE,
-            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
-            auto_delete_objects=True,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
-
-        trail = aws_cloudtrail.Trail(
-            self,
-            "cloudtrail",
-            send_to_cloud_watch_logs=True,
-            bucket=trail_bucket,  # type: ignore[arg-type]
-            cloud_watch_log_group=aws_logs.LogGroup(
-                self,
-                "api-user-log",
-                log_group_name=Resource.CLOUDTRAIL_LOG_GROUP_NAME.resource_name,
-                removal_policy=REMOVAL_POLICY,
-            ),  # type: ignore[arg-type]
-        )
-        trail.add_lambda_event_selector(
-            [
-                import_status_endpoint_lambda,
-                dataset_versions_endpoint_lambda,
-                datasets_endpoint_lambda,
-            ],
-            include_management_events=False,
         )
 
         ############################################################################################
