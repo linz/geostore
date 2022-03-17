@@ -16,6 +16,8 @@ class Resource(Enum):
         return prefix_non_prod_name(self.value)
 
     API_USERS_ROLE_NAME = "api-users"
+    CLOUDTRAIL_BUCKET_NAME = "geostore-cloudtrail-bucket"
+    CLOUDTRAIL_LOG_GROUP_NAME = "geostore-cloudtrail-api"
     CLOUDWATCH_RULE_NAME = "geostore-cloudwatch-rule"
     DATASETS_ENDPOINT_FUNCTION_NAME = "datasets"
     DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME = "dataset-versions"
