@@ -6,6 +6,7 @@ from aws_cdk.core import App, Tag
 from geostore.environment import environment_name
 from infrastructure.application_stack import Application
 from infrastructure.constructs.batch_job_queue import APPLICATION_NAME, APPLICATION_NAME_TAG_NAME
+from infrastructure.logging_stack import Logging
 
 
 def main() -> None:
@@ -13,6 +14,7 @@ def main() -> None:
 
     env_name = environment_name()
     Application(app, f"{env_name}-geostore")
+    Logging(app, "geostore-logging")
 
     # tag all resources in stack
     Tag.add(app, "CostCentre", "100005")
