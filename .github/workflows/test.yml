@@ -155,8 +155,9 @@ jobs:
           path: htmlcov
         if: ${{ always() }}
 
-      - name: Destroy main AWS stack used for testing
-        run: poetry run cdk destroy --force "${GEOSTORE_ENV_NAME}-geostore"
+      - name: Destroy AWS stacks used for testing
+        run: |
+          poetry run cdk destroy --force --all
         if: always() # clean-up AWS stack after failure
 
   build-nix-shell:
