@@ -94,4 +94,4 @@ class Storage(Construct):
             ),
         )
 
-        Tags.of(self).add("ApplicationLayer", "storage")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "storage")
