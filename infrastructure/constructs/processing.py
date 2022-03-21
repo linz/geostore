@@ -123,9 +123,7 @@ class Processing(Construct):
         )
 
         self.message_queue.grant_consume_messages(populate_catalog_lambda)
-        populate_catalog_lambda.add_event_source(
-            SqsEventSource(self.message_queue, batch_size=1)  # type: ignore[arg-type]
-        )
+        populate_catalog_lambda.add_event_source(SqsEventSource(self.message_queue, batch_size=1))
 
         ############################################################################################
         # STATE MACHINE TASKS
@@ -236,12 +234,8 @@ class Processing(Construct):
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
         ]:
-            validation_results_table.grant_read_write_data(
-                check_files_checksums_task  # type: ignore[arg-type]
-            )
-            validation_results_table.grant(
-                check_files_checksums_task, "dynamodb:DescribeTable"  # type: ignore[arg-type]
-            )
+            validation_results_table.grant_read_write_data(check_files_checksums_task)
+            validation_results_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
             check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(
@@ -260,9 +254,7 @@ class Processing(Construct):
         import_dataset_role = aws_iam.Role(
             self,
             "import-dataset",
-            assumed_by=aws_iam.ServicePrincipal(  # type: ignore[arg-type]
-                "batchoperations.s3.amazonaws.com"
-            ),
+            assumed_by=aws_iam.ServicePrincipal("batchoperations.s3.amazonaws.com"),
         )
 
         import_asset_file_function = ImportFileFunction(
@@ -393,7 +385,7 @@ class Processing(Construct):
         self.staging_users_role = aws_iam.Role(
             self,
             "staging-users-role",
-            assumed_by=principal,  # type: ignore[arg-type]
+            assumed_by=principal,
             max_session_duration=MAX_SESSION_DURATION,
             role_name=Resource.STAGING_USERS_ROLE_NAME.resource_name,
         )
@@ -410,9 +402,7 @@ class Processing(Construct):
         dataset_version_creation_definition = (
             check_stac_metadata_task.next(content_iterator_task)
             .next(
-                aws_stepfunctions.Choice(  # type: ignore[arg-type]
-                    self, "check_files_checksums_maybe_array"
-                )
+                aws_stepfunctions.Choice(self, "check_files_checksums_maybe_array")
                 .when(
                     aws_stepfunctions.Condition.number_equals(
                         f"$.{CONTENT_KEY}.{ITERATION_SIZE_KEY}", 1
@@ -429,21 +419,15 @@ class Processing(Construct):
                         f"$.{CONTENT_KEY}.{NEXT_ITEM_KEY}", -1
                     ),
                     validation_summary_task.next(
-                        aws_stepfunctions.Choice(  # type: ignore[arg-type]
-                            self, "validation_successful"
-                        )
+                        aws_stepfunctions.Choice(self, "validation_successful")
                         .when(
                             aws_stepfunctions.Condition.boolean_equals(
                                 f"$.{VALIDATION_KEY}.{SUCCESS_KEY}", True
                             ),
-                            import_dataset_task.next(
-                                wait_before_upload_status_check  # type: ignore[arg-type]
-                            )
+                            import_dataset_task.next(wait_before_upload_status_check)
                             .next(upload_status_task)
                             .next(
-                                aws_stepfunctions.Choice(
-                                    self, "import_completed"  # type: ignore[arg-type]
-                                )
+                                aws_stepfunctions.Choice(self, "import_completed")
                                 .when(
                                     aws_stepfunctions.Condition.and_(
                                         aws_stepfunctions.Condition.string_equals(
@@ -455,9 +439,7 @@ class Processing(Construct):
                                             S3_BATCH_STATUS_COMPLETE,
                                         ),
                                     ),
-                                    update_dataset_catalog.next(
-                                        success_task  # type: ignore[arg-type]
-                                    ),
+                                    update_dataset_catalog.next(success_task),
                                 )
                                 .when(
                                     aws_stepfunctions.Condition.or_(
@@ -478,14 +460,12 @@ class Processing(Construct):
                                             S3_BATCH_STATUS_FAILED,
                                         ),
                                     ),
-                                    upload_failure,  # type: ignore[arg-type]
+                                    upload_failure,
                                 )
-                                .otherwise(
-                                    wait_before_upload_status_check  # type: ignore[arg-type]
-                                )
+                                .otherwise(wait_before_upload_status_check)
                             ),
                         )
-                        .otherwise(validation_failure)  # type: ignore[arg-type]
+                        .otherwise(validation_failure)
                     ),
                 )
                 .otherwise(content_iterator_task)
@@ -495,7 +475,7 @@ class Processing(Construct):
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
             f"{env_name}-dataset-version-creation",
-            definition=dataset_version_creation_definition,  # type: ignore[arg-type]
+            definition=dataset_version_creation_definition,
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(
@@ -506,4 +486,4 @@ class Processing(Construct):
             string_value=self.state_machine.state_machine_arn,
         )
 
-        Tags.of(self).add("ApplicationLayer", "processing")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "processing")
