@@ -33,7 +33,6 @@ poetryEnv.env.overrideAttrs (
       pkgs.cargo
       pkgs.docker
       pkgs.gitFull
-      pkgs.nodePackages.aws-azure-login
       (pkgs.poetry.override {
         inherit python;
       })
@@ -47,7 +46,7 @@ poetryEnv.env.overrideAttrs (
 
       Please run `npm install` to install Node.js packages, if you haven't already.
 
-      You should now be able to run `aws-azure-login`, `cdk` and `pytest`.
+      You should now be able to run `cdk` and `pytest`.
       EOF
     '';
   }

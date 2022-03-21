@@ -41,10 +41,10 @@ class BatchJobQueue(Construct):
         batch_instance_role = aws_iam.Role(
             self,
             "batch-instance-role",
-            assumed_by=aws_iam.ServicePrincipal("ec2.amazonaws.com"),  # type: ignore[arg-type]
+            assumed_by=aws_iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[ec2_policy],
         )
-        processing_assets_table.grant_read_write_data(batch_instance_role)  # type: ignore[arg-type]
+        processing_assets_table.grant_read_write_data(batch_instance_role)
 
         batch_instance_profile = aws_iam.CfnInstanceProfile(
             self,
@@ -108,14 +108,14 @@ class BatchJobQueue(Construct):
         service_role = aws_iam.Role(
             self,
             "batch-service-role",
-            assumed_by=aws_iam.ServicePrincipal("batch.amazonaws.com"),  # type: ignore[arg-type]
+            assumed_by=aws_iam.ServicePrincipal("batch.amazonaws.com"),
             managed_policies=[batch_service_policy],
         )
         compute_environment = aws_batch.ComputeEnvironment(
             self,
             "compute-environment",
             compute_resources=compute_resources,
-            service_role=service_role,  # type: ignore[arg-type]
+            service_role=service_role,
         )
 
         self.job_queue = aws_batch.JobQueue(
@@ -123,7 +123,7 @@ class BatchJobQueue(Construct):
             f"{construct_id}-job-queue",
             compute_environments=[
                 aws_batch.JobQueueComputeEnvironment(
-                    compute_environment=compute_environment, order=10  # type: ignore[arg-type]
+                    compute_environment=compute_environment, order=10
                 ),
             ],
             priority=10,

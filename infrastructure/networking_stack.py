@@ -33,4 +33,4 @@ class NetworkingStack(Stack):
             max_azs=99 if is_production() else 1,
         )
 
-        Tags.of(self).add("ApplicationLayer", "networking")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "networking")

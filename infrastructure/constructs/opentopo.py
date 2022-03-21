@@ -16,10 +16,10 @@ class OpenTopography(Construct):
             self,
             "opentopography-read-role",
             role_name=f"opentopography-s3-access-read-{env_name}",
-            assumed_by=account_principal,  # type: ignore[arg-type]
+            assumed_by=account_principal,
             external_id=external_id,
             max_session_duration=MAX_SESSION_DURATION,
         )
-        storage_bucket.grant_read(role)  # type: ignore[arg-type]
+        storage_bucket.grant_read(role)
 
-        Tags.of(self).add("ApplicationLayer", "opentopography")  # type: ignore[arg-type]
+        Tags.of(self).add("ApplicationLayer", "opentopography")

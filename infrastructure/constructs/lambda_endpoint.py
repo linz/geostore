@@ -31,9 +31,9 @@ class LambdaEndpoint(aws_lambda.Function):
             runtime=PYTHON_RUNTIME,
             timeout=DEFAULT_LAMBDA_TIMEOUT,
             code=bundled_code(package_name),
-            layers=[botocore_lambda_layer],  # type: ignore[list-item]
+            layers=[botocore_lambda_layer],
             memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEBIBYTES,
         )
 
         self.add_environment(ENV_NAME_VARIABLE_NAME, env_name)
-        self.grant_invoke(users_role)  # type: ignore[arg-type]
+        self.grant_invoke(users_role)
