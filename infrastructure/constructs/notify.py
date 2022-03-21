@@ -84,7 +84,7 @@ class Notify(Construct):
         step_function_topic.add_to_resource_policy(
             aws_iam.PolicyStatement(
                 actions=["sns:Subscribe", "sns:Receive"],
-                principals=[aws_iam.AnyPrincipal()],  # type: ignore[list-item]
+                principals=[aws_iam.AnyPrincipal()],
                 resources=[step_function_topic.topic_arn],
             )
         )
@@ -100,7 +100,5 @@ class Notify(Construct):
                 detail_type=["Step Functions Execution Status Change"],
                 detail={"stateMachineArn": [state_machine.state_machine_arn]},
             ),
-            targets=[
-                aws_events_targets.LambdaFunction(slack_notify_function)  # type: ignore[list-item]
-            ],
+            targets=[aws_events_targets.LambdaFunction(slack_notify_function)],
         )

@@ -35,7 +35,7 @@ class BundledLambdaFunction(aws_lambda.Function):
             handler=f"{BACKEND_DIRECTORY}.{directory}.task.lambda_handler",
             runtime=PYTHON_RUNTIME,
             environment=environment,
-            layers=[botocore_lambda_layer],  # type: ignore[list-item]
+            layers=[botocore_lambda_layer],
             timeout=timeout,
             memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEBIBYTES,
         )

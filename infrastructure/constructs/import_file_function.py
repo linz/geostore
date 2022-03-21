@@ -36,4 +36,4 @@ class ImportFileFunction(BundledLambdaFunction):
         )
         self.add_to_role_policy(ALLOW_ASSUME_ANY_ROLE)
 
-        self.grant_invoke(invoker)  # type: ignore[arg-type]
+        self.grant_invoke(invoker)
