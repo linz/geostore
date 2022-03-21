@@ -54,6 +54,13 @@ One-time setup which generally assumes that you're in the project directory.
 2. Configure Docker:
    1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
    2. Log out and back in to enable the new group
+3. Set up an AWS Azure login shortcut like this in your .bashrc:
+
+   ```shell
+   aws-azure-login() {
+       docker run --interactive --rm --tty --volume="${HOME}/.aws:/root/.aws" sportradar/aws-azure-login:2021062807125386530a "$@"
+   }
+   ```
 
 ### Ubuntu
 
@@ -114,7 +121,6 @@ One-time setup which generally assumes that you're in the project directory.
 9. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
    is optional since it currently can't be set per repository or organisation, so it affects any
    repos where you have access to Dependabot alerts.)
-10. Install [`aws-azure-login`](https://github.com/sportradar/aws-azure-login#installation).
 
 Re-run `./reset-dev-env.bash` when packages change. One easy way to use it pretty much seamlessly is
 to run it before every workday, with a crontab entry like this template:
@@ -153,7 +159,7 @@ have access to Dependabot alerts.)
 ## AWS Infrastructure deployment
 
 1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
-1. Get AWS credentials (see: https://www.npmjs.com/package/aws-azure-login) for 12 hours:
+1. Get AWS credentials for 12 hours:
 
    ```bash
    aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
