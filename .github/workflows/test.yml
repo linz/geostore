@@ -138,7 +138,7 @@ jobs:
           "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
 
       - name: Archive JUnit test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-report
           path: junit.xml
@@ -149,7 +149,7 @@ jobs:
           poetry run coverage html
 
       - name: Archive code coverage report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
           path: htmlcov
