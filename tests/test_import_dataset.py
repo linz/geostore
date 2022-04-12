@@ -100,6 +100,9 @@ def should_batch_copy_files_to_storage(
     root_metadata_filename = any_safe_filename()
     child_metadata_filename = any_safe_filename()
 
+    metadata_copy_job_result = None
+    asset_copy_job_result = None
+
     with S3Object(
         BytesIO(initial_bytes=root_asset_content),
         Resource.STAGING_BUCKET_NAME.resource_name,
@@ -246,6 +249,8 @@ def should_batch_copy_files_to_storage(
 
                 # Cleanup
                 with subtests.test(msg="Delete copy job files"):
+                    assert metadata_copy_job_result is not None
+                    assert asset_copy_job_result is not None
                     delete_copy_job_files(
                         metadata_copy_job_result,
                         asset_copy_job_result,
