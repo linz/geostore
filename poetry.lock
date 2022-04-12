@@ -1655,7 +1655,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "cattrs"
-version = "1.10.0"
+version = "22.1.0"
 description = "Composable complex class support for attrs and dataclasses."
 category = "main"
 optional = true
@@ -1663,6 +1663,7 @@ python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 attrs = ">=20"
+exceptiongroup = {version = "*", markers = "python_version <= \"3.10\""}
 
 [[package]]
 name = "certifi"
@@ -1767,6 +1768,17 @@ description = "Docutils -- Python Documentation Utilities"
 category = "main"
 optional = true
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
+name = "exceptiongroup"
+version = "1.0.0rc3"
+description = "Backport of PEP 654 (exception groups)"
+category = "main"
+optional = true
+python-versions = ">=3.7"
+
+[package.extras]
+test = ["pytest (>=6)", "coverage (>=6)"]
 
 [[package]]
 name = "filelock"
@@ -1999,7 +2011,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "jsii"
-version = "1.55.1"
+version = "1.56.0"
 description = "Python client for jsii runtime"
 category = "main"
 optional = true
@@ -2007,7 +2019,7 @@ python-versions = "~=3.6"
 
 [package.dependencies]
 attrs = ">=21.2,<22.0"
-cattrs = {version = ">=1.8,<1.11", markers = "python_version >= \"3.7\""}
+cattrs = {version = ">=1.8,<22.2", markers = "python_version >= \"3.7\""}
 python-dateutil = "*"
 typing-extensions = ">=3.7,<5.0"
 
@@ -3304,8 +3316,8 @@ botocore-stubs = [
     {file = "botocore_stubs-1.20.94-py3-none-any.whl", hash = "sha256:c066316c2d931b4559cd6228275fd2ccdad0dd4c20258b10f074b282101e0827"},
 ]
 cattrs = [
-    {file = "cattrs-1.10.0-py3-none-any.whl", hash = "sha256:35dd9063244263e63bd0bd24ea61e3015b00272cead084b2c40d788b0f857c46"},
-    {file = "cattrs-1.10.0.tar.gz", hash = "sha256:211800f725cdecedcbcf4c753bbd22d248312b37d130f06045434acb7d9b34e1"},
+    {file = "cattrs-22.1.0-py3-none-any.whl", hash = "sha256:d55c477b4672f93606e992049f15d526dc7867e6c756cd6256d4af92e2b1e364"},
+    {file = "cattrs-22.1.0.tar.gz", hash = "sha256:94b67b64cf92c994f8784c40c082177dc916e0489a73a9a36b24eb18a9db40c6"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -3391,6 +3403,10 @@ docutils = [
     {file = "docutils-0.15.2-py3-none-any.whl", hash = "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"},
     {file = "docutils-0.15.2.tar.gz", hash = "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"},
 ]
+exceptiongroup = [
+    {file = "exceptiongroup-1.0.0rc3-py3-none-any.whl", hash = "sha256:f734ede30b0d3f21f91d17bb83216e3ee780df0738a293e15d08925279623782"},
+    {file = "exceptiongroup-1.0.0rc3.tar.gz", hash = "sha256:ed5799dc1260d2421564c21567f7ec84cffb39f149cf0e5e7e0aa6548e1f7288"},
+]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
     {file = "filelock-3.0.12.tar.gz", hash = "sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59"},
@@ -3463,8 +3479,8 @@ jmespath = [
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
 ]
 jsii = [
-    {file = "jsii-1.55.1-py3-none-any.whl", hash = "sha256:1b735bb3ebcebaff02193c8bfbd8760f59bbed32ba38455557fb2ba16f9f97f1"},
-    {file = "jsii-1.55.1.tar.gz", hash = "sha256:251db2cc04a7bcb10e3ec9b1831153b02e920c0c9279ee76d91172d8e2130c44"},
+    {file = "jsii-1.56.0-py3-none-any.whl", hash = "sha256:8e61eb860a9a76c66cde44ce3a1e6f66b4b5ab3683131ca49124785f75f3792c"},
+    {file = "jsii-1.56.0.tar.gz", hash = "sha256:d393c72aa1864de301b95b65b161efc8838999b32099cd8d7cda6a03cea3cff9"},
 ]
 jsonpointer = [
     {file = "jsonpointer-2.0-py2.py3-none-any.whl", hash = "sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e"},
