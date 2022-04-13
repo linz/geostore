@@ -151,6 +151,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     second_asset_created = any_past_datetime_string()
     second_asset_updated = any_past_datetime_string()
 
+    metadata_copy_job_result = None
+    asset_copy_job_result = None
+
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
@@ -366,6 +369,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, key, s3_client)
 
             with subtests.test(msg="Delete copy job files"):
+                assert metadata_copy_job_result is not None
+                assert asset_copy_job_result is not None
                 delete_copy_job_files(
                     metadata_copy_job_result,
                     asset_copy_job_result,
@@ -421,6 +426,9 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
     asset_contents = any_file_contents()
     asset_filename = any_safe_filename()
+
+    metadata_copy_job_result = None
+    asset_copy_job_result = None
 
     with S3Object(
         file_object=BytesIO(initial_bytes=asset_contents),
@@ -510,6 +518,8 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, new_key, s3_client)
 
             with subtests.test(msg="Delete copy job files"):
+                assert metadata_copy_job_result is not None
+                assert asset_copy_job_result is not None
                 delete_copy_job_files(
                     metadata_copy_job_result,
                     asset_copy_job_result,
