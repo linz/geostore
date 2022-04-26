@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as build
+FROM ubuntu:22.04 as build
 
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
@@ -12,7 +12,7 @@ ARG task
 RUN poetry install --extras=${task} --no-dev --no-root
 
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENTRYPOINT ["/opt/.venv/bin/python", "-bb", "-m", "src.task.task"]
 
