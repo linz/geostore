@@ -43,7 +43,7 @@ class ValidationResultsModelBase(Model):
 
 
 def validation_results_model_with_meta(
-    results_table_name: Optional[str] = None,
+    *, results_table_name: Optional[str] = None
 ) -> Type[ValidationResultsModelBase]:
     if results_table_name is None:
         results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
@@ -84,10 +84,17 @@ class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     ):
 
         self.hash_key = hash_key
-        self.validation_results_model = validation_results_model_with_meta(results_table_name)
+        self.validation_results_model = validation_results_model_with_meta(
+            results_table_name=results_table_name
+        )
 
     def save(
-        self, url: str, check: Check, result: ValidationResult, details: Optional[JsonObject] = None
+        self,
+        url: str,
+        check: Check,
+        result: ValidationResult,
+        *,
+        details: Optional[JsonObject] = None,
     ) -> None:
         self.validation_results_model(
             pk=self.hash_key,
