@@ -23,7 +23,7 @@ class ProcessingAssetsModelBase(Model):
 
 
 def processing_assets_model_with_meta(
-    assets_table_name: Optional[str] = None,
+    *, assets_table_name: Optional[str] = None
 ) -> Type[ProcessingAssetsModelBase]:
     if assets_table_name is None:
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
