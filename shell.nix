@@ -17,7 +17,7 @@ let
   };
   nodejs = buildNodeJs {
     version = nodejsVersion;
-    sha256 = "1k6bgs83s5iaawi63dcc826g23lfqr13phwbbzwx0pllqcyln49j";
+    sha256 = "1lgq1yljv0nkanwhlq683irvfqy8w9hhp2iysfa5zsv8rhay48p9";
   };
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
