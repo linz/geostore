@@ -9,7 +9,6 @@ from unittest.mock import ANY, MagicMock, patch
 
 from botocore.exceptions import NoCredentialsError, NoRegionError
 from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
-from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 from typer.testing import CliRunner
@@ -18,7 +17,6 @@ from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
 from geostore.cli import app
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.environment import ENV_NAME_VARIABLE_NAME
-from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
 from geostore.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
 from geostore.step_function import Outcome
@@ -46,8 +44,6 @@ from .aws_utils import (
     any_arn_formatted_string,
     any_role_arn,
     any_s3_url,
-    delete_s3_key,
-    wait_for_s3_key,
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import any_dictionary_key, any_file_contents, any_name, any_safe_filename
@@ -71,7 +67,7 @@ CLI_RUNNER = CliRunner(mix_stderr=False)
 
 
 @mark.infrastructure
-def should_create_dataset(s3_client: S3Client) -> None:
+def should_create_dataset() -> None:
     # When
     dataset_title = any_dataset_title()
     result = CLI_RUNNER.invoke(
@@ -87,19 +83,9 @@ def should_create_dataset(s3_client: S3Client) -> None:
     # Then
     assert result.exit_code == 0, result
 
-    # Cleanup
-    dataset_id = result.stdout.rstrip()
-    wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-    delete_s3_key(
-        Resource.STORAGE_BUCKET_NAME.resource_name,
-        f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{CATALOG_FILENAME}",
-        s3_client,
-    )
-    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-
 
 @mark.infrastructure
-def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTests) -> None:
+def should_report_duplicate_dataset_title(subtests: SubTests) -> None:
     # When
     dataset_title = any_dataset_title()
     first_result = CLI_RUNNER.invoke(
@@ -112,7 +98,6 @@ def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTest
         ],
     )
     assert first_result.exit_code == 0, first_result
-    dataset_id = first_result.stdout.rstrip()
 
     duplicate_result = CLI_RUNNER.invoke(
         app,
@@ -132,15 +117,6 @@ def should_report_duplicate_dataset_title(s3_client: S3Client, subtests: SubTest
 
     with subtests.test(msg="should indicate failure via exit code"):
         assert duplicate_result.exit_code == 3, duplicate_result
-
-    # Cleanup
-    wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-    delete_s3_key(
-        Resource.STORAGE_BUCKET_NAME.resource_name,
-        f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{CATALOG_FILENAME}",
-        s3_client,
-    )
-    delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
 
 
 @patch("boto3.client")

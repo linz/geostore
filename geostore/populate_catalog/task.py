@@ -13,12 +13,6 @@ from pystac.stac_io import StacIO
 
 from ..api_keys import EVENT_KEY
 from ..aws_keys import BODY_KEY
-from ..aws_message_attributes import (
-    MESSAGE_ATTRIBUTE_TYPE_DATASET,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-    MESSAGE_ATTRIBUTE_TYPE_ROOT,
-    STRING_VALUE_KEY_LOWER,
-)
 from ..boto3_config import CONFIG
 from ..pystac_io_methods import S3StacIO
 from ..resources import Resource
@@ -57,18 +51,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(dumps({EVENT_KEY: event}))
 
     for message in event[RECORDS_KEY]:
-        if (
-            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY][STRING_VALUE_KEY_LOWER]
-            == MESSAGE_ATTRIBUTE_TYPE_ROOT
-        ):
-            handle_root(message[BODY_KEY])
-        elif (
-            message[MESSAGE_ATTRIBUTES_KEY][MESSAGE_ATTRIBUTE_TYPE_KEY][STRING_VALUE_KEY_LOWER]
-            == MESSAGE_ATTRIBUTE_TYPE_DATASET
-        ):
-            handle_dataset(message[BODY_KEY])
-        else:
-            raise UnhandledSQSMessageException("Unhandled SQS message type")
+        handle_message(message[BODY_KEY])
 
     return {}
 
@@ -89,35 +72,18 @@ class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
         return str(item.get_self_href())
 
 
-def handle_dataset(version_metadata_key: str) -> None:
-    """Handle writing a new dataset version to the dataset catalog"""
+def handle_message(version_metadata_key: str) -> None:
+    """Handle writing a new dataset version to the root catalog"""
+
     storage_bucket_path = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
-    dataset_prefix = version_metadata_key.split("/", maxsplit=1)[0]
-    dataset_catalog = Catalog.from_file(
-        f"{storage_bucket_path}/{dataset_prefix}/{CATALOG_FILENAME}"
-    )
 
-    dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
-    assert isinstance(dataset_version_metadata, (Catalog, Collection))
-    dataset_catalog.add_child(child=dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
-
-    dataset_catalog.normalize_hrefs(
-        f"{storage_bucket_path}/{dataset_prefix}", strategy=GeostoreSTACLayoutStrategy()
-    )
-    dataset_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
-
-
-def handle_root(dataset_prefix: str) -> None:
-    """Handle writing a new dataset to the root catalog"""
     results = S3_CLIENT.list_objects(
         Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Prefix=CATALOG_FILENAME
     )
 
     # create root catalog if it doesn't exist
     if CONTENTS_KEY in results:
-        root_catalog = Catalog.from_file(
-            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}"
-        )
+        root_catalog = Catalog.from_file(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
     else:
         root_catalog = Catalog(
@@ -126,14 +92,11 @@ def handle_root(dataset_prefix: str) -> None:
             description=ROOT_CATALOG_DESCRIPTION,
             catalog_type=CatalogType.SELF_CONTAINED,
         )
-        root_catalog.set_self_href(
-            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{CATALOG_FILENAME}"
-        )
+        root_catalog.set_self_href(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
-    dataset_path = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{dataset_prefix}"
-    dataset_catalog = Catalog.from_file(f"{dataset_path}/{CATALOG_FILENAME}")
-
-    root_catalog.add_child(dataset_catalog, strategy=GeostoreSTACLayoutStrategy())
+    dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
+    assert isinstance(dataset_version_metadata, (Catalog, Collection))
+    root_catalog.add_child(child=dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
     root_catalog.normalize_hrefs(
         f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}",
         strategy=GeostoreSTACLayoutStrategy(),

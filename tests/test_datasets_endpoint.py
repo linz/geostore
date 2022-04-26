@@ -6,41 +6,20 @@ from http import HTTPStatus
 from io import BytesIO
 from json import dumps, load
 from logging import INFO, basicConfig
-from unittest.mock import patch
 
-import smart_open
 from mypy_boto3_lambda import LambdaClient
-from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from geostore.aws_message_attributes import (
-    DATA_TYPE_KEY,
-    DATA_TYPE_STRING,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-    MESSAGE_ATTRIBUTE_TYPE_ROOT,
-    STRING_VALUE_KEY,
-)
-from geostore.dataset_properties import DATASET_KEY_SEPARATOR, TITLE_PATTERN
+from geostore.dataset_properties import TITLE_PATTERN
 from geostore.datasets.entrypoint import lambda_handler
 from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
-from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
-from geostore.s3 import S3_URL_PREFIX
-from geostore.stac_format import STAC_DESCRIPTION_KEY, STAC_TITLE_KEY
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
 
-from .aws_utils import (
-    Dataset,
-    S3Object,
-    any_lambda_context,
-    delete_s3_key,
-    delete_s3_prefix,
-    get_s3_prefix_versions,
-    wait_for_s3_key,
-)
+from .aws_utils import Dataset, S3Object, any_lambda_context
 from .general_generators import any_dictionary_key, any_safe_filename, random_string
 from .stac_generators import (
     any_dataset_description,
@@ -53,67 +32,21 @@ basicConfig(level=INFO)
 
 
 @mark.infrastructure
-def should_create_dataset(subtests: SubTests, s3_client: S3Client) -> None:
+def should_create_dataset(subtests: SubTests) -> None:
     dataset_title = any_dataset_title()
     dataset_description = any_dataset_description()
     body = {TITLE_KEY: dataset_title, DESCRIPTION_KEY: dataset_description}
 
-    try:
+    response = lambda_handler({HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context())
 
-        with patch("geostore.datasets.create.SQS_RESOURCE") as sqs_mock:
-            response = lambda_handler(
-                {HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context()
-            )
+    with subtests.test(msg="status code"):
+        assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
-        with subtests.test(msg="status code"):
-            assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
+    with subtests.test(msg="ID length"):
+        assert len(response[BODY_KEY][DATASET_ID_SHORT_KEY]) == 26
 
-        with subtests.test(msg="ID length"):
-            assert len(response[BODY_KEY][DATASET_ID_SHORT_KEY]) == 26
-
-        with subtests.test(msg="title"):
-            assert response[BODY_KEY][TITLE_KEY] == dataset_title
-
-        catalog = get_s3_prefix_versions(
-            Resource.STORAGE_BUCKET_NAME.resource_name, dataset_title, s3_client
-        )[0]
-
-        dataset_prefix = (
-            f"{dataset_title}{DATASET_KEY_SEPARATOR}{response[BODY_KEY][DATASET_ID_SHORT_KEY]}"
-        )
-        expected_sqs_call = {
-            "MessageBody": dataset_prefix,
-            "MessageAttributes": {
-                MESSAGE_ATTRIBUTE_TYPE_KEY: {
-                    STRING_VALUE_KEY: MESSAGE_ATTRIBUTE_TYPE_ROOT,
-                    DATA_TYPE_KEY: DATA_TYPE_STRING,
-                }
-            },
-        }
-        with smart_open.open(
-            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{catalog['Key']}",
-            mode="rb",
-        ) as new_catalog_metadata_file:
-
-            catalog_json = load(new_catalog_metadata_file)
-
-            with subtests.test(msg="catalog title"):
-                assert catalog_json[STAC_TITLE_KEY] == dataset_title
-
-            with subtests.test(msg="catalog description"):
-                assert catalog_json[STAC_DESCRIPTION_KEY] == dataset_description
-
-            with subtests.test(msg="root catalog"):
-                assert sqs_mock.get_queue_by_name.return_value.send_message.called
-
-            with subtests.test(msg="correct url passed to sqs"):
-                assert (
-                    sqs_mock.get_queue_by_name.return_value.send_message.call_args[1]
-                    == expected_sqs_call
-                )
-
-    finally:
-        delete_s3_prefix(Resource.STORAGE_BUCKET_NAME.resource_name, dataset_title, s3_client)
+    with subtests.test(msg="title"):
+        assert response[BODY_KEY][TITLE_KEY] == dataset_title
 
 
 @mark.infrastructure
@@ -355,27 +288,19 @@ def should_fail_if_deleting_not_existing_dataset() -> None:
 
 
 @mark.infrastructure
-def should_launch_datasets_endpoint_lambda_function(
-    lambda_client: LambdaClient, s3_client: S3Client
-) -> None:
+def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient) -> None:
     """
     Test if datasets endpoint lambda can be successfully launched and has required permission to
     create dataset in DB.
     """
     title = any_dataset_title()
 
-    try:
-        body = {TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
+    body = {TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
 
-        resp = lambda_client.invoke(
-            FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
-            Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
-        )
-        json_resp = load(resp["Payload"])
+    resp = lambda_client.invoke(
+        FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+        Payload=dumps({HTTP_METHOD_KEY: "POST", BODY_KEY: body}).encode(),
+    )
+    json_resp = load(resp["Payload"])
 
-        assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
-
-    finally:
-        wait_for_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-        delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-        delete_s3_prefix(Resource.STORAGE_BUCKET_NAME.resource_name, title, s3_client)
+    assert json_resp.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, json_resp
