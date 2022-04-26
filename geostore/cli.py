@@ -95,12 +95,14 @@ def dataset_create(
         return dataset_id
 
     handle_api_request(
-        Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name, request_object, get_output
+        Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+        request_object,
+        get_output=get_output,
     )
 
 
 @dataset_app.command(name="list", help="List datasets.")
-def dataset_list(id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)) -> None:
+def dataset_list(*, id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)) -> None:
     body = {}
     get_output: GetOutputFunctionType
 
@@ -127,7 +129,7 @@ def dataset_list(id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)
     handle_api_request(
         Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: HTTP_METHOD_RETRIEVE, BODY_KEY: body},
-        get_output,
+        get_output=get_output,
     )
 
 
@@ -136,7 +138,7 @@ def dataset_delete(id_: str = Option(..., "--id", help=DATASET_ID_HELP)) -> None
     handle_api_request(
         Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: id_}},
-        None,
+        get_output=None,
     )
 
 
@@ -167,7 +169,7 @@ def dataset_version_create(
                 S3_ROLE_ARN_KEY: s3_role_arn,
             },
         },
-        get_output,
+        get_output=get_output,
     )
 
 
@@ -183,12 +185,12 @@ def dataset_version_status(
     handle_api_request(
         Resource.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: HTTP_METHOD_RETRIEVE, BODY_KEY: {EXECUTION_ARN_KEY: execution_arn}},
-        get_output,
+        get_output=get_output,
     )
 
 
 def handle_api_request(
-    function_name: str, request_object: JsonObject, get_output: Optional[GetOutputFunctionType]
+    function_name: str, request_object: JsonObject, *, get_output: Optional[GetOutputFunctionType]
 ) -> None:
     response_payload = invoke_lambda(function_name, request_object)
     status_code = response_payload[STATUS_CODE_KEY]
