@@ -162,7 +162,7 @@ def any_operation_name() -> str:
 
 
 class Dataset:
-    def __init__(self, title: Optional[str] = None):
+    def __init__(self, *, title: Optional[str] = None):
         if title is None:
             title = any_dataset_title()
 
@@ -196,6 +196,7 @@ class ProcessingAsset:
         self,
         asset_id: str,
         url: str,
+        *,
         multihash: Optional[str] = None,
     ):
         prefix = "METADATA" if multihash is None else "DATA"
@@ -232,7 +233,7 @@ class ValidationItem:
         check: str,
     ):
         validation_results_model = validation_results_model_with_meta(
-            get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+            results_table_name=get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
         )
         self._item = validation_results_model(
             pk=asset_id,
@@ -284,7 +285,7 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
 class MockJSONURLReader(Mock):
     def __init__(
-        self, url_to_json: Dict[str, Any], call_limit: Optional[int] = None, **kwargs: Any
+        self, url_to_json: Dict[str, Any], *, call_limit: Optional[int] = None, **kwargs: Any
     ):
         super().__init__(**kwargs)
 
