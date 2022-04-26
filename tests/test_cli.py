@@ -464,7 +464,9 @@ def should_call_given_environment_function(
     # Then
     with subtests.test(msg="should call the function in the given environment"):
         handle_api_request_mock.assert_called_once_with(
-            f"{environment_name}-{Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value}", ANY, ANY
+            f"{environment_name}-{Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value}",
+            ANY,
+            get_output=ANY,
         )
 
     with subtests.test(msg="should print nothing to standard output"):
@@ -487,7 +489,7 @@ def should_default_to_production_environment(
     # Then
     with subtests.test(msg="should call the function in the production environment"):
         handle_api_request_mock.assert_called_once_with(
-            Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value, ANY, ANY
+            Resource.DATASETS_ENDPOINT_FUNCTION_NAME.value, ANY, get_output=ANY
         )
 
     with subtests.test(msg="should print nothing to standard output"):

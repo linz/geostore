@@ -37,7 +37,7 @@ class ChecksumValidator:
         self.logger = logger
 
         self.processing_assets_model = processing_assets_model_with_meta(
-            processing_assets_table_name
+            assets_table_name=processing_assets_table_name
         )
 
         self.s3_client = get_s3_client_for_role(s3_role_arn)
