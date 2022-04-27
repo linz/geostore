@@ -19,6 +19,7 @@ from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
+from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
@@ -271,6 +272,25 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 f"/{dataset_versions_body[VERSION_ID_KEY]}/"
             )
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
+
+            with subtests.test(msg="Should update dataset catalog successfully"):
+                # Then poll dataset catalog
+                dataset_version_link = {
+                    STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
+                    f"/{catalog_metadata_filename}",
+                    STAC_REL_KEY: STAC_REL_CHILD,
+                }
+                while (
+                    dataset_version_link
+                    not in (
+                        load(
+                            smart_open.open(
+                                f"{dataset.dataset_prefix}/{CATALOG_FILENAME}", mode="rb"
+                            )
+                        )
+                    )[STAC_LINKS_KEY]
+                ):
+                    sleep(20)  # pragma: no cover
 
             # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
