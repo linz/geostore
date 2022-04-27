@@ -63,6 +63,7 @@ from geostore.sts import get_account_number
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
+    Dataset,
     S3Object,
     delete_copy_job_files,
     delete_s3_key,
@@ -175,9 +176,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     metadata_copy_job_result = None
     asset_copy_job_result = None
 
-    dataset_title = any_dataset_title()
-
-    with S3Object(
+    with Dataset() as dataset, S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{first_asset_filename}",
@@ -252,7 +251,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            TITLE_KEY: dataset_title,
+                            TITLE_KEY: dataset.title,
                             DESCRIPTION_KEY: any_dataset_description(),
                         },
                     }
@@ -261,7 +260,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_payload = load(dataset_response["Payload"])
 
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+            dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
             wait_for_s3_key(
                 Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -316,7 +315,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
             with subtests.test(msg="Should update dataset catalog successfully"):
                 # Then poll dataset catalog
-                dataset_version_link = {
+                expected_child_link_object = {
                     STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
                     f"/{catalog_metadata_filename}",
                     STAC_REL_KEY: STAC_REL_CHILD,
@@ -325,9 +324,15 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 process_timeout = datetime.now() + timedelta(minutes=1)
 
                 while (
-                    dataset_version_link
+                    expected_child_link_object
                     not in (
-                        load(smart_open.open(f"{dataset_prefix}/{CATALOG_FILENAME}", mode="rb"))
+                        load(
+                            smart_open.open(
+                                f"{storage_bucket_prefix}{dataset.dataset_prefix}"
+                                f"/{CATALOG_FILENAME}",
+                                mode="rb",
+                            )
+                        )
                     )[STAC_LINKS_KEY]
                 ):
                     assert datetime.now() < process_timeout  # pragma: no cover
@@ -356,7 +361,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         {
                             STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_PARENT,
-                            STAC_TITLE_KEY: dataset_title,
+                            STAC_TITLE_KEY: dataset.title,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
