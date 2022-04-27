@@ -315,8 +315,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             with subtests.test(msg="Should update dataset catalog successfully"):
-                # Then poll dataset catalog for expected link to child catalog
-                expected_child_link_object = {
+                # Then poll dataset catalog
+                dataset_version_link = {
                     STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
                     f"/{catalog_metadata_filename}",
                     STAC_REL_KEY: STAC_REL_CHILD,
@@ -325,14 +325,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 process_timeout = datetime.now() + timedelta(minutes=1)
 
                 while (
-                    expected_child_link_object
+                    dataset_version_link
                     not in (
-                        load(
-                            smart_open.open(
-                                f"{storage_bucket_prefix}{dataset_prefix}" f"/{CATALOG_FILENAME}",
-                                mode="rb",
-                            )
-                        )
+                        load(smart_open.open(f"{dataset_prefix}/{CATALOG_FILENAME}", mode="rb"))
                     )[STAC_LINKS_KEY]
                 ):
                     assert datetime.now() < process_timeout  # pragma: no cover
