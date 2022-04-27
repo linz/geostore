@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime, timedelta
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
@@ -29,12 +30,14 @@ from geostore.stac_format import (
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_MEDIA_TYPE_JSON,
     STAC_REL_CHILD,
     STAC_REL_ITEM,
     STAC_REL_KEY,
     STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_REL_SELF,
+    STAC_TYPE_KEY,
 )
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
@@ -157,7 +160,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     metadata_copy_job_result = None
     asset_copy_job_result = None
 
-    with S3Object(
+    with Dataset() as dataset, S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{first_asset_filename}",
@@ -221,7 +224,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         ),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
-    ), Dataset() as dataset:
+    ):
 
         # When
         try:
@@ -275,22 +278,28 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
             with subtests.test(msg="Should update dataset catalog successfully"):
                 # Then poll dataset catalog
-                dataset_version_link = {
+                expected_child_link_object = {
                     STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
                     f"/{catalog_metadata_filename}",
                     STAC_REL_KEY: STAC_REL_CHILD,
+                    STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                 }
+                process_timeout = datetime.now() + timedelta(minutes=1)
+
                 while (
-                    dataset_version_link
+                    expected_child_link_object
                     not in (
                         load(
                             smart_open.open(
-                                f"{dataset.dataset_prefix}/{CATALOG_FILENAME}", mode="rb"
+                                f"{storage_bucket_prefix}{dataset.dataset_prefix}"
+                                f"/{CATALOG_FILENAME}",
+                                mode="rb",
                             )
                         )
                     )[STAC_LINKS_KEY]
                 ):
-                    sleep(20)  # pragma: no cover
+                    assert datetime.now() < process_timeout  # pragma: no cover
+                    sleep(5)  # pragma: no cover
 
             # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
