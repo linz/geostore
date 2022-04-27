@@ -24,11 +24,9 @@ from ..types import JsonObject
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_sqs import SQSServiceResource
-    from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
 else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = SQSServiceResource = object  # pragma: no mutate
-    MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
 LOGGER: Logger = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
