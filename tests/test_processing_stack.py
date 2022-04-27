@@ -29,6 +29,7 @@ from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
     STAC_REL_CHILD,
+    STAC_REL_ITEM,
     STAC_REL_KEY,
     STAC_REL_ROOT,
     STAC_REL_SELF,
@@ -188,7 +189,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     },
                 },
                 STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_ITEM},
                     {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
                     {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
                 ],
@@ -309,7 +310,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     STAC_LINKS_KEY: [
                         {
                             STAC_HREF_KEY: item_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_CHILD,
+                            STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
                             STAC_HREF_KEY: catalog_metadata_filename,
