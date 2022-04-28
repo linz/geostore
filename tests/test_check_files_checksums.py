@@ -60,7 +60,7 @@ def should_return_offset_from_array_index_variable() -> None:
 
 
 def should_return_default_offset_to_zero() -> None:
-    environ.pop(ARRAY_INDEX_VARIABLE_NAME, default="")  # type: ignore[call-overload]
+    environ.pop(ARRAY_INDEX_VARIABLE_NAME, default="")
 
     assert get_job_offset() == 0
 
