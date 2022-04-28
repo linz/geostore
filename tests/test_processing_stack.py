@@ -63,7 +63,6 @@ from geostore.sts import get_account_number
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
-    Dataset,
     S3Object,
     delete_copy_job_files,
     delete_s3_key,
@@ -176,7 +175,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     metadata_copy_job_result = None
     asset_copy_job_result = None
 
-    with Dataset() as dataset, S3Object(
+    dataset_title = any_dataset_title()
+
+    with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{first_asset_filename}",
@@ -251,7 +252,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            TITLE_KEY: dataset.title,
+                            TITLE_KEY: dataset_title,
                             DESCRIPTION_KEY: any_dataset_description(),
                         },
                     }
@@ -259,14 +260,17 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             )
             dataset_payload = load(dataset_response["Payload"])
 
-            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
 
-            wait_for_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
+            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+
+            with subtests.test(msg="Dataset catalog is created"):
+                wait_for_s3_key(
+                    Resource.STORAGE_BUCKET_NAME.resource_name,
+                    f"{dataset_prefix}/{CATALOG_FILENAME}",
+                    s3_client,
+                )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -328,8 +332,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     not in (
                         load(
                             smart_open.open(
-                                f"{storage_bucket_prefix}{dataset.dataset_prefix}"
-                                f"/{CATALOG_FILENAME}",
+                                f"{storage_bucket_prefix}{dataset_prefix}" f"/{CATALOG_FILENAME}",
                                 mode="rb",
                             )
                         )
@@ -361,7 +364,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         {
                             STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_PARENT,
-                            STAC_TITLE_KEY: dataset.title,
+                            STAC_TITLE_KEY: dataset_title,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
@@ -591,14 +594,18 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
+
+            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
+
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            wait_for_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
+            with subtests.test(msg="Dataset catalog is created"):
+                wait_for_s3_key(
+                    Resource.STORAGE_BUCKET_NAME.resource_name,
+                    f"{dataset_prefix}/{CATALOG_FILENAME}",
+                    s3_client,
+                )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -749,6 +756,9 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
+
+            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
+
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
