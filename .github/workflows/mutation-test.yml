@@ -91,7 +91,7 @@ jobs:
           name: mutation-test-report
           path: mutmut.xml
         if: failure()
-      - uses: mikepenz/action-junit-report@v3.0.2
+      - uses: mikepenz/action-junit-report@v3.0.3
         if: failure()
         with:
           report_paths: mutmut.xml
