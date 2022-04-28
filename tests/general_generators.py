@@ -33,6 +33,10 @@ def any_past_datetime_string() -> str:
     return any_past_datetime().isoformat()
 
 
+def any_past_datetime_string_without_tz() -> str:
+    return any_past_datetime().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def any_program_name() -> str:
     """Arbitrary-length string"""
     return random_string(20)
