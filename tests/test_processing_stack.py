@@ -147,7 +147,10 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
 
     collection_title = any_dataset_title()
-
+    collection_dict = {
+        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+        STAC_TITLE_KEY: collection_title,
+    }
     first_asset_contents = any_file_contents()
     first_asset_filename = any_safe_filename()
     first_asset_name = any_asset_name()
@@ -192,8 +195,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     ) as catalog_metadata_file, S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-                STAC_TITLE_KEY: collection_title,
+                **collection_dict,
                 STAC_ASSETS_KEY: {
                     second_asset_name: {
                         LINZ_STAC_CREATED_KEY: second_asset_created,
@@ -345,7 +347,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
             ) as imported_collection_file:
                 assert load(imported_collection_file) == {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                    **collection_dict,
                     STAC_ASSETS_KEY: {
                         second_asset_name: {
                             LINZ_STAC_CREATED_KEY: second_asset_created,
@@ -356,20 +358,24 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     },
                     STAC_LINKS_KEY: [
                         {
-                            STAC_HREF_KEY: item_metadata_filename,
+                            STAC_HREF_KEY: f"./{item_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"./{catalog_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_PARENT,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: collection_metadata_filename,
+                            STAC_HREF_KEY: f"./{collection_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_SELF,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
                 }
