@@ -20,13 +20,14 @@ from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
-from geostore.populate_catalog.task import CATALOG_FILENAME
+from geostore.populate_catalog.task import CATALOG_FILENAME, ROOT_CATALOG_TITLE
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
+    STAC_EXTENSIONS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
@@ -37,7 +38,7 @@ from geostore.stac_format import (
     STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_REL_SELF,
-    STAC_TYPE_KEY,
+    STAC_TYPE_KEY, STAC_TITLE_KEY, STAC_REL_PARENT,
 )
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
@@ -73,7 +74,12 @@ from .general_generators import (
     any_safe_file_path,
     any_safe_filename,
 )
-from .stac_generators import any_asset_name, any_hex_multihash, sha256_hex_digest_to_multihash
+from .stac_generators import (
+    any_asset_name,
+    any_dataset_title,
+    any_hex_multihash,
+    sha256_hex_digest_to_multihash,
+)
 from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
@@ -140,6 +146,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
     item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
 
+    collection_title = any_dataset_title()
+
     first_asset_contents = any_file_contents()
     first_asset_filename = any_safe_filename()
     first_asset_name = any_asset_name()
@@ -185,6 +193,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         file_object=json_dict_to_file_object(
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_TITLE_KEY: collection_title,
                 STAC_ASSETS_KEY: {
                     second_asset_name: {
                         LINZ_STAC_CREATED_KEY: second_asset_created,
@@ -277,7 +286,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             with subtests.test(msg="Should update dataset catalog successfully"):
-                # Then poll dataset catalog
+                # Then poll dataset catalog for expected link to child catalog
                 expected_child_link_object = {
                     STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
                     f"/{catalog_metadata_filename}",
@@ -308,18 +317,24 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             ) as imported_catalog_file:
                 assert load(imported_catalog_file) == {
                     **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    STAC_EXTENSIONS_KEY: [],  # pystac writes this field.
                     STAC_LINKS_KEY: [
                         {
-                            STAC_HREF_KEY: collection_metadata_filename,
+                            STAC_HREF_KEY: f"./{collection_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_CHILD,
+                            STAC_TITLE_KEY: collection_title,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_SELF,
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                            STAC_REL_KEY: STAC_REL_PARENT,
+                            STAC_TITLE_KEY: dataset.title,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
                 }
