@@ -314,7 +314,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             with subtests.test(msg="Should update dataset catalog successfully"):
-                # Then poll dataset catalog
+                # Then poll dataset catalog for expected link to child catalog
                 expected_child_link_object = {
                     STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
                     f"/{catalog_metadata_filename}",
