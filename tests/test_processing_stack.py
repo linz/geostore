@@ -29,6 +29,7 @@ from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
     STAC_REL_CHILD,
+    STAC_REL_ITEM,
     STAC_REL_KEY,
     STAC_REL_ROOT,
     STAC_REL_SELF,
@@ -188,7 +189,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     },
                 },
                 STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_ITEM},
                     {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
                     {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
                 ],
@@ -273,7 +274,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             with subtests.test(msg="Imported catalog has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_catalog_key}", mode="rb"
             ) as imported_catalog_file:
-                assert {
+                assert load(imported_catalog_file) == {
                     **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
                     STAC_LINKS_KEY: [
                         {
@@ -289,14 +290,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_REL_KEY: STAC_REL_SELF,
                         },
                     ],
-                } == load(imported_catalog_file)
+                }
 
             # Collection contents
             imported_collection_key = f"{dataset_version_prefix}{collection_metadata_filename}"
             with subtests.test(msg="Imported collection has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
             ) as imported_collection_file:
-                assert {
+                assert load(imported_collection_file) == {
                     **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                     STAC_ASSETS_KEY: {
                         second_asset_name: {
@@ -309,7 +310,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     STAC_LINKS_KEY: [
                         {
                             STAC_HREF_KEY: item_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_CHILD,
+                            STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
                             STAC_HREF_KEY: catalog_metadata_filename,
@@ -320,14 +321,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_REL_KEY: STAC_REL_SELF,
                         },
                     ],
-                } == load(imported_collection_file)
+                }
 
             # Item contents
             imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
             ) as imported_item_file:
-                assert {
+                assert load(imported_item_file) == {
                     **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
                     STAC_ASSETS_KEY: {
                         first_asset_name: {
@@ -341,21 +342,21 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         {STAC_HREF_KEY: catalog_metadata_filename, STAC_REL_KEY: STAC_REL_ROOT},
                         {STAC_HREF_KEY: item_metadata_filename, STAC_REL_KEY: STAC_REL_SELF},
                     ],
-                } == load(imported_item_file)
+                }
 
             # First asset contents
             imported_first_asset_key = f"{dataset_version_prefix}{first_asset_filename}"
             with subtests.test(msg="Verify first asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
             ) as imported_first_asset_file:
-                assert first_asset_contents == imported_first_asset_file.read()
+                assert imported_first_asset_file.read() == first_asset_contents
 
             # Second asset contents
             imported_second_asset_key = f"{dataset_version_prefix}{second_asset_filename}"
             with subtests.test(msg="Verify second asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_second_asset_key}", mode="rb"
             ) as imported_second_asset_file:
-                assert second_asset_contents == imported_second_asset_file.read()
+                assert imported_second_asset_file.read() == second_asset_contents
         finally:
             # Cleanup
             for key in [
