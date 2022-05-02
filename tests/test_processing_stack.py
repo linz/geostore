@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime, timedelta
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
@@ -19,26 +20,32 @@ from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
+from geostore.populate_catalog.task import CATALOG_FILENAME, ROOT_CATALOG_TITLE
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_UPDATED_KEY,
     STAC_ASSETS_KEY,
+    STAC_EXTENSIONS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_MEDIA_TYPE_JSON,
     STAC_REL_CHILD,
     STAC_REL_ITEM,
     STAC_REL_KEY,
     STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_REL_SELF,
+    STAC_TITLE_KEY,
+    STAC_TYPE_KEY,
 )
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
+    DESCRIPTION_KEY,
     ERRORS_KEY,
     EXECUTION_ARN_KEY,
     FAILED_TASKS_KEY,
@@ -48,6 +55,7 @@ from geostore.step_function_keys import (
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
     STEP_FUNCTION_KEY,
+    TITLE_KEY,
     VALIDATION_KEY,
     VERSION_ID_KEY,
 )
@@ -55,12 +63,12 @@ from geostore.sts import get_account_number
 
 from .aws_utils import (
     S3_BATCH_JOB_COMPLETED_STATE,
-    Dataset,
     S3Object,
     delete_copy_job_files,
     delete_s3_key,
     get_s3_role_arn,
     wait_for_copy_jobs,
+    wait_for_s3_key,
 )
 from .file_utils import json_dict_to_file_object
 from .general_generators import (
@@ -69,7 +77,13 @@ from .general_generators import (
     any_safe_file_path,
     any_safe_filename,
 )
-from .stac_generators import any_asset_name, any_hex_multihash, sha256_hex_digest_to_multihash
+from .stac_generators import (
+    any_asset_name,
+    any_dataset_description,
+    any_dataset_title,
+    any_hex_multihash,
+    sha256_hex_digest_to_multihash,
+)
 from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
@@ -136,6 +150,11 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
     item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
 
+    collection_title = any_dataset_title()
+    collection_dict = {
+        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+        STAC_TITLE_KEY: collection_title,
+    }
     first_asset_contents = any_file_contents()
     first_asset_filename = any_safe_filename()
     first_asset_name = any_asset_name()
@@ -155,6 +174,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 
     metadata_copy_job_result = None
     asset_copy_job_result = None
+
+    dataset_title = any_dataset_title()
 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_contents),
@@ -180,7 +201,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     ) as catalog_metadata_file, S3Object(
         file_object=json_dict_to_file_object(
             {
-                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                **collection_dict,
                 STAC_ASSETS_KEY: {
                     second_asset_name: {
                         LINZ_STAC_CREATED_KEY: second_asset_created,
@@ -220,17 +241,41 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         ),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
-    ), Dataset() as dataset:
+    ):
 
         # When
         try:
+
+            dataset_response = lambda_client.invoke(
+                FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+                Payload=dumps(
+                    {
+                        HTTP_METHOD_KEY: "POST",
+                        BODY_KEY: {
+                            TITLE_KEY: dataset_title,
+                            DESCRIPTION_KEY: any_dataset_description(),
+                        },
+                    }
+                ).encode(),
+            )
+            dataset_payload = load(dataset_response["Payload"])
+
+            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
+
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                 Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                            DATASET_ID_SHORT_KEY: dataset_id,
                             METADATA_URL_KEY: catalog_metadata_file.url,
                             S3_ROLE_ARN_KEY: get_s3_role_arn(),
                         },
@@ -266,11 +311,32 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 import_dataset_response, account_id, s3_control_client, subtests
             )
 
-            dataset_version_prefix = (
-                f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
-                f"/{dataset_versions_body[VERSION_ID_KEY]}/"
-            )
+            dataset_version_prefix = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/"
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
+
+            with subtests.test(msg="Should update dataset catalog successfully"):
+                # Then poll dataset catalog for expected link to child catalog
+                expected_child_link_object = {
+                    STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
+                    f"/{catalog_metadata_filename}",
+                    STAC_REL_KEY: STAC_REL_CHILD,
+                    STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                }
+                process_timeout = datetime.now() + timedelta(minutes=1)
+
+                while (
+                    expected_child_link_object
+                    not in (
+                        load(
+                            smart_open.open(
+                                f"{storage_bucket_prefix}{dataset_prefix}" f"/{CATALOG_FILENAME}",
+                                mode="rb",
+                            )
+                        )
+                    )[STAC_LINKS_KEY]
+                ):
+                    assert datetime.now() < process_timeout  # pragma: no cover
+                    sleep(5)  # pragma: no cover
 
             # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
@@ -279,18 +345,24 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             ) as imported_catalog_file:
                 assert load(imported_catalog_file) == {
                     **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    STAC_EXTENSIONS_KEY: [],  # pystac writes this field.
                     STAC_LINKS_KEY: [
                         {
-                            STAC_HREF_KEY: collection_metadata_filename,
+                            STAC_HREF_KEY: f"./{collection_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_CHILD,
+                            STAC_TITLE_KEY: collection_title,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_SELF,
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                            STAC_REL_KEY: STAC_REL_PARENT,
+                            STAC_TITLE_KEY: dataset_title,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
                 }
@@ -301,7 +373,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
             ) as imported_collection_file:
                 assert load(imported_collection_file) == {
-                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                    **collection_dict,
                     STAC_ASSETS_KEY: {
                         second_asset_name: {
                             LINZ_STAC_CREATED_KEY: second_asset_created,
@@ -312,48 +384,70 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     },
                     STAC_LINKS_KEY: [
                         {
-                            STAC_HREF_KEY: item_metadata_filename,
+                            STAC_HREF_KEY: f"./{item_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: catalog_metadata_filename,
+                            STAC_HREF_KEY: f"./{catalog_metadata_filename}",
                             STAC_REL_KEY: STAC_REL_PARENT,
-                        },
-                        {
-                            STAC_HREF_KEY: collection_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_SELF,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
                 }
 
             # Item contents
             imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
+
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
             ) as imported_item_file:
-                assert load(imported_item_file) == {
-                    **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
-                    STAC_ASSETS_KEY: {
-                        first_asset_name: {
-                            LINZ_STAC_CREATED_KEY: first_asset_created,
-                            LINZ_STAC_UPDATED_KEY: first_asset_updated,
-                            STAC_HREF_KEY: first_asset_filename,
-                            STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
-                        },
+                item_json = load(imported_item_file)
+                assert item_json[STAC_LINKS_KEY] == [
+                    {
+                        STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
-                    STAC_LINKS_KEY: [
-                        {STAC_HREF_KEY: catalog_metadata_filename, STAC_REL_KEY: STAC_REL_ROOT},
-                        {
-                            STAC_HREF_KEY: collection_metadata_filename,
-                            STAC_REL_KEY: STAC_REL_PARENT,
-                        },
-                        {STAC_HREF_KEY: item_metadata_filename, STAC_REL_KEY: STAC_REL_SELF},
-                    ],
-                }
+                    {
+                        STAC_HREF_KEY: f"./{collection_metadata_filename}",
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_TITLE_KEY: collection_title,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                ]
+            # reintroduce when https://github.com/stac-utils/pystac/issues/801 is fixed
+            #     assert load(imported_item_file) == {
+            #         **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+            #         STAC_ASSETS_KEY: {
+            #             first_asset_name: {
+            #                 LINZ_STAC_CREATED_KEY: first_asset_created,
+            #                 LINZ_STAC_UPDATED_KEY: first_asset_updated,
+            #                 STAC_HREF_KEY: first_asset_filename,
+            #                 STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
+            #             },
+            #         },
+            #         STAC_LINKS_KEY: [
+            #             {
+            #                 STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+            #                 STAC_REL_KEY: STAC_REL_ROOT,
+            #                 STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+            #                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            #             },
+            #             {
+            #                 STAC_HREF_KEY: f"./{collection_metadata_filename}",
+            #                 STAC_REL_KEY: STAC_REL_PARENT,
+            #                 STAC_TITLE_KEY: collection_title,
+            #                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            #             },
+            #         ],
+            #     }
 
             # First asset contents
             imported_first_asset_key = f"{dataset_version_prefix}{first_asset_filename}"
@@ -371,6 +465,8 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         finally:
             # Cleanup
             for key in [
+                CATALOG_FILENAME,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
                 imported_catalog_key,
                 imported_collection_key,
                 imported_item_key,
@@ -442,6 +538,8 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
     metadata_copy_job_result = None
     asset_copy_job_result = None
 
+    dataset_title = any_dataset_title()
+
     with S3Object(
         file_object=BytesIO(initial_bytes=asset_contents),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
@@ -475,17 +573,40 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         ),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{root_metadata_filename}",
-    ) as root_metadata_file, Dataset() as dataset:
+    ) as root_metadata_file:
 
         # When
         try:
+
+            dataset_response = lambda_client.invoke(
+                FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+                Payload=dumps(
+                    {
+                        HTTP_METHOD_KEY: "POST",
+                        BODY_KEY: {
+                            TITLE_KEY: dataset_title,
+                            DESCRIPTION_KEY: any_dataset_description(),
+                        },
+                    }
+                ).encode(),
+            )
+            dataset_payload = load(dataset_response["Payload"])
+            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
+
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                 Payload=dumps(
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                            DATASET_ID_SHORT_KEY: dataset_id,
                             METADATA_URL_KEY: root_metadata_file.url,
                             S3_ROLE_ARN_KEY: get_s3_role_arn(),
                         },
@@ -523,7 +644,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             )
         finally:
             # Cleanup
-            dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
                 new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
@@ -539,6 +659,13 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     s3_client,
                     subtests,
                 )
+
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
+            delete_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
 
     with subtests.test(msg="Should report import status after success"):
         expected_status_payload = {
@@ -583,6 +710,8 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
     metadata_filename = any_safe_filename()
     asset_filename = any_safe_filename()
 
+    dataset_title = any_dataset_title()
+
     with S3Object(
         file_object=BytesIO(),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
@@ -603,48 +732,73 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         ),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{metadata_filename}",
-    ) as s3_metadata_file, Dataset() as dataset:
+    ) as s3_metadata_file:
 
-        # When creating a dataset version
-        dataset_version_creation_response = lambda_client.invoke(
-            FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
-            Payload=dumps(
-                {
-                    HTTP_METHOD_KEY: "POST",
-                    BODY_KEY: {
-                        DATASET_ID_SHORT_KEY: dataset.dataset_id,
-                        METADATA_URL_KEY: s3_metadata_file.url,
-                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                    },
-                }
-            ).encode(),
-        )
+        try:
 
-        response_payload = load(dataset_version_creation_response["Payload"])
-        with subtests.test(msg="Dataset Versions endpoint status code"):
-            assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
+            dataset_response = lambda_client.invoke(
+                FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+                Payload=dumps(
+                    {
+                        HTTP_METHOD_KEY: "POST",
+                        BODY_KEY: {
+                            TITLE_KEY: dataset_title,
+                            DESCRIPTION_KEY: any_dataset_description(),
+                        },
+                    }
+                ).encode(),
+            )
+            dataset_payload = load(dataset_response["Payload"])
+            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-        dataset_versions_body = response_payload[BODY_KEY]
-        with subtests.test(msg="Step function result"):
-            # Then poll for State Machine State
-            state_machine_arn = dataset_versions_body[EXECUTION_ARN_KEY]
-            while (
-                execution := step_functions_client.describe_execution(
-                    executionArn=state_machine_arn
-                )
-            )["status"] == "RUNNING":
+            # When creating a dataset version
+            dataset_version_creation_response = lambda_client.invoke(
+                FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
+                Payload=dumps(
+                    {
+                        HTTP_METHOD_KEY: "POST",
+                        BODY_KEY: {
+                            DATASET_ID_SHORT_KEY: dataset_id,
+                            METADATA_URL_KEY: s3_metadata_file.url,
+                            S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                        },
+                    }
+                ).encode(),
+            )
 
-                sleep(5)  # pragma: no cover
+            response_payload = load(dataset_version_creation_response["Payload"])
+            with subtests.test(msg="Dataset Versions endpoint status code"):
+                assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
 
-            assert execution["status"] == "SUCCEEDED", execution
+            dataset_versions_body = response_payload[BODY_KEY]
+            with subtests.test(msg="Step function result"):
+                # Then poll for State Machine State
+                state_machine_arn = dataset_versions_body[EXECUTION_ARN_KEY]
+                while (
+                    execution := step_functions_client.describe_execution(
+                        executionArn=state_machine_arn
+                    )
+                )["status"] == "RUNNING":
 
-    # Then the files should not be copied
-    dataset_version = dataset_versions_body[VERSION_ID_KEY]
-    dataset_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
-    for filename in [metadata_filename, asset_filename]:
-        with subtests.test(msg=filename), raises(AssertionError):
+                    sleep(5)  # pragma: no cover
+
+                assert execution["status"] == "SUCCEEDED", execution
+
+            # Then the files should not be copied
+            dataset_version = dataset_versions_body[VERSION_ID_KEY]
+            for filename in [metadata_filename, asset_filename]:
+                with subtests.test(msg=filename), raises(AssertionError):
+                    delete_s3_key(
+                        Resource.STORAGE_BUCKET_NAME.resource_name,
+                        f"{dataset_prefix}/{dataset_version}/{filename}",
+                        s3_client,
+                    )
+
+        finally:
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
             delete_s3_key(
                 Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{dataset_version}/{filename}",
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
                 s3_client,
             )
