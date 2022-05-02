@@ -334,7 +334,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_PARENT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
