@@ -47,7 +47,7 @@ from geostore.stac_format import (
 )
 
 from .aws_utils import any_s3_url
-from .general_generators import any_past_datetime_string_without_tz
+from .general_generators import any_past_datetime_string_without_offset
 from .stac_generators import (
     any_asset_name,
     any_dataset_description,
@@ -89,7 +89,7 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
     STAC_EXTENT_KEY: {
         STAC_EXTENT_SPATIAL_KEY: {STAC_EXTENT_BBOX_KEY: [[-180, -90, 180, 90]]},
         STAC_EXTENT_TEMPORAL_KEY: {
-            STAC_EXTENT_TEMPORAL_INTERVAL_KEY: [[any_past_datetime_string_without_tz(), None]]
+            STAC_EXTENT_TEMPORAL_INTERVAL_KEY: [[any_past_datetime_string_without_offset(), None]]
         },
     },
     STAC_ID_KEY: any_dataset_id(),
@@ -105,8 +105,8 @@ MINIMAL_VALID_STAC_COLLECTION_OBJECT: Dict[str, Any] = {
 MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
     STAC_ASSETS_KEY: {
         any_asset_name(): {
-            LINZ_STAC_CREATED_KEY: any_past_datetime_string_without_tz(),
-            LINZ_STAC_UPDATED_KEY: any_past_datetime_string_without_tz(),
+            LINZ_STAC_CREATED_KEY: any_past_datetime_string_without_offset(),
+            LINZ_STAC_UPDATED_KEY: any_past_datetime_string_without_offset(),
             STAC_HREF_KEY: any_s3_url(),
             STAC_FILE_CHECKSUM_KEY: any_hex_multihash(),
         },
@@ -121,7 +121,7 @@ MINIMAL_VALID_STAC_ITEM_OBJECT: Dict[str, Any] = {
     STAC_ID_KEY: any_dataset_id(),
     STAC_LINKS_KEY: [],
     STAC_PROPERTIES_KEY: {
-        STAC_PROPERTIES_DATETIME_KEY: any_past_datetime_string_without_tz(),
+        STAC_PROPERTIES_DATETIME_KEY: any_past_datetime_string_without_offset(),
         PROJECTION_EPSG_KEY: any_epsg(),
         VERSION_VERSION_KEY: any_version_version(),
     },
