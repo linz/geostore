@@ -35,9 +35,7 @@ from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_safe_filename
 from tests.stac_generators import any_dataset_version_id
-from tests.stac_objects import (
-    MINIMAL_VALID_STAC_CATALOG_OBJECT,
-)
+from tests.stac_objects import MINIMAL_VALID_STAC_CATALOG_OBJECT
 
 
 @mark.infrastructure

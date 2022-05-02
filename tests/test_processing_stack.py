@@ -351,7 +351,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         second_asset_name: {
                             LINZ_STAC_CREATED_KEY: second_asset_created,
                             LINZ_STAC_UPDATED_KEY: second_asset_updated,
-                            STAC_HREF_KEY: f"./{second_asset_filename}",
+                            STAC_HREF_KEY: second_asset_filename,
                             STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
                         },
                     },
@@ -361,7 +361,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
-                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
@@ -383,7 +383,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 item_json = load(imported_item_file)
                 assert item_json[STAC_LINKS_KEY] == [
                     {
-                        STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_REL_KEY: STAC_REL_ROOT,
                         STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
