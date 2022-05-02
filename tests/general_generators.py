@@ -33,7 +33,7 @@ def any_past_datetime_string() -> str:
     return any_past_datetime().isoformat()
 
 
-def any_past_datetime_string_without_offset() -> str:
+def any_past_utc_datetime_string() -> str:
     return any_past_datetime().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

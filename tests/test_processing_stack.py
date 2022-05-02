@@ -260,18 +260,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             )
             dataset_payload = load(dataset_response["Payload"])
 
-            with subtests.test(msg="Dataset endpoint returns success"):
-                assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            with subtests.test(msg="Dataset catalog is created"):
-                wait_for_s3_key(
-                    Resource.STORAGE_BUCKET_NAME.resource_name,
-                    f"{dataset_prefix}/{CATALOG_FILENAME}",
-                    s3_client,
-                )
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -408,7 +404,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             # Item contents
             imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
 
-            # reintroduce when https://github.com/stac-utils/pystac/issues/801 is fixed
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
             ) as imported_item_file:
@@ -427,6 +422,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ]
+            # reintroduce when https://github.com/stac-utils/pystac/issues/801 is fixed
             #     assert load(imported_item_file) == {
             #         **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
             #         STAC_ASSETS_KEY: {
@@ -595,19 +591,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
-
-            with subtests.test(msg="Dataset endpoint returns success"):
-                assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            with subtests.test(msg="Dataset catalog is created"):
-                wait_for_s3_key(
-                    Resource.STORAGE_BUCKET_NAME.resource_name,
-                    f"{dataset_prefix}/{CATALOG_FILENAME}",
-                    s3_client,
-                )
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -758,10 +749,6 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
-
-            with subtests.test(msg="Dataset endpoint returns success"):
-                assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
