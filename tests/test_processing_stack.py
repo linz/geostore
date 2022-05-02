@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import datetime, timedelta
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
@@ -263,12 +262,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            wait_for_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
-
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                 Payload=dumps(
@@ -311,32 +304,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 import_dataset_response, account_id, s3_control_client, subtests
             )
 
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                CATALOG_FILENAME,
+                s3_client,
+            )
+
             dataset_version_prefix = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/"
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
-
-            with subtests.test(msg="Should update dataset catalog successfully"):
-                # Then poll dataset catalog for expected link to child catalog
-                expected_child_link_object = {
-                    STAC_HREF_KEY: f"./{dataset_versions_body[VERSION_ID_KEY]}"
-                    f"/{catalog_metadata_filename}",
-                    STAC_REL_KEY: STAC_REL_CHILD,
-                    STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                }
-                process_timeout = datetime.now() + timedelta(minutes=1)
-
-                while (
-                    expected_child_link_object
-                    not in (
-                        load(
-                            smart_open.open(
-                                f"{storage_bucket_prefix}{dataset_prefix}" f"/{CATALOG_FILENAME}",
-                                mode="rb",
-                            )
-                        )
-                    )[STAC_LINKS_KEY]
-                ):
-                    assert datetime.now() < process_timeout  # pragma: no cover
-                    sleep(5)  # pragma: no cover
 
             # Catalog contents
             imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
@@ -359,9 +334,9 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_PARENT,
-                            STAC_TITLE_KEY: dataset_title,
+                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                     ],
@@ -466,7 +441,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             # Cleanup
             for key in [
                 CATALOG_FILENAME,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
                 imported_catalog_key,
                 imported_collection_key,
                 imported_item_key,
@@ -537,6 +511,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
     metadata_copy_job_result = None
     asset_copy_job_result = None
+    dataset_versions_body = {}
 
     dataset_title = any_dataset_title()
 
@@ -592,13 +567,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
             )
             dataset_payload = load(dataset_response["Payload"])
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
-
-            wait_for_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -633,6 +601,11 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
             assert (execution_output := execution.get("output")), execution
 
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                CATALOG_FILENAME,
+                s3_client,
+            )
             account_id = get_account_number()
 
             import_dataset_response = loads(execution_output)[IMPORT_DATASET_KEY]
@@ -645,7 +618,10 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         finally:
             # Cleanup
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                new_key = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
+                new_key = (
+                    f"{dataset_title}{DATASET_KEY_SEPARATOR}"
+                    f"{dataset_id}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
+                )
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, new_key, s3_client)
 
@@ -661,11 +637,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 )
 
             delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-            delete_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
 
     with subtests.test(msg="Should report import status after success"):
         expected_status_payload = {
@@ -734,71 +705,61 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         key=f"{key_prefix}/{metadata_filename}",
     ) as s3_metadata_file:
 
-        try:
+        dataset_response = lambda_client.invoke(
+            FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
+            Payload=dumps(
+                {
+                    HTTP_METHOD_KEY: "POST",
+                    BODY_KEY: {
+                        TITLE_KEY: dataset_title,
+                        DESCRIPTION_KEY: any_dataset_description(),
+                    },
+                }
+            ).encode(),
+        )
+        dataset_payload = load(dataset_response["Payload"])
+        dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
+        dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            dataset_response = lambda_client.invoke(
-                FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
-                Payload=dumps(
-                    {
-                        HTTP_METHOD_KEY: "POST",
-                        BODY_KEY: {
-                            TITLE_KEY: dataset_title,
-                            DESCRIPTION_KEY: any_dataset_description(),
-                        },
-                    }
-                ).encode(),
-            )
-            dataset_payload = load(dataset_response["Payload"])
-            dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+        # When creating a dataset version
+        dataset_version_creation_response = lambda_client.invoke(
+            FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
+            Payload=dumps(
+                {
+                    HTTP_METHOD_KEY: "POST",
+                    BODY_KEY: {
+                        DATASET_ID_SHORT_KEY: dataset_id,
+                        METADATA_URL_KEY: s3_metadata_file.url,
+                        S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                    },
+                }
+            ).encode(),
+        )
 
-            # When creating a dataset version
-            dataset_version_creation_response = lambda_client.invoke(
-                FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
-                Payload=dumps(
-                    {
-                        HTTP_METHOD_KEY: "POST",
-                        BODY_KEY: {
-                            DATASET_ID_SHORT_KEY: dataset_id,
-                            METADATA_URL_KEY: s3_metadata_file.url,
-                            S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                        },
-                    }
-                ).encode(),
-            )
+        response_payload = load(dataset_version_creation_response["Payload"])
+        with subtests.test(msg="Dataset Versions endpoint status code"):
+            assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
 
-            response_payload = load(dataset_version_creation_response["Payload"])
-            with subtests.test(msg="Dataset Versions endpoint status code"):
-                assert response_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, response_payload
+        dataset_versions_body = response_payload[BODY_KEY]
+        with subtests.test(msg="Step function result"):
+            # Then poll for State Machine State
+            state_machine_arn = dataset_versions_body[EXECUTION_ARN_KEY]
+            while (
+                execution := step_functions_client.describe_execution(
+                    executionArn=state_machine_arn
+                )
+            )["status"] == "RUNNING":
 
-            dataset_versions_body = response_payload[BODY_KEY]
-            with subtests.test(msg="Step function result"):
-                # Then poll for State Machine State
-                state_machine_arn = dataset_versions_body[EXECUTION_ARN_KEY]
-                while (
-                    execution := step_functions_client.describe_execution(
-                        executionArn=state_machine_arn
-                    )
-                )["status"] == "RUNNING":
+                sleep(5)  # pragma: no cover
 
-                    sleep(5)  # pragma: no cover
+            assert execution["status"] == "SUCCEEDED", execution
 
-                assert execution["status"] == "SUCCEEDED", execution
-
-            # Then the files should not be copied
-            dataset_version = dataset_versions_body[VERSION_ID_KEY]
-            for filename in [metadata_filename, asset_filename]:
-                with subtests.test(msg=filename), raises(AssertionError):
-                    delete_s3_key(
-                        Resource.STORAGE_BUCKET_NAME.resource_name,
-                        f"{dataset_prefix}/{dataset_version}/{filename}",
-                        s3_client,
-                    )
-
-        finally:
-            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, CATALOG_FILENAME, s3_client)
-            delete_s3_key(
-                Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{CATALOG_FILENAME}",
-                s3_client,
-            )
+        # Then the files should not be copied
+        dataset_version = dataset_versions_body[VERSION_ID_KEY]
+        for filename in [metadata_filename, asset_filename]:
+            with subtests.test(msg=filename), raises(AssertionError):
+                delete_s3_key(
+                    Resource.STORAGE_BUCKET_NAME.resource_name,
+                    f"{dataset_prefix}/{dataset_version}/{filename}",
+                    s3_client,
+                )
