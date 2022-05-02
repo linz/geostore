@@ -260,17 +260,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             )
             dataset_payload = load(dataset_response["Payload"])
 
-            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            with subtests.test(msg="Dataset catalog is created"):
-                wait_for_s3_key(
-                    Resource.STORAGE_BUCKET_NAME.resource_name,
-                    f"{dataset_prefix}/{CATALOG_FILENAME}",
-                    s3_client,
-                )
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -594,18 +591,14 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
-
-            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
-            with subtests.test(msg="Dataset catalog is created"):
-                wait_for_s3_key(
-                    Resource.STORAGE_BUCKET_NAME.resource_name,
-                    f"{dataset_prefix}/{CATALOG_FILENAME}",
-                    s3_client,
-                )
+            wait_for_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{CATALOG_FILENAME}",
+                s3_client,
+            )
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -756,9 +749,6 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 ).encode(),
             )
             dataset_payload = load(dataset_response["Payload"])
-
-            assert dataset_payload.get(STATUS_CODE_KEY) == HTTPStatus.CREATED, dataset_payload
-
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
             dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
