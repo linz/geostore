@@ -7,11 +7,6 @@ import boto3
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
-from ..aws_message_attributes import (
-    DATA_TYPE_STRING,
-    MESSAGE_ATTRIBUTE_TYPE_DATASET,
-    MESSAGE_ATTRIBUTE_TYPE_KEY,
-)
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import LOG_MESSAGE_LAMBDA_FAILURE, LOG_MESSAGE_LAMBDA_START
 from ..parameter_store import ParameterName, get_param
@@ -29,11 +24,9 @@ from ..types import JsonObject
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
     from mypy_boto3_sqs import SQSServiceResource
-    from mypy_boto3_sqs.type_defs import MessageAttributeValueTypeDef
 else:
     # In production we want to avoid depending on a package which has no runtime impact
     S3Client = SQSServiceResource = object  # pragma: no mutate
-    MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
 LOGGER: Logger = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
@@ -72,11 +65,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         QueueName=get_param(ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME)
     ).send_message(
         MessageBody=new_version_metadata_key,
-        MessageAttributes={
-            MESSAGE_ATTRIBUTE_TYPE_KEY: MessageAttributeValueTypeDef(
-                DataType=DATA_TYPE_STRING, StringValue=MESSAGE_ATTRIBUTE_TYPE_DATASET
-            )
-        },
     )
 
     return {
