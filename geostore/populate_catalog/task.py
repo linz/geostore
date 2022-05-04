@@ -38,7 +38,6 @@ ROOT_CATALOG_DESCRIPTION = (
 CATALOG_FILENAME = "catalog.json"
 CONTENTS_KEY = "Contents"
 RECORDS_KEY = "Records"
-MESSAGE_ATTRIBUTES_KEY = "messageAttributes"
 
 LOGGER: Logger = get_log()
 
@@ -56,10 +55,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     return {}
 
 
-class UnhandledSQSMessageException(Exception):
-    pass
-
-
 class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
     def get_catalog_href(self, cat: Catalog, parent_dir: str, is_root: bool) -> str:
         return str(cat.get_self_href())
@@ -72,8 +67,8 @@ class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
         return str(item.get_self_href())
 
 
-def handle_message(version_metadata_key: str) -> None:
-    """Handle writing a new dataset version to the root catalog"""
+def handle_message(metadata_key: str) -> None:
+    """Handle writing a new dataset to the root catalog"""
 
     storage_bucket_path = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
 
@@ -94,12 +89,14 @@ def handle_message(version_metadata_key: str) -> None:
         )
         root_catalog.set_self_href(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
-    dataset_version_metadata = read_file(f"{storage_bucket_path}/{version_metadata_key}")
-    assert isinstance(dataset_version_metadata, (Catalog, Collection))
-    root_catalog.add_child(child=dataset_version_metadata, strategy=GeostoreSTACLayoutStrategy())
+    dataset_metadata = read_file(f"{storage_bucket_path}/{metadata_key}")
+    assert isinstance(dataset_metadata, (Catalog, Collection))
+
+    if root_catalog.get_child(dataset_metadata.id) is None:
+        root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
+
     root_catalog.normalize_hrefs(
         f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}",
         strategy=GeostoreSTACLayoutStrategy(),
     )
-
     root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)

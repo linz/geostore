@@ -220,7 +220,7 @@ populate_catalog = [
     "linz-logger",
     "pystac",
 ]
-update_dataset_catalog = [
+update_root_catalog = [
     "jsonschema",
     "linz-logger",
     "pynamodb",

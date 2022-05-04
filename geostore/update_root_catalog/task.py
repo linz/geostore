@@ -55,20 +55,19 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: error.message}
 
-    new_version_metadata_key = (
-        f"{event[DATASET_PREFIX_KEY]}/{event[VERSION_ID_KEY]}/"
-        f"{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
+    dataset_key = (
+        f"{event[DATASET_PREFIX_KEY]}/{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
     )
 
     # add reference to root catalog
     SQS_RESOURCE.get_queue_by_name(
         QueueName=get_param(ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME)
     ).send_message(
-        MessageBody=new_version_metadata_key,
+        MessageBody=dataset_key,
     )
 
     return {
         NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
         f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
-        f"{new_version_metadata_key}"
+        f"{dataset_key}"
     }

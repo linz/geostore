@@ -56,7 +56,6 @@ from geostore.step_function_keys import (
     STEP_FUNCTION_KEY,
     TITLE_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.sts import get_account_number
 
@@ -260,7 +259,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_payload = load(dataset_response["Payload"])
 
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/"
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -310,11 +309,10 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 s3_client,
             )
 
-            dataset_version_prefix = f"{dataset_prefix}/{dataset_versions_body[VERSION_ID_KEY]}/"
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             # Catalog contents
-            imported_catalog_key = f"{dataset_version_prefix}{catalog_metadata_filename}"
+            imported_catalog_key = f"{dataset_prefix}{catalog_metadata_filename}"
             with subtests.test(msg="Imported catalog has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_catalog_key}", mode="rb"
             ) as imported_catalog_file:
@@ -328,13 +326,13 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_TITLE_KEY: collection_title,
                         },
                         {
-                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                         },
                         {
-                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_PARENT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
@@ -343,7 +341,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
 
             # Collection contents
-            imported_collection_key = f"{dataset_version_prefix}{collection_metadata_filename}"
+            imported_collection_key = f"{dataset_prefix}{collection_metadata_filename}"
             with subtests.test(msg="Imported collection has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
             ) as imported_collection_file:
@@ -363,7 +361,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                             STAC_REL_KEY: STAC_REL_ITEM,
                         },
                         {
-                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
@@ -377,7 +375,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
 
             # Item contents
-            imported_item_key = f"{dataset_version_prefix}{item_metadata_filename}"
+            imported_item_key = f"{dataset_prefix}{item_metadata_filename}"
 
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
@@ -385,7 +383,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 item_json = load(imported_item_file)
                 assert item_json[STAC_LINKS_KEY] == [
                     {
-                        STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_REL_KEY: STAC_REL_ROOT,
                         STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
@@ -425,20 +423,21 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             #     }
 
             # First asset contents
-            imported_first_asset_key = f"{dataset_version_prefix}{first_asset_filename}"
+            imported_first_asset_key = f"{dataset_prefix}{first_asset_filename}"
             with subtests.test(msg="Verify first asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
             ) as imported_first_asset_file:
                 assert imported_first_asset_file.read() == first_asset_contents
 
             # Second asset contents
-            imported_second_asset_key = f"{dataset_version_prefix}{second_asset_filename}"
+            imported_second_asset_key = f"{dataset_prefix}{second_asset_filename}"
             with subtests.test(msg="Verify second asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_second_asset_key}", mode="rb"
             ) as imported_second_asset_file:
                 assert imported_second_asset_file.read() == second_asset_contents
         finally:
             # Cleanup
+
             for key in [
                 CATALOG_FILENAME,
                 imported_catalog_key,
@@ -511,7 +510,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
     metadata_copy_job_result = None
     asset_copy_job_result = None
-    dataset_versions_body = {}
 
     dataset_title = any_dataset_title()
 
@@ -618,10 +616,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         finally:
             # Cleanup
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                new_key = (
-                    f"{dataset_title}{DATASET_KEY_SEPARATOR}"
-                    f"{dataset_id}/{dataset_versions_body[VERSION_ID_KEY]}/{filename}"
-                )
+                new_key = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, new_key, s3_client)
 
@@ -719,7 +714,6 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         )
         dataset_payload = load(dataset_response["Payload"])
         dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-        dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
 
         # When creating a dataset version
         dataset_version_creation_response = lambda_client.invoke(
@@ -754,12 +748,12 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
 
             assert execution["status"] == "SUCCEEDED", execution
 
-        # Then the files should not be copied
-        dataset_version = dataset_versions_body[VERSION_ID_KEY]
-        for filename in [metadata_filename, asset_filename]:
-            with subtests.test(msg=filename), raises(AssertionError):
-                delete_s3_key(
-                    Resource.STORAGE_BUCKET_NAME.resource_name,
-                    f"{dataset_prefix}/{dataset_version}/{filename}",
-                    s3_client,
-                )
+    # Then the files should not be copied
+    dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
+    for filename in [metadata_filename, asset_filename]:
+        with subtests.test(msg=filename), raises(AssertionError):
+            delete_s3_key(
+                Resource.STORAGE_BUCKET_NAME.resource_name,
+                f"{dataset_prefix}/{filename}",
+                s3_client,
+            )

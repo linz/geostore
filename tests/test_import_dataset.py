@@ -177,9 +177,7 @@ def should_batch_copy_files_to_storage(
                 )
             finally:
                 # Then
-                new_prefix = (
-                    f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}/{version_id}"
-                )
+                new_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
                 storage_bucket_prefix = (
                     f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
                 )
