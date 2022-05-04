@@ -419,7 +419,7 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
 
 
 @mark.infrastructure
-def should_not_add_identical_child_link_to_root(subtests: SubTests) -> None:
+def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
     dataset_version = any_dataset_version_id()
     catalog_filename = f"{any_safe_filename()}.json"
     with Dataset() as dataset, S3Object(
