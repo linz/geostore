@@ -91,7 +91,10 @@ def handle_message(metadata_key: str) -> None:
 
     dataset_metadata = read_file(f"{storage_bucket_path}/{metadata_key}")
     assert isinstance(dataset_metadata, (Catalog, Collection))
-    root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
+
+    if root_catalog.get_child(dataset_metadata.id) is None:
+        root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
+
     root_catalog.normalize_hrefs(
         f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}",
         strategy=GeostoreSTACLayoutStrategy(),
