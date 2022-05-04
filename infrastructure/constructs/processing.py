@@ -339,15 +339,15 @@ class Processing(Construct):
             parameter_name=ParameterName.PROCESSING_IMPORT_DATASET_ROLE_ARN.value,
         )
 
-        update_dataset_catalog = LambdaTask(
+        update_root_catalog = LambdaTask(
             self,
             "UpdateDatasetCatalog",
-            directory="update_dataset_catalog",
+            directory="update_root_catalog",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             result_path=f"$.{UPDATE_DATASET_KEY}",
         )
-        self.message_queue.grant_send_messages(update_dataset_catalog.lambda_function)
+        self.message_queue.grant_send_messages(update_root_catalog.lambda_function)
 
         for storage_writer in [
             import_dataset_role,
@@ -355,7 +355,7 @@ class Processing(Construct):
             import_asset_file_function,
             import_metadata_file_function,
             populate_catalog_lambda,
-            update_dataset_catalog.lambda_function,
+            update_root_catalog.lambda_function,
         ]:
             storage_bucket.grant_read_write(storage_writer)  # type: ignore[arg-type]
 
@@ -375,7 +375,7 @@ class Processing(Construct):
                     validation_summary_task.lambda_function,
                     upload_status_task.lambda_function,
                 ],
-                self.message_queue_name_parameter: [update_dataset_catalog.lambda_function],
+                self.message_queue_name_parameter: [update_root_catalog.lambda_function],
             }
         )
 
@@ -439,7 +439,7 @@ class Processing(Construct):
                                             S3_BATCH_STATUS_COMPLETE,
                                         ),
                                     ),
-                                    update_dataset_catalog.next(success_task),
+                                    update_root_catalog.next(success_task),
                                 )
                                 .when(
                                     aws_stepfunctions.Condition.or_(

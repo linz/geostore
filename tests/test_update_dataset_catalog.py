@@ -16,7 +16,7 @@ from geostore.step_function_keys import (
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
-from geostore.update_dataset_catalog.task import lambda_handler
+from geostore.update_root_catalog.task import lambda_handler
 from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_filename
@@ -29,7 +29,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
     filename = f"{any_safe_filename()}.json"
 
     with Dataset() as dataset, patch(
-        "geostore.update_dataset_catalog.task.SQS_RESOURCE"
+        "geostore.update_root_catalog.task.SQS_RESOURCE"
     ) as sqs_mock, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -70,7 +70,7 @@ def should_succeed_and_trigger_sqs_update_to_catalog(subtests: SubTests) -> None
 
 
 @mark.infrastructure
-@patch("geostore.update_dataset_catalog.task.validate")
+@patch("geostore.update_root_catalog.task.validate")
 def should_return_required_property_error_when_missing_mandatory_property(
     validate_url_mock: MagicMock,
 ) -> None:
