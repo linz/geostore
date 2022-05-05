@@ -117,6 +117,9 @@ Example of AWS service account authentication and authorization in to Geostore u
   export AWS_PROFILE=geostore-users
   ```
 
+Lambda and S3 access is also enabled by default for any AWS accounts in the LINZ organisation. This
+is by assuming the 'api-users' or 's3-users' role from the external AWS account.
+
 ## Use
 
 You can communicate with a Geostore instance using either the low-level application programming

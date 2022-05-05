@@ -9,6 +9,8 @@ from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
 
+LINZ_ORGANIZATION_ID = "o-g9kpx6ff4u"
+
 
 class API(Construct):
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
@@ -19,7 +21,6 @@ class API(Construct):
         botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
-        principal: aws_iam.PrincipalBase,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         sqs_queue: aws_sqs.Queue,
@@ -37,7 +38,7 @@ class API(Construct):
             self,
             "api-users-role",
             role_name=Resource.API_USERS_ROLE_NAME.resource_name,
-            assumed_by=aws_iam.OrganizationPrincipal("o-g9kpx6ff4u"),
+            assumed_by=aws_iam.OrganizationPrincipal(LINZ_ORGANIZATION_ID),
             max_session_duration=MAX_SESSION_DURATION,
         )
 
@@ -106,7 +107,7 @@ class API(Construct):
             self,
             "s3-users-role",
             role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
-            assumed_by=principal,
+            assumed_by=aws_iam.OrganizationPrincipal(LINZ_ORGANIZATION_ID),
             max_session_duration=MAX_SESSION_DURATION,
         )
         storage_bucket.grant_read(s3_users_role)
