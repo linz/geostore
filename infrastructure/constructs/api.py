@@ -37,7 +37,7 @@ class API(Construct):
             self,
             "api-users-role",
             role_name=Resource.API_USERS_ROLE_NAME.resource_name,
-            assumed_by=principal,
+            assumed_by=aws_iam.OrganizationPrincipal("o-g9kpx6ff4u"),
             max_session_duration=MAX_SESSION_DURATION,
         )
 
