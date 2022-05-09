@@ -51,6 +51,7 @@ from geostore.stac_format import (
 from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
@@ -79,6 +80,7 @@ from .general_generators import (
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
+    any_dataset_prefix,
     any_dataset_version_id,
     any_hex_multihash,
 )
@@ -114,6 +116,7 @@ def should_succeed_with_validation_failure(
                 VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
+                DATASET_PREFIX_KEY: any_dataset_prefix(),
             },
             any_lambda_context(),
         )
@@ -145,6 +148,7 @@ def should_save_non_s3_url_validation_results(
                 VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: non_s3_url,
                 S3_ROLE_ARN_KEY: any_role_arn(),
+                DATASET_PREFIX_KEY: any_dataset_prefix(),
             },
             any_lambda_context(),
         )
@@ -239,6 +243,7 @@ def should_save_staging_access_validation_results(
             VERSION_ID_KEY: version_id,
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
         },
         any_lambda_context(),
     )
@@ -295,6 +300,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
                 VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: root_s3_object.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                DATASET_PREFIX_KEY: any_dataset_prefix(),
             },
             any_lambda_context(),
         ) == {SUCCESS_KEY: True}
@@ -418,6 +424,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     VERSION_ID_KEY: version_id,
                     METADATA_URL_KEY: metadata_s3_object.url,
                     S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                    DATASET_PREFIX_KEY: any_dataset_prefix(),
                 },
                 any_lambda_context(),
             ) == {SUCCESS_KEY: True}

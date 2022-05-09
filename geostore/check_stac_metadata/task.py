@@ -16,7 +16,13 @@ from ..parameter_store import ParameterName, get_param
 from ..s3 import get_s3_client_for_role
 from ..s3_utils import get_bucket_and_key_from_url
 from ..step_function import Outcome, get_hash_key
-from ..step_function_keys import DATASET_ID_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY, VERSION_ID_KEY
+from ..step_function_keys import (
+    DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
+    METADATA_URL_KEY,
+    S3_ROLE_ARN_KEY,
+    VERSION_ID_KEY,
+)
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
@@ -38,8 +44,15 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                     S3_ROLE_ARN_KEY: {"type": "string"},
+                    DATASET_PREFIX_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY, VERSION_ID_KEY],
+                "required": [
+                    DATASET_ID_KEY,
+                    DATASET_PREFIX_KEY,
+                    METADATA_URL_KEY,
+                    S3_ROLE_ARN_KEY,
+                    VERSION_ID_KEY,
+                ],
                 "additionalProperties": True,
             },
         )
