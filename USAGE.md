@@ -106,15 +106,44 @@ Geostore allows read/write access for users authorized by SAML identity provider
 
 Example of AWS service account authentication and authorization in to Geostore users role via Azure:
 
-- Log in to Geostore AWS account using Geostore users role
+- Log in to Geostore AWS account
 
   ```bash
-  aws-azure-login --profile geostore-users
+  aws-azure-login --profile li-geostore-prod
   ```
 
-- Set Geostore AWS profile for subsequent commands
+- Set AWS profile for subsequent commands
   ```bash
-  export AWS_PROFILE=geostore-users
+  export AWS_PROFILE=li-geostore-prod
+  ```
+
+Example of assuming the Geostore roles from a LINZ AWS account:
+
+- Add Geostore roles to assume to AWS config
+  ```bash
+  echo "[profile geostore-api-users]
+  role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
+  source_profile=li-small-apps-nonprod
+
+  [profile geostore-s3-users]
+  role_arn=arn:aws:iam::632223577832:role/nonprod-s3-users
+  source_profile=li-small-apps-nonprod
+  " >> ~/.aws/config
+  ```
+
+- Login to a LINZ AWS account
+  ```bash
+  aws-azure-login --profile li-small-apps-nonprod
+  ```
+
+- Set AWS profile for subsequent commands
+  ```bash
+  export AWS_PROFILE=geostore-api-users
+  ```
+
+  or
+  ```bash
+  export AWS_PROFILE=geostore-s3-users
   ```
 
 Lambda and S3 access is also enabled by default for any AWS accounts in the LINZ organisation. This
