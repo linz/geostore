@@ -120,6 +120,7 @@ Example of AWS service account authentication and authorization in to Geostore u
 Example of assuming the Geostore roles from a LINZ AWS account:
 
 - Add Geostore roles to assume to AWS config
+
   ```bash
   echo "[profile geostore-api-users]
   role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
@@ -132,16 +133,19 @@ Example of assuming the Geostore roles from a LINZ AWS account:
   ```
 
 - Login to a LINZ AWS account
+
   ```bash
   aws-azure-login --profile li-small-apps-nonprod
   ```
 
 - Set AWS profile for subsequent commands
+
   ```bash
   export AWS_PROFILE=geostore-api-users
   ```
 
   or
+
   ```bash
   export AWS_PROFILE=geostore-s3-users
   ```
