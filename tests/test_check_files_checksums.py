@@ -43,10 +43,7 @@ from .stac_generators import (
 )
 
 if TYPE_CHECKING:
-    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
-        ClientErrorResponseError,
-        ClientErrorResponseTypeDef,
-    )
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
@@ -132,7 +129,7 @@ def should_validate_given_index(
 @patch("geostore.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("geostore.check_files_checksums.task.ValidationResultFactory")
-def should_log_error_when_validation_fails(  # pylint: disable=too-many-locals
+def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
     validate_url_multihash_mock: MagicMock,

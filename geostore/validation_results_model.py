@@ -20,7 +20,7 @@ class ValidationResult(Enum):
 
 class ValidationOutcomeIdx(  # type: ignore[no-untyped-call]
     GlobalSecondaryIndex["ValidationResultsModelBase"]
-):  # pylint:disable=too-few-public-methods
+):
     class Meta:  # pylint:disable=too-few-public-methods
 
         index_name = "validation_outcome"
@@ -77,11 +77,7 @@ def validation_results_model_with_meta(
 
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
-    def __init__(
-        self,
-        hash_key: str,
-        results_table_name: str,
-    ):
+    def __init__(self, hash_key: str, results_table_name: str):
 
         self.hash_key = hash_key
         self.validation_results_model = validation_results_model_with_meta(

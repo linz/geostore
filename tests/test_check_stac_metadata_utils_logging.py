@@ -36,10 +36,7 @@ from .stac_generators import any_asset_name, any_hex_multihash
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
-    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
-        ClientErrorResponseError,
-        ClientErrorResponseTypeDef,
-    )
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
