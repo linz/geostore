@@ -13,8 +13,8 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
 
 You'll need the following information to start using Geostore:
 
-- Geostore AWS account ID (`GEOSTORE_AWS_ACCOUNT_ID`)
-- Geostore user role name (`GEOSTORE_USER_ROLE_NAME`)
+-  Geostore AWS account ID (`GEOSTORE_AWS_ACCOUNT_ID`)
+-  Geostore user role name (`GEOSTORE_USER_ROLE_NAME`)
 
 Replace the `GEOSTORE_…` strings in the following documentation with the actual values given by the
 Geostore instance maintainer.
@@ -35,14 +35,14 @@ Template trust policy on your role:
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
-    }
-  ]
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Action": "sts:AssumeRole",
+         "Effect": "Allow",
+         "Resource": "arn:aws:iam::<GEOSTORE_AWS_ACCOUNT_ID>:role/<GEOSTORE_USER_ROLE_NAME>"
+      }
+   ]
 }
 ```
 
@@ -50,19 +50,19 @@ Template dataset source S3 bucket policy:
 
 ```json
 {
-  "Id": "<ID>",
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "<STATEMENT_ID>",
-      "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
-      "Effect": "Allow",
-      "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*",
-      "Principal": {
-        "AWS": "arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<YOUR_ROLE_NAME>"
+   "Id": "<ID>",
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Sid": "<STATEMENT_ID>",
+         "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:GetObjectTagging"],
+         "Effect": "Allow",
+         "Resource": "arn:aws:s3:::<YOUR_BUCKET>/<YOUR_DATASET>/*",
+         "Principal": {
+            "AWS": "arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<YOUR_ROLE_NAME>"
+         }
       }
-    }
-  ]
+   ]
 }
 ```
 
@@ -77,26 +77,26 @@ Geostore performs many checks on datasets. If any of the checks fail the dataset
 imported, so it's important to know what they are. The following list is a reference of all the
 checks which are currently in place.
 
-- Every metadata file must follow the
-  [STAC Collection Specification](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md).
-- Every metadata URL (in the
-  [`links` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#link-object))
-  must be an S3 URL of the form `s3://BUCKET_NAME/KEY`, for example,
-  `s3://my-bucket/some-path/foo.tif`.
-- Every asset (in the
-  [`assets` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#assets))
-  must have:
-  - an S3
-    [URL](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object),
-    as defined above
-  - a [checksum](https://github.com/stac-extensions/file#checksums) corresponding to the contents of
-    the asset file
-- Every metadata and asset file must be in the same S3 bucket.
-- Every metadata and asset URL must be readable by Geostore.
-- A dataset _may_ refer to the same asset more than once. All references to the same asset must have
-  the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be
-  considered invalid, even if both checksums are valid. This is to enable a simpler checksum
-  validation.
+-  Every metadata file must follow the
+   [STAC Collection Specification](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md).
+-  Every metadata URL (in the
+   [`links` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#link-object))
+   must be an S3 URL of the form `s3://BUCKET_NAME/KEY`, for example,
+   `s3://my-bucket/some-path/foo.tif`.
+-  Every asset (in the
+   [`assets` property](https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md#assets))
+   must have:
+   -  an S3
+      [URL](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object),
+      as defined above
+   -  a [checksum](https://github.com/stac-extensions/file#checksums) corresponding to the contents
+      of the asset file
+-  Every metadata and asset file must be in the same S3 bucket.
+-  Every metadata and asset URL must be readable by Geostore.
+-  A dataset _may_ refer to the same asset more than once. All references to the same asset must
+   have the same multihash. That is, having a SHA-1 and a SHA-256 checksum for the same file will be
+   considered invalid, even if both checksums are valid. This is to enable a simpler checksum
+   validation.
 
 ## Authentication and authorization
 
@@ -106,55 +106,56 @@ Geostore allows read/write access for users authorized by SAML identity provider
 
 Example of AWS service account authentication and authorization in to Geostore users role via Azure:
 
-- Log in to Geostore AWS account
+-  Log in to Geostore AWS account
 
-  ```bash
-  aws-azure-login --profile li-geostore-prod
-  ```
+   ```bash
+   aws-azure-login --profile li-geostore-prod
+   ```
 
-- Set AWS profile for subsequent commands
-  ```bash
-  export AWS_PROFILE=li-geostore-prod
-  ```
+-  Set AWS profile for subsequent commands
+
+   ```bash
+   export AWS_PROFILE=li-geostore-prod
+   ```
 
 Example of assuming the Geostore roles from a LINZ AWS account:
 
-- Choose any LINZ AWS account to assume the role from
+-  Choose any LINZ AWS account to assume the role from
 
-  ```bash
-  export SOURCE_PROFILE=<YOUR_AWS_SOURCE_PROFILE> # e.g. li-small-apps-nonprod
-  ```
+   ```bash
+   export SOURCE_PROFILE=<YOUR_AWS_SOURCE_PROFILE> # e.g. li-small-apps-nonprod
+   ```
 
-- Add Geostore roles to assume to AWS config
+-  Add Geostore roles to assume to AWS config
 
-  ```bash
-  echo "[profile geostore-api-users]
-  role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
-  source_profile=${SOURCE_PROFILE}
+   ```bash
+   echo "[profile geostore-api-users]
+   role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
+   source_profile=${SOURCE_PROFILE}
 
-  [profile geostore-s3-users]
-  role_arn=arn:aws:iam::632223577832:role/nonprod-s3-users
-  source_profile=${SOURCE_PROFILE}
-  " >> ~/.aws/config
-  ```
+   [profile geostore-s3-users]
+   role_arn=arn:aws:iam::632223577832:role/nonprod-s3-users
+   source_profile=${SOURCE_PROFILE}
+   " >> ~/.aws/config
+   ```
 
-- Login to your LINZ AWS account
+-  Login to your LINZ AWS account
 
-  ```bash
-  aws-azure-login --profile ${SOURCE_PROFILE}
-  ```
+   ```bash
+   aws-azure-login --profile ${SOURCE_PROFILE}
+   ```
 
-- Set AWS profile for subsequent commands
+-  Set AWS profile for subsequent commands
 
-  ```bash
-  export AWS_PROFILE=geostore-api-users
-  ```
+   ```bash
+   export AWS_PROFILE=geostore-api-users
+   ```
 
-  or
+   or
 
-  ```bash
-  export AWS_PROFILE=geostore-s3-users
-  ```
+   ```bash
+   export AWS_PROFILE=geostore-s3-users
+   ```
 
 ## Use
 
@@ -166,13 +167,13 @@ how to work with both.
 
 The API endpoints include:
 
-- [Dataset space](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/datasets),
-  to create, get, update or delete individual datasets, and to list all datasets.
-- [Dataset versions](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/dataset-versions),
-  to create new versions of datasets. The S3 files which constitute the dataset are all linked to a
-  specific dataset version.
-- [Import status](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/import-status),
-  to get information about the status of dataset version import, including errors and issues.
+-  [Dataset space](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/datasets),
+   to create, get, update or delete individual datasets, and to list all datasets.
+-  [Dataset versions](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/dataset-versions),
+   to create new versions of datasets. The S3 files which constitute the dataset are all linked to a
+   specific dataset version.
+-  [Import status](https://ap-southeast-2.console.aws.amazon.com/lambda/home?region=ap-southeast-2#functions/import-status),
+   to get information about the status of dataset version import, including errors and issues.
 
 These are implemented as AWS Lambda functions, which means they can be run ("invoked") either via
 the AWS web interface (links above) or via any tool using the AWS API, such as the
@@ -237,33 +238,33 @@ Prints a listing of datasets, optionally filtered by the dataset ID.
 
 Examples:
 
-- List all datasets using the CLI:
+-  List all datasets using the CLI:
 
-  ```console
-  $ geostore dataset list
-  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
-  Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1
-  ```
+   ```console
+   $ geostore dataset list
+   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+   Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1
+   ```
 
-- List all datasets using the API:
+-  List all datasets using the API:
 
-  ```console
-  $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
-  {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
-  ```
+   ```console
+   $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
+   {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
+   ```
 
-- Filter to a single dataset using the CLI:
+-  Filter to a single dataset using the CLI:
 
-  ```console
-  $ geostore dataset list --id=01F9ZFRK12V0WFXJ94S0DHCP65
-  Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
-  ```
+   ```console
+   $ geostore dataset list --id=01F9ZFRK12V0WFXJ94S0DHCP65
+   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+   ```
 
-- Filter to a single dataset using the API:
-  ```console
-  $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
-  {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
-  ```
+-  Filter to a single dataset using the API:
+   ```console
+   $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+   {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
+   ```
 
 #### Delete
 
@@ -351,8 +352,8 @@ directory name or by providing just the title in a 'prefix' object. Examples bel
 
 ```json
 {
-  "dataset_id": [{ "prefix": "Taranaki" }, "Taranaki_2020-01F9ZFRK12V0WFXJ94S0DHCP65"],
-  "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
+   "dataset_id": [{ "prefix": "Taranaki" }, "Taranaki_2020-01F9ZFRK12V0WFXJ94S0DHCP65"],
+   "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
 }
 ```
 
@@ -361,25 +362,25 @@ contain a JSON string with specific details regarding the Step Function Executio
 
 ```json
 {
-  "Type": "Notification",
-  "MessageId": "xxxx-xxxx-xxxx",
-  "TopicArn": "arn:aws:sns:ap-southeast-2:<GEOSTORE_AWS_ACCOUNT_ID>:geostore-import-status",
-  "Message": "{\"version\": \"0\", […]}",
-  "Timestamp": "2021-07-07T01:49:33.471Z",
-  "SignatureVersion": "1",
-  "Signature": "xxxxx",
-  "SigningCertURL": "https://example.com",
-  "UnsubscribeURL": "https://example.com",
-  "MessageAttributes": {
-    "dataset_id": {
-      "Type": "String",
-      "Value": "01F9ZFRK12V0WFXJ94S0DHCP65"
-    },
-    "status": {
-      "Type": "String",
-      "Value": "SUCCEEDED"
-    }
-  }
+   "Type": "Notification",
+   "MessageId": "xxxx-xxxx-xxxx",
+   "TopicArn": "arn:aws:sns:ap-southeast-2:<GEOSTORE_AWS_ACCOUNT_ID>:geostore-import-status",
+   "Message": "{\"version\": \"0\", […]}",
+   "Timestamp": "2021-07-07T01:49:33.471Z",
+   "SignatureVersion": "1",
+   "Signature": "xxxxx",
+   "SigningCertURL": "https://example.com",
+   "UnsubscribeURL": "https://example.com",
+   "MessageAttributes": {
+      "dataset_id": {
+         "Type": "String",
+         "Value": "01F9ZFRK12V0WFXJ94S0DHCP65"
+      },
+      "status": {
+         "Type": "String",
+         "Value": "SUCCEEDED"
+      }
+   }
 }
 ```
 
@@ -390,30 +391,30 @@ See
 
 ```json
 {
-  "version": "0",
-  "id": "3afc69d1-1291-6372-ae76-9a9c11ee35c4",
-  "detail-type": "Step Functions Execution Status Change",
-  "source": "aws.states",
-  "account": "<GEOSTORE_AWS_ACCOUNT_ID>",
-  "time": "2021-07-07T01:49:29Z",
-  "region": "ap-southeast-2",
-  "resources": ["arn:aws:states:example"],
-  "detail": {
-    "executionArn": "arn:aws:states:example",
-    "stateMachineArn": "arn:aws:states:example",
-    "name": "Aerial_Imagery_xxxx",
-    "status": "SUCCEEDED",
-    "startDate": 1625622391067,
-    "stopDate": 1625622569782,
-    "input": "{\"dataset_id\": \"01F9ZA9ZZZDM815S20EHXEAT40\", \"dataset_prefix\": \"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\", \"version_id\": \"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\", \"metadata_url\": \"s3://example/catalog.json\", \"s3_role_arn\": \"arn:aws:iam::715898075157:role/example\"}",
-    "inputDetails": {
-      "included": true
-    },
-    "output": "{\"dataset_id\":\"01F9ZA9ZZZDM815S20EHXEAT40\",\"dataset_prefix\":\"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\",\"version_id\":\"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\",\"metadata_url\":\"s3://example/catalog.json\",\"s3_role_arn\":\"arn:aws:iam::715898075157:role/example\",\"content\":{\"first_item\":\"0\",\"iteration_size\":1,\"next_item\":-1,\"assets_table_name\":\"example\",\"results_table_name\":\"example\"},\"validation\":{\"success\":true},\"import_dataset\":{\"asset_job_id\":\"e4ad8b0d-4358-4c42-bb0d-3577c96f7039\",\"metadata_job_id\":\"84a7b4fc-7d00-403c-a5fb-91257f406afb\"},\"upload_status\":{\"validation\":{\"status\":\"Passed\",\"errors\":[]},\"asset_upload\":{\"status\":\"Complete\",\"errors\":[]},\"metadata_upload\":{\"status\":\"Complete\",\"errors\":[]}},\"update_root_catalog\":{\"new_version_s3_location\":\"s3://linz-geostore/example/catalog.json\"}}",
-    "outputDetails": {
-      "included": true
-    }
-  }
+   "version": "0",
+   "id": "3afc69d1-1291-6372-ae76-9a9c11ee35c4",
+   "detail-type": "Step Functions Execution Status Change",
+   "source": "aws.states",
+   "account": "<GEOSTORE_AWS_ACCOUNT_ID>",
+   "time": "2021-07-07T01:49:29Z",
+   "region": "ap-southeast-2",
+   "resources": ["arn:aws:states:example"],
+   "detail": {
+      "executionArn": "arn:aws:states:example",
+      "stateMachineArn": "arn:aws:states:example",
+      "name": "Aerial_Imagery_xxxx",
+      "status": "SUCCEEDED",
+      "startDate": 1625622391067,
+      "stopDate": 1625622569782,
+      "input": "{\"dataset_id\": \"01F9ZA9ZZZDM815S20EHXEAT40\", \"dataset_prefix\": \"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\", \"version_id\": \"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\", \"metadata_url\": \"s3://example/catalog.json\", \"s3_role_arn\": \"arn:aws:iam::715898075157:role/example\"}",
+      "inputDetails": {
+         "included": true
+      },
+      "output": "{\"dataset_id\":\"01F9ZA9ZZZDM815S20EHXEAT40\",\"dataset_prefix\":\"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\",\"version_id\":\"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\",\"metadata_url\":\"s3://example/catalog.json\",\"s3_role_arn\":\"arn:aws:iam::715898075157:role/example\",\"content\":{\"first_item\":\"0\",\"iteration_size\":1,\"next_item\":-1,\"assets_table_name\":\"example\",\"results_table_name\":\"example\"},\"validation\":{\"success\":true},\"import_dataset\":{\"asset_job_id\":\"e4ad8b0d-4358-4c42-bb0d-3577c96f7039\",\"metadata_job_id\":\"84a7b4fc-7d00-403c-a5fb-91257f406afb\"},\"upload_status\":{\"validation\":{\"status\":\"Passed\",\"errors\":[]},\"asset_upload\":{\"status\":\"Complete\",\"errors\":[]},\"metadata_upload\":{\"status\":\"Complete\",\"errors\":[]}},\"update_root_catalog\":{\"new_version_s3_location\":\"s3://linz-geostore/example/catalog.json\"}}",
+      "outputDetails": {
+         "included": true
+      }
+   }
 }
 ```
 
@@ -448,8 +449,8 @@ dataset being broken rather than slowly phased out, but can be followed if neces
 
 ### On STAC IDs
 
-- The root catalog has the ID `root_catalog`.
-- The dataset catalogs have IDs consisting of the [dataset title](#dataset-creation-request), a
-  hyphen, and a Universally Unique Lexicographically Sortable Identifier (ULID), for example
-  `Wellington_2020-01FACDTZWA6N2W9NVFEA30T57A`.
-- IDs within the dataset versions are unchanged.
+-  The root catalog has the ID `root_catalog`.
+-  The dataset catalogs have IDs consisting of the [dataset title](#dataset-creation-request), a
+   hyphen, and a Universally Unique Lexicographically Sortable Identifier (ULID), for example
+   `Wellington_2020-01FACDTZWA6N2W9NVFEA30T57A`.
+-  IDs within the dataset versions are unchanged.
