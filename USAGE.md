@@ -119,23 +119,29 @@ Example of AWS service account authentication and authorization in to Geostore u
 
 Example of assuming the Geostore roles from a LINZ AWS account:
 
+- Choose any LINZ AWS account to assume the role from
+
+  ```bash
+  export SOURCE_PROFILE=<YOUR_AWS_SOURCE_PROFILE> # e.g. li-small-apps-nonprod
+  ```
+
 - Add Geostore roles to assume to AWS config
 
   ```bash
   echo "[profile geostore-api-users]
   role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
-  source_profile=li-small-apps-nonprod
+  source_profile=${SOURCE_PROFILE}
 
   [profile geostore-s3-users]
   role_arn=arn:aws:iam::632223577832:role/nonprod-s3-users
-  source_profile=li-small-apps-nonprod
+  source_profile=${SOURCE_PROFILE}
   " >> ~/.aws/config
   ```
 
-- Login to a LINZ AWS account
+- Login to your LINZ AWS account
 
   ```bash
-  aws-azure-login --profile li-small-apps-nonprod
+  aws-azure-login --profile ${SOURCE_PROFILE}
   ```
 
 - Set AWS profile for subsequent commands
@@ -149,9 +155,6 @@ Example of assuming the Geostore roles from a LINZ AWS account:
   ```bash
   export AWS_PROFILE=geostore-s3-users
   ```
-
-Lambda and S3 access is also enabled by default for any AWS accounts in the LINZ organisation. This
-is by assuming the 'api-users' or 's3-users' role from the external AWS account.
 
 ## Use
 
@@ -243,10 +246,12 @@ Examples:
   ```
 
 - List all datasets using the API:
+
   ```console
   $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
   {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
   ```
+
 - Filter to a single dataset using the CLI:
 
   ```console
