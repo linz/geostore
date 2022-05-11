@@ -36,8 +36,8 @@ Environment: <!-- e.g. production -->
 
 Relevant software versions:
 
-- AWS CLI: <!-- include the output of `aws \-\-version` -->
-- Poetry: <!-- include the output of `poetry \-\-version` -->
+-  AWS CLI: <!-- include the output of `aws \-\-version` -->
+-  Poetry: <!-- include the output of `poetry \-\-version` -->
 <!-- Any other relevant software -->
 
 ## Additional context
@@ -46,16 +46,17 @@ Relevant software versions:
 
 #### Definition of Done
 
-- [ ] This bug is **done**:
-  - [ ] Bug resolved to **user's** satisfaction
-  - [ ] Automated tests are passing
-  - [ ] Code is peer reviewed and pushed to master
-  - [ ] Deployed successfully to test environment
-  - [ ] Checked against [CODING guidelines](https://github.com/linz/geostore/blob/master/CODING.md)
-  - [ ] Relevant new tasks are added to backlog and communicated to the team
-  - [ ] Important decisions recorded in the issue ticket
-  - [ ] Readme/Changelog/Diagrams are updated
-  - [ ] Product Owner has approved as complete
-  - [ ] No regression to functional or
-        [non-functional](https://github.com/linz/geostore/blob/master/.github/ISSUE_TEMPLATE/user_story.md)
-        requirements
+-  [ ] This bug is **done**:
+   -  [ ] Bug resolved to **user's** satisfaction
+   -  [ ] Automated tests are passing
+   -  [ ] Code is peer reviewed and pushed to master
+   -  [ ] Deployed successfully to test environment
+   -  [ ] Checked against
+          [CODING guidelines](https://github.com/linz/geostore/blob/master/CODING.md)
+   -  [ ] Relevant new tasks are added to backlog and communicated to the team
+   -  [ ] Important decisions recorded in the issue ticket
+   -  [ ] Readme/Changelog/Diagrams are updated
+   -  [ ] Product Owner has approved as complete
+   -  [ ] No regression to functional or
+          [non-functional](https://github.com/linz/geostore/blob/master/.github/ISSUE_TEMPLATE/user_story.md)
+          requirements

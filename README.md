@@ -28,8 +28,8 @@ A Geostore VPC must exist in your AWS account before deploying this application.
 managed internally by the IT team. If you are deploying this application outside LINZ, you will need
 to create a VPC with the following tags:
 
-- "ApplicationName": "geostore"
-- "ApplicationLayer": "networking"
+-  "ApplicationName": "geostore"
+-  "ApplicationLayer": "networking"
 
 You can achieve this by adding the `networking_stack` (`infrastructure/networking_stack.py)` into
 `app.py` before deployment as a dependency of `application_stack`
@@ -41,8 +41,9 @@ This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific par
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
-- `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage bucket.
-- `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
+-  `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage
+   bucket.
+-  `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
 
 ## Development setup
 
@@ -167,23 +168,23 @@ have access to Dependabot alerts.)
 
 1. Environment variables
 
-   - **`GEOSTORE_ENV_NAME`:** set deployment environment. For your personal development stack: set
-     GEOSTORE_ENV_NAME to your username.
+   -  **`GEOSTORE_ENV_NAME`:** set deployment environment. For your personal development stack: set
+      GEOSTORE_ENV_NAME to your username.
 
-     ```bash
-     export GEOSTORE_ENV_NAME="$USER"
-     ```
+      ```bash
+      export GEOSTORE_ENV_NAME="$USER"
+      ```
 
-     Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without spaces.
-     Default: test.
+      Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without
+      spaces. Default: test.
 
-   * **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
-     Storage S3 bucket or application database tables will be preserved even if they are removed
-     from stack or stack is deleted. Supported values:
-     - DESTROY: destroy resource when removed from stack or stack is deleted (default)
-     - RETAIN: retain orphaned resource when removed from stack or stack is deleted
+   *  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
+      Storage S3 bucket or application database tables will be preserved even if they are removed
+      from stack or stack is deleted. Supported values:
+      -  DESTROY: destroy resource when removed from stack or stack is deleted (default)
+      -  RETAIN: retain orphaned resource when removed from stack or stack is deleted
 
-   - **`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
+   -  **`GEOSTORE_SAML_IDENTITY_PROVIDER_ARN`:** SAML identity provider AWS ARN.
 
 1. Bootstrap CDK (only once per profile)
 
@@ -215,40 +216,40 @@ To add a production package:
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
 
-- Make sure to update packages separately from adding packages. Basically, follow this process
-  before running `poetry add`, and do the equivalent when updating Node.js packages or changing
-  Docker base images:
+-  Make sure to update packages separately from adding packages. Basically, follow this process
+   before running `poetry add`, and do the equivalent when updating Node.js packages or changing
+   Docker base images:
 
-  1.  Check out a new branch on top of origin/master:
+   1. Check out a new branch on top of origin/master:
       `git checkout -b update-python-packages origin/master`.
-  1.  Update the Python packages: `poetry update`. The rest of the steps are only necessary if this
+   1. Update the Python packages: `poetry update`. The rest of the steps are only necessary if this
       step changes poetry.lock. Otherwise you can just change back to the original branch and delete
       "update-python-packages".
-  1.  Commit, push and create pull request.
-  1.  Check out the branch where you originally wanted to run `poetry add`.
-  1.  Rebase the branch onto the package update branch: `git rebase update-python-packages`.
+   1. Commit, push and create pull request.
+   1. Check out the branch where you originally wanted to run `poetry add`.
+   1. Rebase the branch onto the package update branch: `git rebase update-python-packages`.
 
-  At this point any `poetry add` commands should not result in any package updates other than those
-  necessary to fulfil the new packages' dependencies.
+   At this point any `poetry add` commands should not result in any package updates other than those
+   necessary to fulfil the new packages' dependencies.
 
-  Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting
-  history. It also makes code review easier.
+   Rationale: Keeping upgrades and other packages changes apart is useful when reading/bisecting
+   history. It also makes code review easier.
 
-- When there's a merge conflict in poetry.lock, first check whether either or both commits contain a
-  package upgrade:
+-  When there's a merge conflict in poetry.lock, first check whether either or both commits contain
+   a package upgrade:
 
-  - If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
-  - If one of them does, check out that file (`git checkout --ours -- poetry.lock` or
-    `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate
-    `poetry.lock` with the current package versions.
-  - If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
+   -  If neither of them do, simply `git checkout --ours -- poetry.lock && poetry lock --no-update`.
+   -  If one of them does, check out that file (`git checkout --ours -- poetry.lock` or
+      `git checkout --theirs -- poetry.lock`) and run `poetry lock --no-update` to regenerate
+      `poetry.lock` with the current package versions.
+   -  If both of them do, manually merge `poetry.lock` and run `poetry lock --no-update`.
 
-  Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
+   Rationale: This should avoid accidentally down- or upgrading when resolving a merge conflict.
 
-- Update the code coverage minimum in pyproject.toml and the badge above on branches which increase
-  it.
+-  Update the code coverage minimum in pyproject.toml and the badge above on branches which increase
+   it.
 
-  Rationale: By updating this continuously we avoid missing test regressions in new branches.
+   Rationale: By updating this continuously we avoid missing test regressions in new branches.
 
 ### Upgrading Python version
 
@@ -256,14 +257,15 @@ To minimise the chance of discrepancies between environments it is important to 
 close as possible) version of Python in the development environment, in the pipeline, and in
 deployed instances. At the moment the available versions are constrained by the following:
 
-- The
-  [Ubuntu packages](https://packages.ubuntu.com/search?keywords=python3&searchon=names&exact=1&suite=all&section=all)
-  used in the [Dockerfile](geostore/Dockerfile)
-- The [AWS base images](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html) used as
-  [Lambda runtimes](infrastructure/constructs/lambda_config.py)
-- The [pyenv versions](https://github.com/pyenv/pyenv) used for [local development](.python-version)
-- The [supported Poetry versions](https://python-poetry.org/docs/#system-requirements) used for all
-  [dependencies](pyproject.toml)
+-  The
+   [Ubuntu packages](https://packages.ubuntu.com/search?keywords=python3&searchon=names&exact=1&suite=all&section=all)
+   used in the [Dockerfile](geostore/Dockerfile)
+-  The [AWS base images](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html) used as
+   [Lambda runtimes](infrastructure/constructs/lambda_config.py)
+-  The [pyenv versions](https://github.com/pyenv/pyenv) used for
+   [local development](.python-version)
+-  The [supported Poetry versions](https://python-poetry.org/docs/#system-requirements) used for all
+   [dependencies](pyproject.toml)
 
 When updating Python versions you have to check that all of the above can be kept at the same minor
 version, and ideally at the same patch level.
@@ -272,7 +274,7 @@ version, and ideally at the same patch level.
 
 Prerequisites:
 
-- Authenticated to a profile which has access to a deployed Geostore.
+-  Authenticated to a profile which has access to a deployed Geostore.
 
 To launch full test suite, run `pytest`.
 
