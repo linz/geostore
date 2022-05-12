@@ -91,10 +91,7 @@ from .stac_objects import (
 )
 
 if TYPE_CHECKING:
-    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
-        ClientErrorResponseError,
-        ClientErrorResponseTypeDef,
-    )
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 

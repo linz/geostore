@@ -35,7 +35,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     validation_results_model = validation_results_model_with_meta()
     success = not bool(
-        validation_results_model.validation_outcome_index.count(  # pylint: disable=no-member
+        validation_results_model.validation_outcome_index.count(
             (
                 f"{DATASET_ID_PREFIX}{event['dataset_id']}"
                 f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"

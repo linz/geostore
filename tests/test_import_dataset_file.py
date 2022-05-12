@@ -41,10 +41,7 @@ from .aws_utils import (
 from .general_generators import any_error_message, any_safe_file_path
 
 if TYPE_CHECKING:
-    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
-        ClientErrorResponseError,
-        ClientErrorResponseTypeDef,
-    )
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 

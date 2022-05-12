@@ -127,7 +127,6 @@ def should_check_s3_batch_copy_role_arn_parameter_exists(ssm_client: SSMClient) 
 @mark.timeout(1200)
 @mark.infrastructure
 def should_successfully_run_dataset_version_creation_process_with_multiple_assets(  # pylint:disable=too-many-statements
-    # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,
     s3_client: S3Client,
@@ -492,7 +491,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
 @mark.timeout(1200)
 @mark.infrastructure
 def should_successfully_run_dataset_version_creation_process_with_single_asset(
-    # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,
     s3_client: S3Client,
