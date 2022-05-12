@@ -247,12 +247,10 @@ Examples:
    ```
 
 -  List all datasets using the API:
-
    ```console
    $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
    {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
-
 -  Filter to a single dataset using the CLI:
 
    ```console
