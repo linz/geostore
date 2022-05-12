@@ -13,7 +13,7 @@ LINZ_ORGANIZATION_ID = "o-g9kpx6ff4u"
 
 
 class API(Construct):
-    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
+    def __init__(  # pylint: disable=too-many-locals
         self,
         scope: Construct,
         stack_id: str,

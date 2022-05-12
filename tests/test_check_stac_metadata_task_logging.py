@@ -36,10 +36,7 @@ from tests.stac_generators import any_dataset_id, any_dataset_prefix, any_datase
 from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
-    from botocore.exceptions import (  # pylint:disable=no-name-in-module,ungrouped-imports
-        ClientErrorResponseError,
-        ClientErrorResponseTypeDef,
-    )
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
 else:
     ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 

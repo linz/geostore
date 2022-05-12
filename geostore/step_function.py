@@ -137,9 +137,7 @@ def get_step_function_validation_results(dataset_id: str, version_id: str) -> Js
 
     errors = []
     validation_results_model = validation_results_model_with_meta()
-    for (
-        validation_item
-    ) in validation_results_model.validation_outcome_index.query(  # pylint: disable=no-member
+    for validation_item in validation_results_model.validation_outcome_index.query(
         hash_key=hash_key,
         range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
     ):
