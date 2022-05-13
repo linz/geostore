@@ -1,8 +1,8 @@
 """
 Geostore AWS resources definitions.
 """
-from aws_cdk import aws_dynamodb, aws_s3, aws_ssm
-from aws_cdk.core import Construct, Tags
+from aws_cdk import Tags, aws_dynamodb, aws_s3, aws_ssm
+from constructs import Construct
 
 from geostore.datasets_model import DatasetsTitleIdx
 from geostore.parameter_store import ParameterName

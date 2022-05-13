@@ -1,8 +1,8 @@
 from typing import Mapping, Optional
 
-from aws_cdk import aws_lambda_python, aws_stepfunctions_tasks
+from aws_cdk import aws_lambda_python_alpha, aws_stepfunctions_tasks
 from aws_cdk.aws_stepfunctions import JsonPath
-from aws_cdk.core import Construct
+from constructs import Construct
 
 from .bundled_lambda_function import BundledLambdaFunction
 
@@ -14,7 +14,7 @@ class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
         construct_id: str,
         *,
         directory: str,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
     ):

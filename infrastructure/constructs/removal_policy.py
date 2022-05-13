@@ -1,6 +1,6 @@
 from os import environ
 
-from aws_cdk.core import RemovalPolicy
+from aws_cdk import RemovalPolicy
 
 if environ.get("RESOURCE_REMOVAL_POLICY", "DESTROY").upper() == "RETAIN":
     REMOVAL_POLICY = RemovalPolicy.RETAIN

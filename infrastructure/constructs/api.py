@@ -1,5 +1,13 @@
-from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Tags
+from aws_cdk import (
+    Tags,
+    aws_iam,
+    aws_lambda_python_alpha,
+    aws_s3,
+    aws_sqs,
+    aws_ssm,
+    aws_stepfunctions,
+)
+from constructs import Construct
 
 from geostore.resources import Resource
 
@@ -18,7 +26,7 @@ class API(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
