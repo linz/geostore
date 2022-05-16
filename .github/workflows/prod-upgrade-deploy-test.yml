@@ -169,10 +169,6 @@ jobs:
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
               --no-dev --no-root --remove-untracked
 
-      # TODO: Remove once this code is in production
-      - name: Remove duplicate s3 role resource
-        run: ./remove_s3_users_role.bash ${{ env.GEOSTORE_ENV_NAME }}-s3-users
-
       # deployment
       - name: Upgrade copy of production AWS stacks in CI environment
         run: |
