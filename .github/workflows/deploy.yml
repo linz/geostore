@@ -79,10 +79,6 @@ jobs:
           mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_NON_PROD }}
 
-      # TODO: Remove once this code is in production
-      - name: Remove duplicate s3 role resource
-        run: ./remove_s3_users_role.bash nonprod-s3-users
-
       - name: (NonProd) Deploy AWS stacks
         if: github.repository == 'linz/geostore' && github.ref == 'refs/heads/master'
         run: |
@@ -105,10 +101,6 @@ jobs:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PROD }}
-
-      # TODO: Remove once this code is in production
-      - name: Remove duplicate s3 role resource
-        run: ./remove_s3_users_role.bash s3-users
 
       - name: (Prod) Report AWS stack changes before deployment
         if: >
