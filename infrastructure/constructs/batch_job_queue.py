@@ -1,7 +1,7 @@
 import textwrap
 
-from aws_cdk import aws_batch, aws_dynamodb, aws_ec2, aws_iam
-from aws_cdk.core import Construct, Fn
+from aws_cdk import Fn, aws_batch_alpha, aws_dynamodb, aws_ec2, aws_iam
+from constructs import Construct
 
 from geostore.environment import is_production
 
@@ -76,7 +76,7 @@ class BatchJobQueue(Construct):
             launch_template_data=launch_template_data,
         )
         assert cloudformation_launch_template.launch_template_name is not None
-        launch_template = aws_batch.LaunchTemplateSpecification(
+        launch_template = aws_batch_alpha.LaunchTemplateSpecification(
             launch_template_name=cloudformation_launch_template.launch_template_name
         )
 
@@ -92,14 +92,14 @@ class BatchJobQueue(Construct):
             },
         )
 
-        compute_resources = aws_batch.ComputeResources(
+        compute_resources = aws_batch_alpha.ComputeResources(
             vpc=vpc,
             minv_cpus=0,
             desiredv_cpus=0,
             maxv_cpus=1000,
             instance_types=instance_types,
             instance_role=batch_instance_profile.instance_profile_name,
-            allocation_strategy=aws_batch.AllocationStrategy("BEST_FIT_PROGRESSIVE"),
+            allocation_strategy=aws_batch_alpha.AllocationStrategy("BEST_FIT_PROGRESSIVE"),
             launch_template=launch_template,
         )
         batch_service_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -111,18 +111,18 @@ class BatchJobQueue(Construct):
             assumed_by=aws_iam.ServicePrincipal("batch.amazonaws.com"),
             managed_policies=[batch_service_policy],
         )
-        compute_environment = aws_batch.ComputeEnvironment(
+        compute_environment = aws_batch_alpha.ComputeEnvironment(
             self,
             "compute-environment",
             compute_resources=compute_resources,
             service_role=service_role,
         )
 
-        self.job_queue = aws_batch.JobQueue(
+        self.job_queue = aws_batch_alpha.JobQueue(
             scope,
             f"{construct_id}-job-queue",
             compute_environments=[
-                aws_batch.JobQueueComputeEnvironment(
+                aws_batch_alpha.JobQueueComputeEnvironment(
                     compute_environment=compute_environment, order=10
                 ),
             ],

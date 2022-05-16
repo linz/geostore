@@ -1,3 +1,3 @@
-from aws_cdk.core import Duration
+from aws_cdk import Duration
 
 MAX_SESSION_DURATION = Duration.hours(12)

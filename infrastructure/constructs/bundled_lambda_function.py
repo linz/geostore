@@ -1,7 +1,7 @@
 from typing import Mapping, Optional
 
-from aws_cdk import aws_lambda, aws_lambda_python
-from aws_cdk.core import Construct, Duration
+from aws_cdk import Duration, aws_lambda, aws_lambda_python_alpha
+from constructs import Construct
 
 from .backend import BACKEND_DIRECTORY
 from .bundled_code import bundled_code
@@ -21,7 +21,7 @@ class BundledLambdaFunction(aws_lambda.Function):
         *,
         directory: str,
         extra_environment: Optional[Mapping[str, str]],
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         timeout: Duration = DEFAULT_LAMBDA_TIMEOUT,
     ):
         environment = {"LOGLEVEL": LOG_LEVEL}

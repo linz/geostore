@@ -1,7 +1,7 @@
 from typing import Optional
 
 from aws_cdk import aws_dynamodb, aws_ssm
-from aws_cdk.core import Construct
+from constructs import Construct
 
 from geostore.parameter_store import ParameterName
 

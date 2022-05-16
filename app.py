@@ -1,7 +1,7 @@
 """
 CDK application entry point file.
 """
-from aws_cdk.core import App, Tag
+from aws_cdk import App, Tags
 
 from geostore.environment import environment_name
 from infrastructure.application_stack import Application
@@ -15,12 +15,12 @@ def main() -> None:
     Application(app, f"{env_name}-geostore")
 
     # tag all resources in stack
-    Tag.add(app, "CostCentre", "100005")
-    Tag.add(app, APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
-    Tag.add(app, "Owner", "Bill M. Nelson")
-    Tag.add(app, "EnvironmentType", env_name)
-    Tag.add(app, "SupportType", "Dev")
-    Tag.add(app, "HoursOfOperation", "24x7")
+    Tags.of(app).add("CostCentre", "100005")
+    Tags.of(app).add(APPLICATION_NAME_TAG_NAME, APPLICATION_NAME)
+    Tags.of(app).add("Owner", "Bill M. Nelson")
+    Tags.of(app).add("EnvironmentType", env_name)
+    Tags.of(app).add("SupportType", "Dev")
+    Tags.of(app).add("HoursOfOperation", "24x7")
 
     app.synth()
 

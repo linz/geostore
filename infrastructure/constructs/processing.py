@@ -1,7 +1,9 @@
 from aws_cdk import (
+    Duration,
+    Tags,
     aws_dynamodb,
     aws_iam,
-    aws_lambda_python,
+    aws_lambda_python_alpha,
     aws_s3,
     aws_sqs,
     aws_ssm,
@@ -9,7 +11,7 @@ from aws_cdk import (
 )
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_stepfunctions import Wait, WaitTime
-from aws_cdk.core import Construct, Duration, Tags
+from constructs import Construct
 
 from geostore.api_keys import SUCCESS_KEY
 from geostore.content_iterator.task import (
@@ -58,7 +60,7 @@ class Processing(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         principal: aws_iam.PrincipalBase,
         storage_bucket: aws_s3.Bucket,

@@ -4,12 +4,12 @@ from aws_cdk import (
     aws_events,
     aws_events_targets,
     aws_iam,
-    aws_lambda_python,
+    aws_lambda_python_alpha,
     aws_sns,
     aws_ssm,
     aws_stepfunctions,
 )
-from aws_cdk.core import Construct
+from constructs import Construct
 
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.notify_status_update.task import SLACK_URL_ENV_NAME
@@ -28,7 +28,7 @@ class Notify(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
         validation_results_table: Table,

@@ -1,5 +1,5 @@
-from aws_cdk import aws_iam, aws_s3
-from aws_cdk.core import Construct, Tags
+from aws_cdk import Tags, aws_iam, aws_s3
+from constructs import Construct
 
 from .roles import MAX_SESSION_DURATION
 
@@ -17,7 +17,7 @@ class OpenTopography(Construct):
             "opentopography-read-role",
             role_name=f"opentopography-s3-access-read-{env_name}",
             assumed_by=account_principal,
-            external_id=external_id,
+            external_ids=[external_id],
             max_session_duration=MAX_SESSION_DURATION,
         )
         storage_bucket.grant_read(role)

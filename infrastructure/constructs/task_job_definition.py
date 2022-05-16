@@ -1,7 +1,7 @@
 from os.path import join
 
-from aws_cdk import aws_batch, aws_ecs, aws_iam
-from aws_cdk.core import Construct
+from aws_cdk import aws_batch_alpha, aws_ecs, aws_iam
+from constructs import Construct
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY
 from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
@@ -9,7 +9,7 @@ from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
 from .backend import BACKEND_DIRECTORY
 
 
-class TaskJobDefinition(aws_batch.JobDefinition):
+class TaskJobDefinition(aws_batch_alpha.JobDefinition):
     def __init__(
         self,
         scope: Construct,
@@ -30,7 +30,7 @@ class TaskJobDefinition(aws_batch.JobDefinition):
             file=join(BACKEND_DIRECTORY, "Dockerfile"),
         )
 
-        container = aws_batch.JobDefinitionContainer(
+        container = aws_batch_alpha.JobDefinitionContainer(
             image=image,
             job_role=job_role,
             memory_limit_mib=batch_job_definition_memory_limit,

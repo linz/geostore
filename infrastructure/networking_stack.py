@@ -1,5 +1,5 @@
-from aws_cdk import aws_ec2
-from aws_cdk.core import Construct, Stack, Tags
+from aws_cdk import Stack, Tags, aws_ec2
+from constructs import Construct
 
 from geostore.environment import is_production
 
@@ -22,11 +22,13 @@ class NetworkingStack(Stack):
                     cidr_mask=27, name="public", subnet_type=aws_ec2.SubnetType.PUBLIC
                 ),
                 aws_ec2.SubnetConfiguration(
-                    cidr_mask=20, name="ecs-cluster", subnet_type=aws_ec2.SubnetType.PRIVATE
+                    cidr_mask=20,
+                    name="ecs-cluster",
+                    subnet_type=aws_ec2.SubnetType.PRIVATE_ISOLATED,
                 ),
                 aws_ec2.SubnetConfiguration(
                     name="reserved",
-                    subnet_type=aws_ec2.SubnetType.PRIVATE,
+                    subnet_type=aws_ec2.SubnetType.PRIVATE_ISOLATED,
                     reserved=True,
                 ),
             ],
