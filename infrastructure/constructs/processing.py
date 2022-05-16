@@ -63,6 +63,7 @@ class Processing(Construct):
         botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         principal: aws_iam.PrincipalBase,
+        s3_role_arn_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
@@ -371,6 +372,7 @@ class Processing(Construct):
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
+                s3_role_arn_parameter: [check_stac_metadata_task.lambda_function],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,

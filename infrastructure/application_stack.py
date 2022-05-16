@@ -47,6 +47,7 @@ class Application(Stack):
             botocore_lambda_layer=lambda_layers.botocore,
             env_name=env_name,
             principal=principal,
+            s3_role_arn_parameter=storage.s3_role_arn_parameter,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
         )

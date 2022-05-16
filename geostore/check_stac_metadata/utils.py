@@ -22,6 +22,9 @@ from ..stac_format import (
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_ITEM,
+    STAC_REL_KEY,
     STAC_TYPE_CATALOG,
     STAC_TYPE_COLLECTION,
     STAC_TYPE_ITEM,
@@ -100,10 +103,11 @@ class STACDatasetValidator:
         try:
             self.validate(metadata_url)
         except (
-            ClientError,
-            InvalidSecurityClassificationError,
-            JSONDecodeError,
             ValidationError,
+            ClientError,
+            JSONDecodeError,
+            InvalidSecurityClassificationError,
+            DatasetFileNotFoundError,
         ) as error:
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -204,6 +208,9 @@ class STACDatasetValidator:
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json[STAC_LINKS_KEY]:
+            if link_object[STAC_REL_KEY] not in [STAC_REL_CHILD, STAC_REL_ITEM]:
+                continue
+
             next_url = maybe_convert_relative_url_to_absolute(link_object[STAC_HREF_KEY], url)
 
             if next_url not in self.traversed_urls:
@@ -213,6 +220,16 @@ class STACDatasetValidator:
         try:
             s3_response = self.url_reader(url)
         except ClientError as error:
+            if error.response["Error"]["Code"] == "NoSuchKey":
+                self.validation_result_factory.save(
+                    url,
+                    Check.FILE_NOT_FOUND,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: f"Could not find '{url}' in staging bucket or in the Geostore."
+                    },
+                )
+                raise
             self.validation_result_factory.save(
                 url,
                 Check.STAGING_ACCESS,
@@ -243,4 +260,8 @@ class STACDatasetValidator:
 
 
 class InvalidSecurityClassificationError(Exception):
+    pass
+
+
+class DatasetFileNotFoundError(Exception):
     pass
