@@ -33,6 +33,7 @@ from geostore.check_stac_metadata.utils import (
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
+from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
@@ -47,6 +48,12 @@ from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_ID_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_ITEM,
+    STAC_REL_KEY,
+    STAC_REL_PARENT,
+    STAC_REL_ROOT,
+    STAC_REL_SELF,
 )
 from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
@@ -76,6 +83,7 @@ from .general_generators import (
     any_file_contents,
     any_https_url,
     any_past_datetime_string,
+    any_safe_file_path,
     any_safe_filename,
 )
 from .stac_generators import (
@@ -256,6 +264,53 @@ def should_save_staging_access_validation_results(
             Check.STAGING_ACCESS,
             ValidationResult.FAILED,
             details={MESSAGE_KEY: str(expected_error)},
+        ),
+    ]
+
+
+@mark.infrastructure
+@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
+def should_save_file_not_found_validation_results(
+    validation_results_factory_mock: MagicMock,
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+
+    validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+    expected_error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
+        ),
+        operation_name="get_object",
+    )
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = expected_error
+
+    s3_url = any_s3_url()
+
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    lambda_handler(
+        {
+            DATASET_ID_KEY: dataset_id,
+            VERSION_ID_KEY: version_id,
+            METADATA_URL_KEY: s3_url,
+            S3_ROLE_ARN_KEY: any_role_arn(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
+        },
+        any_lambda_context(),
+    )
+
+    hash_key = get_hash_key(dataset_id, version_id)
+    assert validation_results_factory_mock.mock_calls == [
+        call(hash_key, validation_results_table_name),
+        call().save(
+            s3_url,
+            Check.FILE_NOT_FOUND,
+            ValidationResult.FAILED,
+            details={
+                MESSAGE_KEY: f"Could not find '{s3_url}' in staging bucket or in the Geostore."
+            },
         ),
     ]
 
@@ -455,6 +510,122 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                         actual_metadata_items.next().attribute_values
                         == expected_item.attribute_values
                     )
+
+
+@mark.timeout(timedelta(minutes=20).total_seconds())
+@mark.infrastructure
+def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) -> None:
+
+    key_prefix = any_safe_file_path()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    metadata_url_prefix = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
+    )
+    dataset_prefix = any_dataset_prefix()
+    catalog_metadata_filename = any_safe_filename()
+    catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
+    collection_metadata_filename = any_safe_filename()
+    collection_metadata_url = f"{metadata_url_prefix}/{collection_metadata_filename}"
+    item_metadata_filename = any_safe_filename()
+    item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
+
+    with S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                ],
+            }
+        ),
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        key=f"{key_prefix}/{catalog_metadata_filename}",
+    ) as catalog_metadata_file, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: f"./{item_metadata_filename}", STAC_REL_KEY: STAC_REL_ITEM},
+                    {STAC_HREF_KEY: f"../{CATALOG_FILENAME}", STAC_REL_KEY: STAC_REL_ROOT},
+                    {
+                        STAC_HREF_KEY: f"./{catalog_metadata_filename}",
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                    },
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset_prefix}/{collection_metadata_filename}",
+    ), S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_PARENT},
+                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                ],
+            }
+        ),
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        key=f"{key_prefix}/{item_metadata_filename}",
+    ):
+
+        assert lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+                METADATA_URL_KEY: catalog_metadata_file.url,
+                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                DATASET_PREFIX_KEY: dataset_prefix,
+            },
+            any_lambda_context(),
+        ) == {SUCCESS_KEY: True}
+
+        hash_key = get_hash_key(dataset_id, version_id)
+        validation_results_model = validation_results_model_with_meta()
+        with subtests.test(msg="Catalog validation results"):
+            assert (
+                validation_results_model.get(
+                    hash_key=hash_key,
+                    range_key=(
+                        f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                        f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{catalog_metadata_url}"
+                    ),
+                    consistent_read=True,
+                ).result
+                == ValidationResult.PASSED.value
+            )
+
+            with subtests.test(msg="Collection validation results"):
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{collection_metadata_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
+
+            with subtests.test(msg="Item validation results"):
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{item_metadata_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
 
 
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:

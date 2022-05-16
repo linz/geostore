@@ -1,4 +1,5 @@
 from logging import Logger
+from typing import TYPE_CHECKING, Callable
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError, validate
@@ -12,6 +13,9 @@ from ..logging_keys import (
     LOG_MESSAGE_VALIDATION_COMPLETE,
 )
 from ..parameter_store import ParameterName, get_param
+from ..resources import Resource
+from ..s3 import get_s3_client_for_role
+from ..s3_utils import get_bucket_and_key_from_url
 from ..s3_utils import get_s3_url_reader
 from ..step_function import Outcome, get_hash_key
 from ..step_function_keys import (
@@ -24,6 +28,7 @@ from ..step_function_keys import (
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
+
 
 LOGGER: Logger = get_log()
 
@@ -61,7 +66,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
-        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY])
+        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_PREFIX_KEY], LOGGER)
     except ClientError as error:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}
@@ -76,3 +81,5 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     validator.run(event[METADATA_URL_KEY])
     return {SUCCESS_KEY: True}
+
+
