@@ -151,7 +151,7 @@ Example of assuming the Geostore roles from a LINZ AWS account:
    export AWS_PROFILE=geostore-api-users
    ```
 
-   or
+   or, for accessing data in the S3 bucket
 
    ```bash
    export AWS_PROFILE=geostore-s3-users
