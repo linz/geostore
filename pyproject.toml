@@ -83,22 +83,9 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-"aws-cdk.aws-batch" = {version = "*", optional = true}
-"aws-cdk.aws-dynamodb" = {version = "*", optional = true}
-"aws-cdk.aws-ec2" = {version = "*", optional = true}
-"aws-cdk.aws-ecr" = {version = "*", optional = true}
-"aws-cdk.aws-ecr_assets" = {version = "*", optional = true}
-"aws-cdk.aws-ecs" = {version = "*", optional = true}
-"aws-cdk.aws-events" = {version = "*", optional = true}
-"aws-cdk.aws-events-targets" = {version = "*", optional = true}
-"aws-cdk.aws-iam" = {version = "*", optional = true}
-"aws-cdk.aws-lambda" = {version = "*", optional = true}
-"aws-cdk.aws-lambda-event-sources" = {version = "*", optional = true}
-"aws-cdk.aws-lambda-python" = {version = "*", optional = true}
-"aws-cdk.aws-s3" = {version = "*", optional = true}
-"aws-cdk.aws-sns" = {version = "*", optional = true}
-"aws-cdk.aws-stepfunctions" = {version = "*", optional = true}
-"aws-cdk.aws-stepfunctions_tasks" = {version = "*", optional = true}
+"aws-cdk.aws-batch-alpha" = {version = "*", optional = true}
+"aws-cdk.aws-lambda-python-alpha" = {version = "*", optional = true}
+aws-cdk-lib = {version = "*", optional = true}
 awscli = {version = "*", optional = true}
 boto3 = "*"
 cattrs = {version = "*", optional = true}
@@ -142,22 +129,9 @@ extras = ["toml"]
 
 [tool.poetry.extras]
 cdk = [
-    "aws-cdk.aws-batch",
-    "aws-cdk.aws-dynamodb",
-    "aws-cdk.aws-ec2",
-    "aws-cdk.aws-ecr",
-    "aws-cdk.aws-ecr_assets",
-    "aws-cdk.aws-ecs",
-    "aws-cdk.aws-events",
-    "aws-cdk.aws-events-targets",
-    "aws-cdk.aws-iam",
-    "aws-cdk.aws-lambda",
-    "aws-cdk.aws-lambda-event-sources",
-    "aws-cdk.aws-lambda-python",
-    "aws-cdk.aws-s3",
-    "aws-cdk.aws-sns",
-    "aws-cdk.aws-stepfunctions",
-    "aws-cdk.aws-stepfunctions_tasks",
+    "aws-cdk.aws-batch-alpha",
+    "aws-cdk.aws-lambda-python-alpha",
+    "aws-cdk-lib",
     "awscli",
     "cattrs",
 ]
@@ -246,6 +220,9 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
+]
+enable = [
+    "useless-suppression",
 ]
 load-plugins = [
     "pylint.extensions.mccabe",

@@ -1,5 +1,5 @@
-from aws_cdk import aws_iam, aws_lambda, aws_lambda_python
-from aws_cdk.core import Construct
+from aws_cdk import aws_iam, aws_lambda, aws_lambda_python_alpha
+from constructs import Construct
 
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 
@@ -21,7 +21,7 @@ class LambdaEndpoint(aws_lambda.Function):
         env_name: str,
         users_role: aws_iam.Role,
         package_name: str,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
     ):
         super().__init__(
             scope,

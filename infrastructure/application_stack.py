@@ -1,8 +1,7 @@
 from os import environ
 
 import constructs
-from aws_cdk import aws_iam
-from aws_cdk.core import Environment, Stack
+from aws_cdk import Environment, Stack, aws_iam
 
 from geostore.environment import environment_name
 

@@ -1,7 +1,7 @@
 from typing import List, Mapping, Optional
 
-from aws_cdk import aws_batch, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks
-from aws_cdk.core import Construct
+from aws_cdk import aws_batch_alpha, aws_iam, aws_stepfunctions, aws_stepfunctions_tasks
+from constructs import Construct
 
 from .common import LOG_LEVEL
 from .task_job_definition import TaskJobDefinition
@@ -16,7 +16,7 @@ class BatchSubmitJobTask(Construct):
         env_name: str,
         directory: str,
         s3_policy: aws_iam.IManagedPolicy,
-        job_queue: aws_batch.JobQueue,
+        job_queue: aws_batch_alpha.JobQueue,
         payload_object: Mapping[str, str],
         container_overrides_command: List[str],
         array_size: Optional[int] = None,

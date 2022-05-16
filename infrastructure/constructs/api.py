@@ -1,5 +1,13 @@
-from aws_cdk import aws_iam, aws_lambda_python, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
-from aws_cdk.core import Construct, Tags
+from aws_cdk import (
+    Tags,
+    aws_iam,
+    aws_lambda_python_alpha,
+    aws_s3,
+    aws_sqs,
+    aws_ssm,
+    aws_stepfunctions,
+)
+from constructs import Construct
 
 from geostore.resources import Resource
 
@@ -13,12 +21,12 @@ LINZ_ORGANIZATION_ID = "o-g9kpx6ff4u"
 
 
 class API(Construct):
-    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
+    def __init__(  # pylint: disable=too-many-locals
         self,
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
@@ -98,18 +106,5 @@ class API(Construct):
                 sqs_queue_parameter: [datasets_endpoint_lambda],
             }
         )
-
-        ############################################################################################
-        # ### S3 API ###############################################################################
-        ############################################################################################
-
-        s3_users_role = aws_iam.Role(
-            self,
-            "s3-users-role",
-            role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
-            assumed_by=aws_iam.OrganizationPrincipal(LINZ_ORGANIZATION_ID),
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-        storage_bucket.grant_read(s3_users_role)
 
         Tags.of(self).add("ApplicationLayer", "api")

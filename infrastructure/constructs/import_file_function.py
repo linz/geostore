@@ -1,5 +1,5 @@
-from aws_cdk import aws_iam, aws_lambda_python
-from aws_cdk.core import Construct, Duration
+from aws_cdk import Duration, aws_iam, aws_lambda_python_alpha
+from constructs import Construct
 
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 
@@ -16,7 +16,7 @@ class ImportFileFunction(BundledLambdaFunction):
         directory: str,
         invoker: aws_iam.Role,
         env_name: str,
-        botocore_lambda_layer: aws_lambda_python.PythonLayerVersion,
+        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         timeout: Duration = DEFAULT_LAMBDA_TIMEOUT,
     ):
         super().__init__(

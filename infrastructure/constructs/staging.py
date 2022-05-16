@@ -1,5 +1,5 @@
-from aws_cdk import aws_iam, aws_s3
-from aws_cdk.core import Construct, RemovalPolicy, Tags
+from aws_cdk import RemovalPolicy, Tags, aws_iam, aws_s3
+from constructs import Construct
 
 from geostore.resources import Resource
 

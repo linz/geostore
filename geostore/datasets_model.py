@@ -26,9 +26,7 @@ def human_readable_ulid(ulid: ULID) -> str:
     return f"{datetime_string}Z_{ulid.randomness()}"
 
 
-class DatasetsTitleIdx(  # type: ignore[no-untyped-call]
-    GlobalSecondaryIndex["DatasetsModelBase"]
-):  # pylint:disable=too-few-public-methods
+class DatasetsTitleIdx(GlobalSecondaryIndex["DatasetsModelBase"]):  # type: ignore[no-untyped-call]
     """Dataset title global index."""
 
     class Meta:  # pylint:disable=too-few-public-methods
