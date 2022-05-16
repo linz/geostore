@@ -107,17 +107,4 @@ class API(Construct):
             }
         )
 
-        ############################################################################################
-        # ### S3 API ###############################################################################
-        ############################################################################################
-
-        s3_users_role = aws_iam.Role(
-            self,
-            "s3-users-role",
-            role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
-            assumed_by=aws_iam.OrganizationPrincipal(LINZ_ORGANIZATION_ID),
-            max_session_duration=MAX_SESSION_DURATION,
-        )
-        storage_bucket.grant_read(s3_users_role)
-
         Tags.of(self).add("ApplicationLayer", "api")
