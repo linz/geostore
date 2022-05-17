@@ -1,7 +1,7 @@
 """
 Geostore AWS resources definitions.
 """
-from aws_cdk import Tags, aws_dynamodb, aws_s3, aws_ssm
+from aws_cdk import Tags, aws_dynamodb, aws_iam, aws_s3, aws_ssm
 from constructs import Construct
 
 from geostore.datasets_model import DatasetsTitleIdx
@@ -10,6 +10,7 @@ from geostore.resources import Resource
 from geostore.validation_results_model import ValidationOutcomeIdx
 
 from .removal_policy import REMOVAL_POLICY
+from .roles import LINZ_ORGANIZATION_ID, MAX_SESSION_DURATION
 from .table import Table
 from .version import GIT_BRANCH, GIT_COMMIT, GIT_TAG
 
@@ -57,6 +58,22 @@ class Storage(Construct):
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=REMOVAL_POLICY,
+        )
+
+        s3_users_role = aws_iam.Role(
+            self,
+            "s3-users-role",
+            role_name=Resource.S3_USERS_ROLE_NAME.resource_name,
+            assumed_by=aws_iam.OrganizationPrincipal(LINZ_ORGANIZATION_ID),
+            max_session_duration=MAX_SESSION_DURATION,
+        )
+        self.storage_bucket.grant_read(s3_users_role)
+
+        self.s3_role_arn_parameter = aws_ssm.StringParameter(
+            self,
+            "s3-users-role-arn",
+            string_value=s3_users_role.role_arn,
+            parameter_name=ParameterName.S3_USERS_ROLE_ARN.value,
         )
 
         ############################################################################################
