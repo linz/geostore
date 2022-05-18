@@ -378,7 +378,11 @@ class Processing(Construct):
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
                 ],
-                s3_role_arn_parameter: [check_stac_metadata_task.lambda_function],
+                s3_role_arn_parameter: [
+                    check_stac_metadata_task.lambda_function,
+                    check_files_checksums_single_task.job_role,
+                    check_files_checksums_array_task.job_role,
+                ],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,

@@ -269,7 +269,7 @@ def should_save_staging_access_validation_results(
 
 
 @mark.infrastructure
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_save_file_not_found_validation_results(
     validation_results_factory_mock: MagicMock,
@@ -283,7 +283,8 @@ def should_save_file_not_found_validation_results(
         ),
         operation_name="get_object",
     )
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = expected_error
+
+    get_s3_client_for_role_mock.return_value.side_effect = expected_error
 
     s3_url = any_s3_url()
 
@@ -309,7 +310,8 @@ def should_save_file_not_found_validation_results(
             Check.FILE_NOT_FOUND,
             ValidationResult.FAILED,
             details={
-                MESSAGE_KEY: f"Could not find '{s3_url}' in staging bucket or in the Geostore."
+                MESSAGE_KEY: f"Could not find metadata file '{s3_url}' "
+                f"in staging bucket or in the Geostore."
             },
         ),
     ]
