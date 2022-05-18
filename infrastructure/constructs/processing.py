@@ -28,6 +28,7 @@ from geostore.resources import Resource
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
@@ -164,6 +165,7 @@ class Processing(Construct):
         check_files_checksums_default_payload_object = {
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
             f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
+            f"{DATASET_PREFIX_KEY}.$": f"$.{DATASET_PREFIX_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
             f"{S3_ROLE_ARN_KEY}.$": f"$.{S3_ROLE_ARN_KEY}",
             f"{FIRST_ITEM_KEY}.$": f"$.{CONTENT_KEY}.{FIRST_ITEM_KEY}",
@@ -183,6 +185,8 @@ class Processing(Construct):
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 f"Ref::{VERSION_ID_KEY}",
+                "--dataset-prefix",
+                f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",
                 f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",
@@ -209,6 +213,8 @@ class Processing(Construct):
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 f"Ref::{VERSION_ID_KEY}",
+                "--dataset-prefix",
+                f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",
                 f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",

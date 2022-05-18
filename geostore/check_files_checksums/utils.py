@@ -80,12 +80,16 @@ class ChecksumValidator:
         try:
             s3_response = self.url_reader(url)
         except ClientError as error:
-            self.validation_result_factory.save(
-                url,
-                Check.STAGING_ACCESS,
-                ValidationResult.FAILED,
-                details={MESSAGE_KEY: str(error)},
-            )
+            if error.response["Error"]["Code"] == "NoSuchKey":
+                self.validation_result_factory.save(
+                    url,
+                    Check.FILE_NOT_FOUND,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: f"Could not find asset file '{url}' "
+                        f"in staging bucket or in the Geostore."
+                    },
+                )
             raise
 
         checksum_function_code = int(hex_multihash[:2], 16)

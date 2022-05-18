@@ -18,6 +18,7 @@ def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--dataset-id", required=True)
     argument_parser.add_argument("--version-id", required=True)
+    argument_parser.add_argument("--dataset-prefix", required=True)
     argument_parser.add_argument("--first-item", type=int, required=True)
     argument_parser.add_argument("--results-table-name", required=True)
     argument_parser.add_argument("--assets-table-name", required=True)
@@ -33,7 +34,7 @@ def main() -> None:
     range_key = f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}"
 
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)
-    s3_url_reader = get_s3_url_reader(arguments.s3_role_arn)
+    s3_url_reader = get_s3_url_reader(arguments.s3_role_arn, arguments.dataset_prefix, LOGGER)
 
     checksum_validator = ChecksumValidator(
         arguments.assets_table_name, validation_result_factory, s3_url_reader, LOGGER

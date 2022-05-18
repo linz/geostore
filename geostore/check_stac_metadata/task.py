@@ -1,5 +1,4 @@
 from logging import Logger
-from typing import TYPE_CHECKING, Callable
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError, validate
@@ -13,9 +12,6 @@ from ..logging_keys import (
     LOG_MESSAGE_VALIDATION_COMPLETE,
 )
 from ..parameter_store import ParameterName, get_param
-from ..resources import Resource
-from ..s3 import get_s3_client_for_role
-from ..s3_utils import get_bucket_and_key_from_url
 from ..s3_utils import get_s3_url_reader
 from ..step_function import Outcome, get_hash_key
 from ..step_function_keys import (
