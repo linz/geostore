@@ -49,10 +49,10 @@ MINIMAL_PAYLOAD = {
 }
 
 
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
-def should_log_event_payload(get_s3_client_for_role_mock: MagicMock) -> None:
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
+def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
-    get_s3_client_for_role_mock.return_value.return_value = {
+    get_s3_url_reader_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
@@ -87,9 +87,9 @@ def should_return_error_when_schema_validation_fails(
             )
 
 
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 def should_log_error_when_assuming_s3_role_fails(
-    get_s3_client_for_role_mock: MagicMock, subtests: SubTests
+    get_s3_url_reader_mock: MagicMock, subtests: SubTests
 ) -> None:
     # Given
     error_code = any_error_code()
@@ -101,7 +101,7 @@ def should_log_error_when_assuming_s3_role_fails(
         ),
         operation_name,
     )
-    get_s3_client_for_role_mock.side_effect = error
+    get_s3_url_reader_mock.side_effect = error
     expected_message = (
         f"An error occurred ({error_code}) when calling the {operation_name}"
         f" operation: {error_message}"

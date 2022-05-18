@@ -97,12 +97,12 @@ else:
 
 
 @patch("geostore.check_stac_metadata.task.STACDatasetValidator.validate")
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 def should_succeed_with_validation_failure(
-    get_s3_client_for_role_mock: MagicMock, validate_url_mock: MagicMock
+    get_s3_url_reader_mock: MagicMock, validate_url_mock: MagicMock
 ) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
-    get_s3_client_for_role_mock.return_value.return_value = {
+    get_s3_url_reader_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
@@ -120,11 +120,11 @@ def should_succeed_with_validation_failure(
 
 
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.get_param")
 def should_save_non_s3_url_validation_results(
     get_param_mock: MagicMock,
-    get_s3_client_for_role_mock: MagicMock,
+    get_s3_url_reader_mock: MagicMock,
     validation_results_factory_mock: MagicMock,
 ) -> None:
     # Given
@@ -133,7 +133,7 @@ def should_save_non_s3_url_validation_results(
     non_s3_url = any_https_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    get_s3_client_for_role_mock.return_value.return_value = {
+    get_s3_url_reader_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
@@ -216,11 +216,11 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
 
 @mark.infrastructure
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
-    get_s3_client_for_role_mock: MagicMock,
+    get_s3_url_reader_mock: MagicMock,
 ) -> None:
 
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
@@ -228,8 +228,7 @@ def should_save_staging_access_validation_results(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = expected_error
-
+    get_s3_url_reader_mock.return_value.side_effect = expected_error
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
