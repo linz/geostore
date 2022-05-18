@@ -52,4 +52,3 @@ def get_s3_url_reader(
     staging_s3_client = get_s3_client_for_role(s3_role_arn)
     geostore_s3_client = get_s3_client_for_role(get_param(ParameterName.S3_USERS_ROLE_ARN))
     return s3_url_reader
-

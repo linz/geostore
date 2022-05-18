@@ -103,11 +103,11 @@ class STACDatasetValidator:
         try:
             self.validate(metadata_url)
         except (
-            ValidationError,
             ClientError,
-            JSONDecodeError,
-            InvalidSecurityClassificationError,
             DatasetFileNotFoundError,
+            InvalidSecurityClassificationError,
+            JSONDecodeError,
+            ValidationError,
         ) as error:
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -226,7 +226,8 @@ class STACDatasetValidator:
                     Check.FILE_NOT_FOUND,
                     ValidationResult.FAILED,
                     details={
-                        MESSAGE_KEY: f"Could not find '{url}' in staging bucket or in the Geostore."
+                        MESSAGE_KEY: f"Could not find metadata file '{url}' "
+                        f"in staging bucket or in the Geostore."
                     },
                 )
                 raise
