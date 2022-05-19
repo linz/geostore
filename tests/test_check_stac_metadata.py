@@ -16,6 +16,7 @@ from pytest_subtests import SubTests
 from geostore.api_keys import MESSAGE_KEY, SUCCESS_KEY
 from geostore.check import Check
 from geostore.check_stac_metadata.stac_validators import (
+    LINZ_SCHEMA_URL_DIRECTORY,
     STACCatalogSchemaValidator,
     STACCollectionSchemaValidator,
     STACItemSchemaValidator,
@@ -36,7 +37,6 @@ from geostore.processing_assets_model import ProcessingAssetType, processing_ass
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
-    LINZ_SCHEMA_URL_DIRECTORY,
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_EXTENSIONS_LOCAL_PATH,
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
