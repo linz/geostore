@@ -6,7 +6,7 @@ from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
 from jsonschema.validators import extend
 
-from ..stac_format import LINZ_SCHEMA_URL_PATH, LINZ_STAC_EXTENSIONS_LOCAL_PATH, QUALITY_SCHEMA_PATH
+from ..stac_format import LINZ_STAC_EXTENSIONS_LOCAL_PATH
 from ..types import JsonObject
 
 
@@ -39,9 +39,13 @@ FILE_SCHEMA = Schema(FILE_STAC_SCHEMA_PATH)
 STAC_VERSION = "1.0.0"
 STAC_SPEC_PATH = f"stac-spec/v{STAC_VERSION}"
 CATALOG_SCHEMA = Schema(f"{STAC_SPEC_PATH}/catalog-spec/json-schema/catalog.json")
+LINZ_STAC_EXTENSIONS_URL_PATH = "v0.0.14"
+LINZ_SCHEMA_URL_DIRECTORY = f"{LINZ_STAC_EXTENSIONS_URL_PATH}/linz"
+LINZ_SCHEMA_URL_PATH = f"{LINZ_SCHEMA_URL_DIRECTORY}/schema.json"
 LINZ_SCHEMA = Schema(join(LINZ_STAC_EXTENSIONS_LOCAL_PATH, LINZ_SCHEMA_URL_PATH))
 STAC_ITEM_SPEC_PATH = f"{STAC_SPEC_PATH}/item-spec/json-schema"
 ITEM_SCHEMA = Schema(f"{STAC_ITEM_SPEC_PATH}/item.json")
+QUALITY_SCHEMA_PATH = f"{LINZ_STAC_EXTENSIONS_URL_PATH}/quality/schema.json"
 
 schema_store = {}
 for schema in [

@@ -2,7 +2,9 @@ from typing import Any, Dict
 
 from geostore.check_stac_metadata.stac_validators import (
     FILE_STAC_SCHEMA_PATH,
+    LINZ_SCHEMA_URL_PATH,
     PROJECTION_STAC_SCHEMA_PATH,
+    QUALITY_SCHEMA_PATH,
     STAC_VERSION,
     VERSION_STAC_SCHEMA_PATH,
 )
@@ -10,7 +12,6 @@ from geostore.stac_format import (
     LINZ_STAC_ASSET_SUMMARIES_KEY,
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_EXTENSIONS_BASE_URL,
-    LINZ_STAC_EXTENSION_URL,
     LINZ_STAC_GEOSPATIAL_TYPE_KEY,
     LINZ_STAC_HISTORY_KEY,
     LINZ_STAC_LIFECYCLE_KEY,
@@ -19,7 +20,6 @@ from geostore.stac_format import (
     LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED,
     LINZ_STAC_UPDATED_KEY,
     PROJECTION_EPSG_KEY,
-    QUALITY_SCHEMA_PATH,
     STAC_ASSETS_KEY,
     STAC_DESCRIPTION_KEY,
     STAC_EXTENSIONS_KEY,
@@ -65,6 +65,8 @@ from .stac_generators import (
     any_provider_producer,
     any_version_version,
 )
+
+LINZ_STAC_EXTENSION_URL = f"{LINZ_STAC_EXTENSIONS_BASE_URL}/{LINZ_SCHEMA_URL_PATH}"
 
 STAC_EXTENSIONS_BASE_URL = "https://stac-extensions.github.io"
 FILE_STAC_EXTENSION_URL = f"{STAC_EXTENSIONS_BASE_URL}/{FILE_STAC_SCHEMA_PATH}"
