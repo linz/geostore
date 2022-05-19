@@ -6,7 +6,7 @@ from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, get_args
+from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type, get_args
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -22,7 +22,6 @@ from geostore.boto3_config import CONFIG
 from geostore.content_iterator.task import MAX_ITERATION_SIZE
 from geostore.datasets_model import DatasetsModelBase, datasets_model_with_meta
 from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import CONTENTS_KEY
@@ -294,19 +293,19 @@ class MockJSONURLReader(Mock):
         self.call_limit = call_limit
         self.side_effect = self.read_url
 
-    def read_url(self, url: str) -> JsonObject:
+    def read_url(self, url: str) -> TextIO:
         if self.call_limit is not None:
             assert self.call_count <= self.call_limit
 
-        json_dict_or_io = self.url_to_json[url]["Body"]
+        json_dict_or_io = self.url_to_json[url]
         if isinstance(json_dict_or_io, StringIO):
             json_dict_or_io.seek(0)
-            return {S3_BODY_KEY: json_dict_or_io}
+            return json_dict_or_io
 
         result = StringIO()
         dump(json_dict_or_io, result)
         result.seek(0)
-        return {S3_BODY_KEY: result}
+        return result
 
 
 class MockValidationResultFactory(Mock):

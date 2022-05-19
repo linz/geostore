@@ -1,8 +1,9 @@
 from logging import Logger
 from os import environ
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from multihash import FUNCS, decode
 
 from ..api_keys import MESSAGE_KEY
@@ -14,11 +15,6 @@ from ..s3 import CHUNK_SIZE
 from ..step_function import Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
-
-if TYPE_CHECKING:
-    from mypy_boto3_s3.type_defs import GetObjectOutputTypeDef
-else:
-    GetObjectOutputTypeDef = JsonObject  # pragma: no mutate
 
 ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 
@@ -35,7 +31,7 @@ class ChecksumValidator:
         self,
         processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
-        url_reader: Callable[[str], GetObjectOutputTypeDef],
+        url_reader: Callable[[str], StreamingBody],
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
@@ -83,7 +79,7 @@ class ChecksumValidator:
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
 
         try:
-            url_stream = self.url_reader(url)["Body"]
+            url_stream = self.url_reader(url)
         except ClientError as error:
             self.validation_result_factory.save(
                 url,
