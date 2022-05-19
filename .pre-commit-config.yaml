@@ -40,6 +40,21 @@ repos:
         types_or: [python, pyi]
         require_serial: true
 
+      - id: nixpkgs-fmt
+        name: Format Nix files
+        entry: nixpkgs-fmt
+        files: \.nix$
+        language: system
+        stages: [commit]
+
+      - id: prettier
+        name: Prettier
+        entry: prettier
+        args: [--ignore-unknown, --list-different, --write]
+        types: [text]
+        language: system
+        stages: [commit]
+
       - id: pretty-format-ini
         name: Pretty format INI
         entry: pretty-format-ini
@@ -63,20 +78,9 @@ repos:
         stages: [commit]
         types: [python]
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: 04cf542e423601a418787b8c7d704c3c1317e6d3 # v0.7.2
-    hooks:
       - id: shellcheck
-        stages: [commit]
-
-  - repo: https://github.com/nix-community/nixpkgs-fmt
-    rev: 148ec47877499e3d671f6366f9eed812db181b40 # v1.2.0
-    hooks:
-      - id: nixpkgs-fmt
-        stages: [commit]
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: a99a3fbe79a9d346cabd02a5e167ad0edafe616b # v2.3.0
-    hooks:
-      - id: prettier
+        name: ShellCheck
+        entry: shellcheck
+        types: [shell]
+        language: system
         stages: [commit]

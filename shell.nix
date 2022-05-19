@@ -33,9 +33,12 @@ poetryEnv.env.overrideAttrs (
       pkgs.cargo
       pkgs.docker
       pkgs.gitFull
+      pkgs.nixpkgs-fmt
+      pkgs.nodePackages.prettier
       (pkgs.poetry.override {
         inherit python;
       })
+      pkgs.shellcheck
       pkgs.which
     ];
     shellHook = ''
