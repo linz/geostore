@@ -30,7 +30,6 @@ STAC_TYPE_CATALOG = "Catalog"
 STAC_TYPE_COLLECTION = "Collection"
 STAC_TYPE_ITEM = "Feature"
 STAC_TYPE_KEY = "type"
-STAC_VERSION = "1.0.0"
 STAC_VERSION_KEY = "stac_version"
 
 LINZ_STAC_EXTENSIONS_BASE_URL = "https://stac.linz.govt.nz"

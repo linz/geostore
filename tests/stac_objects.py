@@ -3,6 +3,7 @@ from typing import Any, Dict
 from geostore.check_stac_metadata.stac_validators import (
     FILE_STAC_SCHEMA_PATH,
     PROJECTION_STAC_SCHEMA_PATH,
+    STAC_VERSION,
     VERSION_STAC_SCHEMA_PATH,
 )
 from geostore.stac_format import (
@@ -41,7 +42,6 @@ from geostore.stac_format import (
     STAC_TYPE_COLLECTION,
     STAC_TYPE_ITEM,
     STAC_TYPE_KEY,
-    STAC_VERSION,
     STAC_VERSION_KEY,
     VERSION_VERSION_KEY,
 )

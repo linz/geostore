@@ -36,7 +36,8 @@ PROJECTION_STAC_SCHEMA_PATH = "projection/v1.0.0/schema.json"
 VERSION_STAC_SCHEMA_PATH = "version/v1.0.0/schema.json"
 FILE_SCHEMA = Schema(FILE_STAC_SCHEMA_PATH)
 
-STAC_SPEC_PATH = "stac-spec/v1.0.0"
+STAC_VERSION = "1.0.0"
+STAC_SPEC_PATH = f"stac-spec/v{STAC_VERSION}"
 CATALOG_SCHEMA = Schema(f"{STAC_SPEC_PATH}/catalog-spec/json-schema/catalog.json")
 LINZ_SCHEMA = Schema(join(LINZ_STAC_EXTENSIONS_LOCAL_PATH, LINZ_SCHEMA_URL_PATH))
 STAC_ITEM_SPEC_PATH = f"{STAC_SPEC_PATH}/item-spec/json-schema"
