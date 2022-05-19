@@ -249,7 +249,7 @@ def should_return_when_file_checksum_matches() -> None:
     file_contents = b"x" * (CHUNK_SIZE + 1)
     url = any_s3_url()
     s3_url_reader = MockJSONURLReader(
-        {url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+        {url: {"Body": StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}}
     )
 
     multihash = (
@@ -265,7 +265,7 @@ def should_return_when_file_checksum_matches() -> None:
 
 def should_raise_exception_when_checksum_does_not_match() -> None:
     url = any_s3_url()
-    s3_url_reader = MockJSONURLReader({url: StreamingBody(BytesIO(), 0)})
+    s3_url_reader = MockJSONURLReader({url: {"Body": StreamingBody(BytesIO(), 0)}})
 
     checksum = "0" * 64
     with raises(ChecksumMismatchError), patch(
