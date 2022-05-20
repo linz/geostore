@@ -33,11 +33,12 @@ from geostore.stac_format import (
     STAC_TYPE_KEY,
 )
 from geostore.types import JsonList
-from tests.aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
-from tests.file_utils import json_dict_to_file_object
-from tests.general_generators import any_safe_filename
-from tests.stac_generators import any_dataset_version_id
-from tests.stac_objects import (
+
+from .aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
+from .file_utils import json_dict_to_file_object
+from .general_generators import any_safe_filename
+from .stac_generators import any_dataset_version_id
+from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
     MINIMAL_VALID_STAC_COLLECTION_OBJECT,
     MINIMAL_VALID_STAC_ITEM_OBJECT,
