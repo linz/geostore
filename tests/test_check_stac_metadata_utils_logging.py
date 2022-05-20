@@ -1,10 +1,11 @@
 from copy import deepcopy
-from io import StringIO
+from io import BytesIO
 from json import JSONDecodeError
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from jsonschema import ValidationError
 
 from geostore.check_stac_metadata.utils import (
@@ -145,7 +146,10 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     metadata_url = any_s3_url()
     hash_key = any_hash_key()
 
-    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
+    file_contents = b"{"
+    url_reader = MockJSONURLReader(
+        {metadata_url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+    )
 
     expected_error = JSONDecodeError(any_error_message(), "", 0)
     validate_mock.side_effect = expected_error
