@@ -1,6 +1,9 @@
-from functools import cached_property
+from distutils.version import StrictVersion
+from functools import cached_property, lru_cache
 from json import load
+from os import scandir
 from os.path import dirname, join
+from re import fullmatch
 
 from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
@@ -31,15 +34,28 @@ class Schema:
         return uri_
 
 
+@lru_cache
+def get_latest_extension_schema_version(extension_path: str) -> str:
+    directories = scandir(join(dirname(__file__), extension_path))
+    versions = []
+    for directory in directories:
+        if directory.is_dir() and fullmatch(r"v\d+\.\d+\.\d+", directory.name):
+            versions.append(directory.name[1:])
+    return sorted(versions, key=StrictVersion, reverse=True)[0]
+
+
 FILE_STAC_SCHEMA_PATH = "file/v2.0.0/schema.json"
 PROJECTION_STAC_SCHEMA_PATH = "projection/v1.0.0/schema.json"
 VERSION_STAC_SCHEMA_PATH = "version/v1.0.0/schema.json"
 FILE_SCHEMA = Schema(FILE_STAC_SCHEMA_PATH)
 
-STAC_VERSION = "1.0.0"
-STAC_SPEC_PATH = f"stac-spec/v{STAC_VERSION}"
+STAC_SPEC_EXTENSION_PATH = "stac-spec"
+STAC_VERSION = get_latest_extension_schema_version(STAC_SPEC_EXTENSION_PATH)
+STAC_SPEC_PATH = f"{STAC_SPEC_EXTENSION_PATH}/v{STAC_VERSION}"
 CATALOG_SCHEMA = Schema(f"{STAC_SPEC_PATH}/catalog-spec/json-schema/catalog.json")
-LINZ_STAC_EXTENSIONS_URL_PATH = "v0.0.14"
+LINZ_STAC_EXTENSIONS_URL_PATH = (
+    f"v{get_latest_extension_schema_version(LINZ_STAC_EXTENSIONS_LOCAL_PATH)}"
+)
 LINZ_SCHEMA_URL_DIRECTORY = f"{LINZ_STAC_EXTENSIONS_URL_PATH}/linz"
 LINZ_SCHEMA_URL_PATH = f"{LINZ_SCHEMA_URL_DIRECTORY}/schema.json"
 LINZ_SCHEMA = Schema(join(LINZ_STAC_EXTENSIONS_LOCAL_PATH, LINZ_SCHEMA_URL_PATH))
