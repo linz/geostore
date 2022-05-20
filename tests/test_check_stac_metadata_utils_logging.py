@@ -25,7 +25,12 @@ from geostore.stac_format import (
 )
 from geostore.step_function import Outcome
 
-from .aws_utils import MockJSONURLReader, MockValidationResultFactory, any_s3_url
+from .aws_utils import (
+    MockGeostoreS3Response,
+    MockJSONURLReader,
+    MockValidationResultFactory,
+    any_s3_url,
+)
 from .dynamodb_generators import any_hash_key
 from .general_generators import (
     any_error_message,
@@ -57,7 +62,7 @@ def should_log_assets() -> None:
         },
     }
 
-    url_reader = MockJSONURLReader({metadata_url: stac_object})
+    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -80,7 +85,9 @@ def should_log_assets() -> None:
 def should_log_non_s3_url_prefix_validation() -> None:
     metadata_url = any_https_url()
     hash_key = any_hash_key()
-    url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -107,7 +114,9 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     )
     validate_mock.side_effect = expected_error
 
-    url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -128,7 +137,9 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     expected_error = ValidationError(any_error_message())
     validate_mock.side_effect = expected_error
 
-    url_reader = MockJSONURLReader({metadata_url: MINIMAL_VALID_STAC_COLLECTION_OBJECT})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -148,7 +159,11 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
 
     file_contents = b"{"
     url_reader = MockJSONURLReader(
-        {metadata_url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+        {
+            metadata_url: MockGeostoreS3Response(
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+            )
+        }
     )
 
     expected_error = JSONDecodeError(any_error_message(), "", 0)

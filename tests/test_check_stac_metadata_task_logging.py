@@ -1,6 +1,4 @@
 from copy import deepcopy
-from io import StringIO
-from json import dumps
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -10,7 +8,6 @@ from pytest_subtests import SubTests
 
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
-from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import (
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
@@ -26,6 +23,7 @@ from geostore.step_function_keys import (
 )
 
 from .aws_utils import (
+    MockGeostoreS3Response,
     any_error_code,
     any_lambda_context,
     any_operation_name,
@@ -53,9 +51,9 @@ MINIMAL_PAYLOAD = {
 @patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
-    get_s3_url_reader_mock.return_value.return_value = {
-        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
-    }
+    get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+    )
 
     with patch("geostore.check_stac_metadata.task.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.task.STACDatasetValidator.run"

@@ -5,7 +5,6 @@ from os.path import dirname
 from typing import Any, Callable, Dict, List, Tuple
 
 from botocore.exceptions import ClientError
-from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, ValidationError
 from linz_logger import get_log
 
@@ -15,6 +14,7 @@ from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
+from ..s3_utils import GeostoreS3Response
 from ..stac_format import (
     LINZ_STAC_SECURITY_CLASSIFICATION_KEY,
     LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED,
@@ -69,7 +69,7 @@ class STACDatasetValidator:
     def __init__(
         self,
         hash_key: str,
-        url_reader: Callable[[str], StreamingBody],
+        url_reader: Callable[[str], GeostoreS3Response],
         validation_result_factory: ValidationResultFactory,
     ):
         self.hash_key = hash_key
@@ -147,7 +147,17 @@ class STACDatasetValidator:
 
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
-        object_json = self.get_object(url)
+        s3_response = self.get_object(url)
+        try:
+            object_json: JsonObject = load(
+                s3_response.response,
+                object_pairs_hook=self.duplicate_object_names_report_builder(url),
+            )
+        except JSONDecodeError as error:
+            self.validation_result_factory.save(
+                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
+            )
+            raise
 
         stac_type = object_json[STAC_TYPE_KEY]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]
@@ -199,9 +209,9 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
 
-    def get_object(self, url: str) -> JsonObject:
+    def get_object(self, url: str) -> GeostoreS3Response:
         try:
-            url_stream = self.url_reader(url)
+            s3_response = self.url_reader(url)
         except ClientError as error:
             self.validation_result_factory.save(
                 url,
@@ -210,17 +220,7 @@ class STACDatasetValidator:
                 details={MESSAGE_KEY: str(error)},
             )
             raise
-        try:
-            json_object: JsonObject = load(
-                url_stream,
-                object_pairs_hook=self.duplicate_object_names_report_builder(url),
-            )
-        except JSONDecodeError as error:
-            self.validation_result_factory.save(
-                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
-            )
-            raise
-        return json_object
+        return s3_response
 
     def duplicate_object_names_report_builder(
         self, url: str

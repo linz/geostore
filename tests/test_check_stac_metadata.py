@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import timedelta
 from glob import glob
 from hashlib import sha256, sha512
-from io import BytesIO, StringIO
+from io import BytesIO
 from json import JSONDecodeError, dumps, load
 from os.path import basename
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
@@ -30,7 +30,6 @@ from geostore.check_stac_metadata.utils import (
     InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
-from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
@@ -60,6 +59,7 @@ from geostore.step_function_keys import (
 from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
+    MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
     S3Object,
@@ -103,9 +103,9 @@ def should_succeed_with_validation_failure(
     get_s3_url_reader_mock: MagicMock, validate_url_mock: MagicMock
 ) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
-    get_s3_url_reader_mock.return_value.return_value = {
-        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
-    }
+    get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+    )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         lambda_handler(
@@ -134,9 +134,9 @@ def should_save_non_s3_url_validation_results(
     non_s3_url = any_https_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    get_s3_url_reader_mock.return_value.return_value = {
-        S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
-    }
+    get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+    )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
@@ -201,7 +201,9 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
     metadata_url = any_s3_url()
 
-    url_reader = MockJSONURLReader({metadata_url: StreamingBody(BytesIO(metadata), len(metadata))})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(StreamingBody(BytesIO(metadata), len(metadata)))}
+    )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
@@ -477,7 +479,7 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
             for link in stac_object.get("links"):
                 link["href"] = basename(link["href"])
 
-            url_reader = MockJSONURLReader({path: stac_object})
+            url_reader = MockJSONURLReader({path: MockGeostoreS3Response(stac_object)})
             STACDatasetValidator(
                 any_hash_key(), url_reader, MockValidationResultFactory()
             ).validate(path)
@@ -542,7 +544,10 @@ def should_validate_metadata_files_recursively() -> None:
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, "rel": "child"})
     url_reader = MockJSONURLReader(
-        {parent_url: stac_object, child_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)}
+        {
+            parent_url: MockGeostoreS3Response(stac_object),
+            child_url: MockGeostoreS3Response(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -583,7 +588,11 @@ def should_only_validate_each_file_once() -> None:
         {STAC_HREF_KEY: explicitly_relative_leaf_filename, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
-        {root_url: root_stac_object, child_url: child_stac_object, leaf_url: leaf_stac_object},
+        {
+            root_url: MockGeostoreS3Response(root_stac_object),
+            child_url: MockGeostoreS3Response(child_stac_object),
+            leaf_url: MockGeostoreS3Response(leaf_stac_object),
+        },
         call_limit=3,
     )
 
@@ -630,7 +639,7 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
         },
     ]
     expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
-    url_reader = MockJSONURLReader({metadata_url: stac_object})
+    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
@@ -678,7 +687,7 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         },
     ]
     expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
-    url_reader = MockJSONURLReader({metadata_url: stac_object})
+    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
@@ -698,7 +707,7 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
     security_classification = "in-confidence"
     stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = security_classification
 
-    url_reader = MockJSONURLReader({metadata_url: stac_object})
+    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
     mock_validation_result_factory = MockValidationResultFactory()
     validator = STACDatasetValidator(any_hash_key(), url_reader, mock_validation_result_factory)
 
@@ -727,7 +736,11 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     metadata_url = any_s3_url()
     file_contents = b"{"
     url_reader = MockJSONURLReader(
-        {metadata_url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+        {
+            metadata_url: MockGeostoreS3Response(
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+            )
+        }
     )
     validator = STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock)
 
@@ -754,7 +767,9 @@ def should_report_when_the_dataset_has_no_assets(
     validation_results_factory_mock: MagicMock, subtests: SubTests
 ) -> None:
     metadata_url = any_s3_url()
-    url_reader = MockJSONURLReader({metadata_url: deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))}
+    )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(
         msg="Logging"

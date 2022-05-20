@@ -3,7 +3,6 @@ from os import environ
 from typing import Callable
 
 from botocore.exceptions import ClientError
-from botocore.response import StreamingBody
 from multihash import FUNCS, decode
 
 from ..api_keys import MESSAGE_KEY
@@ -12,6 +11,7 @@ from ..error_response_keys import ERROR_KEY
 from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
+from ..s3_utils import GeostoreS3Response
 from ..step_function import Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
@@ -31,7 +31,7 @@ class ChecksumValidator:
         self,
         processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
-        url_reader: Callable[[str], StreamingBody],
+        url_reader: Callable[[str], GeostoreS3Response],
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
@@ -49,7 +49,6 @@ class ChecksumValidator:
         )
 
     def validate(self, hash_key: str, range_key: str) -> None:
-
         try:
             item = self.processing_assets_model.get(hash_key, range_key=range_key)
         except self.processing_assets_model.DoesNotExist:
@@ -79,7 +78,7 @@ class ChecksumValidator:
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
 
         try:
-            url_stream = self.url_reader(url)
+            s3_response = self.url_reader(url)
         except ClientError as error:
             self.validation_result_factory.save(
                 url,
@@ -93,7 +92,7 @@ class ChecksumValidator:
         checksum_function = FUNCS[checksum_function_code]
 
         file_digest = checksum_function()
-        for chunk in url_stream.iter_chunks(chunk_size=CHUNK_SIZE):
+        for chunk in s3_response.response.iter_chunks(chunk_size=CHUNK_SIZE):
             file_digest.update(chunk)
 
         if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):

@@ -47,6 +47,6 @@ def should_successfully_get_object_from_staging_bucket() -> None:
     ):
 
         s3_url_reader = get_s3_url_reader(get_s3_role_arn())
-        json_object = load(s3_url_reader(collection_metadata_url))
+        json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
