@@ -24,16 +24,17 @@ from geostore.step_function_keys import (
     S3_ROLE_ARN_KEY,
     VERSION_ID_KEY,
 )
-from tests.aws_utils import (
+
+from .aws_utils import (
     any_error_code,
     any_lambda_context,
     any_operation_name,
     any_role_arn,
     any_s3_url,
 )
-from tests.general_generators import any_error_message
-from tests.stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
-from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+from .general_generators import any_error_message
+from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
     from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef

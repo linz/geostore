@@ -208,6 +208,20 @@ validated automatically.
 -  Lambda runtime has been configured to 60 seconds. Higher than the minimum runtime of 3 seconds
    and lower than maximum of 15 minutes. This can be increased if a Lambda can be demonstrated to
    require more runtime than 60 seconds.
+-  Only code which is used by multiple Lambda jobs should be in the top-level `geostore` directory.
+   Rationale: Different subsets of the code are deployed to each job, so every piece of code in the
+   top-level Python files adds a bit more risk of production failure. Counter-example: Some things
+   belong together, even if only a subset of them are used in multiple Lambda jobs. For example,
+   constants for standard STAC keys and values.
+
+### Imports
+
+-  Imports within a top-level directory should use relative imports. Rationale:
+   -  Lambda jobs are deployed without the top-level `geostore` directory, so any attempt to
+      `from geostore[…]` or `import geostore[…]` is going to fail in AWS.
+   -  For consistency, we should do the same as the above elsewhere.
+   -  Relative imports are trivially distinguished from imports from third party packages, and are
+      grouped accordingly by `isort`.
 
 ### Command-line interfaces
 
