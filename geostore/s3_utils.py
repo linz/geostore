@@ -18,9 +18,9 @@ def get_bucket_and_key_from_url(url: str) -> Tuple[str, str]:
 
 class GeostoreS3Response:
     # pylint: disable=too-few-public-methods
-    def __init__(self, response: StreamingBody):
+    def __init__(self, response: StreamingBody, file_in_staging: bool):
         self.response = response
-
+        self.file_in_staging = file_in_staging
 
 
 def get_s3_url_reader(
@@ -31,7 +31,7 @@ def get_s3_url_reader(
 
         try:
             url_object = staging_s3_client.get_object(Bucket=bucket_name, Key=key)
-            response = GeostoreS3Response(url_object["Body"])
+            response = GeostoreS3Response(url_object["Body"], True)
         except ClientError as error:
             geostore_key = f"{dataset_prefix}/{basename(urlparse(url).path[1:])}"
 
@@ -45,7 +45,7 @@ def get_s3_url_reader(
             url_object = geostore_s3_client.get_object(
                 Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=geostore_key
             )
-            response = GeostoreS3Response(url_object["Body"])
+            response = GeostoreS3Response(url_object["Body"], False)
 
         return response
 
