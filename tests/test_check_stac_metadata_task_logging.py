@@ -1,8 +1,6 @@
 from copy import deepcopy
-from os.path import basename
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
-from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError
@@ -54,7 +52,8 @@ MINIMAL_PAYLOAD = {
 def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
     get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
-        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT,
+        file_in_staging=True
     )
 
     with patch("geostore.check_stac_metadata.task.LOGGER.debug") as logger_mock, patch(
@@ -118,46 +117,3 @@ def should_log_error_when_assuming_s3_role_fails(
         # Then
         with subtests.test(msg="log"):
             logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
-
-
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
-def should_log_message_when_using_geostore_file_for_validation(
-    get_s3_client_for_role_mock: MagicMock, subtests: SubTests
-) -> None:
-    # Given
-
-    s3_url = any_s3_url()
-    dataset_prefix = any_dataset_prefix()
-    payload = {
-        DATASET_ID_KEY: any_dataset_id(),
-        VERSION_ID_KEY: any_dataset_version_id(),
-        METADATA_URL_KEY: s3_url,
-        S3_ROLE_ARN_KEY: any_role_arn(),
-        DATASET_PREFIX_KEY: dataset_prefix,
-    }
-
-    expected_staging_key = urlparse(s3_url).path[1:]
-    expected_geostore_key = f"{dataset_prefix}/{basename(expected_staging_key)}"
-
-    operation_name = any_operation_name()
-    error_message = any_error_message()
-    error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="NoSuchKey", Message=error_message)
-        ),
-        operation_name,
-    )
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
-
-    expected_message = (
-        f"'{expected_staging_key}' is not present in the staging bucket."
-        f" Using '{expected_geostore_key}' from the geostore bucket for validation instead."
-    )
-
-    with patch("geostore.check_stac_metadata.task.LOGGER.debug") as logger_mock:
-        # When
-        lambda_handler(payload, any_lambda_context())
-
-        # Then
-        with subtests.test(msg="log"):
-            logger_mock.assert_any_call(expected_message)

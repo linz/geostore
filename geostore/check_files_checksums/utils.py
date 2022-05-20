@@ -61,7 +61,7 @@ class ChecksumValidator:
             raise
 
         try:
-            self.validate_url_multihash(item.url, item.multihash)
+            file_in_staging = self.validate_url_multihash(item.url, item.multihash)
         except ChecksumMismatchError as error:
             content = {
                 MESSAGE_KEY: f"Checksum mismatch: expected {item.multihash[4:]},"
@@ -74,8 +74,10 @@ class ChecksumValidator:
         else:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
+            if not file_in_staging:
+                item.delete()
 
-    def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
+    def validate_url_multihash(self, url: str, hex_multihash: str) -> bool:
 
         try:
             s3_response = self.url_reader(url)
@@ -101,6 +103,8 @@ class ChecksumValidator:
 
         if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
             raise ChecksumMismatchError(file_digest.hexdigest())
+
+        return s3_response.file_in_staging
 
 
 def get_job_offset() -> int:

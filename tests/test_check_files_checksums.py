@@ -4,7 +4,6 @@ from os import environ
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
 
-from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from multihash import SHA2_256
 from pytest import raises
@@ -19,6 +18,7 @@ from geostore.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
+from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
@@ -38,6 +38,7 @@ from .aws_utils import (
 from .general_generators import any_program_name
 from .stac_generators import (
     any_dataset_id,
+    any_dataset_prefix,
     any_dataset_version_id,
     any_hex_multihash,
     any_sha256_hex_digest,
@@ -94,6 +95,7 @@ def should_validate_given_index(
         )
 
     processing_assets_model_mock.return_value.get.side_effect = get_mock
+    validate_url_multihash_mock.return_value = True
     validation_results_table_name = any_table_name()
     expected_calls = [
         call(hash_key, validation_results_table_name),
@@ -105,6 +107,7 @@ def should_validate_given_index(
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--dataset-prefix={any_dataset_prefix()}",
         "--first-item=0",
         f"--assets-table-name={any_table_name()}",
         f"--results-table-name={validation_results_table_name}",
@@ -162,6 +165,7 @@ def should_log_error_when_validation_fails(
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={dataset_version_id}",
+        f"--dataset-prefix={any_dataset_prefix()}",
         "--first-item=0",
         f"--assets-table-name={any_table_name()}",
         f"--results-table-name={validation_results_table_name}",
@@ -187,72 +191,14 @@ def should_log_error_when_validation_fails(
         ]
 
 
-@patch("geostore.check_files_checksums.task.get_s3_url_reader")
-@patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
-@patch("geostore.check_files_checksums.task.ValidationResultFactory")
-def should_save_staging_access_validation_results(
-    validation_results_factory_mock: MagicMock,
-    processing_assets_model_mock: MagicMock,
-    get_s3_url_reader: MagicMock,
-) -> None:
-    expected_error = ClientError(
-        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
-        operation_name="get_object",
-    )
-    get_s3_url_reader.return_value.side_effect = expected_error
-
-    s3_url = any_s3_url()
-    dataset_id = any_dataset_id()
-    version_id = any_dataset_version_id()
-    hash_key = get_hash_key(dataset_id, version_id)
-
-    array_index = "1"
-
-    validation_results_table_name = any_table_name()
-    # When
-    sys.argv = [
-        any_program_name(),
-        f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
-        "--first-item=0",
-        f"--assets-table-name={any_table_name()}",
-        f"--results-table-name={validation_results_table_name}",
-        f"--s3-role-arn={any_role_arn()}",
-    ]
-
-    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
-        assert given_hash_key == hash_key
-        assert range_key == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{array_index}"
-        return ProcessingAssetsModelBase(
-            hash_key=given_hash_key,
-            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
-            url=s3_url,
-            multihash=any_hex_multihash(),
-        )
-
-    processing_assets_model_mock.return_value.get.side_effect = get_mock
-
-    with raises(ClientError), patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
-        main()
-
-    assert validation_results_factory_mock.mock_calls == [
-        call(hash_key, validation_results_table_name),
-        call().save(
-            s3_url,
-            Check.STAGING_ACCESS,
-            ValidationResult.FAILED,
-            details={MESSAGE_KEY: str(expected_error)},
-        ),
-    ]
-
-
 def should_return_when_file_checksum_matches() -> None:
     file_contents = b"x" * (CHUNK_SIZE + 1)
     url = any_s3_url()
     s3_url_reader = MockJSONURLReader(
         {
             url: MockGeostoreS3Response(
-                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)),
+                True
             )
         }
     )
@@ -270,7 +216,7 @@ def should_return_when_file_checksum_matches() -> None:
 
 def should_raise_exception_when_checksum_does_not_match() -> None:
     url = any_s3_url()
-    s3_url_reader = MockJSONURLReader({url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0))})
+    s3_url_reader = MockJSONURLReader({url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0), True)})
 
     checksum = "0" * 64
     with raises(ChecksumMismatchError), patch(

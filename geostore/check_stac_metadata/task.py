@@ -25,7 +25,6 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
-
 LOGGER: Logger = get_log()
 
 
@@ -77,5 +76,3 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     validator.run(event[METADATA_URL_KEY])
     return {SUCCESS_KEY: True}
-
-

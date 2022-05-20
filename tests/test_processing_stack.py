@@ -658,7 +658,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
 def should_successfully_run_dataset_version_creation_process_with_partial_upload(  # pylint:disable=too-many-statements
-    # pylint:disable=too-many-arguments
     step_functions_client: SFNClient,
     lambda_client: LambdaClient,
     s3_client: S3Client,

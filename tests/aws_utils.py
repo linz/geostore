@@ -6,7 +6,7 @@ from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, Union, get_args
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, get_args, Union
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -286,8 +286,9 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
 class MockGeostoreS3Response:
     # pylint: disable=too-few-public-methods
-    def __init__(self, response: Union[JsonObject, StreamingBody]):
+    def __init__(self, response: Union[JsonObject, StreamingBody], file_in_staging: bool):
         self.response = response
+        self.file_in_staging = file_in_staging
 
 
 class MockJSONURLReader(Mock):

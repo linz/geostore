@@ -195,7 +195,9 @@ class STACDatasetValidator:
             raise InvalidSecurityClassificationError(security_classification)
 
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
-        self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})
+
+        if s3_response.file_in_staging:
+            self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})
 
         for asset in object_json.get(STAC_ASSETS_KEY, {}).values():
             asset_url = maybe_convert_relative_url_to_absolute(asset[STAC_HREF_KEY], url)
