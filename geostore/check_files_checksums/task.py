@@ -4,10 +4,9 @@ from logging import Logger
 
 from linz_logger import get_log
 
-from geostore.s3_utils import get_s3_url_reader
-
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType
+from ..s3_utils import get_s3_url_reader
 from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset

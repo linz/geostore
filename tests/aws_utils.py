@@ -1,16 +1,17 @@
 from contextlib import AbstractContextManager
 from datetime import datetime, timedelta
-from io import StringIO
-from json import dump
+from io import BytesIO
+from json import dumps
 from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, TextIO, Tuple, Type, get_args
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, Union, get_args
 from unittest.mock import Mock
 from uuid import uuid4
 
 import boto3
+from botocore.response import StreamingBody
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
@@ -285,7 +286,11 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
 class MockJSONURLReader(Mock):
     def __init__(
-        self, url_to_json: Dict[str, Any], *, call_limit: Optional[int] = None, **kwargs: Any
+        self,
+        url_to_json: Dict[str, Union[JsonObject, StreamingBody]],
+        *,
+        call_limit: Optional[int] = None,
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
 
@@ -293,19 +298,16 @@ class MockJSONURLReader(Mock):
         self.call_limit = call_limit
         self.side_effect = self.read_url
 
-    def read_url(self, url: str) -> TextIO:
+    def read_url(self, url: str) -> StreamingBody:
         if self.call_limit is not None:
             assert self.call_count <= self.call_limit
 
         json_dict_or_io = self.url_to_json[url]
-        if isinstance(json_dict_or_io, StringIO):
-            json_dict_or_io.seek(0)
+        if isinstance(json_dict_or_io, StreamingBody):
             return json_dict_or_io
 
-        result = StringIO()
-        dump(json_dict_or_io, result)
-        result.seek(0)
-        return result
+        json_bytes = dumps(json_dict_or_io).encode()
+        return StreamingBody(BytesIO(json_bytes), len(json_bytes))
 
 
 class MockValidationResultFactory(Mock):
@@ -316,7 +318,6 @@ class MockValidationResultFactory(Mock):
 
 
 def wait_for_s3_key(bucket_name: str, key: str, s3_client: S3Client) -> None:
-
     process_timeout = datetime.now() + timedelta(minutes=3)
     while CONTENTS_KEY not in s3_client.list_objects(Bucket=bucket_name, Prefix=key):
         assert (  # pragma: no cover

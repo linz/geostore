@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from botocore.response import StreamingBody
 
-from geostore.s3 import get_s3_client_for_role
+from .s3 import get_s3_client_for_role
 
 
 def get_bucket_and_key_from_url(url: str) -> Tuple[str, str]:

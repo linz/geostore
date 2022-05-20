@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
@@ -194,11 +195,13 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
             },
         ),
     ]
-    metadata = dumps(TupleArrayDict(list(MINIMAL_VALID_STAC_COLLECTION_OBJECT.items()) + assets))
+    metadata = dumps(
+        TupleArrayDict(list(MINIMAL_VALID_STAC_COLLECTION_OBJECT.items()) + assets)
+    ).encode()
 
     metadata_url = any_s3_url()
 
-    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
+    url_reader = MockJSONURLReader({metadata_url: StreamingBody(BytesIO(metadata), len(metadata))})
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
@@ -222,7 +225,6 @@ def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
     get_s3_url_reader_mock: MagicMock,
 ) -> None:
-
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
@@ -288,7 +290,6 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=invalid_child_key,
     ) as invalid_child_s3_object:
-
         # When
         assert lambda_handler(
             {
@@ -724,7 +725,10 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
 def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> None:
     # Given
     metadata_url = any_s3_url()
-    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
+    file_contents = b"{"
+    url_reader = MockJSONURLReader(
+        {metadata_url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+    )
     validator = STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock)
 
     # When
