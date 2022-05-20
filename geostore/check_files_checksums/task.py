@@ -6,6 +6,7 @@ from linz_logger import get_log
 
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType
+from ..s3_utils import get_s3_url_reader
 from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset
@@ -32,9 +33,10 @@ def main() -> None:
     range_key = f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}"
 
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)
+    s3_url_reader = get_s3_url_reader(arguments.s3_role_arn)
 
     checksum_validator = ChecksumValidator(
-        arguments.assets_table_name, validation_result_factory, arguments.s3_role_arn, LOGGER
+        arguments.assets_table_name, validation_result_factory, s3_url_reader, LOGGER
     )
 
     checksum_validator.validate(hash_key, range_key)

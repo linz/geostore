@@ -2,9 +2,10 @@ from functools import lru_cache
 from json import JSONDecodeError, load
 from logging import Logger
 from os.path import dirname
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from jsonschema import Draft7Validator, ValidationError
 from linz_logger import get_log
 
@@ -34,11 +35,6 @@ from .stac_validators import (
     STACCollectionSchemaValidator,
     STACItemSchemaValidator,
 )
-
-if TYPE_CHECKING:
-    from mypy_boto3_s3.type_defs import GetObjectOutputTypeDef
-else:
-    GetObjectOutputTypeDef = JsonObject  # pragma: no mutate
 
 NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
 
@@ -73,7 +69,7 @@ class STACDatasetValidator:
     def __init__(
         self,
         hash_key: str,
-        url_reader: Callable[[str], GetObjectOutputTypeDef],
+        url_reader: Callable[[str], StreamingBody],
         validation_result_factory: ValidationResultFactory,
     ):
         self.hash_key = hash_key
@@ -216,7 +212,7 @@ class STACDatasetValidator:
             raise
         try:
             json_object: JsonObject = load(
-                url_stream["Body"],
+                url_stream,
                 object_pairs_hook=self.duplicate_object_names_report_builder(url),
             )
         except JSONDecodeError as error:

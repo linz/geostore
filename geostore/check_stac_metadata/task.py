@@ -1,5 +1,4 @@
 from logging import Logger
-from typing import TYPE_CHECKING, Callable
 
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError, validate
@@ -13,8 +12,7 @@ from ..logging_keys import (
     LOG_MESSAGE_VALIDATION_COMPLETE,
 )
 from ..parameter_store import ParameterName, get_param
-from ..s3 import get_s3_client_for_role
-from ..s3_utils import get_bucket_and_key_from_url
+from ..s3_utils import get_s3_url_reader
 from ..step_function import Outcome, get_hash_key
 from ..step_function_keys import (
     DATASET_ID_KEY,
@@ -26,11 +24,6 @@ from ..step_function_keys import (
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
-
-if TYPE_CHECKING:
-    from mypy_boto3_s3.type_defs import GetObjectOutputTypeDef
-else:
-    GetObjectOutputTypeDef = JsonObject  # pragma: no mutate
 
 LOGGER: Logger = get_log()
 
@@ -83,14 +76,3 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     validator.run(event[METADATA_URL_KEY])
     return {SUCCESS_KEY: True}
-
-
-def get_s3_url_reader(s3_role_arn: str) -> Callable[[str], GetObjectOutputTypeDef]:
-    def s3_url_reader(url: str) -> GetObjectOutputTypeDef:
-        bucket_name, key = get_bucket_and_key_from_url(url)
-
-        url_object = staging_s3_client.get_object(Bucket=bucket_name, Key=key)
-        return url_object
-
-    staging_s3_client = get_s3_client_for_role(s3_role_arn)
-    return s3_url_reader

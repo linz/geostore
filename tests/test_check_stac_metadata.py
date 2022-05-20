@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from jsonschema import ValidationError
 from pytest import mark, raises
 from pytest_subtests import SubTests
@@ -97,12 +98,12 @@ else:
 
 
 @patch("geostore.check_stac_metadata.task.STACDatasetValidator.validate")
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 def should_succeed_with_validation_failure(
-    get_s3_client_for_role_mock: MagicMock, validate_url_mock: MagicMock
+    get_s3_url_reader_mock: MagicMock, validate_url_mock: MagicMock
 ) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
-    get_s3_client_for_role_mock.return_value.return_value = {
+    get_s3_url_reader_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
@@ -120,11 +121,11 @@ def should_succeed_with_validation_failure(
 
 
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.get_param")
 def should_save_non_s3_url_validation_results(
     get_param_mock: MagicMock,
-    get_s3_client_for_role_mock: MagicMock,
+    get_s3_url_reader_mock: MagicMock,
     validation_results_factory_mock: MagicMock,
 ) -> None:
     # Given
@@ -133,7 +134,7 @@ def should_save_non_s3_url_validation_results(
     non_s3_url = any_https_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    get_s3_client_for_role_mock.return_value.return_value = {
+    get_s3_url_reader_mock.return_value.return_value = {
         S3_BODY_KEY: StringIO(initial_value=dumps(MINIMAL_VALID_STAC_COLLECTION_OBJECT))
     }
 
@@ -194,11 +195,13 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
             },
         ),
     ]
-    metadata = dumps(TupleArrayDict(list(MINIMAL_VALID_STAC_COLLECTION_OBJECT.items()) + assets))
+    metadata = dumps(
+        TupleArrayDict(list(MINIMAL_VALID_STAC_COLLECTION_OBJECT.items()) + assets)
+    ).encode()
 
     metadata_url = any_s3_url()
 
-    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value=metadata)})
+    url_reader = MockJSONURLReader({metadata_url: StreamingBody(BytesIO(metadata), len(metadata))})
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
@@ -216,20 +219,18 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
 
 @mark.infrastructure
-@patch("geostore.check_stac_metadata.task.get_s3_client_for_role")
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
-    get_s3_client_for_role_mock: MagicMock,
+    get_s3_url_reader_mock: MagicMock,
 ) -> None:
-
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = expected_error
-
+    get_s3_url_reader_mock.return_value.side_effect = expected_error
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
@@ -289,7 +290,6 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=invalid_child_key,
     ) as invalid_child_s3_object:
-
         # When
         assert lambda_handler(
             {
@@ -725,7 +725,10 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
 def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> None:
     # Given
     metadata_url = any_s3_url()
-    url_reader = MockJSONURLReader({metadata_url: StringIO(initial_value="{")})
+    file_contents = b"{"
+    url_reader = MockJSONURLReader(
+        {metadata_url: StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))}
+    )
     validator = STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock)
 
     # When

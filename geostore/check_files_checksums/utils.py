@@ -1,8 +1,9 @@
 from logging import Logger
 from os import environ
-from urllib.parse import urlparse
+from typing import Callable
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from multihash import FUNCS, decode
 
 from ..api_keys import MESSAGE_KEY
@@ -10,7 +11,7 @@ from ..check import Check
 from ..error_response_keys import ERROR_KEY
 from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..processing_assets_model import processing_assets_model_with_meta
-from ..s3 import CHUNK_SIZE, get_s3_client_for_role
+from ..s3 import CHUNK_SIZE
 from ..step_function import Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
@@ -30,17 +31,17 @@ class ChecksumValidator:
         self,
         processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
-        s3_role_arn: str,
+        url_reader: Callable[[str], StreamingBody],
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
+        self.url_reader = url_reader
+
         self.logger = logger
 
         self.processing_assets_model = processing_assets_model_with_meta(
             assets_table_name=processing_assets_table_name
         )
-
-        self.s3_client = get_s3_client_for_role(s3_role_arn)
 
     def log_failure(self, content: JsonObject) -> None:
         self.logger.error(
@@ -76,11 +77,9 @@ class ChecksumValidator:
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
-        parsed_url = urlparse(url)
-        bucket = parsed_url.netloc
-        key = parsed_url.path.lstrip("/")
+
         try:
-            url_stream = self.s3_client.get_object(Bucket=bucket, Key=key)["Body"]
+            url_stream = self.url_reader(url)
         except ClientError as error:
             self.validation_result_factory.save(
                 url,
