@@ -284,30 +284,39 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 # Special-purpose mocks
 
 
+class MockGeostoreS3Response:
+    # pylint: disable=too-few-public-methods
+    def __init__(self, response: Union[JsonObject, StreamingBody]):
+        self.response = response
+
+
 class MockJSONURLReader(Mock):
     def __init__(
         self,
-        url_to_json: Dict[str, Union[JsonObject, StreamingBody]],
+        url_to_response: Dict[str, MockGeostoreS3Response],
         *,
         call_limit: Optional[int] = None,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
 
-        self.url_to_json = url_to_json
+        self.url_to_response = url_to_response
         self.call_limit = call_limit
         self.side_effect = self.read_url
 
-    def read_url(self, url: str) -> StreamingBody:
+    def read_url(self, url: str) -> MockGeostoreS3Response:
         if self.call_limit is not None:
             assert self.call_count <= self.call_limit
 
-        json_dict_or_io = self.url_to_json[url]
-        if isinstance(json_dict_or_io, StreamingBody):
-            return json_dict_or_io
+        mapped_response = self.url_to_response[url]
 
-        json_bytes = dumps(json_dict_or_io).encode()
-        return StreamingBody(BytesIO(json_bytes), len(json_bytes))
+        if isinstance(mapped_response.response, StreamingBody):
+            return mapped_response
+
+        json_bytes = dumps(mapped_response.response).encode()
+        mapped_response.response = StreamingBody(BytesIO(json_bytes), len(json_bytes))
+
+        return mapped_response
 
 
 class MockValidationResultFactory(Mock):
