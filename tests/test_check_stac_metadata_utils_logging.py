@@ -62,8 +62,9 @@ def should_log_assets() -> None:
         },
     }
 
-    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object,
-                                                                         file_in_staging=True)})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=True)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
@@ -87,8 +88,11 @@ def should_log_non_s3_url_prefix_validation() -> None:
     metadata_url = any_https_url()
     hash_key = any_hash_key()
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT,
-                                              file_in_staging=True)}
+        {
+            metadata_url: MockGeostoreS3Response(
+                MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
+            )
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
@@ -117,8 +121,11 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     validate_mock.side_effect = expected_error
 
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT,
-                                              file_in_staging=True)}
+        {
+            metadata_url: MockGeostoreS3Response(
+                MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
+            )
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
@@ -141,8 +148,11 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     validate_mock.side_effect = expected_error
 
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(MINIMAL_VALID_STAC_COLLECTION_OBJECT,
-                                              file_in_staging=True)}
+        {
+            metadata_url: MockGeostoreS3Response(
+                MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
+            )
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
@@ -166,7 +176,8 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
         {
             metadata_url: MockGeostoreS3Response(
                 StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)),
-                file_in_staging=True)
+                file_in_staging=True,
+            )
         }
     )
 

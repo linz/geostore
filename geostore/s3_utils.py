@@ -3,10 +3,10 @@ from os.path import basename
 from typing import Callable, Tuple
 from urllib.parse import urlparse
 
-from botocore.response import StreamingBody
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 
-from .parameter_store import get_param, ParameterName
+from .parameter_store import ParameterName, get_param
 from .resources import Resource
 from .s3 import get_s3_client_for_role
 

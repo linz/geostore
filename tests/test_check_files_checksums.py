@@ -18,7 +18,6 @@ from geostore.check_files_checksums.utils import (
     ChecksumValidator,
     get_job_offset,
 )
-from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
@@ -197,8 +196,7 @@ def should_return_when_file_checksum_matches() -> None:
     s3_url_reader = MockJSONURLReader(
         {
             url: MockGeostoreS3Response(
-                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)),
-                True
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)), True
             )
         }
     )
@@ -216,7 +214,9 @@ def should_return_when_file_checksum_matches() -> None:
 
 def should_raise_exception_when_checksum_does_not_match() -> None:
     url = any_s3_url()
-    s3_url_reader = MockJSONURLReader({url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0), True)})
+    s3_url_reader = MockJSONURLReader(
+        {url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0), True)}
+    )
 
     checksum = "0" * 64
     with raises(ChecksumMismatchError), patch(
