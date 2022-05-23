@@ -12,7 +12,7 @@ class LDS(Construct):
     ) -> None:
         super().__init__(scope, stack_id)
 
-        account_principal = aws_iam.AccountPrincipal(account_id=276514628126)
+        account_principal = aws_iam.AccountPrincipal(account_id="276514628126")
         if is_production():
             external_id = "koordinates-jAddR"
         else:
