@@ -60,7 +60,7 @@ def should_successfully_get_object_from_staging_bucket() -> None:
     ):
 
         s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_prefix(), get_log())
-        json_object = load(s3_url_reader(collection_metadata_url).response["Body"])
+        json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
 
@@ -92,7 +92,7 @@ def should_get_object_from_storage_bucket_when_staging_bucket_fails() -> None:
     ):
 
         s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset.dataset_prefix, get_log())
-        json_object = load(s3_url_reader(collection_metadata_url).response["Body"])
+        json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
 

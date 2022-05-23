@@ -52,8 +52,7 @@ MINIMAL_PAYLOAD = {
 def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
     payload = deepcopy(MINIMAL_PAYLOAD)
     get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
-        MINIMAL_VALID_STAC_COLLECTION_OBJECT,
-        file_in_staging=True
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
     )
 
     with patch("geostore.check_stac_metadata.task.LOGGER.debug") as logger_mock, patch(

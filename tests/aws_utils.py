@@ -6,7 +6,7 @@ from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, get_args, Union
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, Union, get_args
 from unittest.mock import Mock
 from uuid import uuid4
 
