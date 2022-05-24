@@ -1,15 +1,18 @@
 from copy import deepcopy
-from json import load
+from io import BytesIO
+from json import dumps, load
 from os.path import basename
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from linz_logger import get_log
 from pytest import mark
 from pytest_subtests import SubTests
 
+from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
@@ -108,7 +111,13 @@ def should_log_message_when_using_geostore_file_for_validation(
         ),
         operation_name,
     )
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = [error, {}]
+
+    json_bytes = dumps(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)).encode()
+    s3_client_response = StreamingBody(BytesIO(json_bytes), len(json_bytes))
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = [
+        error,
+        {S3_BODY_KEY: s3_client_response},
+    ]
 
     expected_message = (
         f"'{expected_staging_key}' is not present in the staging bucket."
