@@ -66,7 +66,7 @@ def should_successfully_get_object_from_staging_bucket() -> None:
 
 
 @mark.infrastructure
-def should_get_object_from_storage_bucket_when_staging_bucket_fails() -> None:
+def should_get_object_from_storage_bucket_when_not_in_staging_bucket() -> None:
     key_prefix = any_safe_file_path()
     metadata_url_prefix = (
         f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
@@ -74,16 +74,7 @@ def should_get_object_from_storage_bucket_when_staging_bucket_fails() -> None:
     collection_metadata_filename = any_safe_filename()
     collection_metadata_url = f"{metadata_url_prefix}/{collection_metadata_filename}"
 
-    collection_dict = {
-        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-        STAC_LINKS_KEY: [
-            {STAC_HREF_KEY: f"../{CATALOG_FILENAME}", STAC_REL_KEY: STAC_REL_ROOT},
-            {
-                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
-                STAC_REL_KEY: STAC_REL_PARENT,
-            },
-        ],
-    }
+    collection_dict = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
 
     with Dataset() as dataset, S3Object(
         file_object=json_dict_to_file_object(collection_dict),

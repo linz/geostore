@@ -1,12 +1,13 @@
 import sys
+from datetime import timedelta
+from hashlib import sha256
 from io import BytesIO
 from os import environ
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
 
 from botocore.response import StreamingBody
 from multihash import SHA2_256
-from pytest import raises
+from pytest import mark, raises
 from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
@@ -19,22 +20,32 @@ from geostore.check_files_checksums.utils import (
     get_job_offset,
 )
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
-from geostore.models import DB_KEY_SEPARATOR
-from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
-from geostore.s3 import CHUNK_SIZE
+from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
+from geostore.parameter_store import ParameterName, get_param
+from geostore.processing_assets_model import (
+    ProcessingAssetType,
+    ProcessingAssetsModelBase,
+    processing_assets_model_with_meta,
+)
+from geostore.resources import Resource
+from geostore.s3 import CHUNK_SIZE, S3_URL_PREFIX
 from geostore.step_function import Outcome, get_hash_key
-from geostore.validation_results_model import ValidationResult
+from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
+    Dataset,
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
+    ProcessingAsset,
+    S3Object,
     any_batch_job_array_index,
     any_role_arn,
     any_s3_url,
     any_table_name,
+    get_s3_role_arn,
 )
-from .general_generators import any_program_name
+from .general_generators import any_file_contents, any_program_name, any_safe_filename
 from .stac_generators import (
     any_dataset_id,
     any_dataset_prefix,
@@ -43,11 +54,6 @@ from .stac_generators import (
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
-
-if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
-else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 SHA256_CHECKSUM_BYTE_COUNT = 32
 
@@ -188,6 +194,83 @@ def should_log_error_when_validation_fails(
             call(hash_key, validation_results_table_name),
             call().save(url, Check.CHECKSUM, ValidationResult.FAILED, details=expected_details),
         ]
+
+
+@mark.timeout(timedelta(minutes=20).total_seconds())
+@mark.infrastructure
+def should_successfully_validate_asset_not_in_staging(
+    subtests: SubTests,
+) -> None:
+    # Given
+    dataset_version_id = any_dataset_version_id()
+    storage_asset_filename = any_safe_filename()
+    storage_asset_content = any_file_contents()
+    storage_asset_multihash = sha256_hex_digest_to_multihash(
+        sha256(storage_asset_content).hexdigest()
+    )
+
+    asset_staging_url = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/"
+        f"{any_safe_filename()}/{storage_asset_filename}"
+    )
+
+    with Dataset() as dataset, S3Object(
+        BytesIO(initial_bytes=storage_asset_content),
+        Resource.STORAGE_BUCKET_NAME.resource_name,
+        f"{dataset.dataset_prefix}/{storage_asset_filename}",
+    ):
+
+        hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
+        assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
+        results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+
+        with ProcessingAsset(
+            asset_id=hash_key, url=asset_staging_url, multihash=storage_asset_multihash
+        ):
+
+            # When
+            sys.argv = [
+                any_program_name(),
+                f"--dataset-id={dataset.dataset_id}",
+                f"--version-id={dataset_version_id}",
+                f"--dataset-prefix={dataset.dataset_prefix}",
+                "--first-item=0",
+                f"--assets-table-name={assets_table_name}",
+                f"--results-table-name={results_table_name}",
+                f"--s3-role-arn={get_s3_role_arn()}",
+            ]
+
+            main()
+
+            # Then
+            with subtests.test(msg="Storage asset validation results"):
+                validation_results_model = validation_results_model_with_meta()
+
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.CHECKSUM.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{asset_staging_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
+
+            with subtests.test(msg="Item has been deleted from Assets table"):
+                processing_assets_model = processing_assets_model_with_meta()
+
+                assert (
+                    processing_assets_model.query(
+                        hash_key,
+                        processing_assets_model.sk.startswith(
+                            f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
+                        ),
+                        consistent_read=True,
+                    ).total_count
+                    == 0
+                )
 
 
 def should_return_when_file_checksum_matches() -> None:
