@@ -31,7 +31,7 @@ def get_s3_url_reader(
 
         try:
             url_object = staging_s3_client.get_object(Bucket=bucket_name, Key=key)
-            response = GeostoreS3Response(url_object["Body"], True)
+            return GeostoreS3Response(url_object["Body"], True)
         except ClientError as error:
             geostore_key = f"{dataset_prefix}/{basename(urlparse(url).path[1:])}"
 
@@ -45,9 +45,7 @@ def get_s3_url_reader(
             url_object = geostore_s3_client.get_object(
                 Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=geostore_key
             )
-            response = GeostoreS3Response(url_object["Body"], False)
-
-        return response
+            return GeostoreS3Response(url_object["Body"], False)
 
     staging_s3_client = get_s3_client_for_role(s3_role_arn)
     geostore_s3_client = get_s3_client_for_role(get_param(ParameterName.S3_USERS_ROLE_ARN))
