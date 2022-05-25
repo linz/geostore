@@ -33,10 +33,10 @@ def get_s3_url_reader(
             staging_object = staging_s3_client.get_object(Bucket=bucket_name, Key=key)
             return GeostoreS3Response(staging_object["Body"], True)
         except ClientError as error:
-            geostore_key = f"{dataset_prefix}/{basename(urlparse(url).path[1:])}"
-
             if error.response["Error"]["Code"] != "NoSuchKey":
                 raise error
+
+            geostore_key = f"{dataset_prefix}/{basename(urlparse(url).path[1:])}"
 
             logger.debug(
                 f"'{key}' is not present in the staging bucket."
