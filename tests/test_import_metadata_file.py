@@ -1,7 +1,6 @@
 from copy import deepcopy
 from io import StringIO
 from json import dumps
-from os.path import basename
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote
 
@@ -21,13 +20,13 @@ from geostore.import_dataset_file import (
 )
 from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from geostore.import_metadata_file.task import S3_BODY_KEY, lambda_handler
+from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.stac_format import (
     STAC_ASSETS_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
     STAC_MEDIA_TYPE_JSON,
     STAC_REL_KEY,
-    STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_REL_SELF,
     STAC_TYPE_KEY,
@@ -44,7 +43,7 @@ from .aws_utils import (
     any_s3_url,
     any_task_id,
 )
-from .general_generators import any_safe_file_path
+from .general_generators import any_safe_file_path, any_safe_filename
 from .stac_generators import any_asset_name
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
@@ -134,43 +133,44 @@ def should_remove_self_links_from_metadata(
         INVOCATION_ID_KEY: invocation_id,
         INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
     }
-    stac_object = {
+
+    get_s3_client_for_role_mock.return_value.get_object.return_value = {
+        S3_BODY_KEY: StringIO(
+            initial_value=dumps(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                    STAC_LINKS_KEY: [
+                        {
+                            STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                        },
+                        {
+                            STAC_REL_KEY: STAC_REL_SELF,
+                            STAC_HREF_KEY: any_safe_filename(),
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                        },
+                    ],
+                }
+            )
+        )
+    }
+
+    expected_put_object_body = {
         **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
         STAC_LINKS_KEY: [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: any_safe_file_path(),
+                STAC_HREF_KEY: CATALOG_FILENAME,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-            },
-            {
-                STAC_REL_KEY: STAC_REL_PARENT,
-                STAC_HREF_KEY: any_safe_file_path(),
-                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-            },
-            {
-                STAC_REL_KEY: STAC_REL_SELF,
-                STAC_HREF_KEY: any_safe_file_path(),
-                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-            },
+            }
         ],
     }
-
-    get_s3_client_for_role_mock.return_value.get_object.return_value = {
-        S3_BODY_KEY: StringIO(initial_value=dumps(stac_object))
-    }
-    return_value = "any return value"
-    put_object_mock.return_value = return_value
 
     # When
     lambda_handler(event, any_lambda_context())
 
     # Then
-    expected_put_object_body = deepcopy(stac_object)
-    expected_links = expected_put_object_body.get(STAC_LINKS_KEY, [])
-    for item in expected_links:
-        item[STAC_HREF_KEY] = basename(item[STAC_HREF_KEY])
-    expected_links[:] = [link for link in expected_links if link[STAC_REL_KEY] != STAC_REL_SELF]
-
-    put_object_mock.assert_called_with(
+    put_object_mock.assert_any_call(
         Bucket=target_bucket_name, Key=target_s3_key, Body=dumps(expected_put_object_body).encode()
     )

@@ -47,8 +47,8 @@ def importer(
     change_href_to_basename(assets)
 
     links = metadata.get(STAC_LINKS_KEY, [])
-    change_href_to_basename(links)
     delete_self_links(links)
+    change_href_to_basename(links)
 
     return TARGET_S3_CLIENT.put_object(
         Bucket=target_bucket_name,
