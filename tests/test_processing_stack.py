@@ -385,13 +385,13 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                         first_asset_name: {
                             LINZ_STAC_CREATED_KEY: first_asset_created,
                             LINZ_STAC_UPDATED_KEY: first_asset_updated,
-                            STAC_HREF_KEY: first_asset_filename,
+                            STAC_HREF_KEY: f"./{first_asset_filename}",
                             STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                         },
                     },
                     STAC_LINKS_KEY: [
                         {
-                            STAC_HREF_KEY: f"../../{CATALOG_FILENAME}",
+                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                             STAC_REL_KEY: STAC_REL_ROOT,
                             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                             STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
