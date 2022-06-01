@@ -1,12 +1,18 @@
 from json import dumps, load
 from os.path import basename
-from typing import TYPE_CHECKING, Dict, Iterable
+from typing import TYPE_CHECKING, Dict, Iterable, List
 
 import boto3
 
 from ..boto3_config import CONFIG
 from ..import_dataset_file import get_import_result
-from ..stac_format import STAC_ASSETS_KEY, STAC_HREF_KEY, STAC_LINKS_KEY
+from ..stac_format import (
+    STAC_ASSETS_KEY,
+    STAC_HREF_KEY,
+    STAC_LINKS_KEY,
+    STAC_REL_KEY,
+    STAC_REL_SELF,
+)
 from ..types import JsonObject
 
 S3_BODY_KEY = "Body"
@@ -41,6 +47,7 @@ def importer(
     change_href_to_basename(assets)
 
     links = metadata.get(STAC_LINKS_KEY, [])
+    delete_self_links(links)
     change_href_to_basename(links)
 
     return TARGET_S3_CLIENT.put_object(
@@ -53,3 +60,7 @@ def importer(
 def change_href_to_basename(items: Iterable[Dict[str, str]]) -> None:
     for item in items:
         item[STAC_HREF_KEY] = basename(item[STAC_HREF_KEY])
+
+
+def delete_self_links(items: List[Dict[str, str]]) -> None:
+    items[:] = [item for item in items if item[STAC_REL_KEY] != STAC_REL_SELF]
