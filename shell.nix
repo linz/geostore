@@ -11,14 +11,6 @@
 let
   python = pkgs.python38;
   projectDir = builtins.path { path = ./.; name = "geostore"; };
-  nodejsVersion = pkgs.lib.fileContents (projectDir + "/.nvmrc");
-  buildNodeJs = pkgs.callPackage "${toString pkgs.path}/pkgs/development/web/nodejs/nodejs.nix" {
-    inherit python;
-  };
-  nodejs = buildNodeJs {
-    version = nodejsVersion;
-    sha256 = "1lgq1yljv0nkanwhlq683irvfqy8w9hhp2iysfa5zsv8rhay48p9";
-  };
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
@@ -37,11 +29,11 @@ in
 poetryEnv.env.overrideAttrs (
   oldAttrs: {
     buildInputs = [
-      nodejs
       pkgs.cacert
       pkgs.cargo
       pkgs.docker
       pkgs.gitFull
+      pkgs.nodejs
       (pkgs.poetry.override {
         inherit python;
       })
