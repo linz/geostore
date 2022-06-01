@@ -22,7 +22,6 @@ let
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
-    extraPackages = ps: [ ps.pip ];
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
       linz-logger = super.linz-logger.overridePythonAttrs (
         old: {
