@@ -116,6 +116,9 @@ class Importer:
                 range_key_condition=processing_assets_model.sk.startswith(
                     f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
                 ),
+                filter_condition=(
+                    processing_assets_model.exists_in_staging == True  # pylint: disable=C0121
+                ),
                 consistent_read=True,
             ):
                 LOGGER.debug(f"Adding {item.url} to manifest")
