@@ -158,7 +158,7 @@ jobs:
       - name: Destroy AWS stacks used for testing
         run: |
           poetry run cdk destroy --force --all
-        if: always() # clean-up AWS stack after failure
+        if: always()
 
   build-nix-shell:
     runs-on: ubuntu-20.04
