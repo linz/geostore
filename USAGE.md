@@ -130,11 +130,11 @@ Example of assuming the Geostore roles from a LINZ AWS account:
 
    ```bash
    echo "[profile geostore-api-users]
-   role_arn=arn:aws:iam::632223577832:role/nonprod-api-users
+   role_arn=arn:aws:iam::715898075157:role/api-users
    source_profile=${SOURCE_PROFILE}
 
    [profile geostore-s3-users]
-   role_arn=arn:aws:iam::632223577832:role/nonprod-s3-users
+   role_arn=arn:aws:iam::715898075157:role/s3-users
    source_profile=${SOURCE_PROFILE}
    " >> ~/.aws/config
    ```
@@ -151,7 +151,7 @@ Example of assuming the Geostore roles from a LINZ AWS account:
    export AWS_PROFILE=geostore-api-users
    ```
 
-   or
+   or, for accessing data in the S3 bucket
 
    ```bash
    export AWS_PROFILE=geostore-s3-users

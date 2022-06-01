@@ -27,6 +27,8 @@ from geostore.step_function import Outcome, get_hash_key
 from geostore.validation_results_model import ValidationResult
 
 from .aws_utils import (
+    MockGeostoreS3Response,
+    MockJSONURLReader,
     MockValidationResultFactory,
     any_batch_job_array_index,
     any_role_arn,
@@ -110,7 +112,7 @@ def should_validate_given_index(
     ]
     with patch("geostore.check_files_checksums.task.LOGGER.info") as info_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}
-    ), patch("geostore.check_files_checksums.utils.get_s3_client_for_role"):
+    ), patch("geostore.check_files_checksums.task.get_s3_url_reader"):
         # Then
         main()
 
@@ -169,7 +171,7 @@ def should_log_error_when_validation_fails(
     # Then
     with patch("geostore.check_files_checksums.task.LOGGER.error") as error_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: "0"}
-    ), patch("geostore.check_files_checksums.utils.get_s3_client_for_role"):
+    ), patch("geostore.check_files_checksums.task.get_s3_url_reader"):
         main()
 
         with subtests.test(msg="Log message"):
@@ -185,19 +187,19 @@ def should_log_error_when_validation_fails(
         ]
 
 
-@patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
+@patch("geostore.check_files_checksums.task.get_s3_url_reader")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("geostore.check_files_checksums.task.ValidationResultFactory")
 def should_save_staging_access_validation_results(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    get_s3_client_for_role: MagicMock,
+    get_s3_url_reader: MagicMock,
 ) -> None:
     expected_error = ClientError(
         ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
-    get_s3_client_for_role.return_value.get_object.side_effect = expected_error
+    get_s3_url_reader.return_value.side_effect = expected_error
 
     s3_url = any_s3_url()
     dataset_id = any_dataset_id()
@@ -244,12 +246,17 @@ def should_save_staging_access_validation_results(
     ]
 
 
-@patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
-def should_return_when_file_checksum_matches(get_s3_client_for_role_mock: MagicMock) -> None:
+def should_return_when_file_checksum_matches() -> None:
     file_contents = b"x" * (CHUNK_SIZE + 1)
-    get_s3_client_for_role_mock.return_value.get_object.return_value = {
-        "Body": StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
-    }
+    url = any_s3_url()
+    s3_url_reader = MockJSONURLReader(
+        {
+            url: MockGeostoreS3Response(
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+            )
+        }
+    )
+
     multihash = (
         f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
         "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
@@ -257,24 +264,18 @@ def should_return_when_file_checksum_matches(get_s3_client_for_role_mock: MagicM
 
     with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
         ChecksumValidator(
-            any_table_name(), MockValidationResultFactory(), any_role_arn(), MagicMock()
-        ).validate_url_multihash(any_s3_url(), multihash)
+            any_table_name(), MockValidationResultFactory(), s3_url_reader, MagicMock()
+        ).validate_url_multihash(url, multihash)
 
 
-@patch("geostore.check_files_checksums.utils.get_s3_client_for_role")
-def should_raise_exception_when_checksum_does_not_match(
-    get_s3_client_for_role_mock: MagicMock,
-) -> None:
-    get_s3_client_for_role_mock.return_value.get_object.return_value = {
-        "Body": StreamingBody(BytesIO(), 0)
-    }
+def should_raise_exception_when_checksum_does_not_match() -> None:
+    url = any_s3_url()
+    s3_url_reader = MockJSONURLReader({url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0))})
 
     checksum = "0" * 64
     with raises(ChecksumMismatchError), patch(
         "geostore.check_files_checksums.utils.processing_assets_model_with_meta"
     ):
         ChecksumValidator(
-            any_table_name(), MockValidationResultFactory(), any_role_arn(), MagicMock()
-        ).validate_url_multihash(
-            any_s3_url(), f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}"
-        )
+            any_table_name(), MockValidationResultFactory(), s3_url_reader, MagicMock()
+        ).validate_url_multihash(url, f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}")

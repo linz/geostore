@@ -13,11 +13,9 @@ from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
 from .lambda_endpoint import LambdaEndpoint
-from .roles import MAX_SESSION_DURATION
+from .roles import LINZ_ORGANIZATION_ID, MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
 from .table import Table
-
-LINZ_ORGANIZATION_ID = "o-g9kpx6ff4u"
 
 
 class API(Construct):

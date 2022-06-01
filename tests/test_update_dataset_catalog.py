@@ -17,11 +17,12 @@ from geostore.step_function_keys import (
     VERSION_ID_KEY,
 )
 from geostore.update_root_catalog.task import lambda_handler
-from tests.aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
-from tests.file_utils import json_dict_to_file_object
-from tests.general_generators import any_error_message, any_safe_filename
-from tests.stac_generators import any_dataset_version_id
-from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+
+from .aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
+from .file_utils import json_dict_to_file_object
+from .general_generators import any_error_message, any_safe_filename
+from .stac_generators import any_dataset_version_id
+from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
 @mark.infrastructure
