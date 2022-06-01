@@ -23,6 +23,15 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     extraPackages = ps: [ ps.pip ];
+    overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
+      typer = super.typer.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [
+            self.flit-core
+          ];
+        }
+      );
+    });
   };
 in
 poetryEnv.env.overrideAttrs (
