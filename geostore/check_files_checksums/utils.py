@@ -74,8 +74,9 @@ class ChecksumValidator:
         else:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
-            if not file_in_staging:
-                item.delete()
+            item.update(
+                actions=[self.processing_assets_model.exists_in_staging.set(file_in_staging)]
+            )
 
     def validate_url_multihash(self, url: str, hex_multihash: str) -> bool:
 

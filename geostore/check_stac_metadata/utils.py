@@ -2,7 +2,7 @@ from functools import lru_cache
 from json import JSONDecodeError, load
 from logging import Logger
 from os.path import dirname
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from botocore.exceptions import ClientError
 from jsonschema import Draft7Validator, ValidationError
@@ -52,7 +52,7 @@ STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
 PROCESSING_ASSET_ASSET_KEY = "asset"
 PROCESSING_ASSET_MULTIHASH_KEY = "multihash"
 PROCESSING_ASSET_URL_KEY = "url"
-
+PROCESSING_ASSET_FILE_IN_STAGING_KEY = "file_in_staging"
 EXPLICITLY_RELATIVE_PATH_PREFIX = "./"
 LOG_MESSAGE_STAC_ASSET_INFO = "STACAsset:Info"
 
@@ -81,7 +81,7 @@ class STACDatasetValidator:
 
         self.traversed_urls: List[str] = []
         self.dataset_assets: List[Dict[str, str]] = []
-        self.dataset_metadata: List[Dict[str, str]] = []
+        self.dataset_metadata: List[Dict[str, Union[bool, str]]] = []
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
@@ -138,6 +138,7 @@ class STACDatasetValidator:
                 hash_key=self.hash_key,
                 range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}{index}",
                 url=metadata_file[PROCESSING_ASSET_URL_KEY],
+                exists_in_staging=metadata_file[PROCESSING_ASSET_FILE_IN_STAGING_KEY],
             ).save()
 
     def process_assets(self) -> None:
@@ -196,8 +197,12 @@ class STACDatasetValidator:
 
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
 
-        if s3_response.file_in_staging:
-            self.dataset_metadata.append({PROCESSING_ASSET_URL_KEY: url})
+        self.dataset_metadata.append(
+            {
+                PROCESSING_ASSET_URL_KEY: url,
+                PROCESSING_ASSET_FILE_IN_STAGING_KEY: s3_response.file_in_staging,
+            }
+        )
 
         for asset in object_json.get(STAC_ASSETS_KEY, {}).values():
             asset_url = maybe_convert_relative_url_to_absolute(asset[STAC_HREF_KEY], url)
