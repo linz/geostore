@@ -25,6 +25,7 @@ from geostore.check_stac_metadata.stac_validators import (
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.check_stac_metadata.utils import (
     NO_ASSETS_FOUND_ERROR_MESSAGE,
+    PROCESSING_ASSET_FILE_IN_STAGING_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     InvalidSecurityClassificationError,
@@ -819,9 +820,15 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
             PROCESSING_ASSET_URL_KEY: second_asset_url,
         },
     ]
-    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
+    file_in_staging = True
+    expected_metadata = [
+        {
+            PROCESSING_ASSET_FILE_IN_STAGING_KEY: file_in_staging,
+            PROCESSING_ASSET_URL_KEY: metadata_url,
+        }
+    ]
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=True)}
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -869,9 +876,15 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
             PROCESSING_ASSET_URL_KEY: f"{base_url}/{second_asset_filename}",
         },
     ]
-    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
+    file_in_staging = True
+    expected_metadata = [
+        {
+            PROCESSING_ASSET_FILE_IN_STAGING_KEY: file_in_staging,
+            PROCESSING_ASSET_URL_KEY: metadata_url,
+        }
+    ]
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=True)}
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
