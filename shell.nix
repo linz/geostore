@@ -2,9 +2,9 @@
     (
       fetchTarball
         {
-          name = "21.11-2022-03-08";
-          url = "https://github.com/NixOS/nixpkgs/archive/bb3dee861440695ce6d8f43d0dd3a97622cb08c4.tar.gz";
-          sha256 = "0j94fz656a0xf3s7kvi8p16p52186ks6r3m1gv8i2zmiinlvv5v3";
+          name = "22.05";
+          url = "https://github.com/NixOS/nixpkgs/archive/ce6aa13369b667ac2542593170993504932eb836.tar.gz";
+          sha256 = "0d643wp3l77hv2pmg2fi7vyxn4rwy0iyr8djcw1h5x72315ck9ik";
         })
     { }
 }:
@@ -14,15 +14,18 @@ let
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
-    extraPackages = ps: [ ps.pip ];
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
-      typer = super.typer.overridePythonAttrs (
+      linz-logger = super.linz-logger.overridePythonAttrs (
         old: {
           buildInputs = (old.buildInputs or [ ]) ++ [
-            self.flit-core
+            self.poetry
           ];
         }
       );
+      mypy = super.mypy.overridePythonAttrs (old: {
+        patches = [ ];
+        MYPY_USE_MYPYC = false;
+      });
     });
   };
 in
