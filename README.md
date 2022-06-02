@@ -159,12 +159,9 @@ have access to Dependabot alerts.)
 
 ## AWS Infrastructure deployment
 
-1. [Configure AWS](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
-1. Get AWS credentials for 12 hours:
+1. Configure a [named AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) with permission to deploy stacks
 
-   ```bash
-   aws-azure-login --no-prompt --profile=<AWS-PROFILE-NAME>
-   ```
+   - [Instructions for LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 
 1. Environment variables
 
