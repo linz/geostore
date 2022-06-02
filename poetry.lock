@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.0"
-description = "Type annotations for boto3 1.24.0 generated with mypy-boto3-builder 7.6.1"
+version = "1.24.1"
+description = "Type annotations for boto3 1.24.1 generated with mypy-boto3-builder 7.6.1"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -335,7 +335,6 @@ iotevents-data = ["mypy-boto3-iotevents-data (>=1.24.0,<1.25.0)"]
 iotfleethub = ["mypy-boto3-iotfleethub (>=1.24.0,<1.25.0)"]
 iotsecuretunneling = ["mypy-boto3-iotsecuretunneling (>=1.24.0,<1.25.0)"]
 iotsitewise = ["mypy-boto3-iotsitewise (>=1.24.0,<1.25.0)"]
-nimble = ["mypy-boto3-nimble (>=1.24.0,<1.25.0)"]
 iotthingsgraph = ["mypy-boto3-iotthingsgraph (>=1.24.0,<1.25.0)"]
 iottwinmaker = ["mypy-boto3-iottwinmaker (>=1.24.0,<1.25.0)"]
 iotwireless = ["mypy-boto3-iotwireless (>=1.24.0,<1.25.0)"]
@@ -395,6 +394,7 @@ mwaa = ["mypy-boto3-mwaa (>=1.24.0,<1.25.0)"]
 neptune = ["mypy-boto3-neptune (>=1.24.0,<1.25.0)"]
 network-firewall = ["mypy-boto3-network-firewall (>=1.24.0,<1.25.0)"]
 networkmanager = ["mypy-boto3-networkmanager (>=1.24.0,<1.25.0)"]
+nimble = ["mypy-boto3-nimble (>=1.24.0,<1.25.0)"]
 opensearch = ["mypy-boto3-opensearch (>=1.24.0,<1.25.0)"]
 opsworks = ["mypy-boto3-opsworks (>=1.24.0,<1.25.0)"]
 opsworkscm = ["mypy-boto3-opsworkscm (>=1.24.0,<1.25.0)"]
@@ -1702,7 +1702,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.27.29"
+version = "2.27.30"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1926,8 +1926,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.0.tar.gz", hash = "sha256:656274ced272a8560bc97b7f594d319821e23ddab8cdf7ea0514ee98764bdcad"},
-    {file = "boto3_stubs-1.24.0-py3-none-any.whl", hash = "sha256:a8bc694cc17c87a38916b26b574fcc62bb5fa8dd4bef41c4857c0d24addadb42"},
+    {file = "boto3-stubs-1.24.1.tar.gz", hash = "sha256:efc8f0064c2a99a8b7049a10ab5cb6db06e4e0ba6c05d78bef58f80b084295c2"},
+    {file = "boto3_stubs-1.24.1-py3-none-any.whl", hash = "sha256:e4a808076d50bbd681a8b4c9c42b9aa4da30fdd0640fc0968f8882b6c24de04c"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2497,8 +2497,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.17-py3-none-any.whl", hash = "sha256:0be7435b4d382d1cd00b8c55a8a90f4e515aaad8a96f8f0bc20c22df046792e5"},
 ]
 types-requests = [
-    {file = "types-requests-2.27.29.tar.gz", hash = "sha256:fb453b3a76a48eca66381cea8004feaaea12835e838196f5c7ac87c75c5c19ef"},
-    {file = "types_requests-2.27.29-py3-none-any.whl", hash = "sha256:014f4f82db7b96c41feea9adaea30e68cd64c230eeab34b70c29bebb26ec74ac"},
+    {file = "types-requests-2.27.30.tar.gz", hash = "sha256:ca8d7cc549c3d10dbcb3c69c1b53e3ffd1270089c1001a65c1e9e1017eb5e704"},
+    {file = "types_requests-2.27.30-py3-none-any.whl", hash = "sha256:b9b6cd0a6e5d500e56419b79f44ec96f316e9375ff6c8ee566c39d25e9612621"},
 ]
 types-six = [
     {file = "types-six-1.16.15.tar.gz", hash = "sha256:d244f0537dab0d0570a5bc6f8a60c4da7f0546d960a8677520e6bff214a64fb8"},
