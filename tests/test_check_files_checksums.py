@@ -3,10 +3,15 @@ from datetime import timedelta
 from hashlib import sha256
 from io import BytesIO
 from os import environ
+from typing import Any, List, Optional, Sequence, Text, Type
 from unittest.mock import MagicMock, call, patch
 
 from botocore.response import StreamingBody
 from multihash import SHA2_256
+from pynamodb.expressions.condition import Condition
+from pynamodb.expressions.update import Action
+from pynamodb.models import _T, _KeyType
+from pynamodb.settings import OperationSettings
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
@@ -45,7 +50,7 @@ from .aws_utils import (
     any_table_name,
     get_s3_role_arn,
 )
-from .general_generators import any_file_contents, any_program_name, any_safe_filename
+from .general_generators import any_boolean, any_file_contents, any_program_name, any_safe_filename
 from .stac_generators import (
     any_dataset_id,
     any_dataset_prefix,
@@ -73,6 +78,8 @@ def should_return_default_offset_to_zero() -> None:
 @patch("geostore.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
 @patch("geostore.check_files_checksums.task.ValidationResultFactory")
+@patch("pynamodb.connection.base.get_session", MagicMock())
+@patch("pynamodb.connection.table.Connection", MagicMock())
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
@@ -82,28 +89,59 @@ def should_validate_given_index(
     # Given
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
-    hash_key = get_hash_key(dataset_id, version_id)
+    hash_key_ = get_hash_key(dataset_id, version_id)
 
     url = any_s3_url()
     hex_multihash = any_hex_multihash()
 
     array_index = "1"
 
-    def get_mock(given_hash_key: str, range_key: str) -> ProcessingAssetsModelBase:
-        assert given_hash_key == hash_key
-        assert range_key == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{array_index}"
-        return ProcessingAssetsModelBase(
-            hash_key=given_hash_key,
-            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
-            url=url,
-            multihash=hex_multihash,
-        )
+    def processing_assets_model_with_meta_mock(
+        given_hash_key: str, given_array_index: str
+    ) -> Type[ProcessingAssetsModelBase]:
+        class ProcessingAssetsModelMock(ProcessingAssetsModelBase):
+            class Meta:  # pylint:disable=too-few-public-methods
+                table_name = any_table_name()
 
-    processing_assets_model_mock.return_value.get.side_effect = get_mock
+            @classmethod
+            def get(  # pylint:disable=too-many-arguments
+                cls: Type[_T],
+                hash_key: _KeyType,
+                range_key: Optional[_KeyType] = None,
+                consistent_read: bool = False,
+                attributes_to_get: Optional[Sequence[Text]] = None,
+                settings: OperationSettings = OperationSettings.default,
+            ) -> _T:
+                assert hash_key == given_hash_key
+                assert (
+                    range_key
+                    == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{given_array_index}"
+                )
+                return cls(
+                    hash_key=given_hash_key,
+                    range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
+                    url=url,
+                    multihash=hex_multihash,
+                    exists_in_staging=any_boolean(),
+                )
+
+            def update(
+                self,
+                actions: List[Action],
+                condition: Optional[Condition] = None,
+                settings: OperationSettings = OperationSettings.default,
+            ) -> Any:
+                return self
+
+        return ProcessingAssetsModelMock
+
+    processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
+        hash_key_, array_index
+    )
     validate_url_multihash_mock.return_value = True
     validation_results_table_name = any_table_name()
     expected_calls = [
-        call(hash_key, validation_results_table_name),
+        call(hash_key_, validation_results_table_name),
         call().save(url, Check.CHECKSUM, ValidationResult.PASSED),
     ]
 
