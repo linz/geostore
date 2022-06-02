@@ -7,6 +7,8 @@ REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
 
 # General-purpose generators
+def any_boolean() -> bool:
+    return choice([True, False])
 
 
 def random_string(length: int) -> str:
