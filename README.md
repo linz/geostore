@@ -159,9 +159,11 @@ have access to Dependabot alerts.)
 
 ## AWS Infrastructure deployment
 
-1. Configure a [named AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) with permission to deploy stacks
+1. Configure a
+   [named AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
+   with permission to deploy stacks
 
-   - [Instructions for LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
+   -  [Instructions for LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 
 1. Environment variables
 
