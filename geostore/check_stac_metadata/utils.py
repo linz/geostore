@@ -104,7 +104,6 @@ class STACDatasetValidator:
             self.validate(metadata_url)
         except (
             ClientError,
-            DatasetFileNotFoundError,
             InvalidSecurityClassificationError,
             JSONDecodeError,
             ValidationError,
@@ -268,8 +267,4 @@ class STACDatasetValidator:
 
 
 class InvalidSecurityClassificationError(Exception):
-    pass
-
-
-class DatasetFileNotFoundError(Exception):
     pass

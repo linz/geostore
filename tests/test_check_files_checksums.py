@@ -3,9 +3,10 @@ from datetime import timedelta
 from hashlib import sha256
 from io import BytesIO
 from os import environ
-from typing import Any, List, Optional, Sequence, Text, Type
+from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Text, Type
 from unittest.mock import MagicMock, call, patch
 
+from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from multihash import SHA2_256
 from pynamodb.expressions.condition import Condition
@@ -61,6 +62,11 @@ from .stac_generators import (
 )
 
 SHA256_CHECKSUM_BYTE_COUNT = 32
+
+if TYPE_CHECKING:
+    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+else:
+    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
 
 
 def should_return_offset_from_array_index_variable() -> None:
@@ -252,8 +258,6 @@ def should_successfully_validate_asset_not_in_staging(
         f"{any_safe_filename()}/{storage_asset_filename}"
     )
 
-    processing_assets_model = processing_assets_model_with_meta()
-
     with Dataset() as dataset, S3Object(
         BytesIO(initial_bytes=storage_asset_content),
         Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -267,16 +271,6 @@ def should_successfully_validate_asset_not_in_staging(
         with ProcessingAsset(
             asset_id=hash_key, url=asset_staging_url, multihash=storage_asset_multihash
         ):
-
-            expected_hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
-
-            expected_item = processing_assets_model(
-                hash_key=expected_hash_key,
-                range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
-                url=asset_staging_url,
-                multihash=storage_asset_multihash,
-                exists_in_staging=False,
-            )
 
             # When
             sys.argv = [
@@ -308,18 +302,88 @@ def should_successfully_validate_asset_not_in_staging(
                     == ValidationResult.PASSED.value
                 )
 
-            actual_processing_items = processing_assets_model.query(
-                expected_hash_key,
-                processing_assets_model.sk.startswith(
-                    f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
-                ),
-                consistent_read=True,
-            )
-            with subtests.test(msg=f"Data record has been updated {expected_item.pk}"):
+            with subtests.test(msg="Item has been deleted from Assets table"):
+                processing_assets_model = processing_assets_model_with_meta()
+
                 assert (
-                    actual_processing_items.next().attribute_values
-                    == expected_item.attribute_values
+                    processing_assets_model.get(
+                        hash_key,
+                        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+                    ).exists_in_staging
+                    is False
                 )
+
+
+@mark.infrastructure
+@patch("geostore.check_files_checksums.task.get_s3_url_reader")
+@patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
+@patch("geostore.check_files_checksums.task.ValidationResultFactory")
+def should_save_file_not_found_validation_results(
+    validation_results_factory_mock: MagicMock,
+    processing_assets_model_mock: MagicMock,
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+
+    dataset_version_id = any_dataset_version_id()
+    storage_asset_filename = any_safe_filename()
+
+    asset_staging_url = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/"
+        f"{any_safe_filename()}/{storage_asset_filename}"
+    )
+    storage_asset_content = any_file_contents()
+
+    storage_asset_multihash = sha256_hex_digest_to_multihash(
+        sha256(storage_asset_content).hexdigest()
+    )
+
+    expected_error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
+        ),
+        operation_name="get_object",
+    )
+
+    get_s3_client_for_role_mock.return_value.side_effect = expected_error
+
+    with Dataset() as dataset:
+        hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
+
+        processing_assets_model_mock.return_value.get.return_value = ProcessingAssetsModelBase(
+            hash_key=hash_key,
+            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+            url=asset_staging_url,
+            multihash=storage_asset_multihash,
+        )
+
+        # When
+        sys.argv = [
+            any_program_name(),
+            f"--dataset-id={dataset.dataset_id}",
+            f"--version-id={dataset_version_id}",
+            f"--dataset-prefix={dataset.dataset_prefix}",
+            "--first-item=0",
+            f"--assets-table-name={any_table_name()}",
+            f"--results-table-name={any_table_name()}",
+            f"--s3-role-arn={get_s3_role_arn()}",
+        ]
+
+        with raises(ClientError):
+            main()
+
+        validation_results_factory_mock.assert_has_calls(
+            [
+                call().save(
+                    asset_staging_url,
+                    Check.FILE_NOT_FOUND,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: f"Could not find asset file '{asset_staging_url}' "
+                        f"in staging bucket or in the Geostore."
+                    },
+                ),
+            ]
+        )
 
 
 def should_return_when_file_checksum_matches() -> None:

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
+from _pytest.python_api import raises
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from linz_logger import get_log
@@ -24,7 +25,14 @@ from geostore.stac_format import (
     STAC_REL_PARENT,
     STAC_REL_ROOT,
 )
-from tests.aws_utils import Dataset, S3Object, any_operation_name, any_s3_url, get_s3_role_arn
+from tests.aws_utils import (
+    Dataset,
+    S3Object,
+    any_error_code,
+    any_operation_name,
+    any_s3_url,
+    get_s3_role_arn,
+)
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_file_path, any_safe_filename
 from tests.stac_generators import any_dataset_prefix
@@ -133,3 +141,28 @@ def should_log_message_when_using_geostore_file_for_validation(
     # Then
     with subtests.test(msg="log"):
         logger_mock.debug.assert_any_call(expected_message)
+
+
+@patch("geostore.s3_utils.get_s3_client_for_role")
+def should_raise_any_client_error_other_than_no_such_key(
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+    # Given
+
+    error_code = any_error_code()
+    operation_name = any_operation_name()
+    error_message = any_error_message()
+    error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        ),
+        operation_name,
+    )
+
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
+
+    logger_mock = MagicMock()
+
+    with raises(ClientError):
+        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_prefix(), logger_mock)
+        s3_url_reader(any_s3_url())
