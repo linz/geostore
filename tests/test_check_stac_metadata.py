@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 from copy import deepcopy
 from datetime import timedelta
 from glob import glob
@@ -476,6 +478,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                     url=metadata_s3_object.url,
+                    exists_in_staging=True,
                 ),
             ]
 
@@ -522,6 +525,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
 def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) -> None:
+    # pylint: disable=too-many-locals
 
     key_prefix = any_safe_file_path()
     dataset_id = any_dataset_id()
@@ -537,6 +541,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
     collection_metadata_url = f"{metadata_url_prefix}/{collection_metadata_filename}"
     item_metadata_filename = any_safe_filename()
     item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
+    expected_hash_key = get_hash_key(dataset_id, version_id)
 
     with S3Object(
         file_object=json_dict_to_file_object(
@@ -633,6 +638,41 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
                     ).result
                     == ValidationResult.PASSED.value
                 )
+
+            processing_assets_model = processing_assets_model_with_meta()
+            expected_processing_items = [
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
+                    url=catalog_metadata_url,
+                    exists_in_staging=True,
+                ),
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}1",
+                    url=collection_metadata_url,
+                    exists_in_staging=False,
+                ),
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}2",
+                    url=item_metadata_url,
+                    exists_in_staging=True,
+                ),
+            ]
+            actual_processing_items = processing_assets_model.query(
+                expected_hash_key,
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+                ),
+                consistent_read=True,
+            )
+            for expected_item in expected_processing_items:
+                with subtests.test(msg=f"Metadata {expected_item.pk}"):
+                    assert (
+                        actual_processing_items.next().attribute_values
+                        == expected_item.attribute_values
+                    )
 
 
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:

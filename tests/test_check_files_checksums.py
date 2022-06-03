@@ -252,6 +252,8 @@ def should_successfully_validate_asset_not_in_staging(
         f"{any_safe_filename()}/{storage_asset_filename}"
     )
 
+    processing_assets_model = processing_assets_model_with_meta()
+
     with Dataset() as dataset, S3Object(
         BytesIO(initial_bytes=storage_asset_content),
         Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -265,6 +267,16 @@ def should_successfully_validate_asset_not_in_staging(
         with ProcessingAsset(
             asset_id=hash_key, url=asset_staging_url, multihash=storage_asset_multihash
         ):
+
+            expected_hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
+
+            expected_item = processing_assets_model(
+                hash_key=expected_hash_key,
+                range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+                url=asset_staging_url,
+                multihash=storage_asset_multihash,
+                exists_in_staging=False,
+            )
 
             # When
             sys.argv = [
@@ -296,18 +308,17 @@ def should_successfully_validate_asset_not_in_staging(
                     == ValidationResult.PASSED.value
                 )
 
-            with subtests.test(msg="Item has been deleted from Assets table"):
-                processing_assets_model = processing_assets_model_with_meta()
-
+            actual_processing_items = processing_assets_model.query(
+                expected_hash_key,
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
+                ),
+                consistent_read=True,
+            )
+            with subtests.test(msg=f"Data record has been updated {expected_item.pk}"):
                 assert (
-                    processing_assets_model.query(
-                        hash_key,
-                        processing_assets_model.sk.startswith(
-                            f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
-                        ),
-                        consistent_read=True,
-                    ).total_count
-                    == 0
+                    actual_processing_items.next().attribute_values
+                    == expected_item.attribute_values
                 )
 
 

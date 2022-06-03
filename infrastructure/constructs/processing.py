@@ -245,6 +245,8 @@ class Processing(Construct):
         ]:
             validation_results_table.grant_read_write_data(check_files_checksums_task)
             validation_results_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
+            processing_assets_table.grant_read_write_data(check_files_checksums_task)
+            processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
             check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(

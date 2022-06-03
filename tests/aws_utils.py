@@ -199,6 +199,7 @@ class ProcessingAsset:
         url: str,
         *,
         multihash: Optional[str] = None,
+        exists_in_staging: Optional[bool] = None,
     ):
         prefix = "METADATA" if multihash is None else "DATA"
 
@@ -208,6 +209,7 @@ class ProcessingAsset:
             range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
             url=url,
             multihash=multihash,
+            exists_in_staging=exists_in_staging,
         )
         ProcessingAsset.index += 1
 

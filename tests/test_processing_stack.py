@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import timedelta
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
@@ -771,7 +771,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
         ) as first_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(root_catalog_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-            key=f"{dataset.dataset_prefix}/{catalog_metadata_filename}",
+            key=CATALOG_FILENAME,
         ) as root_catalog_metadata_file, S3Object(
             file_object=json_dict_to_file_object(catalog_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -851,9 +851,9 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_REL_KEY: STAC_REL_ROOT,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 }
 
-                process_timeout = datetime.now() + timedelta(minutes=1)
                 while (
                     expected_link_object
                     not in (
@@ -866,47 +866,56 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                         )
                     )[STAC_LINKS_KEY]
                 ):
-                    assert datetime.now() < process_timeout  # pragma: no cover
                     sleep(5)  # pragma: no cover
 
                 # Root Catalog contents
                 with subtests.test(msg="Root catalog is unchanged"), smart_open.open(
                     root_catalog_metadata_file.url, mode="rb"
                 ) as existing_root_catalog_file:
-                    assert load(existing_root_catalog_file) == {root_catalog_dict}
+                    assert load(existing_root_catalog_file) == root_catalog_dict
 
                 # Catalog contents
                 with subtests.test(msg="Catalog is unchanged"), smart_open.open(
                     catalog_metadata_file.url, mode="rb"
                 ) as existing_catalog_file:
-                    assert load(existing_catalog_file) == {catalog_dict}
+                    assert load(existing_catalog_file) == catalog_dict
 
                 # Collection contents
                 with subtests.test(msg="Collection is unchanged"), smart_open.open(
                     collection_metadata_file.url, mode="rb"
                 ) as existing_collection_file:
-                    assert load(existing_collection_file) == {collection_dict}
+                    assert load(existing_collection_file) == collection_dict
 
                 # Item contents
                 imported_item_key = f"{dataset.dataset_prefix}/{item_metadata_filename}"
                 with subtests.test(msg="Imported item has correct links"), smart_open.open(
                     f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
                 ) as imported_item_file:
-                    item_json = load(imported_item_file)
-                    assert item_json[STAC_LINKS_KEY] == [
-                        {
-                            STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
-                            STAC_REL_KEY: STAC_REL_ROOT,
-                            STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
-                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    assert load(imported_item_file) == {
+                        **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                        STAC_ASSETS_KEY: {
+                            first_asset_name: {
+                                LINZ_STAC_CREATED_KEY: first_asset_created,
+                                LINZ_STAC_UPDATED_KEY: first_asset_updated,
+                                STAC_HREF_KEY: f"./{first_asset_filename}",
+                                STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
+                            },
                         },
-                        {
-                            STAC_HREF_KEY: f"./{collection_metadata_filename}",
-                            STAC_REL_KEY: STAC_REL_PARENT,
-                            STAC_TITLE_KEY: collection_title,
-                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                        },
-                    ]
+                        STAC_LINKS_KEY: [
+                            {
+                                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                                STAC_REL_KEY: STAC_REL_ROOT,
+                                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                            },
+                            {
+                                STAC_HREF_KEY: f"./{collection_metadata_filename}",
+                                STAC_REL_KEY: STAC_REL_PARENT,
+                                STAC_TITLE_KEY: collection_title,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                            },
+                        ],
+                    }
 
                 # First asset contents
                 imported_first_asset_key = f"{dataset.dataset_prefix}/{first_asset_filename}"
