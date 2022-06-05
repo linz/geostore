@@ -229,15 +229,9 @@ class Processing(Construct):
 
         for processing_assets_reader in [
             content_iterator_task.lambda_function,
-            check_files_checksums_single_task.job_role,
-            check_files_checksums_array_task.job_role,
         ]:
-            processing_assets_table.grant_read_data(
-                processing_assets_reader  # type: ignore[arg-type]
-            )
-            processing_assets_table.grant(
-                processing_assets_reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
-            )
+            processing_assets_table.grant_read_data(processing_assets_reader)
+            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
 
         for check_files_checksums_task in [
             check_files_checksums_single_task.job_role,

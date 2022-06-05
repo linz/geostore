@@ -21,6 +21,7 @@ from pytest_subtests import SubTests
 from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
+from geostore.models import DB_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
 from geostore.populate_catalog.task import (
     CATALOG_FILENAME,
@@ -28,6 +29,7 @@ from geostore.populate_catalog.task import (
     ROOT_CATALOG_ID,
     ROOT_CATALOG_TITLE,
 )
+from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.stac_format import (
@@ -50,7 +52,7 @@ from geostore.stac_format import (
     STAC_TITLE_KEY,
     STAC_TYPE_KEY,
 )
-from geostore.step_function import Outcome
+from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
@@ -66,6 +68,7 @@ from geostore.step_function_keys import (
     STEP_FUNCTION_KEY,
     TITLE_KEY,
     VALIDATION_KEY,
+    VERSION_ID_KEY,
 )
 from geostore.sts import get_account_number
 
@@ -672,6 +675,8 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
         collection_metadata_filename = any_safe_filename()
         catalog_metadata_filename = any_safe_filename()
         item_metadata_filename = any_safe_filename()
+        first_asset_filename = any_safe_filename()
+        second_asset_filename = any_safe_filename()
 
         metadata_url_prefix = (
             f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
@@ -683,13 +688,21 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
         collection_title = any_dataset_title()
 
         first_asset_contents = any_file_contents()
-        first_asset_filename = any_safe_filename()
         first_asset_name = any_asset_name()
         first_asset_hex_digest = sha256_hex_digest_to_multihash(
             sha256(first_asset_contents).hexdigest()
         )
         first_asset_created = any_past_datetime_string()
         first_asset_updated = any_past_datetime_string()
+
+        second_asset_contents = any_file_contents()
+        second_asset_name = any_asset_name()
+        second_asset_hex_digest = sha256_hex_digest_to_multihash(
+            sha256(second_asset_contents).hexdigest()
+        )
+        second_asset_created = any_past_datetime_string()
+        second_asset_updated = any_past_datetime_string()
+        second_asset_staging_url = f"{metadata_url_prefix}/{second_asset_filename}"
 
         metadata_copy_job_result = None
         asset_copy_job_result = None
@@ -769,6 +782,10 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
             bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
             key=f"{key_prefix}/{first_asset_filename}",
         ) as first_asset_s3_object, S3Object(
+            file_object=BytesIO(initial_bytes=second_asset_contents),
+            bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+            key=f"{dataset.dataset_prefix}/{second_asset_filename}",
+        ) as second_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(root_catalog_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
             key=CATALOG_FILENAME,
@@ -791,6 +808,12 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                             STAC_HREF_KEY: first_asset_s3_object.url,
                             STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                         },
+                        second_asset_name: {
+                            LINZ_STAC_CREATED_KEY: second_asset_created,
+                            LINZ_STAC_UPDATED_KEY: second_asset_updated,
+                            STAC_HREF_KEY: second_asset_staging_url,
+                            STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
+                        },
                     },
                     STAC_LINKS_KEY: [
                         {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
@@ -803,7 +826,6 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
             key=f"{key_prefix}/{item_metadata_filename}",
         ):
 
-            staging_catalog_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
             # When
             try:
                 dataset_versions_response = lambda_client.invoke(
@@ -813,7 +835,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                             HTTP_METHOD_KEY: "POST",
                             BODY_KEY: {
                                 DATASET_ID_SHORT_KEY: dataset.dataset_id,
-                                METADATA_URL_KEY: staging_catalog_url,
+                                METADATA_URL_KEY: catalog_metadata_url,
                                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
                             },
                         }
@@ -834,6 +856,73 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     assert execution["status"] == "SUCCEEDED", execution
 
                 assert (execution_output := execution.get("output")), execution
+
+                hash_key = get_hash_key(dataset.dataset_id, dataset_versions_body[VERSION_ID_KEY])
+
+                processing_assets_model = processing_assets_model_with_meta()
+                expected_metadata_items = [
+                    processing_assets_model(
+                        hash_key=hash_key,
+                        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
+                        url=catalog_metadata_url,
+                        exists_in_staging=False,
+                    ),
+                    processing_assets_model(
+                        hash_key=hash_key,
+                        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}1",
+                        url=collection_metadata_url,
+                        exists_in_staging=False,
+                    ),
+                    processing_assets_model(
+                        hash_key=hash_key,
+                        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}2",
+                        url=item_metadata_url,
+                        exists_in_staging=True,
+                    ),
+                ]
+                actual_metadata_items = processing_assets_model.query(
+                    hash_key,
+                    processing_assets_model.sk.startswith(
+                        f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+                    ),
+                    consistent_read=True,
+                )
+                for expected_item in expected_metadata_items:
+                    with subtests.test(msg=f"Metadata {expected_item.pk}"):
+                        assert (
+                            actual_metadata_items.next().attribute_values
+                            == expected_item.attribute_values
+                        )
+
+                expected_asset_items = [
+                    processing_assets_model(
+                        hash_key=hash_key,
+                        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+                        multihash=first_asset_hex_digest,
+                        url=first_asset_s3_object.url,
+                        exists_in_staging=True,
+                    ),
+                    processing_assets_model(
+                        hash_key=hash_key,
+                        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
+                        multihash=second_asset_hex_digest,
+                        url=second_asset_staging_url,
+                        exists_in_staging=False,
+                    ),
+                ]
+                actual_asset_items = processing_assets_model.query(
+                    hash_key,
+                    processing_assets_model.sk.startswith(
+                        f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
+                    ),
+                    consistent_read=True,
+                )
+                for expected_item in expected_asset_items:
+                    with subtests.test(msg=f"Metadata {expected_item.pk}"):
+                        assert (
+                            actual_asset_items.next().attribute_values
+                            == expected_item.attribute_values
+                        )
 
                 account_id = get_account_number()
 
@@ -900,6 +989,12 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                                 STAC_HREF_KEY: f"./{first_asset_filename}",
                                 STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
                             },
+                            second_asset_name: {
+                                LINZ_STAC_CREATED_KEY: second_asset_created,
+                                LINZ_STAC_UPDATED_KEY: second_asset_updated,
+                                STAC_HREF_KEY: f"./{second_asset_filename}",
+                                STAC_FILE_CHECKSUM_KEY: second_asset_hex_digest,
+                            },
                         },
                         STAC_LINKS_KEY: [
                             {
@@ -923,6 +1018,12 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
                 ) as imported_first_asset_file:
                     assert imported_first_asset_file.read() == first_asset_contents
+
+                # Second asset contents
+                with subtests.test(msg="Verify second asset contents"), smart_open.open(
+                    second_asset_s3_object.url, mode="rb"
+                ) as second_asset_file:
+                    assert second_asset_file.read() == second_asset_contents
 
             finally:
                 # Cleanup
