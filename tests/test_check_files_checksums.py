@@ -3,16 +3,12 @@ from datetime import timedelta
 from hashlib import sha256
 from io import BytesIO
 from os import environ
-from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Text, Type
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from multihash import SHA2_256
-from pynamodb.expressions.condition import Condition
-from pynamodb.expressions.update import Action
-from pynamodb.models import _T, _KeyType
-from pynamodb.settings import OperationSettings
 from pytest import mark, raises
 from pytest_subtests import SubTests
 
@@ -28,11 +24,7 @@ from geostore.check_files_checksums.utils import (
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
-from geostore.processing_assets_model import (
-    ProcessingAssetType,
-    ProcessingAssetsModelBase,
-    processing_assets_model_with_meta,
-)
+from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from geostore.resources import Resource
 from geostore.s3 import CHUNK_SIZE, S3_URL_PREFIX
 from geostore.step_function import Outcome, get_hash_key
@@ -43,15 +35,15 @@ from .aws_utils import (
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
-    ProcessingAsset,
     S3Object,
     any_batch_job_array_index,
     any_role_arn,
     any_s3_url,
     any_table_name,
     get_s3_role_arn,
+    processing_assets_model_with_meta_mock,
 )
-from .general_generators import any_boolean, any_file_contents, any_program_name, any_safe_filename
+from .general_generators import any_file_contents, any_program_name, any_safe_filename
 from .stac_generators import (
     any_dataset_id,
     any_dataset_prefix,
@@ -102,47 +94,8 @@ def should_validate_given_index(
 
     array_index = "1"
 
-    def processing_assets_model_with_meta_mock(
-        given_hash_key: str, given_array_index: str
-    ) -> Type[ProcessingAssetsModelBase]:
-        class ProcessingAssetsModelMock(ProcessingAssetsModelBase):
-            class Meta:  # pylint:disable=too-few-public-methods
-                table_name = any_table_name()
-
-            @classmethod
-            def get(  # pylint:disable=too-many-arguments
-                cls: Type[_T],
-                hash_key: _KeyType,
-                range_key: Optional[_KeyType] = None,
-                consistent_read: bool = False,
-                attributes_to_get: Optional[Sequence[Text]] = None,
-                settings: OperationSettings = OperationSettings.default,
-            ) -> _T:
-                assert hash_key == given_hash_key
-                assert (
-                    range_key
-                    == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{given_array_index}"
-                )
-                return cls(
-                    hash_key=given_hash_key,
-                    range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
-                    url=url,
-                    multihash=hex_multihash,
-                    exists_in_staging=any_boolean(),
-                )
-
-            def update(
-                self,
-                actions: List[Action],
-                condition: Optional[Condition] = None,
-                settings: OperationSettings = OperationSettings.default,
-            ) -> Any:
-                return self
-
-        return ProcessingAssetsModelMock
-
     processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
-        hash_key_, array_index
+        hash_key_, array_index, url, hex_multihash, None
     )
     validate_url_multihash_mock.return_value = True
     validation_results_table_name = any_table_name()
@@ -242,7 +195,9 @@ def should_log_error_when_validation_fails(
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
+@patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
 def should_successfully_validate_asset_not_in_staging(
+    processing_assets_model_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -268,50 +223,41 @@ def should_successfully_validate_asset_not_in_staging(
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
         results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
 
-        with ProcessingAsset(
-            asset_id=hash_key, url=asset_staging_url, multihash=storage_asset_multihash
-        ):
+        array_index = "1"
+        processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
+            hash_key, array_index, asset_staging_url, storage_asset_multihash, None
+        )
 
-            # When
-            sys.argv = [
-                any_program_name(),
-                f"--dataset-id={dataset.dataset_id}",
-                f"--version-id={dataset_version_id}",
-                f"--dataset-prefix={dataset.dataset_prefix}",
-                "--first-item=0",
-                f"--assets-table-name={assets_table_name}",
-                f"--results-table-name={results_table_name}",
-                f"--s3-role-arn={get_s3_role_arn()}",
-            ]
+        # When
+        sys.argv = [
+            any_program_name(),
+            f"--dataset-id={dataset.dataset_id}",
+            f"--version-id={dataset_version_id}",
+            f"--dataset-prefix={dataset.dataset_prefix}",
+            "--first-item=0",
+            f"--assets-table-name={assets_table_name}",
+            f"--results-table-name={results_table_name}",
+            f"--s3-role-arn={get_s3_role_arn()}",
+        ]
 
+        with patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
             main()
 
-            # Then
-            with subtests.test(msg="Storage asset validation results"):
-                validation_results_model = validation_results_model_with_meta()
+        # Then
+        with subtests.test(msg="Storage asset validation results"):
+            validation_results_model = validation_results_model_with_meta()
 
-                assert (
-                    validation_results_model.get(
-                        hash_key=hash_key,
-                        range_key=(
-                            f"{CHECK_ID_PREFIX}{Check.CHECKSUM.value}"
-                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{asset_staging_url}"
-                        ),
-                        consistent_read=True,
-                    ).result
-                    == ValidationResult.PASSED.value
-                )
-
-            with subtests.test(msg="Item has been deleted from Assets table"):
-                processing_assets_model = processing_assets_model_with_meta()
-
-                assert (
-                    processing_assets_model.get(
-                        hash_key,
-                        range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
-                    ).exists_in_staging
-                    is False
-                )
+            assert (
+                validation_results_model.get(
+                    hash_key=hash_key,
+                    range_key=(
+                        f"{CHECK_ID_PREFIX}{Check.CHECKSUM.value}"
+                        f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{asset_staging_url}"
+                    ),
+                    consistent_read=True,
+                ).result
+                == ValidationResult.PASSED.value
+            )
 
 
 @mark.infrastructure
