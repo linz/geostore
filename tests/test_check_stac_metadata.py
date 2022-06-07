@@ -788,9 +788,9 @@ def should_only_validate_each_file_once() -> None:
     root_url = f"{base_url}/{any_safe_filename()}"
     child_filename = any_safe_filename()
     child_url = f"{base_url}/{child_filename}"
-    leaf_filename = any_safe_filename()
-    explicitly_relative_leaf_filename = f"./{leaf_filename}"
-    leaf_url = f"{base_url}/{leaf_filename}"
+    item_filename = any_safe_filename()
+    explicitly_relative_item_filename = f"./{item_filename}"
+    item_url = f"{base_url}/{item_filename}"
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
     root_stac_object[STAC_LINKS_KEY] = [
@@ -800,20 +800,23 @@ def should_only_validate_each_file_once() -> None:
     ]
     child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     child_stac_object[STAC_LINKS_KEY] = [
-        {STAC_HREF_KEY: leaf_url, "rel": "child"},
+        {STAC_HREF_KEY: item_url, "rel": "child"},
+        {STAC_HREF_KEY: item_url, "rel": "item"},
+        {STAC_HREF_KEY: root_url, "rel": "parent"},
         {STAC_HREF_KEY: root_url, "rel": "root"},
         {STAC_HREF_KEY: child_filename, "rel": "self"},
     ]
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     leaf_stac_object[STAC_LINKS_KEY] = [
         {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: explicitly_relative_leaf_filename, "rel": "self"},
+        {STAC_HREF_KEY: child_url, "rel": "parent"},
+        {STAC_HREF_KEY: explicitly_relative_item_filename, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
         {
             root_url: MockGeostoreS3Response(root_stac_object, file_in_staging=True),
             child_url: MockGeostoreS3Response(child_stac_object, file_in_staging=True),
-            leaf_url: MockGeostoreS3Response(leaf_stac_object, file_in_staging=True),
+            item_url: MockGeostoreS3Response(leaf_stac_object, file_in_staging=True),
         },
         call_limit=3,
     )
@@ -823,7 +826,7 @@ def should_only_validate_each_file_once() -> None:
             root_url
         )
 
-    assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
+    assert url_reader.mock_calls == [call(root_url), call(child_url), call(item_url)]
 
 
 def should_collect_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
