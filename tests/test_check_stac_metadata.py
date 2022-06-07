@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 from copy import deepcopy
 from datetime import timedelta
 from glob import glob
@@ -25,6 +27,7 @@ from geostore.check_stac_metadata.stac_validators import (
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.check_stac_metadata.utils import (
     NO_ASSETS_FOUND_ERROR_MESSAGE,
+    PROCESSING_ASSET_FILE_IN_STAGING_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
     InvalidSecurityClassificationError,
@@ -33,6 +36,7 @@ from geostore.check_stac_metadata.utils import (
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
+from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
@@ -47,6 +51,12 @@ from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_ID_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_ITEM,
+    STAC_REL_KEY,
+    STAC_REL_PARENT,
+    STAC_REL_ROOT,
+    STAC_REL_SELF,
 )
 from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
@@ -76,6 +86,7 @@ from .general_generators import (
     any_file_contents,
     any_https_url,
     any_past_datetime_string,
+    any_safe_file_path,
     any_safe_filename,
 )
 from .stac_generators import (
@@ -104,7 +115,7 @@ def should_succeed_with_validation_failure(
 ) -> None:
     validate_url_mock.side_effect = ValidationError(any_error_message())
     get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
-        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -135,7 +146,7 @@ def should_save_non_s3_url_validation_results(
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
     get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
-        MINIMAL_VALID_STAC_COLLECTION_OBJECT
+        MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -202,7 +213,11 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
     metadata_url = any_s3_url()
 
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(StreamingBody(BytesIO(metadata), len(metadata)))}
+        {
+            metadata_url: MockGeostoreS3Response(
+                StreamingBody(BytesIO(metadata), len(metadata)), file_in_staging=True
+            )
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
@@ -256,6 +271,55 @@ def should_save_staging_access_validation_results(
             Check.STAGING_ACCESS,
             ValidationResult.FAILED,
             details={MESSAGE_KEY: str(expected_error)},
+        ),
+    ]
+
+
+@mark.infrastructure
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
+@patch("geostore.check_stac_metadata.task.ValidationResultFactory")
+def should_save_file_not_found_validation_results(
+    validation_results_factory_mock: MagicMock,
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+
+    validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+    expected_error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
+        ),
+        operation_name="get_object",
+    )
+
+    get_s3_client_for_role_mock.return_value.side_effect = expected_error
+
+    s3_url = any_s3_url()
+
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    lambda_handler(
+        {
+            DATASET_ID_KEY: dataset_id,
+            VERSION_ID_KEY: version_id,
+            METADATA_URL_KEY: s3_url,
+            S3_ROLE_ARN_KEY: any_role_arn(),
+            DATASET_PREFIX_KEY: any_dataset_prefix(),
+        },
+        any_lambda_context(),
+    )
+
+    hash_key = get_hash_key(dataset_id, version_id)
+    assert validation_results_factory_mock.mock_calls == [
+        call(hash_key, validation_results_table_name),
+        call().save(
+            s3_url,
+            Check.FILE_NOT_FOUND,
+            ValidationResult.FAILED,
+            details={
+                MESSAGE_KEY: f"Could not find metadata file '{s3_url}' "
+                f"in staging bucket or in the Geostore."
+            },
         ),
     ]
 
@@ -414,6 +478,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                     url=metadata_s3_object.url,
+                    exists_in_staging=True,
                 ),
             ]
 
@@ -457,6 +522,159 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     )
 
 
+@mark.timeout(timedelta(minutes=20).total_seconds())
+@mark.infrastructure
+def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) -> None:
+    # pylint: disable=too-many-locals
+
+    key_prefix = any_safe_file_path()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+
+    metadata_url_prefix = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
+    )
+    dataset_prefix = any_dataset_prefix()
+    catalog_metadata_filename = any_safe_filename()
+    catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
+    collection_metadata_filename = any_safe_filename()
+    collection_metadata_url = f"{metadata_url_prefix}/{collection_metadata_filename}"
+    item_metadata_filename = any_safe_filename()
+    item_metadata_url = f"{metadata_url_prefix}/{item_metadata_filename}"
+    expected_hash_key = get_hash_key(dataset_id, version_id)
+
+    with S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_CHILD},
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                ],
+            }
+        ),
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        key=f"{key_prefix}/{catalog_metadata_filename}",
+    ) as catalog_metadata_file, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: f"./{item_metadata_filename}", STAC_REL_KEY: STAC_REL_ITEM},
+                    {STAC_HREF_KEY: f"../{CATALOG_FILENAME}", STAC_REL_KEY: STAC_REL_ROOT},
+                    {
+                        STAC_HREF_KEY: f"./{catalog_metadata_filename}",
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                    },
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset_prefix}/{collection_metadata_filename}",
+    ), S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_PARENT},
+                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                ],
+            }
+        ),
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        key=f"{key_prefix}/{item_metadata_filename}",
+    ):
+
+        assert lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                VERSION_ID_KEY: version_id,
+                METADATA_URL_KEY: catalog_metadata_file.url,
+                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                DATASET_PREFIX_KEY: dataset_prefix,
+            },
+            any_lambda_context(),
+        ) == {SUCCESS_KEY: True}
+
+        hash_key = get_hash_key(dataset_id, version_id)
+        validation_results_model = validation_results_model_with_meta()
+        with subtests.test(msg="Catalog validation results"):
+            assert (
+                validation_results_model.get(
+                    hash_key=hash_key,
+                    range_key=(
+                        f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                        f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{catalog_metadata_url}"
+                    ),
+                    consistent_read=True,
+                ).result
+                == ValidationResult.PASSED.value
+            )
+
+            with subtests.test(msg="Collection validation results"):
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{collection_metadata_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
+
+            with subtests.test(msg="Item validation results"):
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{item_metadata_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
+
+            processing_assets_model = processing_assets_model_with_meta()
+            expected_processing_items = [
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
+                    url=catalog_metadata_url,
+                    exists_in_staging=True,
+                ),
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}1",
+                    url=collection_metadata_url,
+                    exists_in_staging=False,
+                ),
+                processing_assets_model(
+                    hash_key=expected_hash_key,
+                    range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}2",
+                    url=item_metadata_url,
+                    exists_in_staging=True,
+                ),
+            ]
+            actual_processing_items = processing_assets_model.query(
+                expected_hash_key,
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+                ),
+                consistent_read=True,
+            )
+            for expected_item in expected_processing_items:
+                with subtests.test(msg=f"Metadata {expected_item.pk}"):
+                    assert (
+                        actual_processing_items.next().attribute_values
+                        == expected_item.attribute_values
+                    )
+
+
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     """
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
@@ -479,7 +697,9 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
             for link in stac_object.get("links"):
                 link["href"] = basename(link["href"])
 
-            url_reader = MockJSONURLReader({path: MockGeostoreS3Response(stac_object)})
+            url_reader = MockJSONURLReader(
+                {path: MockGeostoreS3Response(stac_object, file_in_staging=True)}
+            )
             STACDatasetValidator(
                 any_hash_key(), url_reader, MockValidationResultFactory()
             ).validate(path)
@@ -545,8 +765,10 @@ def should_validate_metadata_files_recursively() -> None:
     stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, "rel": "child"})
     url_reader = MockJSONURLReader(
         {
-            parent_url: MockGeostoreS3Response(stac_object),
-            child_url: MockGeostoreS3Response(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)),
+            parent_url: MockGeostoreS3Response(stac_object, file_in_staging=True),
+            child_url: MockGeostoreS3Response(
+                deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT), file_in_staging=True
+            ),
         }
     )
 
@@ -566,9 +788,9 @@ def should_only_validate_each_file_once() -> None:
     root_url = f"{base_url}/{any_safe_filename()}"
     child_filename = any_safe_filename()
     child_url = f"{base_url}/{child_filename}"
-    leaf_filename = any_safe_filename()
-    explicitly_relative_leaf_filename = f"./{leaf_filename}"
-    leaf_url = f"{base_url}/{leaf_filename}"
+    item_filename = any_safe_filename()
+    explicitly_relative_item_filename = f"./{item_filename}"
+    item_url = f"{base_url}/{item_filename}"
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
     root_stac_object[STAC_LINKS_KEY] = [
@@ -578,20 +800,23 @@ def should_only_validate_each_file_once() -> None:
     ]
     child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     child_stac_object[STAC_LINKS_KEY] = [
-        {STAC_HREF_KEY: leaf_url, "rel": "child"},
+        {STAC_HREF_KEY: item_url, "rel": "child"},
+        {STAC_HREF_KEY: item_url, "rel": "item"},
+        {STAC_HREF_KEY: root_url, "rel": "parent"},
         {STAC_HREF_KEY: root_url, "rel": "root"},
         {STAC_HREF_KEY: child_filename, "rel": "self"},
     ]
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     leaf_stac_object[STAC_LINKS_KEY] = [
         {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: explicitly_relative_leaf_filename, "rel": "self"},
+        {STAC_HREF_KEY: child_url, "rel": "parent"},
+        {STAC_HREF_KEY: explicitly_relative_item_filename, "rel": "self"},
     ]
     url_reader = MockJSONURLReader(
         {
-            root_url: MockGeostoreS3Response(root_stac_object),
-            child_url: MockGeostoreS3Response(child_stac_object),
-            leaf_url: MockGeostoreS3Response(leaf_stac_object),
+            root_url: MockGeostoreS3Response(root_stac_object, file_in_staging=True),
+            child_url: MockGeostoreS3Response(child_stac_object, file_in_staging=True),
+            item_url: MockGeostoreS3Response(leaf_stac_object, file_in_staging=True),
         },
         call_limit=3,
     )
@@ -601,7 +826,7 @@ def should_only_validate_each_file_once() -> None:
             root_url
         )
 
-    assert url_reader.mock_calls == [call(root_url), call(child_url), call(leaf_url)]
+    assert url_reader.mock_calls == [call(root_url), call(child_url), call(item_url)]
 
 
 def should_collect_assets_from_validated_collection_metadata_files(subtests: SubTests) -> None:
@@ -638,8 +863,16 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
             PROCESSING_ASSET_URL_KEY: second_asset_url,
         },
     ]
-    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
-    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
+    file_in_staging = True
+    expected_metadata = [
+        {
+            PROCESSING_ASSET_FILE_IN_STAGING_KEY: file_in_staging,
+            PROCESSING_ASSET_URL_KEY: metadata_url,
+        }
+    ]
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
@@ -686,8 +919,16 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
             PROCESSING_ASSET_URL_KEY: f"{base_url}/{second_asset_filename}",
         },
     ]
-    expected_metadata = [{PROCESSING_ASSET_URL_KEY: metadata_url}]
-    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
+    file_in_staging = True
+    expected_metadata = [
+        {
+            PROCESSING_ASSET_FILE_IN_STAGING_KEY: file_in_staging,
+            PROCESSING_ASSET_URL_KEY: metadata_url,
+        }
+    ]
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
+    )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
@@ -707,7 +948,9 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
     security_classification = "in-confidence"
     stac_object[LINZ_STAC_SECURITY_CLASSIFICATION_KEY] = security_classification
 
-    url_reader = MockJSONURLReader({metadata_url: MockGeostoreS3Response(stac_object)})
+    url_reader = MockJSONURLReader(
+        {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=True)}
+    )
     mock_validation_result_factory = MockValidationResultFactory()
     validator = STACDatasetValidator(any_hash_key(), url_reader, mock_validation_result_factory)
 
@@ -738,7 +981,8 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
     url_reader = MockJSONURLReader(
         {
             metadata_url: MockGeostoreS3Response(
-                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents))
+                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)),
+                file_in_staging=True,
             )
         }
     )
@@ -768,7 +1012,11 @@ def should_report_when_the_dataset_has_no_assets(
 ) -> None:
     metadata_url = any_s3_url()
     url_reader = MockJSONURLReader(
-        {metadata_url: MockGeostoreS3Response(deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT))}
+        {
+            metadata_url: MockGeostoreS3Response(
+                deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT), file_in_staging=True
+            )
+        }
     )
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(

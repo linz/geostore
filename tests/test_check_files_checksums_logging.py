@@ -18,7 +18,7 @@ from geostore.step_function import Outcome
 
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
-from .stac_generators import any_dataset_id, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
 
 
 @mark.infrastructure
@@ -42,6 +42,7 @@ def should_log_missing_item(subtests: SubTests) -> None:
         any_program_name(),
         f"--dataset-id={dataset_id}",
         f"--version-id={version_id}",
+        f"--dataset-prefix={any_dataset_prefix()}",
         f"--first-item={index}",
         f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
         f"--results-table-name={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}",

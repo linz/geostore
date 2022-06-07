@@ -147,12 +147,20 @@ def should_batch_copy_files_to_storage(
             f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
         )
 
-        with ProcessingAsset(asset_id=asset_id, url=root_metadata_s3_object.url), ProcessingAsset(
-            asset_id=asset_id, url=child_metadata_s3_object.url
+        with ProcessingAsset(
+            asset_id=asset_id, url=root_metadata_s3_object.url, exists_in_staging=True
         ), ProcessingAsset(
-            asset_id=asset_id, url=root_asset_s3_object.url, multihash=root_asset_multihash
+            asset_id=asset_id, url=child_metadata_s3_object.url, exists_in_staging=True
         ), ProcessingAsset(
-            asset_id=asset_id, url=child_asset_s3_object.url, multihash=child_asset_multihash
+            asset_id=asset_id,
+            url=root_asset_s3_object.url,
+            multihash=root_asset_multihash,
+            exists_in_staging=True,
+        ), ProcessingAsset(
+            asset_id=asset_id,
+            url=child_asset_s3_object.url,
+            multihash=child_asset_multihash,
+            exists_in_staging=True,
         ):
             # When
             try:

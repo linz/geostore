@@ -85,11 +85,12 @@ def should_log_assets_added_to_manifest(
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with ProcessingAsset(
-            asset_id=asset_id, multihash=None, url=any_s3_url()
+            asset_id=asset_id, multihash=None, url=any_s3_url(), exists_in_staging=True
         ) as metadata_processing_asset, ProcessingAsset(
             asset_id=asset_id,
             multihash=any_hex_multihash(),
             url=any_s3_url(),
+            exists_in_staging=True,
         ) as processing_asset, patch(
             "geostore.import_dataset.task.LOGGER.debug"
         ) as logger_mock, patch(

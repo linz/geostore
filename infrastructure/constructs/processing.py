@@ -28,6 +28,7 @@ from geostore.resources import Resource
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
+    DATASET_PREFIX_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
@@ -63,6 +64,7 @@ class Processing(Construct):
         botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         principal: aws_iam.PrincipalBase,
+        s3_role_arn_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
     ) -> None:
@@ -163,6 +165,7 @@ class Processing(Construct):
         check_files_checksums_default_payload_object = {
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
             f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
+            f"{DATASET_PREFIX_KEY}.$": f"$.{DATASET_PREFIX_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
             f"{S3_ROLE_ARN_KEY}.$": f"$.{S3_ROLE_ARN_KEY}",
             f"{FIRST_ITEM_KEY}.$": f"$.{CONTENT_KEY}.{FIRST_ITEM_KEY}",
@@ -182,6 +185,8 @@ class Processing(Construct):
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 f"Ref::{VERSION_ID_KEY}",
+                "--dataset-prefix",
+                f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",
                 f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",
@@ -208,6 +213,8 @@ class Processing(Construct):
                 f"Ref::{DATASET_ID_KEY}",
                 "--version-id",
                 f"Ref::{VERSION_ID_KEY}",
+                "--dataset-prefix",
+                f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",
                 f"Ref::{FIRST_ITEM_KEY}",
                 "--assets-table-name",
@@ -222,15 +229,9 @@ class Processing(Construct):
 
         for processing_assets_reader in [
             content_iterator_task.lambda_function,
-            check_files_checksums_single_task.job_role,
-            check_files_checksums_array_task.job_role,
         ]:
-            processing_assets_table.grant_read_data(
-                processing_assets_reader  # type: ignore[arg-type]
-            )
-            processing_assets_table.grant(
-                processing_assets_reader, "dynamodb:DescribeTable"  # type: ignore[arg-type]
-            )
+            processing_assets_table.grant_read_data(processing_assets_reader)
+            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
 
         for check_files_checksums_task in [
             check_files_checksums_single_task.job_role,
@@ -238,6 +239,8 @@ class Processing(Construct):
         ]:
             validation_results_table.grant_read_write_data(check_files_checksums_task)
             validation_results_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
+            processing_assets_table.grant_read_write_data(check_files_checksums_task)
+            processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
             check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(
@@ -370,6 +373,11 @@ class Processing(Construct):
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
+                ],
+                s3_role_arn_parameter: [
+                    check_stac_metadata_task.lambda_function,
+                    check_files_checksums_single_task.job_role,
+                    check_files_checksums_array_task.job_role,
                 ],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
