@@ -4,7 +4,7 @@ from hashlib import sha256
 from io import BytesIO
 from os import environ
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
@@ -330,6 +330,46 @@ def should_save_file_not_found_validation_results(
                 ),
             ]
         )
+
+
+def should_log_arbitrary_client_errors() -> None:
+    # Given
+    url = f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{any_safe_filename()}"
+
+    error_code = "TODO"
+    error_message = "ALSOTODO"
+    expected_error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        ),
+        operation_name="get_object",
+    )
+    s3_url_reader = Mock(side_effect=expected_error)
+    validation_results_factory_mock = MockValidationResultFactory()
+
+    # When
+    with raises(ClientError):
+        ChecksumValidator(
+            any_table_name(), validation_results_factory_mock, s3_url_reader, MagicMock()
+        ).validate_url_multihash(url, any_hex_multihash())
+
+    # Then
+    validation_results_factory_mock.assert_has_calls(
+        [
+            call.save(
+                url,
+                Check.UNKNOWN_CLIENT_ERROR,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: (
+                        f"Unknown client error fetching '{url}'."
+                        f" Client error code: '{error_code}'."
+                        f" Client error message: '{error_message}'"
+                    )
+                },
+            )
+        ]
+    )
 
 
 def should_return_when_file_checksum_matches() -> None:

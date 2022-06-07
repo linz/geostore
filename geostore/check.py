@@ -11,3 +11,4 @@ class Check(Enum):
     NON_S3_URL = "not an s3 url"
     SECURITY_CLASSIFICATION = "security classification"
     STAGING_ACCESS = "staging bucket access"
+    UNKNOWN_CLIENT_ERROR = "unknown client error"

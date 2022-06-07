@@ -83,7 +83,8 @@ class ChecksumValidator:
         try:
             s3_response = self.url_reader(url)
         except ClientError as error:
-            if error.response["Error"]["Code"] == "NoSuchKey":
+            error_code = error.response["Error"]["Code"]
+            if error_code == "NoSuchKey":
                 self.validation_result_factory.save(
                     url,
                     Check.FILE_NOT_FOUND,
@@ -91,6 +92,19 @@ class ChecksumValidator:
                     details={
                         MESSAGE_KEY: f"Could not find asset file '{url}' "
                         f"in staging bucket or in the Geostore."
+                    },
+                )
+            else:
+                self.validation_result_factory.save(
+                    url,
+                    Check.UNKNOWN_CLIENT_ERROR,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: (
+                            f"Unknown client error fetching '{url}'."
+                            f" Client error code: '{error_code}'."
+                            f" Client error message: '{error.response['Error']['Message']}'"
+                        ),
                     },
                 )
             raise
