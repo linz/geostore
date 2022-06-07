@@ -21,6 +21,8 @@ from geostore.stac_format import (
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_KEY,
 )
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
@@ -135,7 +137,9 @@ def should_batch_copy_files_to_storage(
                         STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                     },
                 },
-                STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_s3_object.url, "rel": "child"}],
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: child_metadata_s3_object.url, STAC_REL_KEY: STAC_REL_CHILD}
+                ],
             }
         ),
         Resource.STAGING_BUCKET_NAME.resource_name,
@@ -200,7 +204,9 @@ def should_batch_copy_files_to_storage(
                                 STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                             },
                         },
-                        STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_filename, "rel": "child"}],
+                        STAC_LINKS_KEY: [
+                            {STAC_HREF_KEY: child_metadata_filename, STAC_REL_KEY: STAC_REL_CHILD}
+                        ],
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open.open(
