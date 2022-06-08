@@ -386,6 +386,7 @@ class Processing(Construct):
                     validation_summary_task.lambda_function,
                     upload_status_task.lambda_function,
                 ],
+                datasets_table.name_parameter: [update_root_catalog.lambda_function],
                 self.message_queue_name_parameter: [update_root_catalog.lambda_function],
             }
         )
