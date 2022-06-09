@@ -39,7 +39,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             {
                 "type": "object",
                 "properties": {
-                    CURRENT_VERSION_ID_KEY: {"type": "string"},
+                    CURRENT_VERSION_ID_KEY: {"type": ["string", "null"]},
                     DATASET_ID_KEY: {"type": "string"},
                     DATASET_PREFIX_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
@@ -47,7 +47,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     S3_ROLE_ARN_KEY: {"type": "string"},
                 },
                 "required": [
-                    CURRENT_VERSION_ID_KEY,
                     DATASET_ID_KEY,
                     DATASET_PREFIX_KEY,
                     METADATA_URL_KEY,
