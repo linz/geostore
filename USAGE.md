@@ -126,36 +126,25 @@ Example of assuming the Geostore roles from a LINZ AWS account:
    export SOURCE_PROFILE=<YOUR_AWS_SOURCE_PROFILE> # e.g. li-small-apps-nonprod
    ```
 
--  Add Geostore roles to assume to AWS config
-
-   ```bash
-   echo "[profile geostore-api-users]
-   role_arn=arn:aws:iam::715898075157:role/api-users
-   source_profile=${SOURCE_PROFILE}
-
-   [profile geostore-s3-users]
-   role_arn=arn:aws:iam::715898075157:role/s3-users
-   source_profile=${SOURCE_PROFILE}
-   " >> ~/.aws/config
-   ```
-
--  Login to your LINZ AWS account
+-  Log in to any LINZ AWS account:
 
    ```bash
    aws-azure-login --profile="$SOURCE_PROFILE"
    ```
 
--  Set AWS profile for subsequent commands
+-  Assume either Geostore role:
 
-   ```bash
-   export AWS_PROFILE=geostore-api-users
-   ```
+   -  API user:
 
-   or, for accessing data in the S3 bucket
+      ```bash
+      aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
+      ```
 
-   ```bash
-   export AWS_PROFILE=geostore-s3-users
-   ```
+   -  S3 user:
+
+      ```bash
+      aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-s3-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
+      ```
 
 ## Use
 

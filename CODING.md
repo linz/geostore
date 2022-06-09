@@ -88,16 +88,16 @@ Production values are mentioned below.
        --policy="{\"Id\": \"Policy$(date +%s)\", \"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"Stmt$(date +%s)\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectAcl\", \"s3:GetObjectTagging\"], \"Effect\": \"Allow\", \"Resource\": \"arn:aws:s3:::${bucket_name}/*\", \"Principal\": {\"AWS\": [\"${role_arn}\"]}}]}"
    ```
 
-1. Change the AWS profile to the target one:
-
-   ```shell
-   AWS_PROFILE='TARGET_PROFILE_ID'
-   ```
-
-1. Assume the `${stack_prefix}-api-users` role on the target profile:
+1. Log in to any LINZ AWS account:
 
    ```shell
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"
+   ```
+
+1. Assume the API users role (use `--role-name=api-users` in production):
+
+   ```shell
+   aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
    ```
 
 1. Create a new dataset (use `--function-name="datasets"` in production):
