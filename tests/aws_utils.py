@@ -2,6 +2,7 @@ from contextlib import AbstractContextManager
 from datetime import datetime, timedelta
 from io import BytesIO
 from json import dumps
+from os.path import basename
 from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
@@ -216,6 +217,7 @@ class ProcessingAsset:
             hash_key=asset_id,
             range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
             url=url,
+            filename=basename(url),
             multihash=multihash,
             exists_in_staging=exists_in_staging,
         )
