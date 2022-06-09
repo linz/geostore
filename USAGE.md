@@ -109,7 +109,7 @@ Example of AWS service account authentication and authorization in to Geostore u
 -  Log in to Geostore AWS account
 
    ```bash
-   aws-azure-login --profile li-geostore-prod
+   aws-azure-login --profile=li-geostore-prod
    ```
 
 -  Set AWS profile for subsequent commands
@@ -142,7 +142,7 @@ Example of assuming the Geostore roles from a LINZ AWS account:
 -  Login to your LINZ AWS account
 
    ```bash
-   aws-azure-login --profile ${SOURCE_PROFILE}
+   aws-azure-login --profile="$SOURCE_PROFILE"
    ```
 
 -  Set AWS profile for subsequent commands
