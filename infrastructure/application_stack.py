@@ -50,6 +50,7 @@ class Application(Stack):
             s3_role_arn_parameter=storage.s3_role_arn_parameter,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
+            datasets_table=storage.datasets_table,
         )
         Staging(self, "staging", users_role=processing.staging_users_role)
 

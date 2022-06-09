@@ -67,6 +67,7 @@ class Processing(Construct):
         s3_role_arn_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
+        datasets_table: Table,
     ) -> None:
         # pylint: disable=too-many-locals, too-many-statements
 
@@ -297,9 +298,8 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        for table in [processing_assets_table]:
-            table.grant_read_data(import_dataset_task.lambda_function)
-            table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
+        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
+        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
 
         # Import status check
         wait_before_upload_status_check = Wait(
@@ -353,6 +353,7 @@ class Processing(Construct):
             result_path=f"$.{UPDATE_DATASET_KEY}",
         )
         self.message_queue.grant_send_messages(update_root_catalog.lambda_function)
+        datasets_table.grant_read_write_data(update_root_catalog.lambda_function)
 
         for storage_writer in [
             import_dataset_role,
@@ -385,6 +386,7 @@ class Processing(Construct):
                     validation_summary_task.lambda_function,
                     upload_status_task.lambda_function,
                 ],
+                datasets_table.name_parameter: [update_root_catalog.lambda_function],
                 self.message_queue_name_parameter: [update_root_catalog.lambda_function],
             }
         )

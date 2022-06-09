@@ -168,7 +168,9 @@ def any_operation_name() -> str:
 
 
 class Dataset:
-    def __init__(self, *, title: Optional[str] = None):
+    def __init__(
+        self, *, title: Optional[str] = None, current_dataset_version: Optional[str] = None
+    ):
         if title is None:
             title = any_dataset_title()
 
@@ -180,6 +182,7 @@ class Dataset:
             title=title,
             created_at=any_past_datetime(),
             updated_at=any_past_datetime(),
+            current_dataset_version=current_dataset_version,
         )
 
     def __enter__(self) -> DatasetsModelBase:

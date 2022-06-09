@@ -51,6 +51,7 @@ class DatasetsModelBase(Model):
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)
     updated_at = UTCDateTimeAttribute(default=now)
+    current_dataset_version = UnicodeAttribute(null=True)
 
     datasets_title_idx: DatasetsTitleIdx
 
