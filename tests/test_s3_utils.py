@@ -57,10 +57,7 @@ def should_successfully_get_object_from_staging_bucket() -> None:
         **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
         STAC_LINKS_KEY: [
             {STAC_HREF_KEY: f"../{CATALOG_FILENAME}", STAC_REL_KEY: STAC_REL_ROOT},
-            {
-                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
-                STAC_REL_KEY: STAC_REL_PARENT,
-            },
+            {STAC_HREF_KEY: f"../{CATALOG_FILENAME}", STAC_REL_KEY: STAC_REL_PARENT},
         ],
     }
 

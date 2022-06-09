@@ -340,8 +340,8 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             {
                 **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
                 STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: f"{base_url}{valid_child_key}", "rel": "child"},
-                    {STAC_HREF_KEY: f"{base_url}{invalid_child_key}", "rel": "child"},
+                    {STAC_HREF_KEY: f"{base_url}{valid_child_key}", STAC_REL_KEY: STAC_REL_CHILD},
+                    {STAC_HREF_KEY: f"{base_url}{invalid_child_key}", STAC_REL_KEY: STAC_REL_CHILD},
                 ],
             }
         ),
@@ -762,7 +762,7 @@ def should_validate_metadata_files_recursively() -> None:
     child_url = f"{base_url}/{any_safe_filename()}"
 
     stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
-    stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, "rel": "child"})
+    stac_object[STAC_LINKS_KEY].append({STAC_HREF_KEY: child_url, STAC_REL_KEY: STAC_REL_CHILD})
     url_reader = MockJSONURLReader(
         {
             parent_url: MockGeostoreS3Response(stac_object, file_in_staging=True),
@@ -794,23 +794,23 @@ def should_only_validate_each_file_once() -> None:
 
     root_stac_object = deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT)
     root_stac_object[STAC_LINKS_KEY] = [
-        {STAC_HREF_KEY: child_url, "rel": "child"},
-        {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: root_url, "rel": "self"},
+        {STAC_HREF_KEY: child_url, STAC_REL_KEY: STAC_REL_CHILD},
+        {STAC_HREF_KEY: root_url, STAC_REL_KEY: STAC_REL_ROOT},
+        {STAC_HREF_KEY: root_url, STAC_REL_KEY: STAC_REL_SELF},
     ]
     child_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
     child_stac_object[STAC_LINKS_KEY] = [
-        {STAC_HREF_KEY: item_url, "rel": "child"},
-        {STAC_HREF_KEY: item_url, "rel": "item"},
-        {STAC_HREF_KEY: root_url, "rel": "parent"},
-        {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: child_filename, "rel": "self"},
+        {STAC_HREF_KEY: item_url, STAC_REL_KEY: STAC_REL_CHILD},
+        {STAC_HREF_KEY: item_url, STAC_REL_KEY: STAC_REL_ITEM},
+        {STAC_HREF_KEY: root_url, STAC_REL_KEY: STAC_REL_PARENT},
+        {STAC_HREF_KEY: root_url, STAC_REL_KEY: STAC_REL_ROOT},
+        {STAC_HREF_KEY: child_filename, STAC_REL_KEY: STAC_REL_SELF},
     ]
     leaf_stac_object = deepcopy(MINIMAL_VALID_STAC_ITEM_OBJECT)
     leaf_stac_object[STAC_LINKS_KEY] = [
-        {STAC_HREF_KEY: root_url, "rel": "root"},
-        {STAC_HREF_KEY: child_url, "rel": "parent"},
-        {STAC_HREF_KEY: explicitly_relative_item_filename, "rel": "self"},
+        {STAC_HREF_KEY: root_url, STAC_REL_KEY: STAC_REL_ROOT},
+        {STAC_HREF_KEY: child_url, STAC_REL_KEY: STAC_REL_PARENT},
+        {STAC_HREF_KEY: explicitly_relative_item_filename, STAC_REL_KEY: STAC_REL_SELF},
     ]
     url_reader = MockJSONURLReader(
         {
