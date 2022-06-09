@@ -50,7 +50,7 @@ class API(Construct):
 
         datasets_endpoint_lambda = LambdaEndpoint(
             self,
-            "datasets",
+            Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
             package_name="datasets",
             env_name=env_name,
             users_role=api_users_role,
@@ -59,7 +59,7 @@ class API(Construct):
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
             self,
-            "dataset-versions",
+            Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
             package_name="dataset_versions",
             env_name=env_name,
             users_role=api_users_role,
@@ -78,7 +78,7 @@ class API(Construct):
 
         import_status_endpoint_lambda = LambdaEndpoint(
             self,
-            "import-status",
+            Resource.IMPORT_STATUS_ENDPOINT_FUNCTION_NAME.resource_name,
             package_name="import_status",
             env_name=env_name,
             users_role=api_users_role,
