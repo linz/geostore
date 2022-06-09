@@ -6,7 +6,7 @@ from random import choice, randrange
 from string import ascii_letters, ascii_lowercase, digits
 from time import sleep
 from types import TracebackType
-from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Type, Union, get_args
+from typing import Any, BinaryIO, Dict, List, Optional, Sequence, Text, Tuple, Type, Union, get_args
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -17,6 +17,10 @@ from mypy_boto3_s3.type_defs import DeleteTypeDef, ObjectIdentifierTypeDef
 from mypy_boto3_s3control import S3ControlClient
 from mypy_boto3_s3control.literals import JobStatusType
 from mypy_boto3_s3control.type_defs import DescribeJobResultTypeDef
+from pynamodb.expressions.condition import Condition
+from pynamodb.expressions.update import Action
+from pynamodb.models import _T, _KeyType
+from pynamodb.settings import OperationSettings
 from pytest_subtests import SubTests
 
 from geostore.boto3_config import CONFIG
@@ -27,6 +31,7 @@ from geostore.models import CHECK_ID_PREFIX, DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import CONTENTS_KEY
 from geostore.processing_assets_model import (
+    ProcessingAssetType,
     ProcessingAssetsModelBase,
     processing_assets_model_with_meta,
 )
@@ -163,7 +168,9 @@ def any_operation_name() -> str:
 
 
 class Dataset:
-    def __init__(self, *, title: Optional[str] = None):
+    def __init__(
+        self, *, title: Optional[str] = None, current_dataset_version: Optional[str] = None
+    ):
         if title is None:
             title = any_dataset_title()
 
@@ -175,6 +182,7 @@ class Dataset:
             title=title,
             created_at=any_past_datetime(),
             updated_at=any_past_datetime(),
+            current_dataset_version=current_dataset_version,
         )
 
     def __enter__(self) -> DatasetsModelBase:
@@ -199,6 +207,7 @@ class ProcessingAsset:
         url: str,
         *,
         multihash: Optional[str] = None,
+        exists_in_staging: Optional[bool] = None,
     ):
         prefix = "METADATA" if multihash is None else "DATA"
 
@@ -208,6 +217,7 @@ class ProcessingAsset:
             range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
             url=url,
             multihash=multihash,
+            exists_in_staging=exists_in_staging,
         )
         ProcessingAsset.index += 1
 
@@ -222,6 +232,50 @@ class ProcessingAsset:
         exc_tb: Optional[TracebackType],
     ) -> None:
         self._item.delete()
+
+
+def processing_assets_model_with_meta_mock(
+    given_hash_key: str,
+    given_array_index: str,
+    url: str,
+    multihash: str,
+    exists_in_staging: Optional[bool],
+) -> Type[ProcessingAssetsModelBase]:
+    class ProcessingAssetsModelMock(ProcessingAssetsModelBase):
+        class Meta:  # pylint:disable=too-few-public-methods
+            table_name = any_table_name()
+
+        @classmethod
+        def get(  # pylint:disable=too-many-arguments
+            cls: Type[_T],
+            hash_key: _KeyType,
+            range_key: Optional[_KeyType] = None,
+            consistent_read: bool = False,
+            attributes_to_get: Optional[Sequence[Text]] = None,
+            settings: OperationSettings = OperationSettings.default,
+        ) -> _T:
+            assert hash_key == given_hash_key
+            assert (
+                range_key
+                == f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{given_array_index}"
+            )
+            return cls(
+                hash_key=given_hash_key,
+                range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
+                url=url,
+                multihash=multihash,
+                exists_in_staging=exists_in_staging,
+            )
+
+        def update(
+            self,
+            actions: List[Action],
+            condition: Optional[Condition] = None,
+            settings: OperationSettings = OperationSettings.default,
+        ) -> Any:
+            return self
+
+    return ProcessingAssetsModelMock
 
 
 class ValidationItem:
@@ -286,8 +340,9 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 
 class MockGeostoreS3Response:
     # pylint: disable=too-few-public-methods
-    def __init__(self, response: Union[JsonObject, StreamingBody]):
+    def __init__(self, response: Union[JsonObject, StreamingBody], file_in_staging: bool):
         self.response = response
+        self.file_in_staging = file_in_staging
 
 
 class MockJSONURLReader(Mock):

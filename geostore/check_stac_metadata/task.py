@@ -61,7 +61,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
-        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY])
+        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_PREFIX_KEY], LOGGER)
     except ClientError as error:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}
