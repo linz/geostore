@@ -37,8 +37,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     success = not bool(
         validation_results_model.validation_outcome_index.count(
             (
-                f"{DATASET_ID_PREFIX}{event['dataset_id']}"
-                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
+                f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}"
+                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event[NEW_VERSION_ID_KEY]}"
             ),
             range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
             limit=1,

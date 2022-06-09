@@ -108,7 +108,8 @@ def should_validate_given_index(
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
+        f"--new-version-id={version_id}",
+        f"--current-version-id={None}",
         f"--dataset-prefix={any_dataset_prefix()}",
         "--first-item=0",
         f"--assets-table-name={any_table_name()}",
@@ -166,7 +167,8 @@ def should_log_error_when_validation_fails(
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
-        f"--version-id={dataset_version_id}",
+        f"--new-version-id={dataset_version_id}",
+        f"--current-version-id={None}",
         f"--dataset-prefix={any_dataset_prefix()}",
         "--first-item=0",
         f"--assets-table-name={any_table_name()}",
@@ -232,7 +234,8 @@ def should_successfully_validate_asset_not_in_staging(
         sys.argv = [
             any_program_name(),
             f"--dataset-id={dataset.dataset_id}",
-            f"--version-id={dataset_version_id}",
+            f"--new-version-id={dataset_version_id}",
+            f"--current-version-id={None}",
             f"--dataset-prefix={dataset.dataset_prefix}",
             "--first-item=0",
             f"--assets-table-name={assets_table_name}",
@@ -306,7 +309,7 @@ def should_save_file_not_found_validation_results(
         sys.argv = [
             any_program_name(),
             f"--dataset-id={dataset.dataset_id}",
-            f"--version-id={dataset_version_id}",
+            f"--new-version-id={dataset_version_id}",
             f"--dataset-prefix={dataset.dataset_prefix}",
             "--first-item=0",
             f"--assets-table-name={any_table_name()}",

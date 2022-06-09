@@ -22,6 +22,7 @@ from ..logging_keys import (
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function_keys import (
+    CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_ID_SHORT_KEY,
     DATASET_PREFIX_KEY,
@@ -81,12 +82,14 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
+    current_dataset_version = dataset.current_dataset_version
 
     # execute step function
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
         DATASET_PREFIX_KEY: dataset.dataset_prefix,
         NEW_VERSION_ID_KEY: dataset_version_id,
+        CURRENT_VERSION_ID_KEY: current_dataset_version,
         METADATA_URL_KEY: body[METADATA_URL_KEY],
         S3_ROLE_ARN_KEY: body[S3_ROLE_ARN_KEY],
     }

@@ -18,7 +18,7 @@ def should_require_dataset_id() -> None:
 def should_require_dataset_version() -> None:
     response = lambda_handler({DATASET_ID_KEY: any_dataset_id()}, any_lambda_context())
 
-    assert response == {ERROR_MESSAGE_KEY: "'version_id' is a required property"}
+    assert response == {ERROR_MESSAGE_KEY: "'new_version_id' is a required property"}
 
 
 @patch("geostore.validation_summary.task.validation_results_model_with_meta")
