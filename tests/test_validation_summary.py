@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from geostore.api_keys import SUCCESS_KEY
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
-from geostore.step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from geostore.step_function_keys import DATASET_ID_KEY, NEW_VERSION_ID_KEY
 from geostore.validation_summary.task import lambda_handler
 
 from .aws_utils import any_lambda_context
@@ -10,7 +10,7 @@ from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 def should_require_dataset_id() -> None:
-    response = lambda_handler({VERSION_ID_KEY: any_dataset_version_id()}, any_lambda_context())
+    response = lambda_handler({NEW_VERSION_ID_KEY: any_dataset_version_id()}, any_lambda_context())
 
     assert response == {ERROR_MESSAGE_KEY: "'dataset_id' is a required property"}
 
@@ -29,7 +29,7 @@ def should_return_success_false_if_any_validation_results_are_unsuccessful(
     validation_results_model_mock.return_value.validation_outcome_index.count.return_value = 1
 
     response = lambda_handler(
-        {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()},
+        {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()},
         any_lambda_context(),
     )
 

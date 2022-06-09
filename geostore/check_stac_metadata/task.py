@@ -18,8 +18,8 @@ from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from ..types import JsonObject
 from ..validation_results_model import ValidationResultFactory
@@ -39,7 +39,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
-                    VERSION_ID_KEY: {"type": "string"},
+                    NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                     S3_ROLE_ARN_KEY: {"type": "string"},
                     DATASET_PREFIX_KEY: {"type": "string"},
@@ -49,7 +49,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     DATASET_PREFIX_KEY,
                     METADATA_URL_KEY,
                     S3_ROLE_ARN_KEY,
-                    VERSION_ID_KEY,
+                    NEW_VERSION_ID_KEY,
                 ],
                 "additionalProperties": True,
             },
@@ -66,7 +66,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}
 
-    hash_key = get_hash_key(event[DATASET_ID_KEY], event[VERSION_ID_KEY])
+    hash_key = get_hash_key(event[DATASET_ID_KEY], event[NEW_VERSION_ID_KEY])
 
     validation_result_factory = ValidationResultFactory(
         hash_key, get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)

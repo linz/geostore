@@ -13,8 +13,8 @@ from ..step_function_keys import (
     IMPORT_DATASET_KEY,
     JOB_STATUS_RUNNING,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from ..types import JsonObject
 
@@ -33,7 +33,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             "type": "object",
             "properties": {
                 DATASET_ID_KEY: {"type": "string"},
-                VERSION_ID_KEY: {"type": "string"},
+                NEW_VERSION_ID_KEY: {"type": "string"},
                 VALIDATION_KEY: {
                     "type": "object",
                     "properties": {SUCCESS_KEY: {"type": "boolean"}},
@@ -48,14 +48,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     "required": [METADATA_JOB_ID_KEY, ASSET_JOB_ID_KEY],
                 },
             },
-            "required": [DATASET_ID_KEY, VERSION_ID_KEY, VALIDATION_KEY, IMPORT_DATASET_KEY],
+            "required": [DATASET_ID_KEY, NEW_VERSION_ID_KEY, VALIDATION_KEY, IMPORT_DATASET_KEY],
         },
     )
 
     raw_import_status = get_tasks_status(
         JOB_STATUS_RUNNING,
         event[DATASET_ID_KEY],
-        event[VERSION_ID_KEY],
+        event[NEW_VERSION_ID_KEY],
         event[VALIDATION_KEY][SUCCESS_KEY],
         {
             METADATA_JOB_ID_KEY: event[IMPORT_DATASET_KEY][METADATA_JOB_ID_KEY],

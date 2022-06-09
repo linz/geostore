@@ -25,11 +25,11 @@ from .step_function_keys import (
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     S3_BATCH_STATUS_FAILED,
     STATUS_KEY,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from .sts import get_account_number
 from .types import JsonList, JsonObject
@@ -103,7 +103,7 @@ def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     step_function_status = step_function_resp["status"]
 
     dataset_id = step_function_input[DATASET_ID_KEY]
-    version_id = step_function_input[VERSION_ID_KEY]
+    version_id = step_function_input[NEW_VERSION_ID_KEY]
     validation_success = step_function_output.get(VALIDATION_KEY, {}).get(SUCCESS_KEY)
     import_dataset_jobs = step_function_output.get(IMPORT_DATASET_KEY, {})
 

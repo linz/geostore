@@ -30,12 +30,12 @@ from geostore.step_function_keys import (
     JOB_STATUS_FAILED,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     OUTPUT_KEY,
     S3_BATCH_STATUS_COMPLETE,
     S3_BATCH_STATUS_FAILED,
     STEP_FUNCTION_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.types import JsonObject
 from geostore.validation_results_model import ValidationResult
@@ -72,7 +72,7 @@ def should_report_upload_status_as_pending_when_validation_incomplete(
     describe_execution_mock.return_value = {
         "status": "RUNNING",
         "input": dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
 
@@ -108,7 +108,7 @@ def should_retrieve_validation_failures(describe_step_function_mock: MagicMock) 
 
     describe_step_function_mock.return_value = {
         "status": "SUCCEEDED",
-        "input": dumps({DATASET_ID_KEY: dataset_id, VERSION_ID_KEY: version_id}),
+        "input": dumps({DATASET_ID_KEY: dataset_id, NEW_VERSION_ID_KEY: version_id}),
         "output": dumps({VALIDATION_KEY: {SUCCESS_KEY: False}}),
     }
 
@@ -173,7 +173,7 @@ def should_report_s3_batch_upload_task_failures(
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_SUCCEEDED,
         INPUT_KEY: dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
         OUTPUT_KEY: dumps(
             {
@@ -238,7 +238,7 @@ def should_report_s3_batch_upload_failures(
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_SUCCEEDED,
         INPUT_KEY: dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
         OUTPUT_KEY: dumps(
             {
@@ -313,7 +313,7 @@ def should_report_validation_as_skipped_if_not_started_due_to_failing_pipeline(
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_FAILED,
         INPUT_KEY: dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
         OUTPUT_KEY: dumps({}),
     }
@@ -352,7 +352,7 @@ def should_fail_validation_if_it_has_errors_but_step_function_does_not_report_st
     describe_step_function_mock.return_value = {
         STATUS_KEY: JOB_STATUS_FAILED,
         INPUT_KEY: dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
         OUTPUT_KEY: dumps({}),
     }

@@ -29,8 +29,8 @@ from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from ..sts import get_account_number
 from ..types import JsonObject
@@ -184,7 +184,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
                     DATASET_PREFIX_KEY: {"type": "string"},
-                    VERSION_ID_KEY: {"type": "string"},
+                    NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                     S3_ROLE_ARN_KEY: {"type": "string"},
                 },
@@ -193,7 +193,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                     DATASET_PREFIX_KEY,
                     METADATA_URL_KEY,
                     S3_ROLE_ARN_KEY,
-                    VERSION_ID_KEY,
+                    NEW_VERSION_ID_KEY,
                 ],
             },
         )
@@ -206,7 +206,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     importer = Importer(
         event[DATASET_ID_KEY],
         event[DATASET_PREFIX_KEY],
-        event[VERSION_ID_KEY],
+        event[NEW_VERSION_ID_KEY],
         source_bucket_name,
         event[S3_ROLE_ARN_KEY],
     )

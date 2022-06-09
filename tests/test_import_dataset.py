@@ -28,8 +28,8 @@ from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.sts import get_account_number
 
@@ -64,7 +64,7 @@ def should_return_error_when_missing_required_property(subtests: SubTests) -> No
         DATASET_PREFIX_KEY: any_dataset_prefix(),
         METADATA_URL_KEY: any_s3_url(),
         S3_ROLE_ARN_KEY: any_role_arn(),
-        VERSION_ID_KEY: any_dataset_version_id(),
+        NEW_VERSION_ID_KEY: any_dataset_version_id(),
     }
 
     # When
@@ -172,7 +172,7 @@ def should_batch_copy_files_to_storage(
                     {
                         DATASET_ID_KEY: dataset.dataset_id,
                         DATASET_PREFIX_KEY: dataset.dataset_prefix,
-                        VERSION_ID_KEY: version_id,
+                        NEW_VERSION_ID_KEY: version_id,
                         METADATA_URL_KEY: root_metadata_s3_object.url,
                         S3_ROLE_ARN_KEY: get_s3_role_arn(),
                     },

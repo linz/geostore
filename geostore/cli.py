@@ -23,9 +23,9 @@ from .step_function_keys import (
     DESCRIPTION_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
     TITLE_KEY,
-    VERSION_ID_KEY,
 )
 from .types import JsonList, JsonObject
 
@@ -157,7 +157,7 @@ def dataset_version_create(
     ),
 ) -> None:
     def get_output(response_body: JsonObject) -> str:
-        return f"{response_body[VERSION_ID_KEY]}\t{response_body[EXECUTION_ARN_KEY]}"
+        return f"{response_body[NEW_VERSION_ID_KEY]}\t{response_body[EXECUTION_ARN_KEY]}"
 
     handle_api_request(
         Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,

@@ -14,9 +14,9 @@ from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.update_root_catalog.task import lambda_handler
 
@@ -50,7 +50,7 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
                 DATASET_PREFIX_KEY: dataset.dataset_prefix,
-                VERSION_ID_KEY: version_id,
+                NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
                 S3_ROLE_ARN_KEY: any_role_arn(),
             },
@@ -98,7 +98,7 @@ def should_return_required_property_error_when_missing_mandatory_property(
         response = lambda_handler(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
-                VERSION_ID_KEY: any_dataset_version_id(),
+                NEW_VERSION_ID_KEY: any_dataset_version_id(),
             },
             any_lambda_context(),
         )

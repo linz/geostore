@@ -15,9 +15,9 @@ from geostore.step_function_keys import (
     FAILURE_REASONS_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     STATUS_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.types import JsonObject
 from geostore.upload_status.task import lambda_handler
@@ -86,7 +86,7 @@ def should_report_upload_statuses(
     response = lambda_handler(
         {
             DATASET_ID_KEY: any_dataset_id(),
-            VERSION_ID_KEY: any_dataset_version_id(),
+            NEW_VERSION_ID_KEY: any_dataset_version_id(),
             VALIDATION_KEY: {SUCCESS_KEY: True},
             IMPORT_DATASET_KEY: {
                 METADATA_JOB_ID_KEY: metadata_job_id,

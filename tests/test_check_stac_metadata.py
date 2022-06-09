@@ -63,8 +63,8 @@ from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -122,7 +122,7 @@ def should_succeed_with_validation_failure(
         lambda_handler(
             {
                 DATASET_ID_KEY: any_dataset_id(),
-                VERSION_ID_KEY: any_dataset_version_id(),
+                NEW_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -154,7 +154,7 @@ def should_save_non_s3_url_validation_results(
         lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
-                VERSION_ID_KEY: version_id,
+                NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: non_s3_url,
                 S3_ROLE_ARN_KEY: any_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -255,7 +255,7 @@ def should_save_staging_access_validation_results(
     lambda_handler(
         {
             DATASET_ID_KEY: dataset_id,
-            VERSION_ID_KEY: version_id,
+            NEW_VERSION_ID_KEY: version_id,
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
             DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -301,7 +301,7 @@ def should_save_file_not_found_validation_results(
     lambda_handler(
         {
             DATASET_ID_KEY: dataset_id,
-            VERSION_ID_KEY: version_id,
+            NEW_VERSION_ID_KEY: version_id,
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
             DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -360,7 +360,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         assert lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
-                VERSION_ID_KEY: version_id,
+                NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: root_s3_object.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -485,7 +485,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
             assert lambda_handler(
                 {
                     DATASET_ID_KEY: dataset_id,
-                    VERSION_ID_KEY: version_id,
+                    NEW_VERSION_ID_KEY: version_id,
                     METADATA_URL_KEY: metadata_s3_object.url,
                     S3_ROLE_ARN_KEY: get_s3_role_arn(),
                     DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -590,7 +590,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
         assert lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
-                VERSION_ID_KEY: version_id,
+                NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: catalog_metadata_file.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
                 DATASET_PREFIX_KEY: dataset_prefix,

@@ -22,12 +22,12 @@ from ..step_function_keys import (
     INPUT_KEY,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
     OUTPUT_KEY,
     STATUS_KEY,
     UPDATE_DATASET_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from ..types import JsonObject
 
@@ -104,7 +104,9 @@ def post_to_slack(event: JsonObject) -> None:
         blocks.SectionBlock(text=f"*Status:* {event_details[STATUS_KEY]}"),
         blocks.DividerBlock(),
         blocks.SectionBlock(text=f"*Dataset ID:* `{step_function_input[DATASET_PREFIX_KEY]}`"),
-        blocks.SectionBlock(text=f"*Dataset Version ID:* `{step_function_input[VERSION_ID_KEY]}`"),
+        blocks.SectionBlock(
+            text=f"*Dataset Version ID:* `{step_function_input[NEW_VERSION_ID_KEY]}`"
+        ),
         blocks.SectionBlock(text=f"*Execution ARN:* `{event_details[STEP_FUNCTION_ARN_KEY]}`"),
         blocks.DividerBlock(),
         blocks.SectionBlock(text=f"*Running Time:* {running_time}"),

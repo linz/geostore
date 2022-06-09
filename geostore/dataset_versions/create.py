@@ -27,9 +27,9 @@ from ..step_function_keys import (
     DATASET_PREFIX_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     NOW_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from ..types import JsonObject
 
@@ -86,7 +86,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
         DATASET_PREFIX_KEY: dataset.dataset_prefix,
-        VERSION_ID_KEY: dataset_version_id,
+        NEW_VERSION_ID_KEY: dataset_version_id,
         METADATA_URL_KEY: body[METADATA_URL_KEY],
         S3_ROLE_ARN_KEY: body[S3_ROLE_ARN_KEY],
     }
@@ -106,7 +106,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     return success_response(
         HTTPStatus.CREATED,
         {
-            VERSION_ID_KEY: dataset_version_id,
+            NEW_VERSION_ID_KEY: dataset_version_id,
             EXECUTION_ARN_KEY: step_functions_response["executionArn"],
         },
     )
