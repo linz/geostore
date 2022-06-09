@@ -23,12 +23,13 @@
 It should be possible to follow this guide step by step to import a dataset from your personal test
 stack into nonprod.
 
+Production values are mentioned below.
+
 1. Set up properties of the target account, in this case nonprod:
 
    ```shell
-   export GEOSTORE_AWS_ACCOUNT_ID=632223577832
-   stack_prefix='nonprod'
-   export GEOSTORE_USER_ROLE_NAME="${stack_prefix}-api-users"
+   export GEOSTORE_AWS_ACCOUNT_ID=632223577832 # Use 715898075157 in production
+   export GEOSTORE_USER_ROLE_NAME="nonprod-api-users" # Use "api-users" in production
    ```
 
 1. Set up properties of the source account and resources you're about to create there:
@@ -99,35 +100,35 @@ stack into nonprod.
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"
    ```
 
-1. Create a new dataset:
+1. Create a new dataset (use `--function-name="datasets"` in production):
 
    ```shell
    dataset_id="$(
        aws lambda invoke \
-           --function-name="${stack_prefix}-datasets" \
+           --function-name="nonprod-datasets" \
            --payload "{\"http_method\": \"POST\", \"body\": {\"title\": \"test_$(date +%s)\", \"description\": \"Description\"}}" \
            /dev/stdout \
        | jq --raw-output '.body.id // empty'
    )"
    ```
 
-1. Create a dataset version:
+1. Create a dataset version (use `--function-name="dataset-versions"` in production):
 
    ```shell
    execution_arn="$(
        aws lambda invoke \
-           --function-name="${stack_prefix}-dataset-versions" \
+           --function-name="nonprod-dataset-versions" \
            --payload "{\"http_method\": \"POST\", \"body\": {\"id\": \"${dataset_id}\", \"metadata_url\": \"${metadata_url}\", \"s3_role_arn\": \"${role_arn}\"}}" \
            /dev/stdout \
        | jq --raw-output '.body.execution_arn // empty'
    )"
    ```
 
-1. Poll for the import to finish:
+1. Poll for the import to finish (use `--function-name="import-status"` in production):
 
    ```shell
    aws lambda invoke \
-       --function-name="${stack_prefix}-import-status" \
+       --function-name="nonprod-import-status" \
        --payload "{\"http_method\": \"GET\", \"body\": {\"execution_arn\": \"${execution_arn}\"}}" \
        /dev/stdout
    ```
