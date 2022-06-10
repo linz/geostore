@@ -18,14 +18,11 @@
 -  The formatting of code, configuration and commits are enforced by Git hooks
    -  Use [Conventional Commits](https://www.conventionalcommits.org/) style commit messages
 
-## How to test a full import to nonprod
+## How to test a full import
 
-It should be possible to follow this guide step by step to import a dataset from your personal test
-stack into nonprod.
+Follow this guide step by step to import a dataset from your personal test stack.
 
-Production values are mentioned below.
-
-1. Set up properties of the target account, in this case nonprod:
+1. Set up properties:
 
    ```shell
    export GEOSTORE_AWS_ACCOUNT_ID=632223577832 # Use 715898075157 in production
@@ -94,13 +91,13 @@ Production values are mentioned below.
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"
    ```
 
-1. Assume the API users role (use `--role-name=api-users` in production):
+1. Assume the API users role:
 
    ```shell
    aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
    ```
 
-1. Create a new dataset (use `--function-name="datasets"` in production):
+1. Create a new dataset:
 
    ```shell
    dataset_id="$(
@@ -112,7 +109,7 @@ Production values are mentioned below.
    )"
    ```
 
-1. Create a dataset version (use `--function-name="dataset-versions"` in production):
+1. Create a dataset version:
 
    ```shell
    execution_arn="$(
@@ -124,7 +121,7 @@ Production values are mentioned below.
    )"
    ```
 
-1. Poll for the import to finish (use `--function-name="import-status"` in production):
+1. Poll for the import to finish:
 
    ```shell
    aws lambda invoke \
