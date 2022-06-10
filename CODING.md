@@ -18,17 +18,15 @@
 -  The formatting of code, configuration and commits are enforced by Git hooks
    -  Use [Conventional Commits](https://www.conventionalcommits.org/) style commit messages
 
-## How to test a full import to nonprod
+## How to test a full import
 
-It should be possible to follow this guide step by step to import a dataset from your personal test
-stack into nonprod.
+Follow this guide step by step to import a dataset from your personal test stack.
 
-1. Set up properties of the target account, in this case nonprod:
+1. Set up properties:
 
    ```shell
-   export GEOSTORE_AWS_ACCOUNT_ID=632223577832
-   stack_prefix='nonprod'
-   export GEOSTORE_USER_ROLE_NAME="${stack_prefix}-api-users"
+   export GEOSTORE_AWS_ACCOUNT_ID=632223577832 # Use 715898075157 in production
+   export GEOSTORE_USER_ROLE_NAME="nonprod-api-users" # Use "api-users" in production
    ```
 
 1. Set up properties of the source account and resources you're about to create there:
@@ -87,16 +85,16 @@ stack into nonprod.
        --policy="{\"Id\": \"Policy$(date +%s)\", \"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"Stmt$(date +%s)\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectAcl\", \"s3:GetObjectTagging\"], \"Effect\": \"Allow\", \"Resource\": \"arn:aws:s3:::${bucket_name}/*\", \"Principal\": {\"AWS\": [\"${role_arn}\"]}}]}"
    ```
 
-1. Change the AWS profile to the target one:
-
-   ```shell
-   AWS_PROFILE='TARGET_PROFILE_ID'
-   ```
-
-1. Assume the `${stack_prefix}-api-users` role on the target profile:
+1. Log in to any LINZ AWS account:
 
    ```shell
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"
+   ```
+
+1. Assume the API users role:
+
+   ```shell
+   aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
    ```
 
 1. Create a new dataset:
@@ -104,7 +102,7 @@ stack into nonprod.
    ```shell
    dataset_id="$(
        aws lambda invoke \
-           --function-name="${stack_prefix}-datasets" \
+           --function-name="nonprod-datasets" \
            --payload "{\"http_method\": \"POST\", \"body\": {\"title\": \"test_$(date +%s)\", \"description\": \"Description\"}}" \
            /dev/stdout \
        | jq --raw-output '.body.id // empty'
@@ -116,7 +114,7 @@ stack into nonprod.
    ```shell
    execution_arn="$(
        aws lambda invoke \
-           --function-name="${stack_prefix}-dataset-versions" \
+           --function-name="nonprod-dataset-versions" \
            --payload "{\"http_method\": \"POST\", \"body\": {\"id\": \"${dataset_id}\", \"metadata_url\": \"${metadata_url}\", \"s3_role_arn\": \"${role_arn}\"}}" \
            /dev/stdout \
        | jq --raw-output '.body.execution_arn // empty'
@@ -127,7 +125,7 @@ stack into nonprod.
 
    ```shell
    aws lambda invoke \
-       --function-name="${stack_prefix}-import-status" \
+       --function-name="nonprod-import-status" \
        --payload "{\"http_method\": \"GET\", \"body\": {\"execution_arn\": \"${execution_arn}\"}}" \
        /dev/stdout
    ```
