@@ -15,7 +15,7 @@ from geostore.step_function_keys import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, 
 
 from .aws_utils import Dataset, any_role_arn, any_s3_url
 from .general_generators import any_error_message
-from .stac_generators import any_dataset_id
+from .stac_generators import any_dataset_id, any_dataset_version_id
 
 
 @mark.infrastructure
@@ -46,7 +46,7 @@ def should_log_step_function_state_machine_response(start_execution_mock: MagicM
     # Given
     start_execution_mock.return_value = step_function_response = {"executionArn": "Some Response"}
 
-    with Dataset() as dataset, patch(
+    with Dataset(current_dataset_version=any_dataset_version_id()) as dataset, patch(
         "geostore.dataset_versions.create.LOGGER.debug"
     ) as logger_mock:
         event = {

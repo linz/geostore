@@ -124,7 +124,7 @@ def should_succeed_with_validation_failure(
             {
                 DATASET_ID_KEY: any_dataset_id(),
                 NEW_VERSION_ID_KEY: any_dataset_version_id(),
-                CURRENT_VERSION_ID_KEY: None,
+                CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -157,7 +157,7 @@ def should_save_non_s3_url_validation_results(
             {
                 DATASET_ID_KEY: dataset_id,
                 NEW_VERSION_ID_KEY: version_id,
-                CURRENT_VERSION_ID_KEY: None,
+                CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: non_s3_url,
                 S3_ROLE_ARN_KEY: any_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -259,6 +259,7 @@ def should_save_staging_access_validation_results(
         {
             DATASET_ID_KEY: dataset_id,
             NEW_VERSION_ID_KEY: version_id,
+            CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
             DATASET_PREFIX_KEY: any_dataset_prefix(),
@@ -365,7 +366,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
             {
                 DATASET_ID_KEY: dataset_id,
                 NEW_VERSION_ID_KEY: version_id,
-                CURRENT_VERSION_ID_KEY: None,
+                CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: root_s3_object.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
                 DATASET_PREFIX_KEY: any_dataset_prefix(),
