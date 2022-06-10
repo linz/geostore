@@ -137,13 +137,13 @@ Example of assuming the Geostore roles from a LINZ AWS account:
    -  API user:
 
       ```bash
-      aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
+      aws sts assume-role --role-arn="$(aws iam get-role --role-name=api-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
       ```
 
    -  S3 user:
 
       ```bash
-      aws sts assume-role --role-arn="$(aws iam get-role --role-name=nonprod-s3-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
+      aws sts assume-role --role-arn="$(aws iam get-role --role-name=s3-users | jq --raw-output .Role.Arn)" --role-session-name="$USER"
       ```
 
 ## Use
