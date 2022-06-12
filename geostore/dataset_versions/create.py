@@ -82,7 +82,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
-    current_dataset_version = dataset.current_dataset_version or ""
+    current_dataset_version = dataset.current_dataset_version or "None"
 
     # execute step function
     step_functions_input = {

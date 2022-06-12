@@ -18,7 +18,7 @@ def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--dataset-id", required=True)
     argument_parser.add_argument("--new-version-id", required=True)
-    argument_parser.add_argument("--current-version-id")
+    argument_parser.add_argument("--current-version-id", required=True)
     argument_parser.add_argument("--dataset-prefix", required=True)
     argument_parser.add_argument("--first-item", type=int, required=True)
     argument_parser.add_argument("--results-table-name", required=True)
