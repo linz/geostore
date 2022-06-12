@@ -6,8 +6,8 @@ from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,
+    NEW_VERSION_ID_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.upload_status.task import lambda_handler
 
@@ -22,7 +22,7 @@ def should_log_event(get_tasks_status_mock: MagicMock) -> None:
 
     event = {
         DATASET_ID_KEY: any_dataset_id(),
-        VERSION_ID_KEY: any_dataset_version_id(),
+        NEW_VERSION_ID_KEY: any_dataset_version_id(),
         VALIDATION_KEY: {SUCCESS_KEY: True},
         IMPORT_DATASET_KEY: {
             METADATA_JOB_ID_KEY: any_job_id(),

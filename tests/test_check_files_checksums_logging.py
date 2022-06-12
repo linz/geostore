@@ -41,7 +41,8 @@ def should_log_missing_item(subtests: SubTests) -> None:
     sys.argv = [
         any_program_name(),
         f"--dataset-id={dataset_id}",
-        f"--version-id={version_id}",
+        f"--new-version-id={version_id}",
+        f"--current-version-id={None}",
         f"--dataset-prefix={any_dataset_prefix()}",
         f"--first-item={index}",
         f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",

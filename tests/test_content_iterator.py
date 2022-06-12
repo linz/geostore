@@ -22,8 +22,8 @@ from geostore.step_function import get_hash_key
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 
 from .aws_utils import (
@@ -41,7 +41,7 @@ INITIAL_EVENT: Dict[str, Any] = {
     DATASET_ID_KEY: any_dataset_id(),
     METADATA_URL_KEY: any_s3_url(),
     S3_ROLE_ARN_KEY: any_role_arn(),
-    VERSION_ID_KEY: any_dataset_version_id(),
+    NEW_VERSION_ID_KEY: any_dataset_version_id(),
 }
 
 SUBSEQUENT_EVENT: Dict[str, Any] = {
@@ -53,14 +53,14 @@ SUBSEQUENT_EVENT: Dict[str, Any] = {
     DATASET_ID_KEY: any_dataset_id(),
     METADATA_URL_KEY: any_s3_url(),
     S3_ROLE_ARN_KEY: any_role_arn(),
-    VERSION_ID_KEY: any_dataset_version_id(),
+    NEW_VERSION_ID_KEY: any_dataset_version_id(),
 }
 
 
 def should_raise_exception_if_event_is_missing_required_property(
     subtests: SubTests,
 ) -> None:
-    for property_name in [DATASET_ID_KEY, METADATA_URL_KEY, VERSION_ID_KEY]:
+    for property_name in [DATASET_ID_KEY, METADATA_URL_KEY, NEW_VERSION_ID_KEY]:
         event = deepcopy(INITIAL_EVENT)
         del event[property_name]
         expected_message = f"'{property_name}' is a required property"
@@ -254,7 +254,7 @@ def should_return_content_when_remaining_item_count_is_more_than_iteration_size(
 def should_count_only_asset_files() -> None:
     # Given a single metadata and asset entry in the database
     event = deepcopy(INITIAL_EVENT)
-    hash_key = get_hash_key(event[DATASET_ID_KEY], event[VERSION_ID_KEY])
+    hash_key = get_hash_key(event[DATASET_ID_KEY], event[NEW_VERSION_ID_KEY])
     processing_assets_model = processing_assets_model_with_meta()
     processing_assets_model(
         hash_key=hash_key,

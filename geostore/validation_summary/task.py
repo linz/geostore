@@ -8,7 +8,7 @@ from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import LOG_MESSAGE_LAMBDA_START, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..step_function import Outcome
-from ..step_function_keys import DATASET_ID_KEY, VERSION_ID_KEY
+from ..step_function_keys import DATASET_ID_KEY, NEW_VERSION_ID_KEY
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, validation_results_model_with_meta
 
@@ -25,9 +25,9 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
-                    VERSION_ID_KEY: {"type": "string"},
+                    NEW_VERSION_ID_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, VERSION_ID_KEY],
+                "required": [DATASET_ID_KEY, NEW_VERSION_ID_KEY],
             },
         )
     except ValidationError as error:
@@ -37,8 +37,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     success = not bool(
         validation_results_model.validation_outcome_index.count(
             (
-                f"{DATASET_ID_PREFIX}{event['dataset_id']}"
-                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event['version_id']}"
+                f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}"
+                f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event[NEW_VERSION_ID_KEY]}"
             ),
             range_key_condition=validation_results_model.result == ValidationResult.FAILED.value,
             limit=1,

@@ -27,11 +27,13 @@ from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
+    CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_BATCH_STATUS_CANCELLED,
     S3_BATCH_STATUS_COMPLETE,
     S3_BATCH_STATUS_FAILED,
@@ -39,7 +41,6 @@ from geostore.step_function_keys import (
     UPDATE_DATASET_KEY,
     UPLOAD_STATUS_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 
 from .batch_job_queue import BatchJobQueue
@@ -165,7 +166,8 @@ class Processing(Construct):
         check_files_checksums_directory = "check_files_checksums"
         check_files_checksums_default_payload_object = {
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
-            f"{VERSION_ID_KEY}.$": f"$.{VERSION_ID_KEY}",
+            f"{NEW_VERSION_ID_KEY}.$": f"$.{NEW_VERSION_ID_KEY}",
+            f"{CURRENT_VERSION_ID_KEY}.$": f"$.{CURRENT_VERSION_ID_KEY}",
             f"{DATASET_PREFIX_KEY}.$": f"$.{DATASET_PREFIX_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
             f"{S3_ROLE_ARN_KEY}.$": f"$.{S3_ROLE_ARN_KEY}",
@@ -184,8 +186,10 @@ class Processing(Construct):
             container_overrides_command=[
                 "--dataset-id",
                 f"Ref::{DATASET_ID_KEY}",
-                "--version-id",
-                f"Ref::{VERSION_ID_KEY}",
+                "--new-version-id",
+                f"Ref::{NEW_VERSION_ID_KEY}",
+                "--current-version-id",
+                f"Ref::{CURRENT_VERSION_ID_KEY}",
                 "--dataset-prefix",
                 f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",
@@ -212,8 +216,10 @@ class Processing(Construct):
             container_overrides_command=[
                 "--dataset-id",
                 f"Ref::{DATASET_ID_KEY}",
-                "--version-id",
-                f"Ref::{VERSION_ID_KEY}",
+                "--new-version-id",
+                f"Ref::{NEW_VERSION_ID_KEY}",
+                "--current-version-id",
+                f"Ref::{CURRENT_VERSION_ID_KEY}",
                 "--dataset-prefix",
                 f"Ref::{DATASET_PREFIX_KEY}",
                 "--first-item",

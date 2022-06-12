@@ -17,7 +17,8 @@ LOGGER: Logger = get_log()
 def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--dataset-id", required=True)
-    argument_parser.add_argument("--version-id", required=True)
+    argument_parser.add_argument("--new-version-id", required=True)
+    argument_parser.add_argument("--current-version-id", required=True)
     argument_parser.add_argument("--dataset-prefix", required=True)
     argument_parser.add_argument("--first-item", type=int, required=True)
     argument_parser.add_argument("--results-table-name", required=True)
@@ -30,7 +31,7 @@ def main() -> None:
     arguments = parse_arguments()
 
     index = arguments.first_item + get_job_offset()
-    hash_key = get_hash_key(arguments.dataset_id, arguments.version_id)
+    hash_key = get_hash_key(arguments.dataset_id, arguments.new_version_id)
     range_key = f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}"
 
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)

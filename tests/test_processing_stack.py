@@ -64,11 +64,11 @@ from geostore.step_function_keys import (
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
     STEP_FUNCTION_KEY,
     TITLE_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.sts import get_account_number
 
@@ -857,7 +857,9 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
 
                 assert (execution_output := execution.get("output")), execution
 
-                hash_key = get_hash_key(dataset.dataset_id, dataset_versions_body[VERSION_ID_KEY])
+                hash_key = get_hash_key(
+                    dataset.dataset_id, dataset_versions_body[NEW_VERSION_ID_KEY]
+                )
 
                 processing_assets_model = processing_assets_model_with_meta()
                 expected_metadata_items = [

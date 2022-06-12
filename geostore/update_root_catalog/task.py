@@ -18,8 +18,8 @@ from ..step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
-    VERSION_ID_KEY,
 )
 from ..types import JsonObject
 
@@ -47,10 +47,15 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
                     DATASET_PREFIX_KEY: {"type": "string"},
-                    VERSION_ID_KEY: {"type": "string"},
+                    NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                 },
-                "required": [DATASET_ID_KEY, DATASET_PREFIX_KEY, METADATA_URL_KEY, VERSION_ID_KEY],
+                "required": [
+                    DATASET_ID_KEY,
+                    DATASET_PREFIX_KEY,
+                    METADATA_URL_KEY,
+                    NEW_VERSION_ID_KEY,
+                ],
             },
         )
     except ValidationError as error:
@@ -73,7 +78,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     dataset = datasets_model.get(
         hash_key=f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}", consistent_read=True
     )
-    dataset.update(actions=[datasets_model.current_dataset_version.set(event[VERSION_ID_KEY])])
+    dataset.update(actions=[datasets_model.current_dataset_version.set(event[NEW_VERSION_ID_KEY])])
 
     return {
         NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
