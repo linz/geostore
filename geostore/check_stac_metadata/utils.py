@@ -1,7 +1,7 @@
 from functools import lru_cache
 from json import JSONDecodeError, load
 from logging import Logger
-from os.path import dirname
+from os.path import basename, dirname
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from botocore.exceptions import ClientError
@@ -133,19 +133,27 @@ class STACDatasetValidator:
 
     def process_metadata(self) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
+            asset_url = metadata_file[PROCESSING_ASSET_URL_KEY]
+            assert isinstance(asset_url, str)
+
             self.processing_assets_model(
                 hash_key=self.hash_key,
                 range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}{index}",
-                url=metadata_file[PROCESSING_ASSET_URL_KEY],
+                url=asset_url,
+                filename=basename(asset_url),
                 exists_in_staging=metadata_file[PROCESSING_ASSET_FILE_IN_STAGING_KEY],
             ).save()
 
     def process_assets(self) -> None:
         for index, asset in enumerate(self.dataset_assets):
+            asset_url = asset[PROCESSING_ASSET_URL_KEY]
+            assert isinstance(asset_url, str)
+
             self.processing_assets_model(
                 hash_key=self.hash_key,
                 range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}",
-                url=asset[PROCESSING_ASSET_URL_KEY],
+                url=asset_url,
+                filename=basename(asset_url),
                 multihash=asset[PROCESSING_ASSET_MULTIHASH_KEY],
             ).save()
 

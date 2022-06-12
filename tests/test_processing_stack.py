@@ -867,18 +867,21 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                         hash_key=hash_key,
                         range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                         url=catalog_metadata_url,
+                        filename=catalog_metadata_filename,
                         exists_in_staging=False,
                     ),
                     processing_assets_model(
                         hash_key=hash_key,
                         range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}1",
                         url=collection_metadata_url,
+                        filename=collection_metadata_filename,
                         exists_in_staging=False,
                     ),
                     processing_assets_model(
                         hash_key=hash_key,
                         range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}2",
                         url=item_metadata_url,
+                        filename=item_metadata_filename,
                         exists_in_staging=True,
                     ),
                 ]
@@ -902,6 +905,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                         range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
                         multihash=first_asset_hex_digest,
                         url=first_asset_s3_object.url,
+                        filename=first_asset_filename,
                         exists_in_staging=True,
                     ),
                     processing_assets_model(
@@ -909,6 +913,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                         range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
                         multihash=second_asset_hex_digest,
                         url=second_asset_staging_url,
+                        filename=second_asset_filename,
                         exists_in_staging=False,
                     ),
                 ]

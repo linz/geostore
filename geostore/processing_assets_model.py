@@ -19,6 +19,7 @@ class ProcessingAssetsModelBase(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     url = UnicodeAttribute()
+    filename = UnicodeAttribute()
     multihash = UnicodeAttribute(null=True)
     exists_in_staging = BooleanAttribute(null=True)
 

@@ -34,7 +34,7 @@ from .aws_utils import (
     any_s3_url,
     any_table_name,
 )
-from .general_generators import any_dictionary_key
+from .general_generators import any_dictionary_key, any_safe_filename
 from .stac_generators import any_dataset_id, any_dataset_version_id, any_hex_multihash
 
 INITIAL_EVENT: Dict[str, Any] = {
@@ -260,11 +260,13 @@ def should_count_only_asset_files() -> None:
         hash_key=hash_key,
         range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
         url=any_s3_url(),
+        filename=any_safe_filename(),
     ).save()
     processing_assets_model(
         hash_key=hash_key,
         range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
         url=any_s3_url(),
+        filename=any_safe_filename(),
         multihash=any_hex_multihash(),
     ).save()
 

@@ -423,9 +423,13 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
     # Given a metadata file with two assets
     first_asset_content = any_file_contents()
     first_asset_multihash = sha256(first_asset_content).hexdigest()
+    first_asset_filename = any_safe_filename()
 
     second_asset_content = any_file_contents()
     second_asset_multihash = sha512(second_asset_content).hexdigest()
+    second_asset_filename = any_safe_filename()
+
+    metadata_filename = any_safe_filename()
 
     dataset_id = any_dataset_id()
     version_id = any_dataset_version_id()
@@ -433,11 +437,11 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
     with S3Object(
         file_object=BytesIO(initial_bytes=first_asset_content),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-        key=any_safe_filename(),
+        key=first_asset_filename,
     ) as first_asset_s3_object, S3Object(
         file_object=BytesIO(initial_bytes=second_asset_content),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-        key=any_safe_filename(),
+        key=second_asset_filename,
     ) as second_asset_s3_object:
         expected_hash_key = get_hash_key(dataset_id, version_id)
 
@@ -459,7 +463,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         with S3Object(
             file_object=json_dict_to_file_object(metadata_stac_object),
             bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-            key=any_safe_filename(),
+            key=metadata_filename,
         ) as metadata_s3_object:
             # When
 
@@ -469,12 +473,14 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
                     url=first_asset_s3_object.url,
+                    filename=first_asset_filename,
                     multihash=first_asset_multihash,
                 ),
                 processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}1",
                     url=second_asset_s3_object.url,
+                    filename=second_asset_filename,
                     multihash=second_asset_multihash,
                 ),
             ]
@@ -484,6 +490,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                     url=metadata_s3_object.url,
+                    filename=metadata_filename,
                     exists_in_staging=True,
                 ),
             ]
@@ -653,18 +660,21 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
                     url=catalog_metadata_url,
+                    filename=catalog_metadata_filename,
                     exists_in_staging=True,
                 ),
                 processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}1",
                     url=collection_metadata_url,
+                    filename=collection_metadata_filename,
                     exists_in_staging=False,
                 ),
                 processing_assets_model(
                     hash_key=expected_hash_key,
                     range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}2",
                     url=item_metadata_url,
+                    filename=item_metadata_filename,
                     exists_in_staging=True,
                 ),
             ]
