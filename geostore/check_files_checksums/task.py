@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from argparse import ArgumentParser, Namespace
 from logging import Logger
+from optparse import OptionParser, Values  # pylint: disable=deprecated-module
 
 from linz_logger import get_log
 
@@ -23,17 +23,23 @@ S3_ROLE_ARN_ARGUMENT = "--s3-role-arn"
 LOGGER: Logger = get_log()
 
 
-def parse_arguments() -> Namespace:
-    argument_parser = ArgumentParser()
-    argument_parser.add_argument(DATASET_ID_ARGUMENT, required=True)
-    argument_parser.add_argument(NEW_VERSION_ID_ARGUMENT, required=True)
-    argument_parser.add_argument(CURRENT_VERSION_ID_ARGUMENT, required=True)
-    argument_parser.add_argument(DATASET_PREFIX_ARGUMENT, required=True)
-    argument_parser.add_argument(FIRST_ITEM_ARGUMENT, type=int, required=True)
-    argument_parser.add_argument(RESULTS_TABLE_NAME_ARGUMENT, required=True)
-    argument_parser.add_argument(ASSETS_TABLE_NAME_ARGUMENT, required=True)
-    argument_parser.add_argument(S3_ROLE_ARN_ARGUMENT, required=True)
-    return argument_parser.parse_args()
+def parse_arguments() -> Values:
+    parser = OptionParser()
+    parser.add_option(DATASET_ID_ARGUMENT)
+    parser.add_option(NEW_VERSION_ID_ARGUMENT)
+    parser.add_option(CURRENT_VERSION_ID_ARGUMENT)
+    parser.add_option(DATASET_PREFIX_ARGUMENT)
+    parser.add_option(FIRST_ITEM_ARGUMENT, type=int)
+    parser.add_option(RESULTS_TABLE_NAME_ARGUMENT)
+    parser.add_option(ASSETS_TABLE_NAME_ARGUMENT)
+    parser.add_option(S3_ROLE_ARN_ARGUMENT)
+    (options, _args) = parser.parse_args()
+
+    for option in parser.option_list:
+        if option.dest is not None:
+            assert hasattr(options, option.dest)
+
+    return options
 
 
 def main() -> None:
