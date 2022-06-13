@@ -9,7 +9,7 @@ from ..processing_assets_model import ProcessingAssetType
 from ..s3_utils import get_s3_url_reader
 from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
-from .utils import ChecksumValidator, get_job_offset
+from .utils import ChecksumUtils, get_job_offset
 
 ASSETS_TABLE_NAME_ARGUMENT = "--assets-table-name"
 CURRENT_VERSION_ID_ARGUMENT = "--current-version-id"
@@ -48,15 +48,13 @@ def main() -> None:
     index = arguments.first_item + get_job_offset()
     hash_key = get_hash_key(arguments.dataset_id, arguments.new_version_id)
     range_key = f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}{index}"
-
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)
     s3_url_reader = get_s3_url_reader(arguments.s3_role_arn, arguments.dataset_prefix, LOGGER)
 
-    checksum_validator = ChecksumValidator(
+    utils = ChecksumUtils(
         arguments.assets_table_name, validation_result_factory, s3_url_reader, LOGGER
     )
-
-    checksum_validator.validate(hash_key, range_key)
+    utils.run(hash_key, range_key)
 
 
 if __name__ == "__main__":

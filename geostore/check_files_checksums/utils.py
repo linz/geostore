@@ -3,6 +3,7 @@ from os import environ
 from typing import Callable
 
 from botocore.exceptions import ClientError
+from botocore.response import StreamingBody
 from multihash import FUNCS, decode
 
 from ..api_keys import MESSAGE_KEY
@@ -19,14 +20,7 @@ from ..validation_results_model import ValidationResult, ValidationResultFactory
 ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
 
 
-class ChecksumMismatchError(Exception):
-    def __init__(self, actual_hex_digest: str):
-        super().__init__()
-
-        self.actual_hex_digest = actual_hex_digest
-
-
-class ChecksumValidator:
+class ChecksumUtils:
     def __init__(
         self,
         processing_assets_table_name: str,
@@ -48,9 +42,10 @@ class ChecksumValidator:
             LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": content}
         )
 
-    def validate(self, hash_key: str, range_key: str) -> None:
+    def run(self, hash_key: str, range_key: str) -> None:
+
         try:
-            item = self.processing_assets_model.get(hash_key, range_key=range_key)
+            processing_item = self.processing_assets_model.get(hash_key, range_key=range_key)
         except self.processing_assets_model.DoesNotExist:
             self.log_failure(
                 {
@@ -60,28 +55,44 @@ class ChecksumValidator:
             )
             raise
 
-        try:
-            file_in_staging = self.validate_url_multihash(item.url, item.multihash)
-        except ChecksumMismatchError as error:
+        s3_response = self.get_s3_object(processing_item.url)
+
+        self.validate_url_multihash(
+            processing_item.url, processing_item.multihash, s3_response.response
+        )
+
+        processing_item.update(
+            actions=[
+                self.processing_assets_model.exists_in_staging.set(s3_response.file_in_staging)
+            ]
+        )
+
+    def validate_url_multihash(
+        self, url: str, hex_multihash: str, s3_file_object: StreamingBody
+    ) -> None:
+        checksum_function_code = int(hex_multihash[:2], 16)
+        checksum_function = FUNCS[checksum_function_code]
+
+        file_digest = checksum_function()
+        for chunk in s3_file_object.iter_chunks(chunk_size=CHUNK_SIZE):
+            file_digest.update(chunk)
+
+        if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
             content = {
-                MESSAGE_KEY: f"Checksum mismatch: expected {item.multihash[4:]},"
-                f" got {error.actual_hex_digest}"
+                MESSAGE_KEY: f"Checksum mismatch: expected {hex_multihash[4:]},"
+                f" got {file_digest.hexdigest()}"
             }
             self.log_failure(content)
             self.validation_result_factory.save(
-                item.url, Check.CHECKSUM, ValidationResult.FAILED, details=content
+                url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
         else:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
-            self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
-            item.update(
-                actions=[self.processing_assets_model.exists_in_staging.set(file_in_staging)]
-            )
+            self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)
 
-    def validate_url_multihash(self, url: str, hex_multihash: str) -> bool:
-
+    def get_s3_object(self, url: str) -> GeostoreS3Response:
         try:
-            s3_response = self.url_reader(url)
+            return self.url_reader(url)
         except ClientError as error:
             error_code = error.response["Error"]["Code"]
             if error_code == "NoSuchKey":
@@ -108,18 +119,6 @@ class ChecksumValidator:
                     },
                 )
             raise
-
-        checksum_function_code = int(hex_multihash[:2], 16)
-        checksum_function = FUNCS[checksum_function_code]
-
-        file_digest = checksum_function()
-        for chunk in s3_response.response.iter_chunks(chunk_size=CHUNK_SIZE):
-            file_digest.update(chunk)
-
-        if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
-            raise ChecksumMismatchError(file_digest.hexdigest())
-
-        return s3_response.file_in_staging
 
 
 def get_job_offset() -> int:
