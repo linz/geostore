@@ -14,7 +14,17 @@ from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
 from geostore.check import Check
-from geostore.check_files_checksums.task import main
+from geostore.check_files_checksums.task import (
+    ASSETS_TABLE_NAME_ARGUMENT,
+    CURRENT_VERSION_ID_ARGUMENT,
+    DATASET_ID_ARGUMENT,
+    DATASET_PREFIX_ARGUMENT,
+    FIRST_ITEM_ARGUMENT,
+    NEW_VERSION_ID_ARGUMENT,
+    RESULTS_TABLE_NAME_ARGUMENT,
+    S3_ROLE_ARN_ARGUMENT,
+    main,
+)
 from geostore.check_files_checksums.utils import (
     ARRAY_INDEX_VARIABLE_NAME,
     ChecksumMismatchError,
@@ -107,14 +117,14 @@ def should_validate_given_index(
     # When
     sys.argv = [
         any_program_name(),
-        f"--dataset-id={dataset_id}",
-        f"--new-version-id={version_id}",
-        f"--current-version-id={any_dataset_version_id()}",
-        f"--dataset-prefix={any_dataset_prefix()}",
-        "--first-item=0",
-        f"--assets-table-name={any_table_name()}",
-        f"--results-table-name={validation_results_table_name}",
-        f"--s3-role-arn={any_role_arn()}",
+        f"{DATASET_ID_ARGUMENT}={dataset_id}",
+        f"{NEW_VERSION_ID_ARGUMENT}={version_id}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+        f"{DATASET_PREFIX_ARGUMENT}={any_dataset_prefix()}",
+        f"{FIRST_ITEM_ARGUMENT}=0",
+        f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
+        f"{RESULTS_TABLE_NAME_ARGUMENT}={validation_results_table_name}",
+        f"{S3_ROLE_ARN_ARGUMENT}={any_role_arn()}",
     ]
     with patch("geostore.check_files_checksums.task.LOGGER.info") as info_log_mock, patch.dict(
         environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}
@@ -166,14 +176,14 @@ def should_log_error_when_validation_fails(
     validation_results_table_name = any_table_name()
     sys.argv = [
         any_program_name(),
-        f"--dataset-id={dataset_id}",
-        f"--new-version-id={dataset_version_id}",
-        f"--current-version-id={any_dataset_version_id()}",
-        f"--dataset-prefix={any_dataset_prefix()}",
-        "--first-item=0",
-        f"--assets-table-name={any_table_name()}",
-        f"--results-table-name={validation_results_table_name}",
-        f"--s3-role-arn={any_role_arn()}",
+        f"{DATASET_ID_ARGUMENT}={dataset_id}",
+        f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+        f"{DATASET_PREFIX_ARGUMENT}={any_dataset_prefix()}",
+        f"{FIRST_ITEM_ARGUMENT}=0",
+        f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
+        f"{RESULTS_TABLE_NAME_ARGUMENT}={validation_results_table_name}",
+        f"{S3_ROLE_ARN_ARGUMENT}={any_role_arn()}",
     ]
 
     # Then
@@ -233,14 +243,14 @@ def should_successfully_validate_asset_not_in_staging(
         # When
         sys.argv = [
             any_program_name(),
-            f"--dataset-id={dataset.dataset_id}",
-            f"--new-version-id={dataset_version_id}",
-            f"--current-version-id={any_dataset_version_id()}",
-            f"--dataset-prefix={dataset.dataset_prefix}",
-            "--first-item=0",
-            f"--assets-table-name={assets_table_name}",
-            f"--results-table-name={results_table_name}",
-            f"--s3-role-arn={get_s3_role_arn()}",
+            f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+            f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
+            f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+            f"{DATASET_PREFIX_ARGUMENT}={dataset.dataset_prefix}",
+            f"{FIRST_ITEM_ARGUMENT}=0",
+            f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
+            f"{RESULTS_TABLE_NAME_ARGUMENT}={results_table_name}",
+            f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
         ]
 
         with patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
@@ -308,14 +318,14 @@ def should_save_file_not_found_validation_results(
         # When
         sys.argv = [
             any_program_name(),
-            f"--dataset-id={dataset.dataset_id}",
-            f"--new-version-id={dataset_version_id}",
-            f"--current-version-id={any_dataset_version_id()}",
-            f"--dataset-prefix={dataset.dataset_prefix}",
-            "--first-item=0",
-            f"--assets-table-name={any_table_name()}",
-            f"--results-table-name={any_table_name()}",
-            f"--s3-role-arn={get_s3_role_arn()}",
+            f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+            f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
+            f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+            f"{DATASET_PREFIX_ARGUMENT}={dataset.dataset_prefix}",
+            f"{FIRST_ITEM_ARGUMENT}=0",
+            f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
+            f"{RESULTS_TABLE_NAME_ARGUMENT}={any_table_name()}",
+            f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
         ]
 
         with raises(ClientError):

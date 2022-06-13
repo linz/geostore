@@ -11,19 +11,28 @@ from ..step_function import get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumValidator, get_job_offset
 
+ASSETS_TABLE_NAME_ARGUMENT = "--assets-table-name"
+CURRENT_VERSION_ID_ARGUMENT = "--current-version-id"
+DATASET_ID_ARGUMENT = "--dataset-id"
+DATASET_PREFIX_ARGUMENT = "--dataset-prefix"
+FIRST_ITEM_ARGUMENT = "--first-item"
+NEW_VERSION_ID_ARGUMENT = "--new-version-id"
+RESULTS_TABLE_NAME_ARGUMENT = "--results-table-name"
+S3_ROLE_ARN_ARGUMENT = "--s3-role-arn"
+
 LOGGER: Logger = get_log()
 
 
 def parse_arguments() -> Namespace:
     argument_parser = ArgumentParser()
-    argument_parser.add_argument("--dataset-id", required=True)
-    argument_parser.add_argument("--new-version-id", required=True)
-    argument_parser.add_argument("--current-version-id", required=True)
-    argument_parser.add_argument("--dataset-prefix", required=True)
-    argument_parser.add_argument("--first-item", type=int, required=True)
-    argument_parser.add_argument("--results-table-name", required=True)
-    argument_parser.add_argument("--assets-table-name", required=True)
-    argument_parser.add_argument("--s3-role-arn", required=True)
+    argument_parser.add_argument(DATASET_ID_ARGUMENT, required=True)
+    argument_parser.add_argument(NEW_VERSION_ID_ARGUMENT, required=True)
+    argument_parser.add_argument(CURRENT_VERSION_ID_ARGUMENT, required=True)
+    argument_parser.add_argument(DATASET_PREFIX_ARGUMENT, required=True)
+    argument_parser.add_argument(FIRST_ITEM_ARGUMENT, type=int, required=True)
+    argument_parser.add_argument(RESULTS_TABLE_NAME_ARGUMENT, required=True)
+    argument_parser.add_argument(ASSETS_TABLE_NAME_ARGUMENT, required=True)
+    argument_parser.add_argument(S3_ROLE_ARN_ARGUMENT, required=True)
     return argument_parser.parse_args()
 
 
