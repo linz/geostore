@@ -52,7 +52,7 @@ def should_log_missing_item(subtests: SubTests) -> None:
         any_program_name(),
         f"{DATASET_ID_ARGUMENT}={dataset_id}",
         f"{NEW_VERSION_ID_ARGUMENT}={version_id}",
-        f"{CURRENT_VERSION_ID_ARGUMENT}={None}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
         f"{DATASET_PREFIX_ARGUMENT}={any_dataset_prefix()}",
         f"{FIRST_ITEM_ARGUMENT}={index}",
         f"{ASSETS_TABLE_NAME_ARGUMENT}={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
