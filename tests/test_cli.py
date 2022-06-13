@@ -14,7 +14,18 @@ from pytest_subtests import SubTests
 from typer.testing import CliRunner
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY, BODY_KEY, STATUS_CODE_KEY
-from geostore.cli import app
+from geostore.cli import (
+    DATASET_ID_ARGUMENT,
+    DESCRIPTION_ARGUMENT,
+    ENVIRONMENT_NAME_ARGUMENT,
+    EXECUTION_ARN_ARGUMENT,
+    ID_ARGUMENT,
+    METADATA_URL_ARGUMENT,
+    S3_ROLE_ARN_ARGUMENT,
+    TITLE_ARGUMENT,
+    VERSION_FLAG,
+    app,
+)
 from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.resources import Resource
@@ -75,8 +86,8 @@ def should_create_dataset() -> None:
         [
             "dataset",
             "create",
-            f"--title={dataset_title}",
-            f"--description={any_dataset_description()}",
+            f"{TITLE_ARGUMENT}={dataset_title}",
+            f"{DESCRIPTION_ARGUMENT}={any_dataset_description()}",
         ],
     )
 
@@ -93,8 +104,8 @@ def should_report_duplicate_dataset_title(subtests: SubTests) -> None:
         [
             "dataset",
             "create",
-            f"--title={dataset_title}",
-            f"--description={any_dataset_description()}",
+            f"{TITLE_ARGUMENT}={dataset_title}",
+            f"{DESCRIPTION_ARGUMENT}={any_dataset_description()}",
         ],
     )
     assert first_result.exit_code == 0, first_result
@@ -104,8 +115,8 @@ def should_report_duplicate_dataset_title(subtests: SubTests) -> None:
         [
             "dataset",
             "create",
-            f"--title={dataset_title}",
-            f"--description={any_dataset_description()}",
+            f"{TITLE_ARGUMENT}={dataset_title}",
+            f"{DESCRIPTION_ARGUMENT}={any_dataset_description()}",
         ],
     )
 
@@ -143,8 +154,8 @@ def should_report_dataset_creation_success(
         [
             "dataset",
             "create",
-            f"--title={any_dataset_title()}",
-            f"--description={any_dataset_description()}",
+            f"{TITLE_ARGUMENT}={any_dataset_title()}",
+            f"{DESCRIPTION_ARGUMENT}={any_dataset_description()}",
         ],
     )
 
@@ -262,7 +273,9 @@ def should_filter_datasets_listing(subtests: SubTests) -> None:
     # Given two datasets
     with Dataset() as first_dataset, Dataset():
         # When
-        result = CLI_RUNNER.invoke(app, ["dataset", "list", f"--id={first_dataset.dataset_id}"])
+        result = CLI_RUNNER.invoke(
+            app, ["dataset", "list", f"{ID_ARGUMENT}={first_dataset.dataset_id}"]
+        )
 
     # Then
     with subtests.test(msg="should print dataset to standard output"):
@@ -283,7 +296,9 @@ def should_delete_dataset(subtests: SubTests) -> None:
     # Given
     with Dataset() as dataset:
         # When
-        result = CLI_RUNNER.invoke(app, ["dataset", "delete", f"--id={dataset.dataset_id}"])
+        result = CLI_RUNNER.invoke(
+            app, ["dataset", "delete", f"{ID_ARGUMENT}={dataset.dataset_id}"]
+        )
 
     # Then
     with subtests.test(msg="should print nothing to standard output"):
@@ -305,9 +320,9 @@ def should_create_dataset_version(subtests: SubTests) -> None:
             [
                 "version",
                 "create",
-                f"--dataset-id={dataset.dataset_id}",
-                f"--metadata-url={any_s3_url()}",
-                f"--s3-role-arn={any_role_arn()}",
+                f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+                f"{METADATA_URL_ARGUMENT}={any_s3_url()}",
+                f"{S3_ROLE_ARN_ARGUMENT}={any_role_arn()}",
             ],
         )
 
@@ -356,7 +371,7 @@ def should_print_version_import_status_verbatim(
     )
 
     result = CLI_RUNNER.invoke(
-        app, ["version", "status", f"--execution-arn={any_arn_formatted_string()}"]
+        app, ["version", "status", f"{EXECUTION_ARN_ARGUMENT}={any_arn_formatted_string()}"]
     )
 
     with subtests.test(msg="should print JSON response body to standard output"):
@@ -374,6 +389,7 @@ def should_get_version_import_status(subtests: SubTests) -> None:
     asset_filename = any_safe_filename()
     asset_content = any_file_contents()
     asset_multihash = sha256_hex_digest_to_multihash(sha256(asset_content).hexdigest())
+    s3_role_arn = f"arn:aws:iam::{ACCOUNT_NUMBER}:role/{Resource.API_USERS_ROLE_NAME.resource_name}"
     with Dataset() as dataset, S3Object(
         file_object=BytesIO(),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
@@ -398,16 +414,15 @@ def should_get_version_import_status(subtests: SubTests) -> None:
             [
                 "version",
                 "create",
-                f"--dataset-id={dataset.dataset_id}",
-                f"--metadata-url={collection_object.url}",
-                "--s3-role-arn="
-                f"arn:aws:iam::{ACCOUNT_NUMBER}:role/{Resource.API_USERS_ROLE_NAME.resource_name}",
+                f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+                f"{METADATA_URL_ARGUMENT}={collection_object.url}",
+                f"{S3_ROLE_ARN_ARGUMENT}={s3_role_arn}",
             ],
         )
         execution_arn = version_create_result.stdout.split("\t", maxsplit=1)[1].rstrip()
 
         status_result = CLI_RUNNER.invoke(
-            app, ["version", "status", f"--execution-arn={execution_arn}"]
+            app, ["version", "status", f"{EXECUTION_ARN_ARGUMENT}={execution_arn}"]
         )
 
     with subtests.test(msg="should print JSON response body to standard output"):
@@ -434,7 +449,7 @@ def should_call_given_environment_function(
     with patch.dict(environ, {ENV_NAME_VARIABLE_NAME: environment_name}):
         # When
         result = CLI_RUNNER.invoke(
-            app, [f"--environment-name={environment_name}", "dataset", "list"]
+            app, [f"{ENVIRONMENT_NAME_ARGUMENT}={environment_name}", "dataset", "list"]
         )
 
     # Then
@@ -477,7 +492,7 @@ def should_default_to_production_environment(
 
 def should_print_version_information(subtests: SubTests) -> None:
     # When
-    result = CLI_RUNNER.invoke(app, ["--version"])
+    result = CLI_RUNNER.invoke(app, [VERSION_FLAG])
 
     # Then
     with subtests.test(msg="should print version number to standard output"):
