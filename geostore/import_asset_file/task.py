@@ -1,11 +1,9 @@
 from typing import TYPE_CHECKING
 
 import boto3
-import smart_open
 
 from ..boto3_config import CONFIG
 from ..import_dataset_file import get_import_result
-from ..s3 import CHUNK_SIZE, S3_URL_PREFIX
 from ..types import JsonObject
 
 if TYPE_CHECKING:
@@ -31,11 +29,4 @@ def importer(
 ) -> None:
     source_response = source_s3_client.get_object(Bucket=source_bucket_name, Key=original_key)
 
-    # TODO: Simplify once boto3 issue #426 is actually fixed pylint:disable=fixme
-    with smart_open.open(
-        f"{S3_URL_PREFIX}{target_bucket_name}/{new_key}",
-        mode="wb",
-        transport_params={"client": TARGET_S3_CLIENT},
-    ) as target_file:
-        for chunk in source_response["Body"].iter_chunks(chunk_size=CHUNK_SIZE):
-            target_file.write(chunk)
+    TARGET_S3_CLIENT.upload_fileobj(source_response["Body"], Bucket=target_bucket_name, Key=new_key)
