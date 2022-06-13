@@ -21,13 +21,15 @@ from geostore.stac_format import (
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
+    STAC_REL_CHILD,
+    STAC_REL_KEY,
 )
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 from geostore.sts import get_account_number
 
@@ -62,7 +64,7 @@ def should_return_error_when_missing_required_property(subtests: SubTests) -> No
         DATASET_PREFIX_KEY: any_dataset_prefix(),
         METADATA_URL_KEY: any_s3_url(),
         S3_ROLE_ARN_KEY: any_role_arn(),
-        VERSION_ID_KEY: any_dataset_version_id(),
+        NEW_VERSION_ID_KEY: any_dataset_version_id(),
     }
 
     # When
@@ -135,7 +137,9 @@ def should_batch_copy_files_to_storage(
                         STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                     },
                 },
-                STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_s3_object.url, "rel": "child"}],
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: child_metadata_s3_object.url, STAC_REL_KEY: STAC_REL_CHILD}
+                ],
             }
         ),
         Resource.STAGING_BUCKET_NAME.resource_name,
@@ -147,12 +151,20 @@ def should_batch_copy_files_to_storage(
             f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{version_id}"
         )
 
-        with ProcessingAsset(asset_id=asset_id, url=root_metadata_s3_object.url), ProcessingAsset(
-            asset_id=asset_id, url=child_metadata_s3_object.url
+        with ProcessingAsset(
+            asset_id=asset_id, url=root_metadata_s3_object.url, exists_in_staging=True
         ), ProcessingAsset(
-            asset_id=asset_id, url=root_asset_s3_object.url, multihash=root_asset_multihash
+            asset_id=asset_id, url=child_metadata_s3_object.url, exists_in_staging=True
         ), ProcessingAsset(
-            asset_id=asset_id, url=child_asset_s3_object.url, multihash=child_asset_multihash
+            asset_id=asset_id,
+            url=root_asset_s3_object.url,
+            multihash=root_asset_multihash,
+            exists_in_staging=True,
+        ), ProcessingAsset(
+            asset_id=asset_id,
+            url=child_asset_s3_object.url,
+            multihash=child_asset_multihash,
+            exists_in_staging=True,
         ):
             # When
             try:
@@ -160,7 +172,7 @@ def should_batch_copy_files_to_storage(
                     {
                         DATASET_ID_KEY: dataset.dataset_id,
                         DATASET_PREFIX_KEY: dataset.dataset_prefix,
-                        VERSION_ID_KEY: version_id,
+                        NEW_VERSION_ID_KEY: version_id,
                         METADATA_URL_KEY: root_metadata_s3_object.url,
                         S3_ROLE_ARN_KEY: get_s3_role_arn(),
                     },
@@ -192,7 +204,9 @@ def should_batch_copy_files_to_storage(
                                 STAC_FILE_CHECKSUM_KEY: root_asset_multihash,
                             },
                         },
-                        STAC_LINKS_KEY: [{STAC_HREF_KEY: child_metadata_filename, "rel": "child"}],
+                        STAC_LINKS_KEY: [
+                            {STAC_HREF_KEY: child_metadata_filename, STAC_REL_KEY: STAC_REL_CHILD}
+                        ],
                     }
                 ).encode()
                 with subtests.test(msg="Root metadata content"), smart_open.open(

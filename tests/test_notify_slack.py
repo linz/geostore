@@ -37,6 +37,7 @@ from geostore.step_function_keys import (
     JOB_STATUS_RUNNING,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
+    NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
     OUTPUT_KEY,
     STATUS_KEY,
@@ -44,7 +45,6 @@ from geostore.step_function_keys import (
     UPDATE_DATASET_KEY,
     UPLOAD_STATUS_KEY,
     VALIDATION_KEY,
-    VERSION_ID_KEY,
 )
 
 from .aws_utils import any_arn_formatted_string, any_lambda_context, any_s3_url
@@ -90,7 +90,7 @@ def should_notify_slack_with_finished_details_when_url_set(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
                         DATASET_PREFIX_KEY: any_dataset_prefix(),
-                        VERSION_ID_KEY: any_dataset_version_id(),
+                        NEW_VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
                 OUTPUT_KEY: dumps(
@@ -169,7 +169,7 @@ def should_notify_slack_when_step_function_failed(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
                         DATASET_PREFIX_KEY: any_dataset_prefix(),
-                        VERSION_ID_KEY: any_dataset_version_id(),
+                        NEW_VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
                 STEP_FUNCTION_STARTDATE_KEY: STEP_FUNCTION_START_MILLISECOND_TIMESTAMP,

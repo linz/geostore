@@ -15,8 +15,8 @@ from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_PREFIX_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_role_arn, any_s3_url
@@ -44,7 +44,7 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
             DATASET_PREFIX_KEY: dataset.dataset_prefix,
             METADATA_URL_KEY: any_s3_url(),
             S3_ROLE_ARN_KEY: any_role_arn(),
-            VERSION_ID_KEY: any_dataset_version_id(),
+            NEW_VERSION_ID_KEY: any_dataset_version_id(),
         }
 
         # When
@@ -85,11 +85,12 @@ def should_log_assets_added_to_manifest(
         head_object_mock.return_value = {"ETag": any_etag()}
 
         with ProcessingAsset(
-            asset_id=asset_id, multihash=None, url=any_s3_url()
+            asset_id=asset_id, multihash=None, url=any_s3_url(), exists_in_staging=True
         ) as metadata_processing_asset, ProcessingAsset(
             asset_id=asset_id,
             multihash=any_hex_multihash(),
             url=any_s3_url(),
+            exists_in_staging=True,
         ) as processing_asset, patch(
             "geostore.import_dataset.task.LOGGER.debug"
         ) as logger_mock, patch(
@@ -108,7 +109,7 @@ def should_log_assets_added_to_manifest(
                     DATASET_PREFIX_KEY: dataset.dataset_prefix,
                     METADATA_URL_KEY: any_s3_url(),
                     S3_ROLE_ARN_KEY: any_role_arn(),
-                    VERSION_ID_KEY: version_id,
+                    NEW_VERSION_ID_KEY: version_id,
                 },
                 any_lambda_context(),
             )
@@ -140,7 +141,7 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
                 DATASET_PREFIX_KEY: dataset.dataset_prefix,
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
-                VERSION_ID_KEY: any_dataset_version_id(),
+                NEW_VERSION_ID_KEY: any_dataset_version_id(),
             },
             any_lambda_context(),
         )

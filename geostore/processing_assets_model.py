@@ -3,7 +3,7 @@ from enum import Enum
 from os import environ
 from typing import Optional, Type
 
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import BooleanAttribute, UnicodeAttribute
 from pynamodb.models import Model
 
 from .aws_keys import AWS_DEFAULT_REGION_KEY
@@ -19,7 +19,9 @@ class ProcessingAssetsModelBase(Model):
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
     url = UnicodeAttribute()
+    filename = UnicodeAttribute()
     multihash = UnicodeAttribute(null=True)
+    exists_in_staging = BooleanAttribute(null=True)
 
 
 def processing_assets_model_with_meta(

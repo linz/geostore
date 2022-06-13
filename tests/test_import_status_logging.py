@@ -10,7 +10,7 @@ from geostore.logging_keys import (
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
 )
-from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, VERSION_ID_KEY
+from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, NEW_VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
 from .general_generators import any_error_message
@@ -28,7 +28,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
     describe_step_function_mock.return_value = {
         "status": "RUNNING",
         "input": dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
 
@@ -72,7 +72,7 @@ def should_log_stepfunctions_status_response(
     describe_execution_mock.return_value = describe_execution_response = {
         "status": "Some Response",
         "input": dumps(
-            {DATASET_ID_KEY: any_dataset_id(), VERSION_ID_KEY: any_dataset_version_id()}
+            {DATASET_ID_KEY: any_dataset_id(), NEW_VERSION_ID_KEY: any_dataset_version_id()}
         ),
     }
 

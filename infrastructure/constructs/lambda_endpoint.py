@@ -25,8 +25,8 @@ class LambdaEndpoint(aws_lambda.Function):
     ):
         super().__init__(
             scope,
-            f"{env_name}-{construct_id}-function",
-            function_name=f"{env_name}-{construct_id}",
+            f"{construct_id}-function",
+            function_name=construct_id,
             handler=f"{BACKEND_DIRECTORY}.{package_name}.entrypoint.lambda_handler",
             runtime=PYTHON_RUNTIME,
             timeout=DEFAULT_LAMBDA_TIMEOUT,

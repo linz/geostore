@@ -61,7 +61,7 @@ class ChecksumValidator:
             raise
 
         try:
-            self.validate_url_multihash(item.url, item.multihash)
+            file_in_staging = self.validate_url_multihash(item.url, item.multihash)
         except ChecksumMismatchError as error:
             content = {
                 MESSAGE_KEY: f"Checksum mismatch: expected {item.multihash[4:]},"
@@ -74,18 +74,39 @@ class ChecksumValidator:
         else:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
             self.validation_result_factory.save(item.url, Check.CHECKSUM, ValidationResult.PASSED)
+            item.update(
+                actions=[self.processing_assets_model.exists_in_staging.set(file_in_staging)]
+            )
 
-    def validate_url_multihash(self, url: str, hex_multihash: str) -> None:
+    def validate_url_multihash(self, url: str, hex_multihash: str) -> bool:
 
         try:
             s3_response = self.url_reader(url)
         except ClientError as error:
-            self.validation_result_factory.save(
-                url,
-                Check.STAGING_ACCESS,
-                ValidationResult.FAILED,
-                details={MESSAGE_KEY: str(error)},
-            )
+            error_code = error.response["Error"]["Code"]
+            if error_code == "NoSuchKey":
+                self.validation_result_factory.save(
+                    url,
+                    Check.FILE_NOT_FOUND,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: f"Could not find asset file '{url}' "
+                        f"in staging bucket or in the Geostore."
+                    },
+                )
+            else:
+                self.validation_result_factory.save(
+                    url,
+                    Check.UNKNOWN_CLIENT_ERROR,
+                    ValidationResult.FAILED,
+                    details={
+                        MESSAGE_KEY: (
+                            f"Unknown client error fetching '{url}'."
+                            f" Client error code: '{error_code}'."
+                            f" Client error message: '{error.response['Error']['Message']}'"
+                        ),
+                    },
+                )
             raise
 
         checksum_function_code = int(hex_multihash[:2], 16)
@@ -97,6 +118,8 @@ class ChecksumValidator:
 
         if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
             raise ChecksumMismatchError(file_digest.hexdigest())
+
+        return s3_response.file_in_staging
 
 
 def get_job_offset() -> int:

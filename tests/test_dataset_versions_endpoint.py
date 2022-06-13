@@ -18,9 +18,9 @@ from geostore.dataset_versions.create import create_dataset_version
 from geostore.step_function_keys import (
     DATASET_ID_SHORT_KEY,
     METADATA_URL_KEY,
+    NEW_VERSION_ID_KEY,
     NOW_KEY,
     S3_ROLE_ARN_KEY,
-    VERSION_ID_KEY,
 )
 
 from .aws_utils import Dataset, any_lambda_context, any_role_arn, any_s3_url
@@ -97,4 +97,4 @@ def should_return_success_if_dataset_exists(subtests: SubTests) -> None:
         assert response[STATUS_CODE_KEY] == HTTPStatus.CREATED
 
     with subtests.test(msg="ID"):
-        assert response[BODY_KEY][VERSION_ID_KEY].startswith("2001-02-03T04-05-06-789Z_")
+        assert response[BODY_KEY][NEW_VERSION_ID_KEY].startswith("2001-02-03T04-05-06-789Z_")
