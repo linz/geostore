@@ -11,8 +11,10 @@ from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from .logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE, LOG_MESSAGE_STEP_FUNCTION_RESPONSE
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from .processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
+    CURRENT_VERSION_EMPTY_VALUE,
     DATASET_ID_KEY,
     ERRORS_KEY,
     ERROR_CHECK_KEY,
@@ -180,3 +182,39 @@ def get_hash_key(dataset_id: str, dataset_version_id: str) -> str:
     return (
         f"{DATASET_ID_PREFIX}{dataset_id}{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{dataset_version_id}"
     )
+
+
+class AssetGarbageCollector:
+    # pylint:disable=too-few-public-methods
+    def __init__(  # pylint:disable=too-many-arguments
+        self,
+        dataset_id: str,
+        current_version_id: str,
+        processing_asset_type: ProcessingAssetType,
+        logger: Logger,
+        processing_assets_table_name: Optional[str] = None,
+    ):
+        self.dataset_id = dataset_id
+        self.current_version_id = current_version_id
+        self.processing_asset_type = processing_asset_type
+        self.processing_assets_model = processing_assets_model_with_meta(
+            assets_table_name=processing_assets_table_name
+        )
+        self.logger = logger
+
+    def mark_asset_as_replaced(self, filename: str) -> None:
+        if self.current_version_id == CURRENT_VERSION_EMPTY_VALUE:
+            return
+
+        for item in self.processing_assets_model.query(
+            get_hash_key(self.dataset_id, self.current_version_id),
+            range_key_condition=self.processing_assets_model.sk.startswith(
+                f"{self.processing_asset_type.value}{DB_KEY_SEPARATOR}"
+            ),
+            filter_condition=self.processing_assets_model.filename == filename,
+        ):
+            self.logger.debug(
+                f"Dataset: '{self.dataset_id}' Version: '{self.current_version_id}' "
+                f"Filename: '{filename}' has been marked as replaced"
+            )
+            item.update(actions=[self.processing_assets_model.replaced_in_new_version.set(True)])

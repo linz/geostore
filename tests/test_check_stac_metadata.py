@@ -71,9 +71,11 @@ from geostore.step_function_keys import (
 from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
+    MockAssetGarbageCollector,
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
+    ProcessingAsset,
     S3Object,
     any_lambda_context,
     any_role_arn,
@@ -226,9 +228,12 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
         # When
-        STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).validate(
-            metadata_url
-        )
+        STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            validation_results_factory_mock,
+        ).validate(metadata_url)
 
     # Then
     validation_results_factory_mock.save.assert_any_call(
@@ -614,12 +619,11 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
             any_lambda_context(),
         ) == {SUCCESS_KEY: True}
 
-        hash_key = get_hash_key(dataset_id, version_id)
         validation_results_model = validation_results_model_with_meta()
         with subtests.test(msg="Catalog validation results"):
             assert (
                 validation_results_model.get(
-                    hash_key=hash_key,
+                    hash_key=expected_hash_key,
                     range_key=(
                         f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
                         f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{catalog_metadata_url}"
@@ -632,7 +636,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
             with subtests.test(msg="Collection validation results"):
                 assert (
                     validation_results_model.get(
-                        hash_key=hash_key,
+                        hash_key=expected_hash_key,
                         range_key=(
                             f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
                             f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{collection_metadata_url}"
@@ -645,7 +649,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
             with subtests.test(msg="Item validation results"):
                 assert (
                     validation_results_model.get(
-                        hash_key=hash_key,
+                        hash_key=expected_hash_key,
                         range_key=(
                             f"{CHECK_ID_PREFIX}{Check.JSON_SCHEMA.value}"
                             f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{item_metadata_url}"
@@ -694,6 +698,72 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
                     )
 
 
+@mark.timeout(timedelta(minutes=20).total_seconds())
+@mark.infrastructure
+def should_mark_asset_as_replaced_in_new_version() -> None:
+
+    key_prefix = any_safe_file_path()
+    dataset_id = any_dataset_id()
+    new_version_id = any_dataset_version_id()
+    current_version_id = any_dataset_version_id()
+
+    metadata_url_prefix = (
+        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
+    )
+    catalog_metadata_filename = any_safe_filename()
+    catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
+    current_hash_key = get_hash_key(dataset_id, current_version_id)
+
+    processing_assets_model = processing_assets_model_with_meta()
+    expected_processing_item = processing_assets_model(
+        hash_key=current_hash_key,
+        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
+        url=catalog_metadata_url,
+        filename=catalog_metadata_filename,
+        exists_in_staging=True,
+        replaced_in_new_version=True,
+    )
+
+    with S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_LINKS_KEY: [
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
+                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                ],
+            }
+        ),
+        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        key=f"{key_prefix}/{catalog_metadata_filename}",
+    ) as catalog_metadata_file, ProcessingAsset(
+        current_hash_key, catalog_metadata_url, exists_in_staging=True
+    ):
+
+        assert lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                NEW_VERSION_ID_KEY: new_version_id,
+                CURRENT_VERSION_ID_KEY: current_version_id,
+                METADATA_URL_KEY: catalog_metadata_file.url,
+                S3_ROLE_ARN_KEY: get_s3_role_arn(),
+                DATASET_TITLE_KEY: any_dataset_title(),
+            },
+            any_lambda_context(),
+        ) == {SUCCESS_KEY: True}
+
+        #  Then
+        actual_processing_item = processing_assets_model.query(
+            current_hash_key,
+            processing_assets_model.sk.startswith(
+                f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+            ),
+            consistent_read=True,
+        ).next()
+
+        assert actual_processing_item.attribute_values == expected_processing_item.attribute_values
+
+
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     """
     We need to make sure this repo updates the reference to the latest LINZ schema when updating the
@@ -720,7 +790,10 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
                 {path: MockGeostoreS3Response(stac_object, file_in_staging=True)}
             )
             STACDatasetValidator(
-                any_hash_key(), url_reader, MockValidationResultFactory()
+                any_hash_key(),
+                url_reader,
+                MockAssetGarbageCollector(),
+                MockValidationResultFactory(),
             ).validate(path)
 
 
@@ -792,9 +865,12 @@ def should_validate_metadata_files_recursively() -> None:
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
-            parent_url
-        )
+        STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            MockValidationResultFactory(),
+        ).validate(parent_url)
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -841,9 +917,12 @@ def should_only_validate_each_file_once() -> None:
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
-            root_url
-        )
+        STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            MockValidationResultFactory(),
+        ).validate(root_url)
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(item_url)]
 
@@ -894,7 +973,12 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
+        validator = STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            MockValidationResultFactory(),
+        )
 
     # When
     validator.validate(metadata_url)
@@ -950,7 +1034,12 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
-        validator = STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory())
+        validator = STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            MockValidationResultFactory(),
+        )
 
     validator.validate(metadata_url)
 
@@ -971,7 +1060,12 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
         {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=True)}
     )
     mock_validation_result_factory = MockValidationResultFactory()
-    validator = STACDatasetValidator(any_hash_key(), url_reader, mock_validation_result_factory)
+    validator = STACDatasetValidator(
+        any_hash_key(),
+        url_reader,
+        MockAssetGarbageCollector(),
+        mock_validation_result_factory,
+    )
 
     with subtests.test("Error raised is correct"):
         with raises(InvalidSecurityClassificationError, match=security_classification):
@@ -1005,7 +1099,12 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
             )
         }
     )
-    validator = STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock)
+    validator = STACDatasetValidator(
+        any_hash_key(),
+        url_reader,
+        MockAssetGarbageCollector(),
+        validation_results_factory_mock,
+    )
 
     # When
     with raises(JSONDecodeError):
@@ -1041,9 +1140,12 @@ def should_report_when_the_dataset_has_no_assets(
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, subtests.test(
         msg="Logging"
     ):
-        STACDatasetValidator(any_hash_key(), url_reader, validation_results_factory_mock).run(
-            metadata_url
-        )
+        STACDatasetValidator(
+            any_hash_key(),
+            url_reader,
+            MockAssetGarbageCollector(),
+            validation_results_factory_mock,
+        ).run(metadata_url)
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={"outcome": Outcome.FAILED, "error": NO_ASSETS_FOUND_ERROR_MESSAGE},

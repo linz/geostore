@@ -12,8 +12,9 @@ from ..logging_keys import (
     LOG_MESSAGE_VALIDATION_COMPLETE,
 )
 from ..parameter_store import ParameterName, get_param
+from ..processing_assets_model import ProcessingAssetType
 from ..s3_utils import get_s3_url_reader
-from ..step_function import Outcome, get_hash_key
+from ..step_function import AssetGarbageCollector, Outcome, get_hash_key
 from ..step_function_keys import (
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
@@ -69,13 +70,22 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}
 
+    asset_garbage_collector = AssetGarbageCollector(
+        event[DATASET_ID_KEY],
+        event[CURRENT_VERSION_ID_KEY],
+        ProcessingAssetType.METADATA,
+        LOGGER,
+    )
+
     hash_key = get_hash_key(event[DATASET_ID_KEY], event[NEW_VERSION_ID_KEY])
 
     validation_result_factory = ValidationResultFactory(
         hash_key, get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     )
 
-    validator = STACDatasetValidator(hash_key, s3_url_reader, validation_result_factory)
+    validator = STACDatasetValidator(
+        hash_key, s3_url_reader, asset_garbage_collector, validation_result_factory
+    )
 
     validator.run(event[METADATA_URL_KEY])
     return {SUCCESS_KEY: True}

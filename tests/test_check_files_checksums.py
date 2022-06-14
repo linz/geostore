@@ -46,6 +46,7 @@ from geostore.validation_results_model import ValidationResult, validation_resul
 
 from .aws_utils import (
     Dataset,
+    MockAssetGarbageCollector,
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
@@ -58,7 +59,12 @@ from .aws_utils import (
     get_s3_role_arn,
     processing_assets_model_with_meta_mock,
 )
-from .general_generators import any_file_contents, any_program_name, any_safe_filename
+from .general_generators import (
+    any_file_contents,
+    any_program_name,
+    any_safe_file_path,
+    any_safe_filename,
+)
 from .stac_generators import (
     any_dataset_id,
     any_dataset_title,
@@ -310,6 +316,76 @@ def should_successfully_validate_asset_not_in_staging(
                 assert actual_asset_item.attribute_values == expected_asset_item.attribute_values
 
 
+@mark.timeout(timedelta(minutes=20).total_seconds())
+@mark.infrastructure
+def should_mark_asset_as_replaced_in_new_version() -> None:
+    # Given
+    dataset_version_id = any_dataset_version_id()
+    current_dataset_version_id = any_dataset_version_id()
+
+    storage_asset_filename = any_safe_filename()
+    storage_asset_content = any_file_contents()
+    storage_asset_multihash = sha256_hex_digest_to_multihash(
+        sha256(storage_asset_content).hexdigest()
+    )
+
+    with Dataset() as dataset, S3Object(
+        BytesIO(initial_bytes=storage_asset_content),
+        Resource.STAGING_BUCKET_NAME.resource_name,
+        f"{any_safe_file_path()}/{storage_asset_filename}",
+    ) as asset_s3_object:
+
+        new_hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
+        current_hash_key = get_hash_key(dataset.dataset_id, current_dataset_version_id)
+        assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
+        results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
+
+        processing_assets_model = processing_assets_model_with_meta()
+        expected_asset_item = processing_assets_model(
+            hash_key=current_hash_key,
+            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+            url=asset_s3_object.url,
+            filename=storage_asset_filename,
+            exists_in_staging=True,
+            multihash=storage_asset_multihash,
+            replaced_in_new_version=True,
+        )
+
+        with ProcessingAsset(
+            new_hash_key, asset_s3_object.url, multihash=storage_asset_multihash
+        ), ProcessingAsset(
+            current_hash_key,
+            asset_s3_object.url,
+            multihash=storage_asset_multihash,
+            exists_in_staging=True,
+        ):
+
+            # When
+            sys.argv = [
+                any_program_name(),
+                f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+                f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
+                f"{CURRENT_VERSION_ID_ARGUMENT}={current_dataset_version_id}",
+                f"{DATASET_TITLE_ARGUMENT}={dataset.title}",
+                f"{FIRST_ITEM_ARGUMENT}=0",
+                f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
+                f"{RESULTS_TABLE_NAME_ARGUMENT}={results_table_name}",
+                f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
+            ]
+
+            main()
+
+            # Then
+            actual_asset_item = processing_assets_model.query(
+                current_hash_key,
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
+                ),
+                consistent_read=True,
+            ).next()
+            assert actual_asset_item.attribute_values == expected_asset_item.attribute_values
+
+
 @mark.infrastructure
 @patch("geostore.check_files_checksums.task.get_s3_url_reader")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
@@ -401,7 +477,11 @@ def should_log_arbitrary_client_errors() -> None:
     # When
     with raises(ClientError):
         ChecksumUtils(
-            any_table_name(), validation_results_factory_mock, s3_url_reader, MagicMock()
+            any_table_name(),
+            validation_results_factory_mock,
+            s3_url_reader,
+            MockAssetGarbageCollector(),
+            MagicMock(),
         ).get_s3_object(url)
 
     # Then
@@ -439,5 +519,9 @@ def should_return_when_file_checksum_matches() -> None:
     with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
         assert isinstance(s3_repsonse.response, StreamingBody)
         ChecksumUtils(
-            any_table_name(), MockValidationResultFactory(), s3_url_reader, MagicMock()
+            any_table_name(),
+            MockValidationResultFactory(),
+            s3_url_reader,
+            MockAssetGarbageCollector(),
+            MagicMock(),
         ).validate_url_multihash(url, multihash, s3_repsonse.response)

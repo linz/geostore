@@ -13,7 +13,7 @@ from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
 from ..s3_utils import GeostoreS3Response
-from ..step_function import Outcome
+from ..step_function import AssetGarbageCollector, Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 
@@ -31,15 +31,17 @@ def get_multihash_digest(digest_algorithm_code: int, body: StreamingBody) -> byt
 
 
 class ChecksumUtils:
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
         url_reader: Callable[[str], GeostoreS3Response],
+        asset_garbage_collector: AssetGarbageCollector,
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
         self.url_reader = url_reader
+        self.asset_garbage_collector = asset_garbage_collector
 
         self.logger = logger
 
@@ -75,6 +77,8 @@ class ChecksumUtils:
                 self.processing_assets_model.exists_in_staging.set(s3_response.file_in_staging)
             ]
         )
+
+        self.asset_garbage_collector.mark_asset_as_replaced(processing_item.filename)
 
     def validate_url_multihash(
         self, url: str, hex_multihash: str, s3_file_object: StreamingBody

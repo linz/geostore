@@ -208,6 +208,7 @@ class ProcessingAsset:
         index: Optional[int] = 0,
         multihash: Optional[str] = None,
         exists_in_staging: Optional[bool] = None,
+        replaced_in_new_version: Optional[bool] = None,
     ):
         prefix = "METADATA" if multihash is None else "DATA"
 
@@ -219,6 +220,7 @@ class ProcessingAsset:
             filename=basename(url),
             multihash=multihash,
             exists_in_staging=exists_in_staging,
+            replaced_in_new_version=replaced_in_new_version,
         )
 
     def __enter__(self) -> ProcessingAssetsModelBase:
@@ -375,6 +377,10 @@ class MockJSONURLReader(Mock):
 
 
 class MockValidationResultFactory(Mock):
+    pass
+
+
+class MockAssetGarbageCollector(Mock):
     pass
 
 
