@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.7"
-description = "Type annotations for boto3 1.24.7 generated with mypy-boto3-builder 7.6.1"
+version = "1.24.8"
+description = "Type annotations for boto3 1.24.8 generated with mypy-boto3-builder 7.6.1"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -372,7 +372,6 @@ macie2 = ["mypy-boto3-macie2 (>=1.24.0,<1.25.0)"]
 managedblockchain = ["mypy-boto3-managedblockchain (>=1.24.0,<1.25.0)"]
 marketplace-catalog = ["mypy-boto3-marketplace-catalog (>=1.24.0,<1.25.0)"]
 marketplace-entitlement = ["mypy-boto3-marketplace-entitlement (>=1.24.0,<1.25.0)"]
-xray = ["mypy-boto3-xray (>=1.24.0,<1.25.0)"]
 marketplacecommerceanalytics = ["mypy-boto3-marketplacecommerceanalytics (>=1.24.0,<1.25.0)"]
 mediaconnect = ["mypy-boto3-mediaconnect (>=1.24.0,<1.25.0)"]
 mediaconvert = ["mypy-boto3-mediaconvert (>=1.24.0,<1.25.0)"]
@@ -493,6 +492,7 @@ workmail = ["mypy-boto3-workmail (>=1.24.0,<1.25.0)"]
 workmailmessageflow = ["mypy-boto3-workmailmessageflow (>=1.24.0,<1.25.0)"]
 workspaces = ["mypy-boto3-workspaces (>=1.24.0,<1.25.0)"]
 workspaces-web = ["mypy-boto3-workspaces-web (>=1.24.0,<1.25.0)"]
+xray = ["mypy-boto3-xray (>=1.24.0,<1.25.0)"]
 
 [[package]]
 name = "botocore"
@@ -1927,8 +1927,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.7.tar.gz", hash = "sha256:0da1d485c954d3d48a8d91c6255354eafb8624ae5d07853324cd043bc0baa61d"},
-    {file = "boto3_stubs-1.24.7-py3-none-any.whl", hash = "sha256:b64bd104dfca69e57cc257d439c9d4c3bcba536949c45e1d7f29fe6dc2069f54"},
+    {file = "boto3-stubs-1.24.8.tar.gz", hash = "sha256:5a772b6e0073853cce79b62e6e0105f6c176b45786ff94e04af514efff2b6be4"},
+    {file = "boto3_stubs-1.24.8-py3-none-any.whl", hash = "sha256:0d8f4e69cdb4ba2afd9a2eec82ed531495b9f801bdb36e21a07e1438eb7a8d11"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
