@@ -1,6 +1,6 @@
 from logging import Logger
 from os import environ
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
@@ -18,6 +18,16 @@ from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 
 ARRAY_INDEX_VARIABLE_NAME = "AWS_BATCH_JOB_ARRAY_INDEX"
+
+if TYPE_CHECKING:
+    from hashlib import _Hash
+
+
+def get_multihash_digest(digest_algorithm_code: int, body: StreamingBody) -> bytes:
+    hash_object: "_Hash" = FUNCS[digest_algorithm_code]()
+    for chunk in body.iter_chunks(chunk_size=CHUNK_SIZE):
+        hash_object.update(chunk)
+    return hash_object.digest()
 
 
 class ChecksumUtils:
@@ -43,7 +53,6 @@ class ChecksumUtils:
         )
 
     def run(self, hash_key: str, range_key: str) -> None:
-
         try:
             processing_item = self.processing_assets_model.get(hash_key, range_key=range_key)
         except self.processing_assets_model.DoesNotExist:
@@ -70,25 +79,22 @@ class ChecksumUtils:
     def validate_url_multihash(
         self, url: str, hex_multihash: str, s3_file_object: StreamingBody
     ) -> None:
-        checksum_function_code = int(hex_multihash[:2], 16)
-        checksum_function = FUNCS[checksum_function_code]
-
-        file_digest = checksum_function()
-        for chunk in s3_file_object.iter_chunks(chunk_size=CHUNK_SIZE):
-            file_digest.update(chunk)
-
-        if file_digest.digest() != decode(bytes.fromhex(hex_multihash)):
+        multihash_bytes = bytes.fromhex(hex_multihash)
+        expected_hash = decode(multihash_bytes)
+        actual_hash = get_multihash_digest(ord(multihash_bytes[:1]), s3_file_object)
+        if actual_hash == expected_hash:
+            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
+            self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)
+        else:
             content = {
-                MESSAGE_KEY: f"Checksum mismatch: expected {hex_multihash[4:]},"
-                f" got {file_digest.hexdigest()}"
+                MESSAGE_KEY: (
+                    f"Checksum mismatch: expected {expected_hash.hex()}, got {actual_hash.hex()}"
+                )
             }
             self.log_failure(content)
             self.validation_result_factory.save(
                 url, Check.CHECKSUM, ValidationResult.FAILED, details=content
             )
-        else:
-            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
-            self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)
 
     def get_s3_object(self, url: str) -> GeostoreS3Response:
         try:
