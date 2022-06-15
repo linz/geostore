@@ -150,7 +150,9 @@ Example of assuming the Geostore roles from a LINZ AWS account:
 
 You can communicate with a Geostore instance using either the low-level application programming
 interface (API) or the high-level command-line interface (CLI). The following documentation explains
-how to work with both.
+how to work with both. For an example of working with Python, see the
+`should_successfully_run_dataset_version_creation_process_with_multiple_assets` function in
+`tests/test_processing_stack.py`.
 
 ### API introduction
 
