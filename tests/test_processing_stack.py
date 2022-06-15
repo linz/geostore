@@ -147,6 +147,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
     s3_control_client: S3ControlClient,
     subtests: SubTests,
 ) -> None:
+    # Given a collection with multiple assets and metadata files
     # pylint: disable=too-many-locals
     key_prefix = any_safe_file_path()
 
@@ -254,7 +255,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
 
-        # When
+        # When importing a new dataset with the contents above
         try:
 
             dataset_response = lambda_client.invoke(
