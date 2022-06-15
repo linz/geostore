@@ -27,8 +27,7 @@ from geostore.check_files_checksums.task import (
 )
 from geostore.check_files_checksums.utils import (
     ARRAY_INDEX_VARIABLE_NAME,
-    ChecksumMismatchError,
-    ChecksumValidator,
+    ChecksumUtils,
     get_job_offset,
 )
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
@@ -58,7 +57,6 @@ from .stac_generators import (
     any_dataset_id,
     any_dataset_prefix,
     any_dataset_version_id,
-    any_hex_multihash,
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
@@ -83,15 +81,15 @@ def should_return_default_offset_to_zero() -> None:
     assert get_job_offset() == 0
 
 
-@patch("geostore.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
+@patch("geostore.check_files_checksums.utils.ChecksumUtils.get_s3_object")
 @patch("geostore.check_files_checksums.task.ValidationResultFactory")
 @patch("pynamodb.connection.base.get_session", MagicMock())
 @patch("pynamodb.connection.table.Connection", MagicMock())
 def should_validate_given_index(
     validation_results_factory_mock: MagicMock,
+    get_s3_object_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -100,14 +98,22 @@ def should_validate_given_index(
     hash_key_ = get_hash_key(dataset_id, version_id)
 
     url = any_s3_url()
-    hex_multihash = any_hex_multihash()
+    storage_asset_content = any_file_contents()
+    storage_asset_multihash = sha256_hex_digest_to_multihash(
+        sha256(storage_asset_content).hexdigest()
+    )
 
     array_index = "1"
 
     processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
-        hash_key_, array_index, url, hex_multihash, None
+        hash_key_, array_index, url, storage_asset_multihash, None
     )
-    validate_url_multihash_mock.return_value = True
+
+    get_s3_object_mock.return_value = MockGeostoreS3Response(
+        StreamingBody(BytesIO(initial_bytes=storage_asset_content), len(storage_asset_content)),
+        file_in_staging=True,
+    )
+
     validation_results_table_name = any_table_name()
     expected_calls = [
         call(hash_key_, validation_results_table_name),
@@ -132,29 +138,27 @@ def should_validate_given_index(
         # Then
         main()
 
-        with subtests.test(msg="Log message"):
-            info_log_mock.assert_any_call(
-                LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
-            )
-
-    with subtests.test(msg="Validate checksums"):
-        assert validate_url_multihash_mock.mock_calls == [call(url, hex_multihash)]
+    with subtests.test(msg="Log message"):
+        info_log_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
+        )
 
     with subtests.test(msg="Validation result"):
         assert validation_results_factory_mock.mock_calls == expected_calls
 
 
-@patch("geostore.check_files_checksums.utils.ChecksumValidator.validate_url_multihash")
 @patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
+@patch("geostore.check_files_checksums.utils.ChecksumUtils.get_s3_object")
 @patch("geostore.check_files_checksums.task.ValidationResultFactory")
+@patch("pynamodb.connection.base.get_session", MagicMock())
+@patch("pynamodb.connection.table.Connection", MagicMock())
 def should_log_error_when_validation_fails(
     validation_results_factory_mock: MagicMock,
+    get_s3_object_mock: MagicMock,
     processing_assets_model_mock: MagicMock,
-    validate_url_multihash_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
-    actual_hex_digest = any_sha256_hex_digest()
     expected_hex_digest = any_sha256_hex_digest()
     expected_hex_multihash = sha256_hex_digest_to_multihash(expected_hex_digest)
     dataset_id = any_dataset_id()
@@ -167,12 +171,24 @@ def should_log_error_when_validation_fails(
         url=url,
         multihash=expected_hex_multihash,
     )
-    expected_details = {
-        MESSAGE_KEY: f"Checksum mismatch: expected {expected_hex_digest}, got {actual_hex_digest}"
-    }
-    validate_url_multihash_mock.side_effect = ChecksumMismatchError(actual_hex_digest)
-    # When
+    processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
+        hash_key, "0", url, expected_hex_multihash, None
+    )
 
+    storage_asset_content = any_file_contents()
+    actual_multihash = sha256_hex_digest_to_multihash(sha256(storage_asset_content).hexdigest())
+
+    get_s3_object_mock.return_value = MockGeostoreS3Response(
+        StreamingBody(BytesIO(initial_bytes=storage_asset_content), len(storage_asset_content)),
+        file_in_staging=True,
+    )
+
+    expected_details = {
+        MESSAGE_KEY: f"Checksum mismatch:"
+        f" expected {expected_hex_digest}, got {actual_multihash[4:]}"
+    }
+
+    # When
     validation_results_table_name = any_table_name()
     sys.argv = [
         any_program_name(),
@@ -363,9 +379,9 @@ def should_log_arbitrary_client_errors() -> None:
 
     # When
     with raises(ClientError):
-        ChecksumValidator(
+        ChecksumUtils(
             any_table_name(), validation_results_factory_mock, s3_url_reader, MagicMock()
-        ).validate_url_multihash(url, any_hex_multihash())
+        ).get_s3_object(url)
 
     # Then
     validation_results_factory_mock.assert_has_calls(
@@ -389,35 +405,18 @@ def should_log_arbitrary_client_errors() -> None:
 def should_return_when_file_checksum_matches() -> None:
     file_contents = b"x" * (CHUNK_SIZE + 1)
     url = any_s3_url()
-    s3_url_reader = MockJSONURLReader(
-        {
-            url: MockGeostoreS3Response(
-                StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)), True
-            )
-        }
+    s3_repsonse = MockGeostoreS3Response(
+        StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)), True
     )
 
+    s3_url_reader = MockJSONURLReader({url: s3_repsonse})
     multihash = (
         f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
         "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
     )
 
     with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
-        ChecksumValidator(
+        assert isinstance(s3_repsonse.response, StreamingBody)
+        ChecksumUtils(
             any_table_name(), MockValidationResultFactory(), s3_url_reader, MagicMock()
-        ).validate_url_multihash(url, multihash)
-
-
-def should_raise_exception_when_checksum_does_not_match() -> None:
-    url = any_s3_url()
-    s3_url_reader = MockJSONURLReader(
-        {url: MockGeostoreS3Response(StreamingBody(BytesIO(), 0), True)}
-    )
-
-    checksum = "0" * 64
-    with raises(ChecksumMismatchError), patch(
-        "geostore.check_files_checksums.utils.processing_assets_model_with_meta"
-    ):
-        ChecksumValidator(
-            any_table_name(), MockValidationResultFactory(), s3_url_reader, MagicMock()
-        ).validate_url_multihash(url, f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}{checksum}")
+        ).validate_url_multihash(url, multihash, s3_repsonse.response)
