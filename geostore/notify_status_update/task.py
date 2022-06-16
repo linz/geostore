@@ -18,7 +18,7 @@ from ..parameter_store import ParameterName, get_param
 from ..step_function import get_import_status_given_arn
 from ..step_function_keys import (
     ASSET_UPLOAD_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     INPUT_KEY,
     JOB_STATUS_SUCCEEDED,
     METADATA_UPLOAD_KEY,
@@ -45,7 +45,7 @@ SLACK_URL_ENV_NAME = "GEOSTORE_SLACK_NOTIFY_URL"
 
 EVENT_DETAIL_KEY = "detail"
 
-MESSAGE_ATTRIBUTE_DATASET_KEY = "dataset_id"
+MESSAGE_ATTRIBUTE_DATASET_TITLE_KEY = "dataset_title"
 MESSAGE_ATTRIBUTE_STATUS_KEY = "status"
 
 STEP_FUNCTION_ARN_KEY = "executionArn"
@@ -73,13 +73,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
 
 def publish_sns_message(event: JsonObject) -> None:
-    dataset_id = loads(event[EVENT_DETAIL_KEY][INPUT_KEY])[DATASET_PREFIX_KEY]
+    dataset_title = loads(event[EVENT_DETAIL_KEY][INPUT_KEY])[DATASET_TITLE_KEY]
     SNS_CLIENT.publish(
         TopicArn=get_param(ParameterName.STATUS_SNS_TOPIC_ARN),
         Message=dumps(event),
         MessageAttributes={
-            MESSAGE_ATTRIBUTE_DATASET_KEY: MessageAttributeValueTypeDef(
-                DataType=DATA_TYPE_STRING, StringValue=dataset_id
+            MESSAGE_ATTRIBUTE_DATASET_TITLE_KEY: MessageAttributeValueTypeDef(
+                DataType=DATA_TYPE_STRING, StringValue=dataset_title
             ),
             MESSAGE_ATTRIBUTE_STATUS_KEY: MessageAttributeValueTypeDef(
                 DataType=DATA_TYPE_STRING, StringValue=event[EVENT_DETAIL_KEY][STATUS_KEY]
@@ -103,7 +103,7 @@ def post_to_slack(event: JsonObject) -> None:
         blocks.DividerBlock(),
         blocks.SectionBlock(text=f"*Status:* {event_details[STATUS_KEY]}"),
         blocks.DividerBlock(),
-        blocks.SectionBlock(text=f"*Dataset ID:* `{step_function_input[DATASET_PREFIX_KEY]}`"),
+        blocks.SectionBlock(text=f"*Dataset Title:* `{step_function_input[DATASET_TITLE_KEY]}`"),
         blocks.SectionBlock(
             text=f"*Dataset Version ID:* `{step_function_input[NEW_VERSION_ID_KEY]}`"
         ),

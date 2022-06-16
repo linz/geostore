@@ -50,10 +50,6 @@ def any_dataset_title() -> str:
     return _random_string_choices(TITLE_CHARACTERS, 20)
 
 
-def any_dataset_prefix() -> str:
-    return any_dataset_title()
-
-
 def any_asset_name() -> str:
     """Arbitrary-length string"""
     return random_string(20)

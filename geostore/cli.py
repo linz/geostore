@@ -20,12 +20,12 @@ from .environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 from .resources import Resource
 from .step_function_keys import (
     DATASET_ID_SHORT_KEY,
+    DATASET_TITLE_KEY,
     DESCRIPTION_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    TITLE_KEY,
 )
 from .types import JsonList, JsonObject
 
@@ -98,7 +98,7 @@ def dataset_create(
 ) -> None:
     request_object = {
         HTTP_METHOD_KEY: HTTP_METHOD_CREATE,
-        BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
+        BODY_KEY: {DATASET_TITLE_KEY: title, DESCRIPTION_KEY: description},
     }
 
     def get_output(response_body: JsonObject) -> str:
@@ -120,14 +120,14 @@ def dataset_list(*, id_: Optional[str] = Option(None, ID_ARGUMENT, help=DATASET_
     if id_ is None:
 
         def get_list_output(response_body: JsonList) -> str:
-            return "\n".join([entry[TITLE_KEY] for entry in response_body])
+            return "\n".join([entry[DATASET_TITLE_KEY] for entry in response_body])
 
         get_output = get_list_output
 
     else:
 
         def get_single_output(response_body: JsonObject) -> str:
-            title = response_body[TITLE_KEY]
+            title = response_body[DATASET_TITLE_KEY]
             assert isinstance(title, str)
             return title
 

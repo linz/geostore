@@ -13,7 +13,7 @@ from geostore.logging_keys import (
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -41,7 +41,7 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
     ):
         event = {
             DATASET_ID_KEY: dataset.dataset_id,
-            DATASET_PREFIX_KEY: dataset.title,
+            DATASET_TITLE_KEY: dataset.title,
             METADATA_URL_KEY: any_s3_url(),
             S3_ROLE_ARN_KEY: any_role_arn(),
             NEW_VERSION_ID_KEY: any_dataset_version_id(),
@@ -106,7 +106,7 @@ def should_log_assets_added_to_manifest(
             lambda_handler(
                 {
                     DATASET_ID_KEY: dataset.dataset_id,
-                    DATASET_PREFIX_KEY: dataset.title,
+                    DATASET_TITLE_KEY: dataset.title,
                     METADATA_URL_KEY: any_s3_url(),
                     S3_ROLE_ARN_KEY: any_role_arn(),
                     NEW_VERSION_ID_KEY: version_id,
@@ -138,7 +138,7 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
         lambda_handler(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
-                DATASET_PREFIX_KEY: dataset.title,
+                DATASET_TITLE_KEY: dataset.title,
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
                 NEW_VERSION_ID_KEY: any_dataset_version_id(),

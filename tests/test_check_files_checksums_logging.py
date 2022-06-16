@@ -11,7 +11,7 @@ from geostore.check_files_checksums.task import (
     ASSETS_TABLE_NAME_ARGUMENT,
     CURRENT_VERSION_ID_ARGUMENT,
     DATASET_ID_ARGUMENT,
-    DATASET_PREFIX_ARGUMENT,
+    DATASET_TITLE_ARGUMENT,
     FIRST_ITEM_ARGUMENT,
     NEW_VERSION_ID_ARGUMENT,
     RESULTS_TABLE_NAME_ARGUMENT,
@@ -28,7 +28,7 @@ from geostore.step_function import Outcome
 
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
-from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_version_id
 
 
 @mark.infrastructure
@@ -53,7 +53,7 @@ def should_log_missing_item(subtests: SubTests) -> None:
         f"{DATASET_ID_ARGUMENT}={dataset_id}",
         f"{NEW_VERSION_ID_ARGUMENT}={version_id}",
         f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
-        f"{DATASET_PREFIX_ARGUMENT}={any_dataset_prefix()}",
+        f"{DATASET_TITLE_ARGUMENT}={any_dataset_title()}",
         f"{FIRST_ITEM_ARGUMENT}={index}",
         f"{ASSETS_TABLE_NAME_ARGUMENT}={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
         (

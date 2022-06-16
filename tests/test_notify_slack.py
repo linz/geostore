@@ -15,7 +15,7 @@ from geostore.aws_message_attributes import DATA_TYPE_STRING
 from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
 from geostore.notify_status_update.task import (
     EVENT_DETAIL_KEY,
-    MESSAGE_ATTRIBUTE_DATASET_KEY,
+    MESSAGE_ATTRIBUTE_DATASET_TITLE_KEY,
     MESSAGE_ATTRIBUTE_STATUS_KEY,
     SLACK_URL_ENV_NAME,
     STEP_FUNCTION_ARN_KEY,
@@ -30,7 +30,7 @@ from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     ERRORS_KEY,
     INPUT_KEY,
     JOB_STATUS_FAILED,
@@ -49,7 +49,7 @@ from geostore.step_function_keys import (
 
 from .aws_utils import any_arn_formatted_string, any_lambda_context, any_s3_url
 from .general_generators import any_https_url
-from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_version_id
 
 STEP_FUNCTION_START_MILLISECOND_TIMESTAMP = round(
     datetime(
@@ -89,7 +89,7 @@ def should_notify_slack_with_finished_details_when_url_set(
                 INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
-                        DATASET_PREFIX_KEY: any_dataset_prefix(),
+                        DATASET_TITLE_KEY: any_dataset_title(),
                         NEW_VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
@@ -168,7 +168,7 @@ def should_notify_slack_when_step_function_failed(
                 INPUT_KEY: dumps(
                     {
                         DATASET_ID_KEY: any_dataset_id(),
-                        DATASET_PREFIX_KEY: any_dataset_prefix(),
+                        DATASET_TITLE_KEY: any_dataset_title(),
                         NEW_VERSION_ID_KEY: any_dataset_version_id(),
                     }
                 ),
@@ -208,15 +208,11 @@ def should_log_and_not_post_to_slack_when_url_not_set(
 def should_publish_sns_message(get_param_mock: MagicMock) -> None:
     # Given
     get_param_mock.return_value = topic_arn = any_arn_formatted_string()
-    dataset_prefix = any_dataset_prefix()
+    dataset_title = any_dataset_title()
     publish_sns_message_input = {
         EVENT_DETAIL_KEY: {
             STATUS_KEY: JOB_STATUS_SUCCEEDED,
-            INPUT_KEY: dumps(
-                {
-                    DATASET_PREFIX_KEY: dataset_prefix,
-                }
-            ),
+            INPUT_KEY: dumps({DATASET_TITLE_KEY: dataset_title}),
         }
     }
 
@@ -224,8 +220,8 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
         "TopicArn": topic_arn,
         "Message": dumps(publish_sns_message_input),
         "MessageAttributes": {
-            MESSAGE_ATTRIBUTE_DATASET_KEY: MessageAttributeValueTypeDef(
-                DataType=DATA_TYPE_STRING, StringValue=dataset_prefix
+            MESSAGE_ATTRIBUTE_DATASET_TITLE_KEY: MessageAttributeValueTypeDef(
+                DataType=DATA_TYPE_STRING, StringValue=dataset_title
             ),
             MESSAGE_ATTRIBUTE_STATUS_KEY: MessageAttributeValueTypeDef(
                 DataType=DATA_TYPE_STRING, StringValue=JOB_STATUS_SUCCEEDED
@@ -257,7 +253,7 @@ def should_launch_notify_slack_endpoint_lambda_function(
             INPUT_KEY: dumps(
                 {
                     DATASET_ID_KEY: any_dataset_id(),
-                    DATASET_PREFIX_KEY: any_dataset_prefix(),
+                    DATASET_TITLE_KEY: any_dataset_title(),
                 }
             ),
         },

@@ -8,7 +8,7 @@ from ..api_responses import error_response, success_response
 from ..dataset_properties import TITLE_PATTERN
 from ..datasets_model import datasets_model_with_meta
 from ..pystac_io_methods import S3StacIO
-from ..step_function_keys import DESCRIPTION_KEY, TITLE_KEY
+from ..step_function_keys import DATASET_TITLE_KEY, DESCRIPTION_KEY
 from ..types import JsonObject
 
 StacIO.set_default(S3StacIO)
@@ -20,10 +20,10 @@ def create_dataset(body: JsonObject) -> JsonObject:
     body_schema = {
         "type": "object",
         "properties": {
-            TITLE_KEY: {"type": "string", "pattern": TITLE_PATTERN},
+            DATASET_TITLE_KEY: {"type": "string", "pattern": TITLE_PATTERN},
             DESCRIPTION_KEY: {"type": "string"},
         },
-        "required": [TITLE_KEY, DESCRIPTION_KEY],
+        "required": [DATASET_TITLE_KEY, DESCRIPTION_KEY],
     }
 
     # request body validation
@@ -34,7 +34,7 @@ def create_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    dataset_title = body[TITLE_KEY]
+    dataset_title = body[DATASET_TITLE_KEY]
     if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
         return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 

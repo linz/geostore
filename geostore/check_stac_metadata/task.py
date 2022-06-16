@@ -17,7 +17,7 @@ from ..step_function import Outcome, get_hash_key
 from ..step_function_keys import (
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -41,7 +41,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "properties": {
                     CURRENT_VERSION_ID_KEY: {"type": "string"},
                     DATASET_ID_KEY: {"type": "string"},
-                    DATASET_PREFIX_KEY: {"type": "string"},
+                    DATASET_TITLE_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                     NEW_VERSION_ID_KEY: {"type": "string"},
                     S3_ROLE_ARN_KEY: {"type": "string"},
@@ -49,7 +49,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "required": [
                     CURRENT_VERSION_ID_KEY,
                     DATASET_ID_KEY,
-                    DATASET_PREFIX_KEY,
+                    DATASET_TITLE_KEY,
                     METADATA_URL_KEY,
                     NEW_VERSION_ID_KEY,
                     S3_ROLE_ARN_KEY,
@@ -64,7 +64,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
-        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_PREFIX_KEY], LOGGER)
+        s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_TITLE_KEY], LOGGER)
     except ClientError as error:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
         return {ERROR_MESSAGE_KEY: str(error)}

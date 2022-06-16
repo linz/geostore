@@ -55,6 +55,7 @@ from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     DATASET_ID_SHORT_KEY,
+    DATASET_TITLE_KEY,
     DESCRIPTION_KEY,
     ERRORS_KEY,
     EXECUTION_ARN_KEY,
@@ -66,7 +67,6 @@ from geostore.step_function_keys import (
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
     STEP_FUNCTION_KEY,
-    TITLE_KEY,
     VALIDATION_KEY,
 )
 from geostore.sts import get_account_number
@@ -263,7 +263,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            TITLE_KEY: dataset_title,
+                            DATASET_TITLE_KEY: dataset_title,
                             DESCRIPTION_KEY: any_dataset_description(),
                         },
                     }
@@ -272,7 +272,6 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_payload = load(dataset_response["Payload"])
 
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}/"
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -325,7 +324,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
 
             # Catalog contents
-            imported_catalog_key = f"{dataset_prefix}{catalog_metadata_filename}"
+            imported_catalog_key = f"{dataset_title}/{catalog_metadata_filename}"
             with subtests.test(msg="Imported catalog has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_catalog_key}", mode="rb"
             ) as imported_catalog_file:
@@ -354,7 +353,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
 
             # Collection contents
-            imported_collection_key = f"{dataset_prefix}{collection_metadata_filename}"
+            imported_collection_key = f"{dataset_title}/{collection_metadata_filename}"
             with subtests.test(msg="Imported collection has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_collection_key}", mode="rb"
             ) as imported_collection_file:
@@ -388,7 +387,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
 
             # Item contents
-            imported_item_key = f"{dataset_prefix}{item_metadata_filename}"
+            imported_item_key = f"{dataset_title}/{item_metadata_filename}"
 
             with subtests.test(msg="Imported item has relative keys"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
@@ -420,14 +419,14 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
                 }
 
             # First asset contents
-            imported_first_asset_key = f"{dataset_prefix}{first_asset_filename}"
+            imported_first_asset_key = f"{dataset_title}/{first_asset_filename}"
             with subtests.test(msg="Verify first asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
             ) as imported_first_asset_file:
                 assert imported_first_asset_file.read() == first_asset_contents
 
             # Second asset contents
-            imported_second_asset_key = f"{dataset_prefix}{second_asset_filename}"
+            imported_second_asset_key = f"{dataset_title}/{second_asset_filename}"
             with subtests.test(msg="Verify second asset contents"), smart_open.open(
                 f"{storage_bucket_prefix}{imported_second_asset_key}", mode="rb"
             ) as imported_second_asset_file:
@@ -553,7 +552,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
                     {
                         HTTP_METHOD_KEY: "POST",
                         BODY_KEY: {
-                            TITLE_KEY: dataset_title,
+                            DATASET_TITLE_KEY: dataset_title,
                             DESCRIPTION_KEY: any_dataset_description(),
                         },
                     }
@@ -1126,7 +1125,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                 {
                     HTTP_METHOD_KEY: "POST",
                     BODY_KEY: {
-                        TITLE_KEY: dataset_title,
+                        DATASET_TITLE_KEY: dataset_title,
                         DESCRIPTION_KEY: any_dataset_description(),
                     },
                 }
