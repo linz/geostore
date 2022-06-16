@@ -26,7 +26,6 @@ from geostore.cli import (
     VERSION_FLAG,
     app,
 )
-from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.resources import Resource
 from geostore.stac_format import STAC_ASSETS_KEY, STAC_FILE_CHECKSUM_KEY, STAC_HREF_KEY
@@ -252,14 +251,8 @@ def should_list_datasets(subtests: SubTests) -> None:
 
     # Then
     with subtests.test(msg="should print datasets to standard output"):
-        assert (
-            f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
-            in result.stdout
-        )
-        assert (
-            f"{second_dataset.title}{DATASET_KEY_SEPARATOR}{second_dataset.dataset_id}\n"
-            in result.stdout
-        )
+        assert f"{first_dataset.title}\n" in result.stdout
+        assert f"{second_dataset.title}\n" in result.stdout
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""
@@ -279,10 +272,7 @@ def should_filter_datasets_listing(subtests: SubTests) -> None:
 
     # Then
     with subtests.test(msg="should print dataset to standard output"):
-        assert (
-            result.stdout
-            == f"{first_dataset.title}{DATASET_KEY_SEPARATOR}{first_dataset.dataset_id}\n"
-        )
+        assert result.stdout == f"{first_dataset.title}\n"
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""

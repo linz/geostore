@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from multihash import SHA2_256
 
-from geostore.dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from geostore.dataset_properties import TITLE_CHARACTERS
 from geostore.stac_format import (
     LINZ_STAC_CREATED_KEY,
     LINZ_STAC_UPDATED_KEY,
@@ -51,8 +51,7 @@ def any_dataset_title() -> str:
 
 
 def any_dataset_prefix() -> str:
-    """Concatenation of dataset title and id"""
-    return f"{any_dataset_title()}{DATASET_KEY_SEPARATOR}{any_dataset_id()}"
+    return any_dataset_title()
 
 
 def any_asset_name() -> str:

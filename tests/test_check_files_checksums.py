@@ -244,7 +244,7 @@ def should_successfully_validate_asset_not_in_staging(
     with Dataset() as dataset, S3Object(
         BytesIO(initial_bytes=storage_asset_content),
         Resource.STORAGE_BUCKET_NAME.resource_name,
-        f"{dataset.dataset_prefix}/{storage_asset_filename}",
+        f"{dataset.title}/{storage_asset_filename}",
     ):
 
         hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
@@ -262,7 +262,7 @@ def should_successfully_validate_asset_not_in_staging(
             f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
             f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
             f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
-            f"{DATASET_PREFIX_ARGUMENT}={dataset.dataset_prefix}",
+            f"{DATASET_PREFIX_ARGUMENT}={dataset.title}",
             f"{FIRST_ITEM_ARGUMENT}=0",
             f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
             f"{RESULTS_TABLE_NAME_ARGUMENT}={results_table_name}",
@@ -337,7 +337,7 @@ def should_save_file_not_found_validation_results(
             f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
             f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
             f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
-            f"{DATASET_PREFIX_ARGUMENT}={dataset.dataset_prefix}",
+            f"{DATASET_PREFIX_ARGUMENT}={dataset.title}",
             f"{FIRST_ITEM_ARGUMENT}=0",
             f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
             f"{RESULTS_TABLE_NAME_ARGUMENT}={any_table_name()}",

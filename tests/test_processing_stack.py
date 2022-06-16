@@ -20,7 +20,6 @@ from pytest_subtests import SubTests
 
 from geostore.api_keys import STATUS_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName
 from geostore.populate_catalog.task import (
@@ -273,7 +272,7 @@ def should_successfully_run_dataset_version_creation_process_with_multiple_asset
             dataset_payload = load(dataset_response["Payload"])
 
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
-            dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/"
+            dataset_prefix = f"{dataset_title}/"
 
             dataset_versions_response = lambda_client.invoke(
                 FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -613,7 +612,7 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         finally:
             # Cleanup
             for filename in [root_metadata_filename, child_metadata_filename, asset_filename]:
-                new_key = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}/{filename}"
+                new_key = f"{dataset_title}/{filename}"
                 with subtests.test(msg=f"Delete {new_key}"):
                     delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, new_key, s3_client)
 
@@ -716,7 +715,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
             STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
             STAC_LINKS_KEY: [
                 {
-                    STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{catalog_metadata_filename}",
+                    STAC_HREF_KEY: f"./{dataset.title}/{catalog_metadata_filename}",
                     STAC_REL_KEY: STAC_REL_CHILD,
                     STAC_TITLE_KEY: dataset.title,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
@@ -785,7 +784,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
         ) as first_asset_s3_object, S3Object(
             file_object=BytesIO(initial_bytes=second_asset_contents),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-            key=f"{dataset.dataset_prefix}/{second_asset_filename}",
+            key=f"{dataset.title}/{second_asset_filename}",
         ) as second_asset_s3_object, S3Object(
             file_object=json_dict_to_file_object(root_catalog_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -793,11 +792,11 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
         ) as root_catalog_metadata_file, S3Object(
             file_object=json_dict_to_file_object(catalog_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-            key=f"{dataset.dataset_prefix}/{catalog_metadata_filename}",
+            key=f"{dataset.title}/{catalog_metadata_filename}",
         ) as catalog_metadata_file, S3Object(
             file_object=json_dict_to_file_object(collection_dict),
             bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-            key=f"{dataset.dataset_prefix}/{collection_metadata_filename}",
+            key=f"{dataset.title}/{collection_metadata_filename}",
         ) as collection_metadata_file, S3Object(
             file_object=json_dict_to_file_object(
                 {
@@ -956,7 +955,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     not in (
                         load(
                             smart_open.open(
-                                f"{storage_bucket_prefix}{dataset.dataset_prefix}"
+                                f"{storage_bucket_prefix}{dataset.title}"
                                 f"/{item_metadata_filename}",
                                 mode="rb",
                             )
@@ -984,7 +983,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     assert load(existing_collection_file) == collection_dict
 
                 # Item contents
-                imported_item_key = f"{dataset.dataset_prefix}/{item_metadata_filename}"
+                imported_item_key = f"{dataset.title}/{item_metadata_filename}"
                 with subtests.test(msg="Imported item has correct links"), smart_open.open(
                     f"{storage_bucket_prefix}{imported_item_key}", mode="rb"
                 ) as imported_item_file:
@@ -1021,7 +1020,7 @@ def should_successfully_run_dataset_version_creation_process_with_partial_upload
                     }
 
                 # First asset contents
-                imported_first_asset_key = f"{dataset.dataset_prefix}/{first_asset_filename}"
+                imported_first_asset_key = f"{dataset.title}/{first_asset_filename}"
                 with subtests.test(msg="Verify first asset contents"), smart_open.open(
                     f"{storage_bucket_prefix}{imported_first_asset_key}", mode="rb"
                 ) as imported_first_asset_file:
@@ -1170,11 +1169,10 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
             assert execution["status"] == "SUCCEEDED", execution
 
     # Then the files should not be copied
-    dataset_prefix = f"{dataset_title}{DATASET_KEY_SEPARATOR}{dataset_id}"
     for filename in [metadata_filename, asset_filename]:
         with subtests.test(msg=filename), raises(AssertionError):
             delete_s3_key(
                 Resource.STORAGE_BUCKET_NAME.resource_name,
-                f"{dataset_prefix}/{filename}",
+                f"{dataset_title}/{filename}",
                 s3_client,
             )

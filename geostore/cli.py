@@ -15,7 +15,7 @@ from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from .dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from .dataset_properties import TITLE_CHARACTERS
 from .environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 from .resources import Resource
 from .step_function_keys import (
@@ -120,19 +120,16 @@ def dataset_list(*, id_: Optional[str] = Option(None, ID_ARGUMENT, help=DATASET_
     if id_ is None:
 
         def get_list_output(response_body: JsonList) -> str:
-            lines = []
-            for entry in response_body:
-                lines.append(
-                    f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}"
-                )
-            return "\n".join(lines)
+            return "\n".join([entry[TITLE_KEY] for entry in response_body])
 
         get_output = get_list_output
 
     else:
 
         def get_single_output(response_body: JsonObject) -> str:
-            return f"{response_body['title']}{DATASET_KEY_SEPARATOR}{response_body['id']}"
+            title = response_body[TITLE_KEY]
+            assert isinstance(title, str)
+            return title
 
         body[DATASET_ID_SHORT_KEY] = id_
         get_output = get_single_output

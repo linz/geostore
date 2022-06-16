@@ -87,10 +87,10 @@ def should_get_object_from_storage_bucket_when_not_in_staging_bucket() -> None:
     with Dataset() as dataset, S3Object(
         file_object=json_dict_to_file_object(collection_dict),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{collection_metadata_filename}",
+        key=f"{dataset.title}/{collection_metadata_filename}",
     ):
 
-        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset.dataset_prefix, get_log())
+        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset.title, get_log())
         json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
