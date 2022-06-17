@@ -16,7 +16,7 @@ from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
 from ..step_function_keys import (
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
@@ -46,13 +46,13 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
-                    DATASET_PREFIX_KEY: {"type": "string"},
+                    DATASET_TITLE_KEY: {"type": "string"},
                     NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                 },
                 "required": [
                     DATASET_ID_KEY,
-                    DATASET_PREFIX_KEY,
+                    DATASET_TITLE_KEY,
                     METADATA_URL_KEY,
                     NEW_VERSION_ID_KEY,
                 ],
@@ -63,7 +63,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         return {ERROR_MESSAGE_KEY: error.message}
 
     dataset_key = (
-        f"{event[DATASET_PREFIX_KEY]}/{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
+        f"{event[DATASET_TITLE_KEY]}/{basename(urlparse(event[METADATA_URL_KEY]).path[1:])}"
     )
 
     # add reference to root catalog

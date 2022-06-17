@@ -15,17 +15,17 @@ from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from .dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from .dataset_properties import TITLE_CHARACTERS
 from .environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 from .resources import Resource
 from .step_function_keys import (
     DATASET_ID_SHORT_KEY,
+    DATASET_TITLE_KEY,
     DESCRIPTION_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    TITLE_KEY,
 )
 from .types import JsonList, JsonObject
 
@@ -98,7 +98,7 @@ def dataset_create(
 ) -> None:
     request_object = {
         HTTP_METHOD_KEY: HTTP_METHOD_CREATE,
-        BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
+        BODY_KEY: {DATASET_TITLE_KEY: title, DESCRIPTION_KEY: description},
     }
 
     def get_output(response_body: JsonObject) -> str:
@@ -120,19 +120,16 @@ def dataset_list(*, id_: Optional[str] = Option(None, ID_ARGUMENT, help=DATASET_
     if id_ is None:
 
         def get_list_output(response_body: JsonList) -> str:
-            lines = []
-            for entry in response_body:
-                lines.append(
-                    f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}"
-                )
-            return "\n".join(lines)
+            return "\n".join([entry[DATASET_TITLE_KEY] for entry in response_body])
 
         get_output = get_list_output
 
     else:
 
         def get_single_output(response_body: JsonObject) -> str:
-            return f"{response_body['title']}{DATASET_KEY_SEPARATOR}{response_body['id']}"
+            title = response_body[DATASET_TITLE_KEY]
+            assert isinstance(title, str)
+            return title
 
         body[DATASET_ID_SHORT_KEY] = id_
         get_output = get_single_output

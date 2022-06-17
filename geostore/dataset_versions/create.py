@@ -25,7 +25,7 @@ from ..step_function_keys import (
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_ID_SHORT_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
@@ -87,7 +87,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     # execute step function
     step_functions_input = {
         DATASET_ID_KEY: dataset.dataset_id,
-        DATASET_PREFIX_KEY: dataset.dataset_prefix,
+        DATASET_TITLE_KEY: dataset.title,
         NEW_VERSION_ID_KEY: dataset_version_id,
         CURRENT_VERSION_ID_KEY: current_dataset_version,
         METADATA_URL_KEY: body[METADATA_URL_KEY],

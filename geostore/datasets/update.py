@@ -7,7 +7,7 @@ from pynamodb.exceptions import DoesNotExist
 from ..api_responses import error_response, success_response
 from ..datasets_model import DatasetsModelBase, datasets_model_with_meta
 from ..models import DATASET_ID_PREFIX
-from ..step_function_keys import DATASET_ID_SHORT_KEY, TITLE_KEY
+from ..step_function_keys import DATASET_ID_SHORT_KEY, DATASET_TITLE_KEY
 from ..types import JsonObject
 
 
@@ -16,8 +16,11 @@ def update_dataset(body: JsonObject) -> JsonObject:
 
     body_schema = {
         "type": "object",
-        "properties": {DATASET_ID_SHORT_KEY: {"type": "string"}, TITLE_KEY: {"type": "string"}},
-        "required": [DATASET_ID_SHORT_KEY, TITLE_KEY],
+        "properties": {
+            DATASET_ID_SHORT_KEY: {"type": "string"},
+            DATASET_TITLE_KEY: {"type": "string"},
+        },
+        "required": [DATASET_ID_SHORT_KEY, DATASET_TITLE_KEY],
     }
 
     # request body validation
@@ -28,7 +31,7 @@ def update_dataset(body: JsonObject) -> JsonObject:
 
     # check for duplicate type/title
     datasets_model_class = datasets_model_with_meta()
-    dataset_title = body[TITLE_KEY]
+    dataset_title = body[DATASET_TITLE_KEY]
     if datasets_model_class.datasets_title_idx.count(hash_key=dataset_title):
         return error_response(HTTPStatus.CONFLICT, f"dataset '{dataset_title}' already exists")
 

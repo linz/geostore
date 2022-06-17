@@ -12,7 +12,7 @@ from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     NEW_VERSION_S3_LOCATION,
@@ -44,12 +44,12 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{filename}",
+        key=f"{dataset.title}/{filename}",
     ) as dataset_metadata:
         response = lambda_handler(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
-                DATASET_PREFIX_KEY: dataset.dataset_prefix,
+                DATASET_TITLE_KEY: dataset.title,
                 NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
                 S3_ROLE_ARN_KEY: any_role_arn(),
