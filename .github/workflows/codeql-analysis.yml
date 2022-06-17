@@ -40,9 +40,7 @@ jobs:
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
-          # Override language selection by uncommenting this and choosing your languages
-          # with:
-          #   languages: go, javascript, csharp, python, cpp, java
+          languages: python
 
         # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
         # If this step fails, then you should remove it and run the build manually (see below)
