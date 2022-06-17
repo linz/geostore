@@ -31,7 +31,7 @@ jobs:
           python -m pip install poetry
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root
+              --no-dev --no-root
           echo "CODEQL_PYTHON=$(python -m poetry run which python)" >> $GITHUB_ENV
 
         # Initializes the CodeQL tools for scanning.
