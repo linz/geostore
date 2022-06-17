@@ -24,7 +24,7 @@ class GeostoreS3Response:
 
 
 def get_s3_url_reader(
-    s3_role_arn: str, dataset_prefix: str, logger: Logger
+    s3_role_arn: str, dataset_title: str, logger: Logger
 ) -> Callable[[str], GeostoreS3Response]:
     def s3_url_reader(staging_url: str) -> GeostoreS3Response:
         bucket_name, key = get_bucket_and_key_from_url(staging_url)
@@ -36,7 +36,7 @@ def get_s3_url_reader(
             if error.response["Error"]["Code"] != "NoSuchKey":
                 raise error
 
-            geostore_key = f"{dataset_prefix}/{basename(urlparse(staging_url).path[1:])}"
+            geostore_key = f"{dataset_title}/{basename(urlparse(staging_url).path[1:])}"
 
             logger.debug(
                 f"'{key}' is not present in the staging bucket."

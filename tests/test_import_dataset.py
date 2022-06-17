@@ -10,7 +10,6 @@ from mypy_boto3_s3control import S3ControlClient
 from pytest import mark
 from pytest_subtests import SubTests
 
-from geostore.dataset_properties import DATASET_KEY_SEPARATOR
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.import_dataset.task import lambda_handler
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
@@ -26,7 +25,7 @@ from geostore.stac_format import (
 )
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -50,7 +49,7 @@ from .general_generators import any_file_contents, any_safe_filename
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
-    any_dataset_prefix,
+    any_dataset_title,
     any_dataset_version_id,
     sha256_hex_digest_to_multihash,
 )
@@ -61,7 +60,7 @@ def should_return_error_when_missing_required_property(subtests: SubTests) -> No
     # Given
     minimal_body = {
         DATASET_ID_KEY: any_dataset_id(),
-        DATASET_PREFIX_KEY: any_dataset_prefix(),
+        DATASET_TITLE_KEY: any_dataset_title(),
         METADATA_URL_KEY: any_s3_url(),
         S3_ROLE_ARN_KEY: any_role_arn(),
         NEW_VERSION_ID_KEY: any_dataset_version_id(),
@@ -171,7 +170,7 @@ def should_batch_copy_files_to_storage(
                 response = lambda_handler(
                     {
                         DATASET_ID_KEY: dataset.dataset_id,
-                        DATASET_PREFIX_KEY: dataset.dataset_prefix,
+                        DATASET_TITLE_KEY: dataset.title,
                         NEW_VERSION_ID_KEY: version_id,
                         METADATA_URL_KEY: root_metadata_s3_object.url,
                         S3_ROLE_ARN_KEY: get_s3_role_arn(),
@@ -189,7 +188,7 @@ def should_batch_copy_files_to_storage(
                 )
             finally:
                 # Then
-                new_prefix = f"{dataset.title}{DATASET_KEY_SEPARATOR}{dataset.dataset_id}"
+                new_prefix = dataset.title
                 storage_bucket_prefix = (
                     f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
                 )

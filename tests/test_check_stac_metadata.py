@@ -62,7 +62,7 @@ from geostore.step_function import Outcome, get_hash_key
 from geostore.step_function_keys import (
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -93,7 +93,7 @@ from .general_generators import (
 from .stac_generators import (
     any_asset_name,
     any_dataset_id,
-    any_dataset_prefix,
+    any_dataset_title,
     any_dataset_version_id,
     any_hex_multihash,
 )
@@ -127,7 +127,7 @@ def should_succeed_with_validation_failure(
                 CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: any_s3_url(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
+                DATASET_TITLE_KEY: any_dataset_title(),
             },
             any_lambda_context(),
         )
@@ -160,7 +160,7 @@ def should_save_non_s3_url_validation_results(
                 CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: non_s3_url,
                 S3_ROLE_ARN_KEY: any_role_arn(),
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
+                DATASET_TITLE_KEY: any_dataset_title(),
             },
             any_lambda_context(),
         )
@@ -262,7 +262,7 @@ def should_save_staging_access_validation_results(
             CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
+            DATASET_TITLE_KEY: any_dataset_title(),
         },
         any_lambda_context(),
     )
@@ -309,7 +309,7 @@ def should_save_file_not_found_validation_results(
             CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
             METADATA_URL_KEY: s3_url,
             S3_ROLE_ARN_KEY: any_role_arn(),
-            DATASET_PREFIX_KEY: any_dataset_prefix(),
+            DATASET_TITLE_KEY: any_dataset_title(),
         },
         any_lambda_context(),
     )
@@ -369,7 +369,7 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
                 CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: root_s3_object.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                DATASET_PREFIX_KEY: any_dataset_prefix(),
+                DATASET_TITLE_KEY: any_dataset_title(),
             },
             any_lambda_context(),
         ) == {SUCCESS_KEY: True}
@@ -502,7 +502,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
                     CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                     METADATA_URL_KEY: metadata_s3_object.url,
                     S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                    DATASET_PREFIX_KEY: any_dataset_prefix(),
+                    DATASET_TITLE_KEY: any_dataset_title(),
                 },
                 any_lambda_context(),
             ) == {SUCCESS_KEY: True}
@@ -548,7 +548,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
     metadata_url_prefix = (
         f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
     )
-    dataset_prefix = any_dataset_prefix()
+    dataset_title = any_dataset_title()
     catalog_metadata_filename = any_safe_filename()
     catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
     collection_metadata_filename = any_safe_filename()
@@ -585,7 +585,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset_prefix}/{collection_metadata_filename}",
+        key=f"{dataset_title}/{collection_metadata_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -608,7 +608,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
                 CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
                 METADATA_URL_KEY: catalog_metadata_file.url,
                 S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                DATASET_PREFIX_KEY: dataset_prefix,
+                DATASET_TITLE_KEY: dataset_title,
             },
             any_lambda_context(),
         ) == {SUCCESS_KEY: True}

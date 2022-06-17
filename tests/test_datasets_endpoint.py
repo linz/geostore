@@ -17,7 +17,7 @@ from geostore.dataset_properties import TITLE_PATTERN
 from geostore.datasets.entrypoint import lambda_handler
 from geostore.datasets.get import get_dataset_filter, get_dataset_single, handle_get
 from geostore.resources import Resource
-from geostore.step_function_keys import DATASET_ID_SHORT_KEY, DESCRIPTION_KEY, TITLE_KEY
+from geostore.step_function_keys import DATASET_ID_SHORT_KEY, DATASET_TITLE_KEY, DESCRIPTION_KEY
 
 from .aws_utils import Dataset, S3Object, any_lambda_context
 from .general_generators import any_dictionary_key, any_safe_filename, random_string
@@ -35,7 +35,7 @@ basicConfig(level=INFO)
 def should_create_dataset(subtests: SubTests) -> None:
     dataset_title = any_dataset_title()
     dataset_description = any_dataset_description()
-    body = {TITLE_KEY: dataset_title, DESCRIPTION_KEY: dataset_description}
+    body = {DATASET_TITLE_KEY: dataset_title, DESCRIPTION_KEY: dataset_description}
 
     response = lambda_handler({HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context())
 
@@ -46,13 +46,13 @@ def should_create_dataset(subtests: SubTests) -> None:
         assert len(response[BODY_KEY][DATASET_ID_SHORT_KEY]) == 26
 
     with subtests.test(msg="title"):
-        assert response[BODY_KEY][TITLE_KEY] == dataset_title
+        assert response[BODY_KEY][DATASET_TITLE_KEY] == dataset_title
 
 
 @mark.infrastructure
 def should_fail_if_post_request_containing_duplicate_dataset_title() -> None:
     dataset_title = any_dataset_title()
-    body = {TITLE_KEY: dataset_title, DESCRIPTION_KEY: any_dataset_description()}
+    body = {DATASET_TITLE_KEY: dataset_title, DESCRIPTION_KEY: any_dataset_description()}
 
     with Dataset(title=dataset_title):
         response = lambda_handler({HTTP_METHOD_KEY: "POST", BODY_KEY: body}, any_lambda_context())
@@ -72,7 +72,10 @@ def should_return_client_error_when_title_contains_unsupported_characters(
             response = lambda_handler(
                 {
                     HTTP_METHOD_KEY: "POST",
-                    BODY_KEY: {TITLE_KEY: character, DESCRIPTION_KEY: any_dataset_description()},
+                    BODY_KEY: {
+                        DATASET_TITLE_KEY: character,
+                        DESCRIPTION_KEY: any_dataset_description(),
+                    },
                 },
                 any_lambda_context(),
             )
@@ -123,7 +126,7 @@ def should_return_all_datasets(subtests: SubTests) -> None:
 def should_return_single_dataset_filtered_by_title(subtests: SubTests) -> None:
     # Given matching and non-matching dataset instances
     dataset_title = any_dataset_title()
-    body = {TITLE_KEY: dataset_title}
+    body = {DATASET_TITLE_KEY: dataset_title}
 
     with Dataset(title=dataset_title) as matching_dataset, Dataset():
         # When requesting a specific type and title
@@ -159,20 +162,20 @@ def should_update_dataset(subtests: SubTests) -> None:
     new_dataset_title = any_dataset_title()
 
     with Dataset() as dataset:
-        body = {DATASET_ID_SHORT_KEY: dataset.dataset_id, TITLE_KEY: new_dataset_title}
+        body = {DATASET_ID_SHORT_KEY: dataset.dataset_id, DATASET_TITLE_KEY: new_dataset_title}
         response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
 
     with subtests.test(msg="status code"):
         assert response[STATUS_CODE_KEY] == HTTPStatus.OK
 
     with subtests.test(msg="title"):
-        assert response[BODY_KEY][TITLE_KEY] == new_dataset_title
+        assert response[BODY_KEY][DATASET_TITLE_KEY] == new_dataset_title
 
 
 @mark.infrastructure
 def should_fail_if_updating_with_already_existing_dataset_title() -> None:
     dataset_title = any_dataset_title()
-    body = {DATASET_ID_SHORT_KEY: any_dataset_id(), TITLE_KEY: dataset_title}
+    body = {DATASET_ID_SHORT_KEY: any_dataset_id(), DATASET_TITLE_KEY: dataset_title}
 
     with Dataset(title=dataset_title):
         response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
@@ -187,7 +190,7 @@ def should_fail_if_updating_with_already_existing_dataset_title() -> None:
 def should_fail_if_updating_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {DATASET_ID_SHORT_KEY: dataset_id, TITLE_KEY: any_dataset_title()}
+    body = {DATASET_ID_SHORT_KEY: dataset_id, DATASET_TITLE_KEY: any_dataset_title()}
     response = lambda_handler({HTTP_METHOD_KEY: "PATCH", BODY_KEY: body}, any_lambda_context())
 
     assert response == {
@@ -251,7 +254,7 @@ def should_return_error_when_trying_to_get_datasets_with_missing_property() -> N
 
     assert response == {
         STATUS_CODE_KEY: HTTPStatus.BAD_REQUEST,
-        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{TITLE_KEY}' is a required property"},
+        BODY_KEY: {MESSAGE_KEY: f"Bad Request: '{DATASET_TITLE_KEY}' is a required property"},
     }
 
 
@@ -277,7 +280,7 @@ def should_return_error_when_trying_to_delete_dataset_with_missing_id() -> None:
 def should_fail_if_deleting_not_existing_dataset() -> None:
     dataset_id = any_dataset_id()
 
-    body = {DATASET_ID_SHORT_KEY: dataset_id, TITLE_KEY: any_dataset_title()}
+    body = {DATASET_ID_SHORT_KEY: dataset_id, DATASET_TITLE_KEY: any_dataset_title()}
 
     response = lambda_handler({HTTP_METHOD_KEY: "DELETE", BODY_KEY: body}, any_lambda_context())
 
@@ -295,7 +298,7 @@ def should_launch_datasets_endpoint_lambda_function(lambda_client: LambdaClient)
     """
     title = any_dataset_title()
 
-    body = {TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
+    body = {DATASET_TITLE_KEY: title, DESCRIPTION_KEY: any_dataset_description()}
 
     resp = lambda_client.invoke(
         FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,

@@ -17,7 +17,7 @@ from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -32,7 +32,7 @@ from .aws_utils import (
     any_s3_url,
 )
 from .general_generators import any_error_message
-from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_version_id
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
@@ -46,7 +46,7 @@ MINIMAL_PAYLOAD = {
     CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
     METADATA_URL_KEY: any_s3_url(),
     S3_ROLE_ARN_KEY: any_role_arn(),
-    DATASET_PREFIX_KEY: any_dataset_prefix(),
+    DATASET_TITLE_KEY: any_dataset_title(),
 }
 
 

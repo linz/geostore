@@ -35,7 +35,7 @@ from tests.aws_utils import (
 )
 from tests.file_utils import json_dict_to_file_object
 from tests.general_generators import any_error_message, any_safe_file_path, any_safe_filename
-from tests.stac_generators import any_dataset_prefix
+from tests.stac_generators import any_dataset_title
 from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ def should_successfully_get_object_from_staging_bucket() -> None:
         key=f"{key_prefix}/{collection_metadata_filename}",
     ):
 
-        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_prefix(), get_log())
+        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_title(), get_log())
         json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
@@ -87,10 +87,10 @@ def should_get_object_from_storage_bucket_when_not_in_staging_bucket() -> None:
     with Dataset() as dataset, S3Object(
         file_object=json_dict_to_file_object(collection_dict),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{collection_metadata_filename}",
+        key=f"{dataset.title}/{collection_metadata_filename}",
     ):
 
-        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset.dataset_prefix, get_log())
+        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset.title, get_log())
         json_object = load(s3_url_reader(collection_metadata_url).response)
 
         assert json_object == collection_dict
@@ -103,10 +103,10 @@ def should_log_message_when_using_geostore_file_for_validation(
     # Given
 
     s3_url = any_s3_url()
-    dataset_prefix = any_dataset_prefix()
+    dataset_title = any_dataset_title()
 
     expected_staging_key = urlparse(s3_url).path[1:]
-    expected_geostore_key = f"{dataset_prefix}/{basename(expected_staging_key)}"
+    expected_geostore_key = f"{dataset_title}/{basename(expected_staging_key)}"
 
     operation_name = any_operation_name()
     error_message = any_error_message()
@@ -132,7 +132,7 @@ def should_log_message_when_using_geostore_file_for_validation(
     logger_mock = MagicMock()
 
     # When
-    s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset_prefix, logger_mock)
+    s3_url_reader = get_s3_url_reader(get_s3_role_arn(), dataset_title, logger_mock)
     s3_url_reader(s3_url)
 
     # Then
@@ -161,5 +161,5 @@ def should_raise_any_client_error_other_than_no_such_key(
     logger_mock = MagicMock()
 
     with raises(ClientError):
-        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_prefix(), logger_mock)
+        s3_url_reader = get_s3_url_reader(get_s3_role_arn(), any_dataset_title(), logger_mock)
         s3_url_reader(any_s3_url())
