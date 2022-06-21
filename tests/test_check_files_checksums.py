@@ -37,6 +37,7 @@ from geostore.processing_assets_model import ProcessingAssetType, ProcessingAsse
 from geostore.resources import Resource
 from geostore.s3 import CHUNK_SIZE, S3_URL_PREFIX
 from geostore.step_function import Outcome, get_hash_key
+from geostore.step_function_keys import CURRENT_VERSION_EMPTY_VALUE
 from geostore.validation_results_model import ValidationResult, validation_results_model_with_meta
 
 from .aws_utils import (
@@ -125,7 +126,7 @@ def should_validate_given_index(
         any_program_name(),
         f"{DATASET_ID_ARGUMENT}={dataset_id}",
         f"{NEW_VERSION_ID_ARGUMENT}={version_id}",
-        f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
         f"{DATASET_TITLE_ARGUMENT}={any_dataset_title()}",
         f"{FIRST_ITEM_ARGUMENT}=0",
         f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
@@ -194,7 +195,7 @@ def should_log_error_when_validation_fails(
         any_program_name(),
         f"{DATASET_ID_ARGUMENT}={dataset_id}",
         f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
-        f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
         f"{DATASET_TITLE_ARGUMENT}={any_dataset_title()}",
         f"{FIRST_ITEM_ARGUMENT}=0",
         f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
@@ -261,7 +262,7 @@ def should_successfully_validate_asset_not_in_staging(
             any_program_name(),
             f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
             f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
-            f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+            f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
             f"{DATASET_TITLE_ARGUMENT}={dataset.title}",
             f"{FIRST_ITEM_ARGUMENT}=0",
             f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
@@ -336,7 +337,7 @@ def should_save_file_not_found_validation_results(
             any_program_name(),
             f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
             f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
-            f"{CURRENT_VERSION_ID_ARGUMENT}={any_dataset_version_id()}",
+            f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
             f"{DATASET_TITLE_ARGUMENT}={dataset.title}",
             f"{FIRST_ITEM_ARGUMENT}=0",
             f"{ASSETS_TABLE_NAME_ARGUMENT}={any_table_name()}",
