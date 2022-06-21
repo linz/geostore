@@ -10,6 +10,7 @@ S3_BATCH_STATUS_COMPLETE: Final = "Complete"
 
 ASSET_UPLOAD_KEY = "asset_upload"
 CURRENT_VERSION_ID_KEY = "current_version_id"
+CURRENT_VERSION_EMPTY_VALUE = "None"
 DATASET_ID_KEY = "dataset_id"
 DATASET_ID_SHORT_KEY = "id"
 DESCRIPTION_KEY = "description"

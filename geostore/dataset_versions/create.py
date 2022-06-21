@@ -22,6 +22,7 @@ from ..logging_keys import (
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function_keys import (
+    CURRENT_VERSION_EMPTY_VALUE,
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_ID_SHORT_KEY,
@@ -82,7 +83,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
-    current_dataset_version = dataset.current_dataset_version or "None"
+    current_dataset_version = dataset.current_dataset_version or CURRENT_VERSION_EMPTY_VALUE
 
     # execute step function
     step_functions_input = {
