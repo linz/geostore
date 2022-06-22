@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.12"
-description = "Type annotations for boto3 1.24.12 generated with mypy-boto3-builder 7.7.1"
+version = "1.24.14"
+description = "Type annotations for boto3 1.24.14 generated with mypy-boto3-builder 7.7.1"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -430,6 +430,7 @@ resource-groups = ["mypy-boto3-resource-groups (>=1.24.0,<1.25.0)"]
 resourcegroupstaggingapi = ["mypy-boto3-resourcegroupstaggingapi (>=1.24.0,<1.25.0)"]
 robomaker = ["mypy-boto3-robomaker (>=1.24.0,<1.25.0)"]
 route53 = ["mypy-boto3-route53 (>=1.24.0,<1.25.0)"]
+workmail = ["mypy-boto3-workmail (>=1.24.0,<1.25.0)"]
 route53-recovery-cluster = ["mypy-boto3-route53-recovery-cluster (>=1.24.0,<1.25.0)"]
 route53-recovery-control-config = ["mypy-boto3-route53-recovery-control-config (>=1.24.0,<1.25.0)"]
 route53-recovery-readiness = ["mypy-boto3-route53-recovery-readiness (>=1.24.0,<1.25.0)"]
@@ -490,7 +491,6 @@ wellarchitected = ["mypy-boto3-wellarchitected (>=1.24.0,<1.25.0)"]
 wisdom = ["mypy-boto3-wisdom (>=1.24.0,<1.25.0)"]
 workdocs = ["mypy-boto3-workdocs (>=1.24.0,<1.25.0)"]
 worklink = ["mypy-boto3-worklink (>=1.24.0,<1.25.0)"]
-workmail = ["mypy-boto3-workmail (>=1.24.0,<1.25.0)"]
 workmailmessageflow = ["mypy-boto3-workmailmessageflow (>=1.24.0,<1.25.0)"]
 workspaces = ["mypy-boto3-workspaces (>=1.24.0,<1.25.0)"]
 workspaces-web = ["mypy-boto3-workspaces-web (>=1.24.0,<1.25.0)"]
@@ -1569,7 +1569,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "slack-sdk"
-version = "3.17.1"
+version = "3.17.2"
 description = "The Slack API Platform SDK for Python"
 category = "main"
 optional = true
@@ -1929,8 +1929,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.12.tar.gz", hash = "sha256:e4435f7f4849d6253e23d0d9bea144d2b94c69e47b4afe72ca51ef872f13ac31"},
-    {file = "boto3_stubs-1.24.12-py3-none-any.whl", hash = "sha256:50a44708c1a138b7730664e4bf7889c30bdd4a4427dfae4467a4c0b4906fa9f9"},
+    {file = "boto3-stubs-1.24.14.tar.gz", hash = "sha256:e4d75b25c0e8c4af2c4b60755f890c2d5b948cdee7fc8d22e4935aa4a5c5ec5f"},
+    {file = "boto3_stubs-1.24.14-py3-none-any.whl", hash = "sha256:36123d7287c5ae95b74b37ec60cfda5652c0976c0106b76da7d6837f76ca5b56"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2453,8 +2453,8 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 slack-sdk = [
-    {file = "slack_sdk-3.17.1-py2.py3-none-any.whl", hash = "sha256:50fa984d9513226d3f982ba7d596d3d68127f58865f83dcc1825f52012e908ab"},
-    {file = "slack_sdk-3.17.1.tar.gz", hash = "sha256:20a170698fa1affde9c642d78ea1e8947e9dd37920685cb0f2c5a2df7c48abd4"},
+    {file = "slack_sdk-3.17.2-py2.py3-none-any.whl", hash = "sha256:70d5a55a5d52ba7128d5347ed995425e1f83e729667ab296035bcf6c1b13a049"},
+    {file = "slack_sdk-3.17.2.tar.gz", hash = "sha256:60302e32d48db6b4ea5453d92f23ecf3f7b843f799f61eaf271315264d7cb281"},
 ]
 smart-open = [
     {file = "smart_open-6.0.0-py3-none-any.whl", hash = "sha256:94afbd5058a45d4fdc4f859ed158b46054cb5ca1c019d76f6f8a60495f662129"},
