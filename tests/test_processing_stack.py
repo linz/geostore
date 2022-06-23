@@ -731,13 +731,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 ) as imported_first_asset_file:
                     assert imported_first_asset_file.read() == first_asset_contents
 
-                # Second asset contents
-                imported_second_asset_key = f"{dataset_title}/{second_asset_filename}"
-                with subtests.test(msg="Verify second asset contents"), smart_open.open(
-                    f"{storage_bucket_prefix}{imported_second_asset_key}", mode="rb"
-                ) as second_asset_file:
-                    assert second_asset_file.read() == second_asset_contents
-
                 # Third asset contents
                 imported_third_asset_key = f"{dataset_title}/{third_asset_filename}"
                 with subtests.test(msg="Verify third asset contents"), smart_open.open(
@@ -747,6 +740,9 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
 
         finally:
             # Cleanup
+
+            # Second asset contents (Deleted)
+            imported_second_asset_key = f"{dataset_title}/{second_asset_filename}"
 
             for key in [
                 CATALOG_FILENAME,

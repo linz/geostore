@@ -1,7 +1,10 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
+from _pytest.python_api import raises
+from botocore.exceptions import ClientError
 from jsonschema import ValidationError
+from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
@@ -10,7 +13,10 @@ from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.models import DATASET_ID_PREFIX
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
+from geostore.step_function import get_hash_key
 from geostore.step_function_keys import (
+    CURRENT_VERSION_EMPTY_VALUE,
+    CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_TITLE_KEY,
     METADATA_URL_KEY,
@@ -20,7 +26,14 @@ from geostore.step_function_keys import (
 )
 from geostore.update_root_catalog.task import lambda_handler
 
-from .aws_utils import Dataset, S3Object, any_lambda_context, any_role_arn, any_s3_url
+from .aws_utils import (
+    Dataset,
+    ProcessingAsset,
+    S3Object,
+    any_lambda_context,
+    any_role_arn,
+    any_s3_url,
+)
 from .file_utils import json_dict_to_file_object
 from .general_generators import any_error_message, any_safe_filename
 from .stac_generators import any_dataset_version_id
@@ -50,6 +63,7 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
             {
                 DATASET_ID_KEY: dataset.dataset_id,
                 DATASET_TITLE_KEY: dataset.title,
+                CURRENT_VERSION_ID_KEY: CURRENT_VERSION_EMPTY_VALUE,
                 NEW_VERSION_ID_KEY: version_id,
                 METADATA_URL_KEY: f"{any_s3_url()}/{filename}",
                 S3_ROLE_ARN_KEY: any_role_arn(),
@@ -85,6 +99,61 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
                 ).current_dataset_version
                 == version_id
             )
+
+
+@mark.infrastructure
+def should_delete_s3_files_that_dont_exist_in_new_version(
+    s3_client: S3Client,
+    subtests: SubTests,
+) -> None:
+
+    filename = f"{any_safe_filename()}.json"
+    s3_url = f"{any_s3_url()}/{filename}"
+
+    version_id = any_dataset_version_id()
+    current_version_id = any_dataset_version_id()
+
+    with Dataset(current_dataset_version=current_version_id) as dataset, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset.title}/{filename}",
+    ) as dataset_metadata, patch("geostore.update_root_catalog.task.SQS_RESOURCE"):
+
+        current_hash_key = get_hash_key(dataset.dataset_id, current_version_id)
+
+        with ProcessingAsset(
+            current_hash_key,
+            s3_url,
+        ):
+            response = lambda_handler(
+                {
+                    DATASET_ID_KEY: dataset.dataset_id,
+                    DATASET_TITLE_KEY: dataset.title,
+                    CURRENT_VERSION_ID_KEY: current_version_id,
+                    NEW_VERSION_ID_KEY: version_id,
+                    METADATA_URL_KEY: s3_url,
+                    S3_ROLE_ARN_KEY: any_role_arn(),
+                },
+                any_lambda_context(),
+            )
+
+            with subtests.test(msg="success"):
+                assert response == {
+                    NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
+                    f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
+                    f"{dataset_metadata.key}"
+                }
+
+            # Then
+            with subtests.test(msg="Process updated with latest version"), raises(ClientError):
+                s3_client.get_object(
+                    Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
+                    Key=f"{dataset.title}/{filename}",
+                )
 
 
 @mark.infrastructure
