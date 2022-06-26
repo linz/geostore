@@ -33,7 +33,11 @@ from geostore.check_files_checksums.utils import (
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
-from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
+from geostore.processing_assets_model import (
+    ProcessingAssetType,
+    ProcessingAssetsModelBase,
+    processing_assets_model_with_meta,
+)
 from geostore.resources import Resource
 from geostore.s3 import CHUNK_SIZE, S3_URL_PREFIX
 from geostore.step_function import Outcome, get_hash_key
@@ -45,6 +49,7 @@ from .aws_utils import (
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
+    ProcessingAsset,
     S3Object,
     any_batch_job_array_index,
     any_role_arn,
@@ -224,9 +229,7 @@ def should_log_error_when_validation_fails(
 
 @mark.timeout(timedelta(minutes=20).total_seconds())
 @mark.infrastructure
-@patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta")
 def should_successfully_validate_asset_not_in_staging(
-    processing_assets_model_mock: MagicMock,
     subtests: SubTests,
 ) -> None:
     # Given
@@ -252,42 +255,59 @@ def should_successfully_validate_asset_not_in_staging(
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
         results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
 
-        array_index = "1"
-        processing_assets_model_mock.return_value = processing_assets_model_with_meta_mock(
-            hash_key, array_index, asset_staging_url, storage_asset_multihash, None
+        processing_assets_model = processing_assets_model_with_meta()
+        expected_asset_item = processing_assets_model(
+            hash_key=hash_key,
+            range_key=f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}0",
+            url=asset_staging_url,
+            filename=storage_asset_filename,
+            exists_in_staging=False,
+            multihash=storage_asset_multihash,
         )
 
-        # When
-        sys.argv = [
-            any_program_name(),
-            f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
-            f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
-            f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
-            f"{DATASET_TITLE_ARGUMENT}={dataset.title}",
-            f"{FIRST_ITEM_ARGUMENT}=0",
-            f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
-            f"{RESULTS_TABLE_NAME_ARGUMENT}={results_table_name}",
-            f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
-        ]
+        with ProcessingAsset(hash_key, asset_staging_url, multihash=storage_asset_multihash):
 
-        with patch.dict(environ, {ARRAY_INDEX_VARIABLE_NAME: array_index}):
+            # When
+            sys.argv = [
+                any_program_name(),
+                f"{DATASET_ID_ARGUMENT}={dataset.dataset_id}",
+                f"{NEW_VERSION_ID_ARGUMENT}={dataset_version_id}",
+                f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
+                f"{DATASET_TITLE_ARGUMENT}={dataset.title}",
+                f"{FIRST_ITEM_ARGUMENT}=0",
+                f"{ASSETS_TABLE_NAME_ARGUMENT}={assets_table_name}",
+                f"{RESULTS_TABLE_NAME_ARGUMENT}={results_table_name}",
+                f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
+            ]
+
             main()
 
-        # Then
-        with subtests.test(msg="Storage asset validation results"):
-            validation_results_model = validation_results_model_with_meta()
+            # Then
+            with subtests.test(msg="Storage asset validation results"):
+                validation_results_model = validation_results_model_with_meta()
 
-            assert (
-                validation_results_model.get(
-                    hash_key=hash_key,
-                    range_key=(
-                        f"{CHECK_ID_PREFIX}{Check.CHECKSUM.value}"
-                        f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{asset_staging_url}"
+                assert (
+                    validation_results_model.get(
+                        hash_key=hash_key,
+                        range_key=(
+                            f"{CHECK_ID_PREFIX}{Check.CHECKSUM.value}"
+                            f"{DB_KEY_SEPARATOR}{URL_ID_PREFIX}{asset_staging_url}"
+                        ),
+                        consistent_read=True,
+                    ).result
+                    == ValidationResult.PASSED.value
+                )
+
+            with subtests.test(msg="Processing asset modified"):
+                actual_asset_item = processing_assets_model.query(
+                    hash_key,
+                    processing_assets_model.sk.startswith(
+                        f"{ProcessingAssetType.DATA.value}{DB_KEY_SEPARATOR}"
                     ),
                     consistent_read=True,
-                ).result
-                == ValidationResult.PASSED.value
-            )
+                ).next()
+
+                assert actual_asset_item.attribute_values == expected_asset_item.attribute_values
 
 
 @mark.infrastructure

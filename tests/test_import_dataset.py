@@ -153,7 +153,7 @@ def should_batch_copy_files_to_storage(
         with ProcessingAsset(
             asset_id=asset_id, url=root_metadata_s3_object.url, exists_in_staging=True
         ), ProcessingAsset(
-            asset_id=asset_id, url=child_metadata_s3_object.url, exists_in_staging=True
+            asset_id=asset_id, url=child_metadata_s3_object.url, index=1, exists_in_staging=True
         ), ProcessingAsset(
             asset_id=asset_id,
             url=root_asset_s3_object.url,
@@ -162,6 +162,7 @@ def should_batch_copy_files_to_storage(
         ), ProcessingAsset(
             asset_id=asset_id,
             url=child_asset_s3_object.url,
+            index=1,
             multihash=child_asset_multihash,
             exists_in_staging=True,
         ):

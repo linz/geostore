@@ -200,13 +200,12 @@ class Dataset:
 
 
 class ProcessingAsset:
-    index = 0
-
     def __init__(
         self,
         asset_id: str,
         url: str,
         *,
+        index: Optional[int] = 0,
         multihash: Optional[str] = None,
         exists_in_staging: Optional[bool] = None,
     ):
@@ -215,13 +214,12 @@ class ProcessingAsset:
         processing_assets_model = processing_assets_model_with_meta()
         self._item = processing_assets_model(
             hash_key=asset_id,
-            range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
+            range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{index}",
             url=url,
             filename=basename(url),
             multihash=multihash,
             exists_in_staging=exists_in_staging,
         )
-        ProcessingAsset.index += 1
 
     def __enter__(self) -> ProcessingAssetsModelBase:
         self._item.save()
