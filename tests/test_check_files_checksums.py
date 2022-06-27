@@ -506,22 +506,22 @@ def should_log_arbitrary_client_errors() -> None:
 def should_return_when_file_checksum_matches() -> None:
     file_contents = b"x" * (CHUNK_SIZE + 1)
     url = any_s3_url()
-    s3_repsonse = MockGeostoreS3Response(
+    s3_response = MockGeostoreS3Response(
         StreamingBody(BytesIO(initial_bytes=file_contents), len(file_contents)), True
     )
 
-    s3_url_reader = MockJSONURLReader({url: s3_repsonse})
+    s3_url_reader = MockJSONURLReader({url: s3_response})
     multihash = (
         f"{SHA2_256:x}{SHA256_CHECKSUM_BYTE_COUNT:x}"
         "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430"
     )
 
     with patch("geostore.check_files_checksums.utils.processing_assets_model_with_meta"):
-        assert isinstance(s3_repsonse.response, StreamingBody)
+        assert isinstance(s3_response.response, StreamingBody)
         ChecksumUtils(
             any_table_name(),
             MockValidationResultFactory(),
             s3_url_reader,
             MockAssetGarbageCollector(),
             MagicMock(),
-        ).validate_url_multihash(url, multihash, s3_repsonse.response)
+        ).validate_url_multihash(url, multihash, s3_response.response)
