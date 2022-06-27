@@ -84,7 +84,23 @@ class ChecksumUtils:
         self, url: str, hex_multihash: str, s3_file_object: StreamingBody
     ) -> None:
         multihash_bytes = bytes.fromhex(hex_multihash)
-        expected_hash = decode(multihash_bytes)
+        try:
+            expected_hash = decode(multihash_bytes)
+        except Exception as error:
+            self.validation_result_factory.save(
+                url,
+                Check.UNKNOWN_MULTIHASH_ERROR,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: (
+                        f"Multihash library '{error.__class__.__name__}'"
+                        f" error validating '{url}': '{error}'."
+                        f" See <https://github.com/multiformats/multihash> for details."
+                    )
+                },
+            )
+            raise
+
         actual_hash = get_multihash_digest(ord(multihash_bytes[:1]), s3_file_object)
         if actual_hash == expected_hash:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
