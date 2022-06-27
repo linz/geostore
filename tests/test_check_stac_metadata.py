@@ -75,7 +75,6 @@ from .aws_utils import (
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
-    ProcessingAsset,
     S3Object,
     any_lambda_context,
     any_role_arn,
@@ -696,72 +695,6 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
                         actual_processing_items.next().attribute_values
                         == expected_item.attribute_values
                     )
-
-
-@mark.timeout(timedelta(minutes=20).total_seconds())
-@mark.infrastructure
-def should_mark_asset_as_replaced_in_new_version() -> None:
-
-    key_prefix = any_safe_file_path()
-    dataset_id = any_dataset_id()
-    new_version_id = any_dataset_version_id()
-    current_version_id = any_dataset_version_id()
-
-    metadata_url_prefix = (
-        f"{S3_URL_PREFIX}{Resource.STAGING_BUCKET_NAME.resource_name}/{key_prefix}"
-    )
-    catalog_metadata_filename = any_safe_filename()
-    catalog_metadata_url = f"{metadata_url_prefix}/{catalog_metadata_filename}"
-    current_hash_key = get_hash_key(dataset_id, current_version_id)
-
-    processing_assets_model = processing_assets_model_with_meta()
-    expected_processing_item = processing_assets_model(
-        hash_key=current_hash_key,
-        range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
-        url=catalog_metadata_url,
-        filename=catalog_metadata_filename,
-        exists_in_staging=True,
-        replaced_in_new_version=True,
-    )
-
-    with S3Object(
-        file_object=json_dict_to_file_object(
-            {
-                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
-                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
-                ],
-            }
-        ),
-        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-        key=f"{key_prefix}/{catalog_metadata_filename}",
-    ) as catalog_metadata_file, ProcessingAsset(
-        current_hash_key, catalog_metadata_url, exists_in_staging=True
-    ):
-
-        assert lambda_handler(
-            {
-                DATASET_ID_KEY: dataset_id,
-                NEW_VERSION_ID_KEY: new_version_id,
-                CURRENT_VERSION_ID_KEY: current_version_id,
-                METADATA_URL_KEY: catalog_metadata_file.url,
-                S3_ROLE_ARN_KEY: get_s3_role_arn(),
-                DATASET_TITLE_KEY: any_dataset_title(),
-            },
-            any_lambda_context(),
-        ) == {SUCCESS_KEY: True}
-
-        #  Then
-        actual_processing_item = processing_assets_model.query(
-            current_hash_key,
-            processing_assets_model.sk.startswith(
-                f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
-            ),
-            consistent_read=True,
-        ).next()
-
-        assert actual_processing_item.attribute_values == expected_processing_item.attribute_values
 
 
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
