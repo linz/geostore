@@ -22,6 +22,7 @@ class ProcessingAssetsModelBase(Model):
     filename = UnicodeAttribute()
     multihash = UnicodeAttribute(null=True)
     exists_in_staging = BooleanAttribute(null=True)
+    replaced_in_new_version = BooleanAttribute(null=True)
 
 
 def processing_assets_model_with_meta(

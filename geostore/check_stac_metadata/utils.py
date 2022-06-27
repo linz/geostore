@@ -30,7 +30,7 @@ from ..stac_format import (
     STAC_TYPE_ITEM,
     STAC_TYPE_KEY,
 )
-from ..step_function import Outcome
+from ..step_function import AssetGarbageCollector, Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 from .stac_validators import (
@@ -69,14 +69,17 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
 
 
 class STACDatasetValidator:
+    # pylint:disable=too-many-instance-attributes
     def __init__(
         self,
         hash_key: str,
         url_reader: Callable[[str], GeostoreS3Response],
+        asset_garbage_collector: AssetGarbageCollector,
         validation_result_factory: ValidationResultFactory,
     ):
         self.hash_key = hash_key
         self.url_reader = url_reader
+        self.asset_garbage_collector = asset_garbage_collector
         self.validation_result_factory = validation_result_factory
 
         self.traversed_urls: List[str] = []
@@ -210,6 +213,8 @@ class STACDatasetValidator:
                 PROCESSING_ASSET_FILE_IN_STAGING_KEY: s3_response.file_in_staging,
             }
         )
+
+        self.asset_garbage_collector.mark_asset_as_replaced(basename(url))
 
         for asset in object_json.get(STAC_ASSETS_KEY, {}).values():
             asset_url = maybe_convert_relative_url_to_absolute(asset[STAC_HREF_KEY], url)

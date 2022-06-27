@@ -26,6 +26,7 @@ from geostore.stac_format import (
 from geostore.step_function import Outcome
 
 from .aws_utils import (
+    MockAssetGarbageCollector,
     MockGeostoreS3Response,
     MockJSONURLReader,
     MockValidationResultFactory,
@@ -69,9 +70,9 @@ def should_log_assets() -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(any_hash_key(), url_reader, MockValidationResultFactory()).validate(
-            metadata_url
-        )
+        STACDatasetValidator(
+            any_hash_key(), url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).validate(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_STAC_ASSET_INFO,
@@ -98,7 +99,9 @@ def should_log_non_s3_url_prefix_validation() -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
+        STACDatasetValidator(
+            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).run(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -131,7 +134,9 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
+        STACDatasetValidator(
+            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).run(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -158,7 +163,9 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
+        STACDatasetValidator(
+            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).run(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -187,7 +194,9 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(hash_key, url_reader, MockValidationResultFactory()).run(metadata_url)
+        STACDatasetValidator(
+            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).run(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
