@@ -196,6 +196,7 @@ class AssetGarbageCollector:
     ):
         self.dataset_id = dataset_id
         self.current_version_id = current_version_id
+        self.hash_key = get_hash_key(self.dataset_id, self.current_version_id)
         self.processing_asset_type = processing_asset_type
         self.processing_assets_model = processing_assets_model_with_meta(
             assets_table_name=processing_assets_table_name
@@ -207,7 +208,7 @@ class AssetGarbageCollector:
             return
 
         for item in self.processing_assets_model.query(
-            get_hash_key(self.dataset_id, self.current_version_id),
+            self.hash_key,
             range_key_condition=self.processing_assets_model.sk.startswith(
                 f"{self.processing_asset_type.value}{DB_KEY_SEPARATOR}"
             ),
