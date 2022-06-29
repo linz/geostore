@@ -86,7 +86,7 @@ class Processing(Construct):
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
-        processing_assets_table = Table(
+        self.processing_assets_table = Table(
             self,
             f"{env_name}-processing-assets",
             env_name=env_name,
@@ -100,7 +100,7 @@ class Processing(Construct):
             self,
             "batch-job-queue",
             env_name=env_name,
-            processing_assets_table=processing_assets_table,
+            processing_assets_table=self.processing_assets_table,
         ).job_queue
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -157,7 +157,7 @@ class Processing(Construct):
         )
         check_stac_metadata_task.lambda_function.add_to_role_policy(ALLOW_ASSUME_ANY_ROLE)
 
-        for table in [processing_assets_table, validation_results_table]:
+        for table in [self.processing_assets_table, validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
                 check_stac_metadata_task.lambda_function,
@@ -250,8 +250,8 @@ class Processing(Construct):
         ]:
             validation_results_table.grant_read_write_data(check_files_checksums_task)
             validation_results_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
-            processing_assets_table.grant_read_write_data(check_files_checksums_task)
-            processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
+            self.processing_assets_table.grant_read_write_data(check_files_checksums_task)
+            self.processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
             check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(
@@ -360,8 +360,8 @@ class Processing(Construct):
             content_iterator_task.lambda_function,
             import_dataset_task.lambda_function,
         ]:
-            processing_assets_table.grant_read_data(processing_assets_reader)
-            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
+            self.processing_assets_table.grant_read_data(processing_assets_reader)
+            self.processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
 
         for validation_results_reader in [
             upload_status_task.lambda_function,
@@ -385,7 +385,7 @@ class Processing(Construct):
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
-                processing_assets_table.name_parameter: [
+                self.processing_assets_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
