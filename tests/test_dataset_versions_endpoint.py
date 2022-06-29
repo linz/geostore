@@ -28,6 +28,7 @@ from geostore.step_function_keys import (
 )
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_role_arn, any_s3_url
+from .general_generators import any_past_datetime
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 basicConfig(level=INFO)
@@ -80,7 +81,6 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
 
 @mark.infrastructure
 def should_remove_replaced_in_new_version_field_if_exists() -> None:
-    now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
     current_dataset_version = any_dataset_version_id()
     s3_url = any_s3_url()
 
@@ -102,7 +102,7 @@ def should_remove_replaced_in_new_version_field_if_exists() -> None:
             body = {
                 DATASET_ID_SHORT_KEY: dataset.dataset_id,
                 METADATA_URL_KEY: any_s3_url(),
-                NOW_KEY: now.isoformat(),
+                NOW_KEY: any_past_datetime(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
             }
 
@@ -125,7 +125,6 @@ def should_remove_replaced_in_new_version_field_if_exists() -> None:
 def should_do_nothing_if_replaced_in_new_version_field_is_empty(
     processing_assets_model_mock: MagicMock,
 ) -> None:
-    now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
     current_dataset_version = any_dataset_version_id()
     s3_url = any_s3_url()
 
@@ -138,7 +137,7 @@ def should_do_nothing_if_replaced_in_new_version_field_is_empty(
             body = {
                 DATASET_ID_SHORT_KEY: dataset.dataset_id,
                 METADATA_URL_KEY: any_s3_url(),
-                NOW_KEY: now.isoformat(),
+                NOW_KEY: any_past_datetime(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
             }
 
