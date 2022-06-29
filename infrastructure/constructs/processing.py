@@ -244,12 +244,6 @@ class Processing(Construct):
             array_size=array_size,
         )
 
-        for processing_assets_reader in [
-            content_iterator_task.lambda_function,
-        ]:
-            processing_assets_table.grant_read_data(processing_assets_reader)
-            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
-
         for check_files_checksums_task in [
             check_files_checksums_single_task.job_role,
             check_files_checksums_array_task.job_role,
@@ -267,10 +261,6 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
-        )
-        validation_results_table.grant_read_data(validation_summary_task.lambda_function)
-        validation_results_table.grant(
-            validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
         import_dataset_role = aws_iam.Role(
@@ -314,9 +304,6 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
-        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
-
         # Import status check
         wait_before_upload_status_check = Wait(
             self,
@@ -331,8 +318,6 @@ class Processing(Construct):
             result_path=f"$.{UPLOAD_STATUS_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
-        validation_results_table.grant_read_data(upload_status_task.lambda_function)
-        validation_results_table.grant(upload_status_task.lambda_function, "dynamodb:DescribeTable")
 
         upload_status_task.lambda_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
@@ -370,6 +355,20 @@ class Processing(Construct):
         )
         self.message_queue.grant_send_messages(update_root_catalog.lambda_function)
         datasets_table.grant_read_write_data(update_root_catalog.lambda_function)
+
+        for processing_assets_reader in [
+            content_iterator_task.lambda_function,
+            import_dataset_task.lambda_function,
+        ]:
+            processing_assets_table.grant_read_data(processing_assets_reader)
+            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
+
+        for validation_results_reader in [
+            upload_status_task.lambda_function,
+            validation_summary_task.lambda_function,
+        ]:
+            validation_results_table.grant_read_data(validation_results_reader)
+            validation_results_table.grant(validation_results_reader, "dynamodb:DescribeTable")
 
         for storage_writer in [
             import_dataset_role,
