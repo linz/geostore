@@ -28,7 +28,6 @@ from geostore.step_function_keys import (
 )
 
 from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_role_arn, any_s3_url
-from .general_generators import any_past_datetime
 from .stac_generators import any_dataset_id, any_dataset_version_id
 
 basicConfig(level=INFO)
@@ -102,11 +101,10 @@ def should_remove_replaced_in_new_version_field_if_exists() -> None:
             body = {
                 DATASET_ID_SHORT_KEY: dataset.dataset_id,
                 METADATA_URL_KEY: any_s3_url(),
-                NOW_KEY: any_past_datetime(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
             }
 
-            # When requesting the dataset by ID and type
+            # When
             create_dataset_version(body)
 
             # Then
@@ -137,7 +135,6 @@ def should_do_nothing_if_replaced_in_new_version_field_is_empty(
             body = {
                 DATASET_ID_SHORT_KEY: dataset.dataset_id,
                 METADATA_URL_KEY: any_s3_url(),
-                NOW_KEY: any_past_datetime(),
                 S3_ROLE_ARN_KEY: any_role_arn(),
             }
 
