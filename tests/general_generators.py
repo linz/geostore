@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from os import urandom
 from random import choice, randrange
-from string import ascii_letters, digits, printable
+from string import ascii_letters, ascii_uppercase, digits, printable
+from typing import Type
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -68,6 +69,15 @@ def any_file_contents(byte_count: int = 10) -> bytes:
 def any_error_message() -> str:
     """Arbitrary-length string"""
     return random_string(50)
+
+
+def any_class_name() -> str:
+    return f"{choice(ascii_uppercase)}{random_ascii_letter_string(10)}Error"
+
+
+def any_exception_class() -> Type[Exception]:
+    exception_class = type(any_class_name(), (Exception,), {})
+    return exception_class
 
 
 def any_dictionary_key() -> str:
