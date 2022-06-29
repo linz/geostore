@@ -6,7 +6,8 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from http import HTTPStatus
 from logging import INFO, basicConfig
-from unittest.mock import patch
+from os.path import basename
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
 from pytest_subtests import SubTests
@@ -15,6 +16,9 @@ from geostore.api_keys import MESSAGE_KEY
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
 from geostore.dataset_versions import entrypoint
 from geostore.dataset_versions.create import create_dataset_version
+from geostore.models import DB_KEY_SEPARATOR
+from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
+from geostore.step_function import get_hash_key
 from geostore.step_function_keys import (
     DATASET_ID_SHORT_KEY,
     METADATA_URL_KEY,
@@ -23,8 +27,8 @@ from geostore.step_function_keys import (
     S3_ROLE_ARN_KEY,
 )
 
-from .aws_utils import Dataset, any_lambda_context, any_role_arn, any_s3_url
-from .stac_generators import any_dataset_id
+from .aws_utils import Dataset, ProcessingAsset, any_lambda_context, any_role_arn, any_s3_url
+from .stac_generators import any_dataset_id, any_dataset_version_id
 
 basicConfig(level=INFO)
 
@@ -72,6 +76,77 @@ def should_return_error_if_dataset_id_does_not_exist_in_db() -> None:
             MESSAGE_KEY: f"Not Found: dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
         },
     }
+
+
+@mark.infrastructure
+def should_remove_replaced_in_new_version_field_if_exists() -> None:
+    now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
+    current_dataset_version = any_dataset_version_id()
+    s3_url = any_s3_url()
+
+    with Dataset(current_dataset_version=current_dataset_version) as dataset:
+        current_hash_key = get_hash_key(dataset.dataset_id, current_dataset_version)
+        with ProcessingAsset(
+            current_hash_key,
+            s3_url,
+            replaced_in_new_version=True,
+        ):
+            processing_assets_model = processing_assets_model_with_meta()
+            expected_asset_item = processing_assets_model(
+                hash_key=current_hash_key,
+                range_key=f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}0",
+                url=s3_url,
+                filename=basename(s3_url),
+            )
+
+            body = {
+                DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                METADATA_URL_KEY: any_s3_url(),
+                NOW_KEY: now.isoformat(),
+                S3_ROLE_ARN_KEY: any_role_arn(),
+            }
+
+            # When requesting the dataset by ID and type
+            create_dataset_version(body)
+
+            # Then
+            actual_asset_item = processing_assets_model.query(
+                current_hash_key,
+                processing_assets_model.sk.startswith(
+                    f"{ProcessingAssetType.METADATA.value}{DB_KEY_SEPARATOR}"
+                ),
+                consistent_read=True,
+            ).next()
+            assert actual_asset_item.attribute_values == expected_asset_item.attribute_values
+
+
+@mark.infrastructure
+@patch("geostore.dataset_versions.create.processing_assets_model_with_meta")
+def should_do_nothing_if_replaced_in_new_version_field_is_empty(
+    processing_assets_model_mock: MagicMock,
+) -> None:
+    now = datetime(2001, 2, 3, hour=4, minute=5, second=6, microsecond=789876, tzinfo=timezone.utc)
+    current_dataset_version = any_dataset_version_id()
+    s3_url = any_s3_url()
+
+    with Dataset(current_dataset_version=current_dataset_version) as dataset:
+        current_hash_key = get_hash_key(dataset.dataset_id, current_dataset_version)
+        with ProcessingAsset(
+            current_hash_key,
+            s3_url,
+        ):
+            body = {
+                DATASET_ID_SHORT_KEY: dataset.dataset_id,
+                METADATA_URL_KEY: any_s3_url(),
+                NOW_KEY: now.isoformat(),
+                S3_ROLE_ARN_KEY: any_role_arn(),
+            }
+
+            # When requesting the dataset by ID and type
+            create_dataset_version(body)
+
+        # Then
+        processing_assets_model_mock.return_value.assert_not_called()
 
 
 @mark.infrastructure
