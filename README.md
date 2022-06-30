@@ -177,9 +177,10 @@ have access to Dependabot alerts.)
       Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without
       spaces. Default: test.
 
-   *  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
+   -  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
       Storage S3 bucket or application database tables will be preserved even if they are removed
       from stack or stack is deleted. Supported values:
+
       -  DESTROY: destroy resource when removed from stack or stack is deleted (default)
       -  RETAIN: retain orphaned resource when removed from stack or stack is deleted
 
