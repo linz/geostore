@@ -37,7 +37,7 @@ You can achieve this by adding the `networking_stack` (`infrastructure/networkin
 
 ### Verify infrastructure settings
 
-This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific parts, controlled by
+This infrastructure by default includes some Toitū Te Whenua LINZ-specific parts, controlled by
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
