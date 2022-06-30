@@ -177,6 +177,13 @@ have access to Dependabot alerts.)
       Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without
       spaces. Default: test.
 
+   -  **`AWS_DEFAULT_REGION`:** The region to deploy to. For practical reasons this is the nearest
+      region.
+
+      ```bash
+      export AWS_DEFAULT_REGION=ap-southeast-2
+      ```
+
    -  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
       Storage S3 bucket or application database tables will be preserved even if they are removed
       from stack or stack is deleted. Supported values:
