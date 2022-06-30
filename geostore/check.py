@@ -12,3 +12,4 @@ class Check(Enum):
     SECURITY_CLASSIFICATION = "security classification"
     STAGING_ACCESS = "staging bucket access"
     UNKNOWN_CLIENT_ERROR = "unknown client error"
+    UNKNOWN_MULTIHASH_ERROR = "unknown multihash error"

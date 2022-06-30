@@ -60,6 +60,8 @@ from .aws_utils import (
     processing_assets_model_with_meta_mock,
 )
 from .general_generators import (
+    any_error_message,
+    any_exception_class,
     any_file_contents,
     any_program_name,
     any_safe_file_path,
@@ -69,6 +71,7 @@ from .stac_generators import (
     any_dataset_id,
     any_dataset_title,
     any_dataset_version_id,
+    any_hex_multihash,
     any_sha256_hex_digest,
     sha256_hex_digest_to_multihash,
 )
@@ -525,3 +528,42 @@ def should_return_when_file_checksum_matches() -> None:
             MockAssetGarbageCollector(),
             MagicMock(),
         ).validate_url_multihash(url, multihash, s3_response.response)
+
+
+@patch("geostore.check_files_checksums.utils.decode")
+def should_report_multihash_decode_errors(decode_mock: MagicMock) -> None:
+    # Given a failing `decode` method
+    exception_class = any_exception_class()
+    error_message = any_error_message()
+    error = exception_class(error_message)
+    decode_mock.side_effect = error
+    validation_results_factory_mock = MockValidationResultFactory()
+    url = any_s3_url()
+
+    # When validating the multihash
+    with raises(exception_class):
+        ChecksumUtils(
+            any_table_name(),
+            validation_results_factory_mock,
+            MockJSONURLReader({}),
+            MockAssetGarbageCollector(),
+            MagicMock(),
+        ).validate_url_multihash(url, any_hex_multihash(), StreamingBody(BytesIO(), 0))
+
+    # Then it should save the result
+    validation_results_factory_mock.assert_has_calls(
+        [
+            call.save(
+                url,
+                Check.UNKNOWN_MULTIHASH_ERROR,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: (
+                        f"Multihash library '{exception_class.__name__}'"
+                        f" error validating '{url}': '{error_message}'."
+                        " See <https://github.com/multiformats/multihash> for details."
+                    )
+                },
+            )
+        ]
+    )

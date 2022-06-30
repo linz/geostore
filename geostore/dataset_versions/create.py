@@ -21,6 +21,8 @@ from ..logging_keys import (
 )
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
+from ..processing_assets_model import processing_assets_model_with_meta
+from ..step_function import get_hash_key
 from ..step_function_keys import (
     CURRENT_VERSION_EMPTY_VALUE,
     CURRENT_VERSION_ID_KEY,
@@ -68,22 +70,28 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.message})
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
+    dataset_id = body[DATASET_ID_SHORT_KEY]
     datasets_model_class = datasets_model_with_meta()
 
     # validate dataset exists
     try:
         dataset = datasets_model_class.get(
-            hash_key=f"{DATASET_ID_PREFIX}{body[DATASET_ID_SHORT_KEY]}", consistent_read=True
+            hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
         )
     except DoesNotExist as err:
         LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.msg})
-        return error_response(
-            HTTPStatus.NOT_FOUND, f"dataset '{body[DATASET_ID_SHORT_KEY]}' could not be found"
-        )
+        return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' could not be found")
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
     current_dataset_version = dataset.current_dataset_version or CURRENT_VERSION_EMPTY_VALUE
+
+    processing_assets_model = processing_assets_model_with_meta()
+    for item in processing_assets_model.query(
+        get_hash_key(dataset_id, current_dataset_version),
+        filter_condition=processing_assets_model.replaced_in_new_version.exists(),
+    ):
+        item.update(actions=[processing_assets_model.replaced_in_new_version.remove()])
 
     # execute step function
     step_functions_input = {
