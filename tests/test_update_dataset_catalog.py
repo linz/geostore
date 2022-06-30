@@ -1,8 +1,6 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
-from _pytest.python_api import raises
-from botocore.exceptions import ClientError
 from jsonschema import ValidationError
 from mypy_boto3_s3 import S3Client
 from pytest import mark
@@ -104,7 +102,6 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
 @mark.infrastructure
 def should_delete_s3_files_that_dont_exist_in_new_version(
     s3_client: S3Client,
-    subtests: SubTests,
 ) -> None:
 
     filename = f"{any_safe_filename()}.json"
@@ -129,7 +126,7 @@ def should_delete_s3_files_that_dont_exist_in_new_version(
             current_hash_key,
             s3_url,
         ):
-            response = lambda_handler(
+            lambda_handler(
                 {
                     DATASET_ID_KEY: dataset.dataset_id,
                     DATASET_TITLE_KEY: dataset.title,
@@ -141,19 +138,11 @@ def should_delete_s3_files_that_dont_exist_in_new_version(
                 any_lambda_context(),
             )
 
-            with subtests.test(msg="success"):
-                assert response == {
-                    NEW_VERSION_S3_LOCATION: f"{S3_URL_PREFIX}"
-                    f"{Resource.STORAGE_BUCKET_NAME.resource_name}/"
-                    f"{dataset_metadata.key}"
-                }
-
-            # Then
-            with subtests.test(msg="Process updated with latest version"), raises(ClientError):
-                s3_client.get_object(
-                    Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
-                    Key=f"{dataset.title}/{filename}",
-                )
+            # Then latest version of file is a delete marker
+            assert s3_client.list_object_versions(
+                Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
+                Prefix=dataset_metadata.key,
+            )["DeleteMarkers"][0]["IsLatest"]
 
 
 @mark.infrastructure
