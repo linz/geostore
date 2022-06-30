@@ -7,14 +7,22 @@ import boto3
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 
+from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_MESSAGE_KEY
-from ..logging_keys import LOG_MESSAGE_LAMBDA_FAILURE, LOG_MESSAGE_LAMBDA_START
+from ..logging_keys import (
+    LOG_MESSAGE_LAMBDA_FAILURE,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_S3_DELETION_RESPONSE,
+)
 from ..models import DATASET_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
+from ..processing_assets_model import processing_assets_model_with_meta
 from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
+from ..step_function import get_hash_key
 from ..step_function_keys import (
+    CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_TITLE_KEY,
     METADATA_URL_KEY,
@@ -25,6 +33,7 @@ from ..types import JsonObject
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
+    from mypy_boto3_s3 import S3Client
     from mypy_boto3_sqs import SQSServiceResource
 else:
     # In production we want to avoid depending on a package which has no runtime impact
@@ -32,6 +41,7 @@ else:
 
 LOGGER: Logger = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
+S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
@@ -45,12 +55,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             {
                 "type": "object",
                 "properties": {
+                    CURRENT_VERSION_ID_KEY: {"type": "string"},
                     DATASET_ID_KEY: {"type": "string"},
                     DATASET_TITLE_KEY: {"type": "string"},
                     NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                 },
                 "required": [
+                    CURRENT_VERSION_ID_KEY,
                     DATASET_ID_KEY,
                     DATASET_TITLE_KEY,
                     METADATA_URL_KEY,
@@ -72,6 +84,17 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     ).send_message(
         MessageBody=dataset_key,
     )
+
+    processing_assets_model = processing_assets_model_with_meta()
+    for item in processing_assets_model.query(
+        get_hash_key(event[DATASET_ID_KEY], event[CURRENT_VERSION_ID_KEY]),
+        filter_condition=processing_assets_model.replaced_in_new_version.does_not_exist(),
+    ):
+        s3_response = S3_CLIENT.delete_object(
+            Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
+            Key=f"{event[DATASET_TITLE_KEY]}/{item.filename}",
+        )
+        LOGGER.debug(LOG_MESSAGE_S3_DELETION_RESPONSE, extra={"response": s3_response})
 
     # Update dataset record with the latest version
     datasets_model = datasets_model_with_meta()

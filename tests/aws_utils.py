@@ -426,6 +426,11 @@ def get_s3_key_versions(
         for version in object_versions_page.get("Versions", []):
             assert version["Key"] == key
             version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
+        for delete_marker in object_versions_page.get("DeleteMarkers", []):
+            assert delete_marker["Key"] == key
+            version_list.append(
+                {"Key": delete_marker["Key"], "VersionId": delete_marker["VersionId"]}
+            )
     assert version_list, version_list
     return version_list
 
