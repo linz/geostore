@@ -37,7 +37,7 @@ You can achieve this by adding the `networking_stack` (`infrastructure/networkin
 
 ### Verify infrastructure settings
 
-This infrastructure by default includes some Toitū Te Whenua-/LINZ-specific parts, controlled by
+This infrastructure by default includes some Toitū Te Whenua LINZ-specific parts, controlled by
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
@@ -177,9 +177,17 @@ have access to Dependabot alerts.)
       Other values used by CI pipelines include: prod, nonprod, ci, dev or any string without
       spaces. Default: test.
 
-   *  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
+   -  **`AWS_DEFAULT_REGION`:** The region to deploy to. For practical reasons this is the nearest
+      region.
+
+      ```bash
+      export AWS_DEFAULT_REGION=ap-southeast-2
+      ```
+
+   -  **`RESOURCE_REMOVAL_POLICY`:** determines if resources containing user content like Geostore
       Storage S3 bucket or application database tables will be preserved even if they are removed
       from stack or stack is deleted. Supported values:
+
       -  DESTROY: destroy resource when removed from stack or stack is deleted (default)
       -  RETAIN: retain orphaned resource when removed from stack or stack is deleted
 
