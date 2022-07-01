@@ -305,3 +305,26 @@ To throw away the current cache (for example in case of a cache corruption), sim
 [`CACHE_SEED` repository "secret"](https://github.com/linz/geostore/settings/secrets/actions/CACHE_SEED),
 for example to the current timestamp (`date +%s`). Subsequent jobs will then ignore the existing
 cache.
+
+## Manual admin
+
+### Delete dataset with versions
+
+To do this, you'll need the dataset title and ID.
+
+Once a dataset has some files in it, it's much harder to delete. This is intentional, to avoid
+accidental loss of important and costly data. The following should be a complete set of actions to
+delete a dataset, with template values in `UPPERCASE`. _Note the trailing slashes to make sure we
+limit the commands to the specific dataset!_
+
+1. Remove reference to the dataset from the
+   [top-level `catalog.json`](https://s3.console.aws.amazon.com/s3/object/linz-geostore?region=ap-southeast-2&prefix=catalog.json):
+   1. Download the file: `aws s3 cp s3://linz-geostore/catalog.json .`
+   1. Manually edit the file and delete the object with the deleted dataset
+   1. Re-upload the file: `aws s3 cp catalog.json s3://linz-geostore/catalog.json`
+1. Remove the dataset from DynamoDB:
+   1. Run `geostore dataset delete --id=DATASET_ID`
+1. Delete dataset files from S3:
+   1. Run `aws s3 rm --recursive s3://linz-geostore/DATASET_TITLE/`.
+   1. Ask AWS support to remove the delete markers returned by
+      `aws s3api list-object-versions --bucket=linz-geostore --prefix=DATASET_TITLE/ | jq .DeleteMarkers`.
