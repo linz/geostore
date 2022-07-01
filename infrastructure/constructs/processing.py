@@ -359,6 +359,7 @@ class Processing(Construct):
         for processing_assets_reader in [
             content_iterator_task.lambda_function,
             import_dataset_task.lambda_function,
+            update_root_catalog.lambda_function,
         ]:
             self.processing_assets_table.grant_read_data(processing_assets_reader)
             self.processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
@@ -389,6 +390,7 @@ class Processing(Construct):
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
+                    update_root_catalog.lambda_function,
                 ],
                 s3_role_arn_parameter: [
                     check_stac_metadata_task.lambda_function,

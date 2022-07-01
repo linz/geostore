@@ -1,4 +1,4 @@
-name: Build
+name: Package CLI for PyPI release
 on:
   push:
     branches:
