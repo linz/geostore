@@ -15,6 +15,7 @@ from geostore.logging_keys import (
 )
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
+    CURRENT_VERSION_EMPTY_VALUE,
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
     DATASET_TITLE_KEY,
@@ -43,7 +44,7 @@ else:
 MINIMAL_PAYLOAD = {
     DATASET_ID_KEY: any_dataset_id(),
     NEW_VERSION_ID_KEY: any_dataset_version_id(),
-    CURRENT_VERSION_ID_KEY: any_dataset_version_id(),
+    CURRENT_VERSION_ID_KEY: CURRENT_VERSION_EMPTY_VALUE,
     METADATA_URL_KEY: any_s3_url(),
     S3_ROLE_ARN_KEY: any_role_arn(),
     DATASET_TITLE_KEY: any_dataset_title(),

@@ -13,7 +13,7 @@ from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
 from ..s3_utils import GeostoreS3Response
-from ..step_function import Outcome
+from ..step_function import AssetGarbageCollector, Outcome
 from ..types import JsonObject
 from ..validation_results_model import ValidationResult, ValidationResultFactory
 
@@ -31,15 +31,17 @@ def get_multihash_digest(digest_algorithm_code: int, body: StreamingBody) -> byt
 
 
 class ChecksumUtils:
-    def __init__(
+    def __init__(  # pylint:disable=too-many-arguments
         self,
         processing_assets_table_name: str,
         validation_result_factory: ValidationResultFactory,
         url_reader: Callable[[str], GeostoreS3Response],
+        asset_garbage_collector: AssetGarbageCollector,
         logger: Logger,
     ):
         self.validation_result_factory = validation_result_factory
         self.url_reader = url_reader
+        self.asset_garbage_collector = asset_garbage_collector
 
         self.logger = logger
 
@@ -76,11 +78,29 @@ class ChecksumUtils:
             ]
         )
 
+        self.asset_garbage_collector.mark_asset_as_replaced(processing_item.filename)
+
     def validate_url_multihash(
         self, url: str, hex_multihash: str, s3_file_object: StreamingBody
     ) -> None:
         multihash_bytes = bytes.fromhex(hex_multihash)
-        expected_hash = decode(multihash_bytes)
+        try:
+            expected_hash = decode(multihash_bytes)
+        except Exception as error:
+            self.validation_result_factory.save(
+                url,
+                Check.UNKNOWN_MULTIHASH_ERROR,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: (
+                        f"Multihash library '{error.__class__.__name__}'"
+                        f" error validating '{url}': '{error}'."
+                        f" See <https://github.com/multiformats/multihash> for details."
+                    )
+                },
+            )
+            raise
+
         actual_hash = get_multihash_digest(ord(multihash_bytes[:1]), s3_file_object)
         if actual_hash == expected_hash:
             self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})

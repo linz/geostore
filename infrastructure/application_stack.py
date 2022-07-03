@@ -72,6 +72,7 @@ class Application(Stack):
             botocore_lambda_layer=lambda_layers.botocore,
             datasets_table=storage.datasets_table,
             env_name=env_name,
+            processing_assets_table=processing.processing_assets_table,
             state_machine=processing.state_machine,
             state_machine_parameter=processing.state_machine_parameter,
             sqs_queue=processing.message_queue,

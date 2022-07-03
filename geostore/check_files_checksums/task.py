@@ -7,7 +7,7 @@ from linz_logger import get_log
 from ..models import DB_KEY_SEPARATOR
 from ..processing_assets_model import ProcessingAssetType
 from ..s3_utils import get_s3_url_reader
-from ..step_function import get_hash_key
+from ..step_function import AssetGarbageCollector, get_hash_key
 from ..validation_results_model import ValidationResultFactory
 from .utils import ChecksumUtils, get_job_offset
 
@@ -51,8 +51,20 @@ def main() -> None:
     validation_result_factory = ValidationResultFactory(hash_key, arguments.results_table_name)
     s3_url_reader = get_s3_url_reader(arguments.s3_role_arn, arguments.dataset_title, LOGGER)
 
+    asset_garbage_collector = AssetGarbageCollector(
+        arguments.dataset_id,
+        arguments.current_version_id,
+        ProcessingAssetType.DATA,
+        LOGGER,
+        arguments.assets_table_name,
+    )
+
     utils = ChecksumUtils(
-        arguments.assets_table_name, validation_result_factory, s3_url_reader, LOGGER
+        arguments.assets_table_name,
+        validation_result_factory,
+        s3_url_reader,
+        asset_garbage_collector,
+        LOGGER,
     )
     utils.run(hash_key, range_key)
 
