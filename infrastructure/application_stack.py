@@ -34,9 +34,9 @@ class Application(Stack):
             )
         else:
             open_id_connect_provider_arn = (
-                "arn:aws:iam::"
-                + aws_iam.AccountRootPrincipal().account_id
-                + ":oidc-provider/token.actions.githubusercontent.com"
+                f"arn:aws:iam::"
+                f"{aws_iam.AccountRootPrincipal().account_id}"
+                f":oidc-provider/token.actions.githubusercontent.com"
             )
 
             principal = aws_iam.WebIdentityPrincipal(
