@@ -10,13 +10,22 @@
 ## Software Development Conventions
 
 -  Any new code should first go on a branch
--  Submit pull request for a branch, wait for a review and passing pipeline before merging
+-  Assign tickets to yourself when you start work
+-  Submit pull request for a branch, assign a reviewer, then wait for a review and passing pipeline
+   before merging
 -  Release code and tags lives in release branches
 -  Use [Semantic Versioning](https://semver.org/)
 -  Release branch naming convention is `release-<MAJOR>.<MINOR>` (ex.: `release-1.3`)
 -  Release tag naming convention is `<MAJOR>.<MINOR>.<PATCH>` (ex.: `1.3.1`)
 -  The formatting of code, configuration and commits are enforced by Git hooks
    -  Use [Conventional Commits](https://www.conventionalcommits.org/) style commit messages
+   -  It's recommended to use a similar branch style, like `feat/create-oidc-providers`, to make
+      branches easy to navigate
+-  Link to third party issues you've had to work around, so that others understand it and can
+   simplify it when the issue is resolved
+-  Refactoring should be on separate branches from other changes
+-  Add the "automerge" label to your PR if you're confident the pipeline will pass (since the
+   deployment update test takes a while)
 
 ## How to test a full import
 
