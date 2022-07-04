@@ -576,6 +576,31 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "config-formatter"
+version = "1.1.0"
+description = "An automatic formatter for .ini and .cfg configuration files"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+configupdater = ">=3.0"
+
+[package.extras]
+dev = ["pre-commit (>=2.17.0)", "pytest (>=6.0.0)"]
+
+[[package]]
+name = "configupdater"
+version = "3.1.1"
+description = "Parser like ConfigParser but for updating configuration files"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+testing = ["sphinx", "flake8", "pytest", "pytest-cov", "pytest-virtualenv", "pytest-xdist"]
+
+[[package]]
 name = "constructs"
 version = "10.1.7"
 description = "A programming model for software-defined state"
@@ -754,17 +779,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "iniparse"
-version = "0.5"
-description = "Accessing and Modifying INI files"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-six = "*"
-
-[[package]]
 name = "ipdb"
 version = "0.13.9"
 description = "IPython-enabled pdb"
@@ -925,14 +939,14 @@ six = "*"
 
 [[package]]
 name = "language-formatters-pre-commit-hooks"
-version = "2.3.0"
+version = "2.4.0"
 description = "List of pre-commit hooks meant to format your source code."
 category = "dev"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-iniparse = "*"
+config-formatter = "*"
 packaging = "*"
 requests = "*"
 "ruamel.yaml" = "*"
@@ -1965,6 +1979,14 @@ colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
 ]
+config-formatter = [
+    {file = "config-formatter-1.1.0.tar.gz", hash = "sha256:8d1f78c11d3c2b21d754953d1f6a55c409f7b753c883d7f732bfa476dbb51602"},
+    {file = "config_formatter-1.1.0-py3-none-any.whl", hash = "sha256:f9a569e872c236ef438ef0eafe639a19414202a2a8f02ae80d1b4d95917e77d1"},
+]
+configupdater = [
+    {file = "ConfigUpdater-3.1.1-py2.py3-none-any.whl", hash = "sha256:805986dbeba317886c7a8d348b2e34986dc9e3128cd3761ecc35decbd372b286"},
+    {file = "ConfigUpdater-3.1.1.tar.gz", hash = "sha256:46f0c74d73efa723776764b43c9739f68052495dd3d734319c1d0eb58511f15b"},
+]
 constructs = [
     {file = "constructs-10.1.7-py3-none-any.whl", hash = "sha256:d94ba603f23e30cce98b30067ef95147f32285591d41fdbfbc9ab15fb1c40762"},
     {file = "constructs-10.1.7.tar.gz", hash = "sha256:e2f8d906c68fac3af878ceceb69d8f76945e8727c875fc7dab81640dad1cb1f2"},
@@ -2068,11 +2090,6 @@ iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
-iniparse = [
-    {file = "iniparse-0.5-py2-none-any.whl", hash = "sha256:88ca60473b1637055a937933d48840be1b1b6835f381a6158ef118a532583675"},
-    {file = "iniparse-0.5-py3-none-any.whl", hash = "sha256:db6ef1d8a02395448e0e7b17ac0aa28b8d338b632bbd1ffca08c02ddae32cf97"},
-    {file = "iniparse-0.5.tar.gz", hash = "sha256:932e5239d526e7acb504017bb707be67019ac428a6932368e6851691093aa842"},
-]
 ipdb = [
     {file = "ipdb-0.13.9.tar.gz", hash = "sha256:951bd9a64731c444fd907a5ce268543020086a697f6be08f7cc2c9a752a278c5"},
 ]
@@ -2116,8 +2133,8 @@ junit-xml = [
     {file = "junit-xml-1.8.tar.gz", hash = "sha256:602f1c480a19d64edb452bf7632f76b5f2cb92c1938c6e071dcda8ff9541dc21"},
 ]
 language-formatters-pre-commit-hooks = [
-    {file = "language_formatters_pre_commit_hooks-2.3.0-py2.py3-none-any.whl", hash = "sha256:0cf9586460b0157a41a48385e85dffb3c51f15ac49cb0fe02151bd7aab9ac7d4"},
-    {file = "language_formatters_pre_commit_hooks-2.3.0.tar.gz", hash = "sha256:86e729219e0a86457b9fe856642bf8b8045da44b0c875275525cd96b2705318b"},
+    {file = "language_formatters_pre_commit_hooks-2.4.0-py2.py3-none-any.whl", hash = "sha256:76306202785bedbec0ce90965f9f1fdd240fac5977beb86ad2843a8c9a59241d"},
+    {file = "language_formatters_pre_commit_hooks-2.4.0.tar.gz", hash = "sha256:16edd551c771d0c066ae61d5ff20adba2af66406cbc8d9ff7d88dfb2ac3df803"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.5.2.tar.gz", hash = "sha256:5944a9b95e97de1980c65f03b79b356f30a43de48682b8bdd90aa5089f0ec1f4"},
