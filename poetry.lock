@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.21"
-description = "Type annotations for boto3 1.24.21 generated with mypy-boto3-builder 7.7.2"
+version = "1.24.22"
+description = "Type annotations for boto3 1.24.22 generated with mypy-boto3-builder 7.7.2"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -1929,8 +1929,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.21.tar.gz", hash = "sha256:c336826af8f692dbe71874188f242116726e98a4efe9b26bd3bae3e7f0d655ce"},
-    {file = "boto3_stubs-1.24.21-py3-none-any.whl", hash = "sha256:93d3fed453f1542ed0b7070b30f077928c0d2c3dd6271667f71e17858aa121be"},
+    {file = "boto3-stubs-1.24.22.tar.gz", hash = "sha256:0602494ca5ae96fd6a275f1fb47c79b565bd1b7d6bcb3427db9db10b5a05dea4"},
+    {file = "boto3_stubs-1.24.22-py3-none-any.whl", hash = "sha256:f6166156e6e6b03f27056efcab1c38fbf98d886743470ce1b900c4d56977817f"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
