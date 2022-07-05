@@ -2,6 +2,7 @@ from logging import Logger
 from os.path import basename
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
+from uuid import uuid4
 
 import boto3
 from jsonschema import ValidationError, validate
@@ -43,6 +44,8 @@ LOGGER: Logger = get_log()
 SQS_RESOURCE: SQSServiceResource = boto3.resource("sqs")
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
 
+SQS_MESSAGE_GROUP_ID = "update_root_catalog_message_group"
+
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
@@ -83,6 +86,8 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         QueueName=get_param(ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME)
     ).send_message(
         MessageBody=dataset_key,
+        MessageGroupId=SQS_MESSAGE_GROUP_ID,
+        MessageDeduplicationId=uuid4().hex,
     )
 
     processing_assets_model = processing_assets_model_with_meta()
