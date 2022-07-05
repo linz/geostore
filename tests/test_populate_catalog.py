@@ -1,12 +1,16 @@
 from copy import deepcopy
+from datetime import timedelta
 from json import load
+from time import sleep
 
 import smart_open
 from mypy_boto3_s3 import S3Client
+from mypy_boto3_sqs import SQSServiceResource
 from pytest import mark
 from pytest_subtests import SubTests
 
 from geostore.aws_keys import BODY_KEY
+from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import (
     CATALOG_FILENAME,
     RECORDS_KEY,
@@ -513,3 +517,129 @@ def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
         ) as updated_dataset_metadata_file:
             version_json = load(updated_dataset_metadata_file)
             assert version_json[STAC_LINKS_KEY] == expected_dataset_version_links
+
+
+@mark.infrastructure
+@mark.timeout(timedelta(minutes=5).total_seconds())
+def should_add_link_to_root_catalog_in_series(
+    sqs_resource: SQSServiceResource, subtests: SubTests
+) -> None:
+    catalog_filename = f"{any_safe_filename()}.json"
+    with Dataset() as dataset_one, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: any_dataset_version_id(),
+                STAC_TITLE_KEY: dataset_one.title,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    }
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset_one.title}/{catalog_filename}",
+    ) as dataset_metadata_one, Dataset() as dataset_two, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: any_dataset_version_id(),
+                STAC_TITLE_KEY: dataset_two.title,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    }
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset_two.title}/{catalog_filename}",
+    ) as dataset_metadata_two, Dataset() as dataset_three, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: any_dataset_version_id(),
+                STAC_TITLE_KEY: dataset_three.title,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{catalog_filename}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    }
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=f"{dataset_three.title}/{catalog_filename}",
+    ) as dataset_metadata_three, S3Object(
+        file_object=json_dict_to_file_object(
+            {
+                **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                STAC_ID_KEY: ROOT_CATALOG_ID,
+                STAC_DESCRIPTION_KEY: ROOT_CATALOG_DESCRIPTION,
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                STAC_LINKS_KEY: [
+                    {
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                ],
+            }
+        ),
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
+        key=CATALOG_FILENAME,
+    ) as root_catalog:
+
+        expected_root_catalog_links: JsonList = [
+            {
+                STAC_REL_KEY: STAC_REL_ROOT,
+                STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+            {
+                STAC_REL_KEY: STAC_REL_CHILD,
+                STAC_HREF_KEY: f"./{dataset_one.title}/{catalog_filename}",
+                STAC_TITLE_KEY: dataset_one.title,
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+            {
+                STAC_REL_KEY: STAC_REL_CHILD,
+                STAC_HREF_KEY: f"./{dataset_two.title}/{catalog_filename}",
+                STAC_TITLE_KEY: dataset_two.title,
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+            {
+                STAC_REL_KEY: STAC_REL_CHILD,
+                STAC_HREF_KEY: f"./{dataset_three.title}/{catalog_filename}",
+                STAC_TITLE_KEY: dataset_three.title,
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+        ]
+
+        queue = sqs_resource.get_queue_by_name(
+            QueueName=get_param(ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME)
+        )
+        queue.send_message(MessageBody=dataset_metadata_one.key)
+        queue.send_message(MessageBody=dataset_metadata_two.key)
+        queue.send_message(MessageBody=dataset_metadata_three.key)
+
+        root_url = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{root_catalog.key}"
+
+        with subtests.test(msg="root catalog links"):
+            while (
+                expected_root_catalog_links
+                != load(smart_open.open(root_url, mode="rb"))[STAC_LINKS_KEY]
+            ):
+                sleep(5)  # pragma: no cover
+
+            assert (
+                expected_root_catalog_links
+                == load(smart_open.open(root_url, mode="rb"))[STAC_LINKS_KEY]
+            )
