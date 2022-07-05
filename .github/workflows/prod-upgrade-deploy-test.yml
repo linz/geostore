@@ -10,6 +10,9 @@ jobs:
       || github.event.label.name == 'automerge' || contains(github.event.*.labels.*.name,
       'automerge')
     runs-on: ubuntu-20.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
