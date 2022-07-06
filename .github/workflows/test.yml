@@ -50,6 +50,9 @@ jobs:
 
   test:
     runs-on: ubuntu-20.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -112,11 +115,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_CI }}
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_CI_OIDC }}
 
       - name: Set unique deployment environment type variable
         run: |
