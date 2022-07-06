@@ -4,13 +4,13 @@
 
 [general]
 # Ignore certain rules, you can reference them by their id or by their full name
-ignore=body-is-missing, body-max-line-length
+ignore = body-is-missing, body-max-line-length
 
 # Enable community contributed rule for conventional commits
-contrib=contrib-title-conventional-commits
+contrib = contrib-title-conventional-commits
 
 [title-max-length]
-line-length=72
+line-length = 72
 
 # [title-match-regex]
 # Uncomment to ensure that there is an issue referenced in every commit title
