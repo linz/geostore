@@ -33,8 +33,20 @@ class Application(Stack):
                 conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}},
             )
         else:
-            principal = aws_iam.AccountPrincipal(
-                account_id=aws_iam.AccountRootPrincipal().account_id
+            open_id_connect_provider_arn = (
+                f"arn:aws:iam::"
+                f"{aws_iam.AccountRootPrincipal().account_id}"
+                f":oidc-provider/token.actions.githubusercontent.com"
+            )
+
+            principal = aws_iam.WebIdentityPrincipal(
+                identity_provider=open_id_connect_provider_arn,
+                conditions={
+                    "StringLike": {
+                        "token.actions.githubusercontent.com:aud": ["sts.amazonaws.com"],
+                        "token.actions.githubusercontent.com:sub": ["repo:linz/geostore:*"],
+                    }
+                },
             )
 
         storage = Storage(self, "storage", env_name=env_name)
