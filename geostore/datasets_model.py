@@ -8,7 +8,6 @@ from ulid import ULID, new
 
 from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .clock import now
-from .dataset_properties import DATASET_KEY_SEPARATOR
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR
 from .parameter_store import ParameterName, get_param
 
@@ -65,11 +64,6 @@ class DatasetsModelBase(Model):
     def dataset_id(self) -> str:
         """Dataset ID value."""
         return str(self.id).split(DB_KEY_SEPARATOR)[1]
-
-    @property
-    def dataset_prefix(self) -> str:
-        """Dataset prefix value."""
-        return f"{self.title}{DATASET_KEY_SEPARATOR}{self.dataset_id}"
 
 
 class DatasetsModelMeta(MetaModel):

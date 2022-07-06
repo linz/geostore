@@ -15,19 +15,29 @@ from typer.colors import GREEN, RED, YELLOW
 
 from .api_keys import MESSAGE_KEY
 from .aws_keys import BODY_KEY, HTTP_METHOD_KEY, STATUS_CODE_KEY
-from .dataset_properties import DATASET_KEY_SEPARATOR, TITLE_CHARACTERS
+from .dataset_properties import TITLE_CHARACTERS
 from .environment import ENV_NAME_VARIABLE_NAME, PRODUCTION_ENVIRONMENT_NAME
 from .resources import Resource
 from .step_function_keys import (
     DATASET_ID_SHORT_KEY,
+    DATASET_TITLE_KEY,
     DESCRIPTION_KEY,
     EXECUTION_ARN_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
-    TITLE_KEY,
 )
 from .types import JsonList, JsonObject
+
+DATASET_ID_ARGUMENT = "--dataset-id"
+DESCRIPTION_ARGUMENT = "--description"
+ENVIRONMENT_NAME_ARGUMENT = "--environment-name"
+EXECUTION_ARN_ARGUMENT = "--execution-arn"
+ID_ARGUMENT = "--id"
+METADATA_URL_ARGUMENT = "--metadata-url"
+S3_ROLE_ARN_ARGUMENT = "--s3-role-arn"
+TITLE_ARGUMENT = "--title"
+VERSION_FLAG = "--version"
 
 DATASET_ID_HELP = "Dataset ID, as printed when running `geostore dataset create`."
 
@@ -68,11 +78,12 @@ def print_version(value: bool) -> None:
 def main(
     environment_name: Optional[str] = Option(
         None,
+        ENVIRONMENT_NAME_ARGUMENT,
         help="Set environment name, such as 'test'."
         f" Overrides the value of ${ENV_NAME_VARIABLE_NAME}."
         f"  [default: {PRODUCTION_ENVIRONMENT_NAME}]",
     ),
-    __version: Optional[bool] = Option(None, "--version", callback=print_version, is_eager=True),
+    __version: Optional[bool] = Option(None, VERSION_FLAG, callback=print_version, is_eager=True),
 ) -> None:
     if environment_name:
         environ[ENV_NAME_VARIABLE_NAME] = environment_name
@@ -82,12 +93,12 @@ def main(
 
 @dataset_app.command(name="create", help="Create a new dataset.")
 def dataset_create(
-    title: str = Option(..., help=f"Allowed characters: '{TITLE_CHARACTERS}'."),
-    description: str = Option(...),
+    title: str = Option(..., TITLE_ARGUMENT, help=f"Allowed characters: '{TITLE_CHARACTERS}'."),
+    description: str = Option(..., DESCRIPTION_ARGUMENT),
 ) -> None:
     request_object = {
         HTTP_METHOD_KEY: HTTP_METHOD_CREATE,
-        BODY_KEY: {TITLE_KEY: title, DESCRIPTION_KEY: description},
+        BODY_KEY: {DATASET_TITLE_KEY: title, DESCRIPTION_KEY: description},
     }
 
     def get_output(response_body: JsonObject) -> str:
@@ -102,26 +113,23 @@ def dataset_create(
 
 
 @dataset_app.command(name="list", help="List datasets.")
-def dataset_list(*, id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HELP)) -> None:
+def dataset_list(*, id_: Optional[str] = Option(None, ID_ARGUMENT, help=DATASET_ID_HELP)) -> None:
     body = {}
     get_output: GetOutputFunctionType
 
     if id_ is None:
 
         def get_list_output(response_body: JsonList) -> str:
-            lines = []
-            for entry in response_body:
-                lines.append(
-                    f"{entry[TITLE_KEY]}{DATASET_KEY_SEPARATOR}{entry[DATASET_ID_SHORT_KEY]}"
-                )
-            return "\n".join(lines)
+            return "\n".join([entry[DATASET_TITLE_KEY] for entry in response_body])
 
         get_output = get_list_output
 
     else:
 
         def get_single_output(response_body: JsonObject) -> str:
-            return f"{response_body['title']}{DATASET_KEY_SEPARATOR}{response_body['id']}"
+            title = response_body[DATASET_TITLE_KEY]
+            assert isinstance(title, str)
+            return title
 
         body[DATASET_ID_SHORT_KEY] = id_
         get_output = get_single_output
@@ -134,7 +142,7 @@ def dataset_list(*, id_: Optional[str] = Option(None, "--id", help=DATASET_ID_HE
 
 
 @dataset_app.command(name="delete", help="Delete a dataset.")
-def dataset_delete(id_: str = Option(..., "--id", help=DATASET_ID_HELP)) -> None:
+def dataset_delete(id_: str = Option(..., ID_ARGUMENT, help=DATASET_ID_HELP)) -> None:
     handle_api_request(
         Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
         {HTTP_METHOD_KEY: "DELETE", BODY_KEY: {DATASET_ID_SHORT_KEY: id_}},
@@ -144,14 +152,16 @@ def dataset_delete(id_: str = Option(..., "--id", help=DATASET_ID_HELP)) -> None
 
 @dataset_version_app.command(name="create", help="Create a dataset version.")
 def dataset_version_create(
-    dataset_id: str = Option(..., help=DATASET_ID_HELP),
+    dataset_id: str = Option(..., DATASET_ID_ARGUMENT, help=DATASET_ID_HELP),
     metadata_url: str = Option(
         ...,
+        METADATA_URL_ARGUMENT,
         help="S3 URL to the top level metadata file,"
         " for example 's3://my-bucket/my-dataset/collection.json'.",
     ),
     s3_role_arn: str = Option(
         ...,
+        S3_ROLE_ARN_ARGUMENT,
         help="ARN of the role which the Geostore should assume to read your dataset,"
         " for example 'arn:aws:iam::1234567890:role/s3-reader'.",
     ),
@@ -176,7 +186,9 @@ def dataset_version_create(
 @dataset_version_app.command(name="status", help="Get status of dataset version creation.")
 def dataset_version_status(
     execution_arn: str = Option(
-        ..., help="Execution ARN, as printed when running `geostore version create`."
+        ...,
+        EXECUTION_ARN_ARGUMENT,
+        help="Execution ARN, as printed when running `geostore version create`.",
     )
 ) -> None:
     def get_output(response_body: JsonObject) -> str:

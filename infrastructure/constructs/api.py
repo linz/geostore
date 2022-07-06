@@ -27,6 +27,7 @@ class API(Construct):
         botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
+        processing_assets_table: Table,
         state_machine: aws_stepfunctions.StateMachine,
         state_machine_parameter: aws_ssm.StringParameter,
         sqs_queue: aws_sqs.Queue,
@@ -65,6 +66,8 @@ class API(Construct):
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
+        processing_assets_table.grant_read_write_data(dataset_versions_endpoint_lambda)
+        processing_assets_table.grant(dataset_versions_endpoint_lambda, "dynamodb:DescribeTable")
 
         state_machine.grant_start_execution(dataset_versions_endpoint_lambda)
 
@@ -99,6 +102,7 @@ class API(Construct):
                     datasets_endpoint_lambda,
                     dataset_versions_endpoint_lambda,
                 ],
+                processing_assets_table.name_parameter: [dataset_versions_endpoint_lambda],
                 validation_results_table.name_parameter: [import_status_endpoint_lambda],
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
                 sqs_queue_parameter: [datasets_endpoint_lambda],

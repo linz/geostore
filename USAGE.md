@@ -150,7 +150,9 @@ Example of assuming the Geostore roles from a LINZ AWS account:
 
 You can communicate with a Geostore instance using either the low-level application programming
 interface (API) or the high-level command-line interface (CLI). The following documentation explains
-how to work with both.
+how to work with both. For an example of working with Python, see the
+`should_successfully_run_dataset_version_creation_process_with_multiple_assets` function in
+`tests/test_processing_stack.py`.
 
 ### API introduction
 
@@ -231,8 +233,8 @@ Examples:
 
    ```console
    $ geostore dataset list
-   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
-   Wellington_2020-01FJJDQJ2X0MPTPYPMM246DSH1
+   Auckland_2020
+   Wellington_2020
    ```
 
 -  List all datasets using the API:
@@ -244,7 +246,7 @@ Examples:
 
    ```console
    $ geostore dataset list --id=01F9ZFRK12V0WFXJ94S0DHCP65
-   Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+   Auckland_2020
    ```
 
 -  Filter to a single dataset using the API:
@@ -265,7 +267,7 @@ print anything when successful.
 CLI example:
 
 ```console
-$ geostore dataset delete --id=Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65
+$ geostore dataset delete --id=Auckland_2020
 ```
 
 API example:
@@ -290,7 +292,7 @@ success.
 CLI example:
 
 ```console
-$ geostore version create --dataset-id=01FKPEP0SQG4W2QF8KSQB6EJCD --metadata-url=s3://my-staging/Auckland_2020-01F9ZFRK12V0WFXJ94S0DHCP65/catalog.json --s3-role-arn=arn:aws:iam::702361495692:role/s3-readers
+$ geostore version create --dataset-id=01FKPEP0SQG4W2QF8KSQB6EJCD --metadata-url=s3://my-staging/Auckland_2020/catalog.json --s3-role-arn=arn:aws:iam::702361495692:role/s3-readers
 2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA	arn:aws:states:ap-southeast-2:702361495692:execution:processingdatasetversioncreation55809360-7likTQJZBsBG:2021-11-08T01-13-37-203Z_CJD6XKVJKS29ZXPA
 ```
 
@@ -333,13 +335,12 @@ to subscribe to.
 You may also choose to apply a subscription filter policy, which will filter notifications for a
 specific dataset or specific statuses. Included in the example is all the valid statuses.
 
-The Geostore will store a dataset in a top level directory name with format of (dataset
-title)-(dataset id) You can filter SNS topics for a dataset by providing the entire dataset
-directory name or by providing just the title in a 'prefix' object. Examples below.
+The Geostore will store a dataset in a top level directory with the same name as the dataset title
+specified when importing it. You can filter SNS topics for a dataset by providing the title:
 
 ```json
 {
-   "dataset_id": [{ "prefix": "Taranaki" }, "Taranaki_2020-01F9ZFRK12V0WFXJ94S0DHCP65"],
+   "dataset_title": ["Taranaki_2020"],
    "status": ["RUNNING", "SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
 }
 ```
@@ -359,7 +360,7 @@ contain a JSON string with specific details regarding the Step Function Executio
    "SigningCertURL": "https://example.com",
    "UnsubscribeURL": "https://example.com",
    "MessageAttributes": {
-      "dataset_id": {
+      "dataset_title": {
          "Type": "String",
          "Value": "01F9ZFRK12V0WFXJ94S0DHCP65"
       },
@@ -393,11 +394,11 @@ See
       "status": "SUCCEEDED",
       "startDate": 1625622391067,
       "stopDate": 1625622569782,
-      "input": "{\"dataset_id\": \"01F9ZA9ZZZDM815S20EHXEAT40\", \"dataset_prefix\": \"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\", \"version_id\": \"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\", \"metadata_url\": \"s3://example/catalog.json\", \"s3_role_arn\": \"arn:aws:iam::715898075157:role/example\"}",
+      "input": "{\"dataset_id\": \"01F9ZA9ZZZDM815S20EHXEAT40\", \"dataset_title\": \"test_1625622377\", \"version_id\": \"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\", \"metadata_url\": \"s3://example/catalog.json\", \"s3_role_arn\": \"arn:aws:iam::715898075157:role/example\"}",
       "inputDetails": {
          "included": true
       },
-      "output": "{\"dataset_id\":\"01F9ZA9ZZZDM815S20EHXEAT40\",\"dataset_prefix\":\"test_1625622377-01F9ZA9ZZZDM815S20EHXEAT40\",\"version_id\":\"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\",\"metadata_url\":\"s3://example/catalog.json\",\"s3_role_arn\":\"arn:aws:iam::715898075157:role/example\",\"content\":{\"first_item\":\"0\",\"iteration_size\":1,\"next_item\":-1,\"assets_table_name\":\"example\",\"results_table_name\":\"example\"},\"validation\":{\"success\":true},\"import_dataset\":{\"asset_job_id\":\"e4ad8b0d-4358-4c42-bb0d-3577c96f7039\",\"metadata_job_id\":\"84a7b4fc-7d00-403c-a5fb-91257f406afb\"},\"upload_status\":{\"validation\":{\"status\":\"Passed\",\"errors\":[]},\"asset_upload\":{\"status\":\"Complete\",\"errors\":[]},\"metadata_upload\":{\"status\":\"Complete\",\"errors\":[]}},\"update_root_catalog\":{\"new_version_s3_location\":\"s3://linz-geostore/example/catalog.json\"}}",
+      "output": "{\"dataset_id\":\"01F9ZA9ZZZDM815S20EHXEAT40\",\"dataset_title\":\"test_1625622377\",\"version_id\":\"2021-07-07T01-46-30-787Z_9NJEAD3VXRCH5W05\",\"metadata_url\":\"s3://example/catalog.json\",\"s3_role_arn\":\"arn:aws:iam::715898075157:role/example\",\"content\":{\"first_item\":\"0\",\"iteration_size\":1,\"next_item\":-1,\"assets_table_name\":\"example\",\"results_table_name\":\"example\"},\"validation\":{\"success\":true},\"import_dataset\":{\"asset_job_id\":\"e4ad8b0d-4358-4c42-bb0d-3577c96f7039\",\"metadata_job_id\":\"84a7b4fc-7d00-403c-a5fb-91257f406afb\"},\"upload_status\":{\"validation\":{\"status\":\"Passed\",\"errors\":[]},\"asset_upload\":{\"status\":\"Complete\",\"errors\":[]},\"metadata_upload\":{\"status\":\"Complete\",\"errors\":[]}},\"update_root_catalog\":{\"new_version_s3_location\":\"s3://linz-geostore/example/catalog.json\"}}",
       "outputDetails": {
          "included": true
       }
@@ -439,5 +440,5 @@ dataset being broken rather than slowly phased out, but can be followed if neces
 -  The root catalog has the ID `root_catalog`.
 -  The dataset catalogs have IDs consisting of the [dataset title](#dataset-creation-request), a
    hyphen, and a Universally Unique Lexicographically Sortable Identifier (ULID), for example
-   `Wellington_2020-01FACDTZWA6N2W9NVFEA30T57A`.
+   `Wellington_2020`.
 -  IDs within the dataset versions are unchanged.

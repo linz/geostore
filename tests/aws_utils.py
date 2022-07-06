@@ -200,28 +200,28 @@ class Dataset:
 
 
 class ProcessingAsset:
-    index = 0
-
     def __init__(
         self,
         asset_id: str,
         url: str,
         *,
+        index: Optional[int] = 0,
         multihash: Optional[str] = None,
         exists_in_staging: Optional[bool] = None,
+        replaced_in_new_version: Optional[bool] = None,
     ):
         prefix = "METADATA" if multihash is None else "DATA"
 
         processing_assets_model = processing_assets_model_with_meta()
         self._item = processing_assets_model(
             hash_key=asset_id,
-            range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{self.index}",
+            range_key=f"{prefix}_ITEM_INDEX{DB_KEY_SEPARATOR}{index}",
             url=url,
             filename=basename(url),
             multihash=multihash,
             exists_in_staging=exists_in_staging,
+            replaced_in_new_version=replaced_in_new_version,
         )
-        ProcessingAsset.index += 1
 
     def __enter__(self) -> ProcessingAssetsModelBase:
         self._item.save()
@@ -380,6 +380,10 @@ class MockValidationResultFactory(Mock):
     pass
 
 
+class MockAssetGarbageCollector(Mock):
+    pass
+
+
 # Utility functions
 
 
@@ -422,6 +426,11 @@ def get_s3_key_versions(
         for version in object_versions_page.get("Versions", []):
             assert version["Key"] == key
             version_list.append({"Key": version["Key"], "VersionId": version["VersionId"]})
+        for delete_marker in object_versions_page.get("DeleteMarkers", []):
+            assert delete_marker["Key"] == key
+            version_list.append(
+                {"Key": delete_marker["Key"], "VersionId": delete_marker["VersionId"]}
+            )
     assert version_list, version_list
     return version_list
 

@@ -65,7 +65,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{catalog_filename}",
+        key=f"{dataset.title}/{catalog_filename}",
     ) as dataset_metadata:
 
         expected_root_catalog_links: JsonList = [
@@ -77,7 +77,7 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{catalog_filename}",
+                STAC_HREF_KEY: f"./{dataset.title}/{catalog_filename}",
                 STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
@@ -148,7 +148,7 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{item_filename}",
+        key=f"{dataset.title}/{item_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -175,7 +175,7 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{collection_filename}",
+        key=f"{dataset.title}/{collection_filename}",
     ), S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -197,7 +197,7 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{catalog_filename}",
+        key=f"{dataset.title}/{catalog_filename}",
     ) as dataset_metadata, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -227,7 +227,7 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{catalog_filename}",
+                STAC_HREF_KEY: f"./{dataset.title}/{catalog_filename}",
                 STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
@@ -301,7 +301,7 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{item_filename}",
+        key=f"{dataset.title}/{item_filename}",
     ) as item_metadata, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -323,7 +323,7 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{collection_filename}",
+        key=f"{dataset.title}/{collection_filename}",
     ) as dataset_metadata, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -352,7 +352,7 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{collection_filename}",
+                STAC_HREF_KEY: f"./{dataset.title}/{collection_filename}",
                 STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
@@ -439,7 +439,7 @@ def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
             }
         ),
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
-        key=f"{dataset.dataset_prefix}/{catalog_filename}",
+        key=f"{dataset.title}/{catalog_filename}",
     ) as dataset_metadata, S3Object(
         file_object=json_dict_to_file_object(
             {
@@ -455,7 +455,7 @@ def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
                     },
                     {
                         STAC_REL_KEY: STAC_REL_CHILD,
-                        STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{catalog_filename}",
+                        STAC_HREF_KEY: f"./{dataset.title}/{catalog_filename}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
@@ -474,7 +474,7 @@ def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
             },
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
-                STAC_HREF_KEY: f"./{dataset.dataset_prefix}/{catalog_filename}",
+                STAC_HREF_KEY: f"./{dataset.title}/{catalog_filename}",
                 STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },

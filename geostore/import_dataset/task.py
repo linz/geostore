@@ -27,7 +27,7 @@ from ..s3 import S3_URL_PREFIX
 from ..s3_utils import get_bucket_and_key_from_url
 from ..step_function_keys import (
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     METADATA_URL_KEY,
     NEW_VERSION_ID_KEY,
     S3_ROLE_ARN_KEY,
@@ -90,7 +90,7 @@ class Importer:
     def __init__(  # pylint:disable=too-many-arguments
         self,
         dataset_id: str,
-        dataset_prefix: str,
+        dataset_title: str,
         version_id: str,
         source_bucket_name: str,
         s3_role_arn: str,
@@ -98,7 +98,7 @@ class Importer:
         self.dataset_id = dataset_id
         self.version_id = version_id
         self.source_bucket_name = source_bucket_name
-        self.dataset_prefix = dataset_prefix
+        self.dataset_title = dataset_title
         self.s3_role_arn = s3_role_arn
 
     def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
@@ -126,7 +126,7 @@ class Importer:
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
                     ORIGINAL_KEY_KEY: key,
-                    NEW_KEY_KEY: f"{self.dataset_prefix}/{basename(key)}",
+                    NEW_KEY_KEY: f"{self.dataset_title}/{basename(key)}",
                     S3_ROLE_ARN_KEY: self.s3_role_arn,
                 }
                 row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
@@ -183,14 +183,14 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
                 "type": "object",
                 "properties": {
                     DATASET_ID_KEY: {"type": "string"},
-                    DATASET_PREFIX_KEY: {"type": "string"},
+                    DATASET_TITLE_KEY: {"type": "string"},
                     NEW_VERSION_ID_KEY: {"type": "string"},
                     METADATA_URL_KEY: {"type": "string"},
                     S3_ROLE_ARN_KEY: {"type": "string"},
                 },
                 "required": [
                     DATASET_ID_KEY,
-                    DATASET_PREFIX_KEY,
+                    DATASET_TITLE_KEY,
                     METADATA_URL_KEY,
                     S3_ROLE_ARN_KEY,
                     NEW_VERSION_ID_KEY,
@@ -205,7 +205,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     importer = Importer(
         event[DATASET_ID_KEY],
-        event[DATASET_PREFIX_KEY],
+        event[DATASET_TITLE_KEY],
         event[NEW_VERSION_ID_KEY],
         source_bucket_name,
         event[S3_ROLE_ARN_KEY],

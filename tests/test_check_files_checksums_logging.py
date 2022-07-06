@@ -7,7 +7,17 @@ from pytest import mark, raises
 from pytest_subtests import SubTests
 
 from geostore.api_keys import MESSAGE_KEY
-from geostore.check_files_checksums.task import main
+from geostore.check_files_checksums.task import (
+    ASSETS_TABLE_NAME_ARGUMENT,
+    CURRENT_VERSION_ID_ARGUMENT,
+    DATASET_ID_ARGUMENT,
+    DATASET_TITLE_ARGUMENT,
+    FIRST_ITEM_ARGUMENT,
+    NEW_VERSION_ID_ARGUMENT,
+    RESULTS_TABLE_NAME_ARGUMENT,
+    S3_ROLE_ARN_ARGUMENT,
+    main,
+)
 from geostore.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from geostore.error_response_keys import ERROR_KEY
 from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
@@ -15,10 +25,11 @@ from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREF
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
 from geostore.step_function import Outcome
+from geostore.step_function_keys import CURRENT_VERSION_EMPTY_VALUE
 
 from .aws_utils import get_s3_role_arn
 from .general_generators import any_program_name
-from .stac_generators import any_dataset_id, any_dataset_prefix, any_dataset_version_id
+from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_version_id
 
 
 @mark.infrastructure
@@ -40,14 +51,17 @@ def should_log_missing_item(subtests: SubTests) -> None:
 
     sys.argv = [
         any_program_name(),
-        f"--dataset-id={dataset_id}",
-        f"--new-version-id={version_id}",
-        f"--current-version-id={None}",
-        f"--dataset-prefix={any_dataset_prefix()}",
-        f"--first-item={index}",
-        f"--assets-table-name={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
-        f"--results-table-name={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}",
-        f"--s3-role-arn={get_s3_role_arn()}",
+        f"{DATASET_ID_ARGUMENT}={dataset_id}",
+        f"{NEW_VERSION_ID_ARGUMENT}={version_id}",
+        f"{CURRENT_VERSION_ID_ARGUMENT}={CURRENT_VERSION_EMPTY_VALUE}",
+        f"{DATASET_TITLE_ARGUMENT}={any_dataset_title()}",
+        f"{FIRST_ITEM_ARGUMENT}={index}",
+        f"{ASSETS_TABLE_NAME_ARGUMENT}={get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)}",
+        (
+            f"{RESULTS_TABLE_NAME_ARGUMENT}"
+            f"={get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)}"
+        ),
+        f"{S3_ROLE_ARN_ARGUMENT}={get_s3_role_arn()}",
     ]
 
     # When/Then

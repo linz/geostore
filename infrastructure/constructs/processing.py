@@ -14,6 +14,16 @@ from aws_cdk.aws_stepfunctions import Wait, WaitTime
 from constructs import Construct
 
 from geostore.api_keys import SUCCESS_KEY
+from geostore.check_files_checksums.task import (
+    ASSETS_TABLE_NAME_ARGUMENT,
+    CURRENT_VERSION_ID_ARGUMENT,
+    DATASET_ID_ARGUMENT,
+    DATASET_TITLE_ARGUMENT,
+    FIRST_ITEM_ARGUMENT,
+    NEW_VERSION_ID_ARGUMENT,
+    RESULTS_TABLE_NAME_ARGUMENT,
+    S3_ROLE_ARN_ARGUMENT,
+)
 from geostore.content_iterator.task import (
     ASSETS_TABLE_NAME_KEY,
     CONTENT_KEY,
@@ -29,7 +39,7 @@ from geostore.step_function_keys import (
     ASSET_UPLOAD_KEY,
     CURRENT_VERSION_ID_KEY,
     DATASET_ID_KEY,
-    DATASET_PREFIX_KEY,
+    DATASET_TITLE_KEY,
     IMPORT_DATASET_KEY,
     METADATA_UPLOAD_KEY,
     METADATA_URL_KEY,
@@ -76,7 +86,7 @@ class Processing(Construct):
 
         ############################################################################################
         # PROCESSING ASSETS TABLE
-        processing_assets_table = Table(
+        self.processing_assets_table = Table(
             self,
             f"{env_name}-processing-assets",
             env_name=env_name,
@@ -90,7 +100,7 @@ class Processing(Construct):
             self,
             "batch-job-queue",
             env_name=env_name,
-            processing_assets_table=processing_assets_table,
+            processing_assets_table=self.processing_assets_table,
         ).job_queue
 
         s3_read_only_access_policy = aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -147,7 +157,7 @@ class Processing(Construct):
         )
         check_stac_metadata_task.lambda_function.add_to_role_policy(ALLOW_ASSUME_ANY_ROLE)
 
-        for table in [processing_assets_table, validation_results_table]:
+        for table in [self.processing_assets_table, validation_results_table]:
             table.grant_read_write_data(check_stac_metadata_task.lambda_function)
             table.grant(
                 check_stac_metadata_task.lambda_function,
@@ -168,7 +178,7 @@ class Processing(Construct):
             f"{DATASET_ID_KEY}.$": f"$.{DATASET_ID_KEY}",
             f"{NEW_VERSION_ID_KEY}.$": f"$.{NEW_VERSION_ID_KEY}",
             f"{CURRENT_VERSION_ID_KEY}.$": f"$.{CURRENT_VERSION_ID_KEY}",
-            f"{DATASET_PREFIX_KEY}.$": f"$.{DATASET_PREFIX_KEY}",
+            f"{DATASET_TITLE_KEY}.$": f"$.{DATASET_TITLE_KEY}",
             f"{METADATA_URL_KEY}.$": f"$.{METADATA_URL_KEY}",
             f"{S3_ROLE_ARN_KEY}.$": f"$.{S3_ROLE_ARN_KEY}",
             f"{FIRST_ITEM_KEY}.$": f"$.{CONTENT_KEY}.{FIRST_ITEM_KEY}",
@@ -184,21 +194,21 @@ class Processing(Construct):
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
             container_overrides_command=[
-                "--dataset-id",
+                DATASET_ID_ARGUMENT,
                 f"Ref::{DATASET_ID_KEY}",
-                "--new-version-id",
+                NEW_VERSION_ID_ARGUMENT,
                 f"Ref::{NEW_VERSION_ID_KEY}",
-                "--current-version-id",
+                CURRENT_VERSION_ID_ARGUMENT,
                 f"Ref::{CURRENT_VERSION_ID_KEY}",
-                "--dataset-prefix",
-                f"Ref::{DATASET_PREFIX_KEY}",
-                "--first-item",
+                DATASET_TITLE_ARGUMENT,
+                f"Ref::{DATASET_TITLE_KEY}",
+                FIRST_ITEM_ARGUMENT,
                 f"Ref::{FIRST_ITEM_KEY}",
-                "--assets-table-name",
+                ASSETS_TABLE_NAME_ARGUMENT,
                 f"Ref::{ASSETS_TABLE_NAME_KEY}",
-                "--results-table-name",
+                RESULTS_TABLE_NAME_ARGUMENT,
                 f"Ref::{RESULTS_TABLE_NAME_KEY}",
-                "--s3-role-arn",
+                S3_ROLE_ARN_ARGUMENT,
                 f"Ref::{S3_ROLE_ARN_KEY}",
             ],
         )
@@ -214,31 +224,25 @@ class Processing(Construct):
             job_queue=batch_job_queue,
             payload_object=check_files_checksums_default_payload_object,
             container_overrides_command=[
-                "--dataset-id",
+                DATASET_ID_ARGUMENT,
                 f"Ref::{DATASET_ID_KEY}",
-                "--new-version-id",
+                NEW_VERSION_ID_ARGUMENT,
                 f"Ref::{NEW_VERSION_ID_KEY}",
-                "--current-version-id",
+                CURRENT_VERSION_ID_ARGUMENT,
                 f"Ref::{CURRENT_VERSION_ID_KEY}",
-                "--dataset-prefix",
-                f"Ref::{DATASET_PREFIX_KEY}",
-                "--first-item",
+                DATASET_TITLE_ARGUMENT,
+                f"Ref::{DATASET_TITLE_KEY}",
+                FIRST_ITEM_ARGUMENT,
                 f"Ref::{FIRST_ITEM_KEY}",
-                "--assets-table-name",
+                ASSETS_TABLE_NAME_ARGUMENT,
                 f"Ref::{ASSETS_TABLE_NAME_KEY}",
-                "--results-table-name",
+                RESULTS_TABLE_NAME_ARGUMENT,
                 f"Ref::{RESULTS_TABLE_NAME_KEY}",
-                "--s3-role-arn",
+                S3_ROLE_ARN_ARGUMENT,
                 f"Ref::{S3_ROLE_ARN_KEY}",
             ],
             array_size=array_size,
         )
-
-        for processing_assets_reader in [
-            content_iterator_task.lambda_function,
-        ]:
-            processing_assets_table.grant_read_data(processing_assets_reader)
-            processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
 
         for check_files_checksums_task in [
             check_files_checksums_single_task.job_role,
@@ -246,8 +250,8 @@ class Processing(Construct):
         ]:
             validation_results_table.grant_read_write_data(check_files_checksums_task)
             validation_results_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
-            processing_assets_table.grant_read_write_data(check_files_checksums_task)
-            processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
+            self.processing_assets_table.grant_read_write_data(check_files_checksums_task)
+            self.processing_assets_table.grant(check_files_checksums_task, "dynamodb:DescribeTable")
             check_files_checksums_task.add_to_policy(ALLOW_ASSUME_ANY_ROLE)
 
         validation_summary_task = LambdaTask(
@@ -257,10 +261,6 @@ class Processing(Construct):
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
-        )
-        validation_results_table.grant_read_data(validation_summary_task.lambda_function)
-        validation_results_table.grant(
-            validation_summary_task.lambda_function, "dynamodb:DescribeTable"
         )
 
         import_dataset_role = aws_iam.Role(
@@ -304,9 +304,6 @@ class Processing(Construct):
             aws_iam.PolicyStatement(resources=["*"], actions=["s3:CreateJob"])
         )
 
-        processing_assets_table.grant_read_data(import_dataset_task.lambda_function)
-        processing_assets_table.grant(import_dataset_task.lambda_function, "dynamodb:DescribeTable")
-
         # Import status check
         wait_before_upload_status_check = Wait(
             self,
@@ -321,8 +318,6 @@ class Processing(Construct):
             result_path=f"$.{UPLOAD_STATUS_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
-        validation_results_table.grant_read_data(upload_status_task.lambda_function)
-        validation_results_table.grant(upload_status_task.lambda_function, "dynamodb:DescribeTable")
 
         upload_status_task.lambda_function.add_to_role_policy(ALLOW_DESCRIBE_ANY_S3_JOB)
 
@@ -361,6 +356,21 @@ class Processing(Construct):
         self.message_queue.grant_send_messages(update_root_catalog.lambda_function)
         datasets_table.grant_read_write_data(update_root_catalog.lambda_function)
 
+        for processing_assets_reader in [
+            content_iterator_task.lambda_function,
+            import_dataset_task.lambda_function,
+            update_root_catalog.lambda_function,
+        ]:
+            self.processing_assets_table.grant_read_data(processing_assets_reader)
+            self.processing_assets_table.grant(processing_assets_reader, "dynamodb:DescribeTable")
+
+        for validation_results_reader in [
+            upload_status_task.lambda_function,
+            validation_summary_task.lambda_function,
+        ]:
+            validation_results_table.grant_read_data(validation_results_reader)
+            validation_results_table.grant(validation_results_reader, "dynamodb:DescribeTable")
+
         for storage_writer in [
             import_dataset_role,
             import_dataset_task.lambda_function,
@@ -376,10 +386,11 @@ class Processing(Construct):
                 import_asset_file_function_arn_parameter: [import_dataset_task.lambda_function],
                 import_dataset_role_arn_parameter: [import_dataset_task.lambda_function],
                 import_metadata_file_function_arn_parameter: [import_dataset_task.lambda_function],
-                processing_assets_table.name_parameter: [
+                self.processing_assets_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
                     content_iterator_task.lambda_function,
                     import_dataset_task.lambda_function,
+                    update_root_catalog.lambda_function,
                 ],
                 s3_role_arn_parameter: [
                     check_stac_metadata_task.lambda_function,
