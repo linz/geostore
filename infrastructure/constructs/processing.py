@@ -58,7 +58,6 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
-from .lambda_config import DEFAULT_LAMBDA_TIMEOUT
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -113,7 +112,7 @@ class Processing(Construct):
         self.message_queue = aws_sqs.Queue(
             self,
             "update-catalog-message-queue",
-            visibility_timeout=DEFAULT_LAMBDA_TIMEOUT,
+            visibility_timeout=Duration.minutes(15),
             fifo=True,
         )
 
@@ -131,6 +130,7 @@ class Processing(Construct):
             directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
+            timeout=Duration.minutes(15),
             reserved_concurrent_executions=1,
         )
 
