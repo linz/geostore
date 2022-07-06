@@ -110,18 +110,13 @@ class Processing(Construct):
         ############################################################################################
         # UPDATE CATALOG UPDATE MESSAGE QUEUE
 
-        dead_letter_queue = aws_sqs.Queue(
-            self,
-            "dead-letter-queue",
-            visibility_timeout=DEFAULT_LAMBDA_TIMEOUT,
-        )
-
         self.message_queue = aws_sqs.Queue(
             self,
             "update-catalog-message-queue",
             visibility_timeout=DEFAULT_LAMBDA_TIMEOUT,
-            dead_letter_queue=aws_sqs.DeadLetterQueue(max_receive_count=3, queue=dead_letter_queue),
+            fifo=True,
         )
+
         self.message_queue_name_parameter = aws_ssm.StringParameter(
             self,
             "update-catalog-message-queue-name",
@@ -136,6 +131,7 @@ class Processing(Construct):
             directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
+            reserved_concurrent_executions=1,
         )
 
         self.message_queue.grant_consume_messages(populate_catalog_lambda)

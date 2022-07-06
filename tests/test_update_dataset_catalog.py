@@ -1,5 +1,5 @@
 from copy import deepcopy
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from jsonschema import ValidationError
 from mypy_boto3_s3 import S3Client
@@ -22,7 +22,7 @@ from geostore.step_function_keys import (
     NEW_VERSION_S3_LOCATION,
     S3_ROLE_ARN_KEY,
 )
-from geostore.update_root_catalog.task import lambda_handler
+from geostore.update_root_catalog.task import SQS_MESSAGE_GROUP_ID, lambda_handler
 
 from .aws_utils import (
     Dataset,
@@ -69,7 +69,11 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
             any_lambda_context(),
         )
 
-        expected_sqs_call = {"MessageBody": dataset_metadata.key}
+        expected_sqs_call = {
+            "MessageBody": dataset_metadata.key,
+            "MessageGroupId": SQS_MESSAGE_GROUP_ID,
+            "MessageDeduplicationId": ANY,
+        }
 
         with subtests.test(msg="success"):
             assert response == {
