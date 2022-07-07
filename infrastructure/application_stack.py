@@ -39,14 +39,17 @@ class Application(Stack):
                 f":oidc-provider/token.actions.githubusercontent.com"
             )
 
-            principal = aws_iam.WebIdentityPrincipal(
-                identity_provider=open_id_connect_provider_arn,
-                conditions={
-                    "StringLike": {
-                        "token.actions.githubusercontent.com:aud": ["sts.amazonaws.com"],
-                        "token.actions.githubusercontent.com:sub": ["repo:linz/geostore:*"],
-                    }
-                },
+            principal = aws_iam.CompositePrincipal(
+                aws_iam.AccountPrincipal(account_id=aws_iam.AccountRootPrincipal().account_id),
+                aws_iam.WebIdentityPrincipal(
+                    identity_provider=open_id_connect_provider_arn,
+                    conditions={
+                        "StringLike": {
+                            "token.actions.githubusercontent.com:aud": ["sts.amazonaws.com"],
+                            "token.actions.githubusercontent.com:sub": ["repo:linz/geostore:*"],
+                        }
+                    },
+                ),
             )
 
         storage = Storage(self, "storage", env_name=env_name)
