@@ -117,11 +117,11 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_CI_OIDC }}
+          role-to-assume: arn:aws:iam::586981104868:role/AWS_ASSUME_ROLE_CI_OIDC
 
       - name: Set up Boto3 with AssumeRoleWithWebIdentity for oidc connectivity
         run: |
-          export AWS_ROLE_ARN=${{ secrets.AWS_ASSUME_ROLE_CI_OIDC }}
+          export AWS_ROLE_ARN=arn:aws:iam::586981104868:role/AWS_ASSUME_ROLE_CI_OIDC
           export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
           export AWS_DEFAULT_REGION=ap-southeast-2
 

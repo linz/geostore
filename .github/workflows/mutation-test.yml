@@ -71,7 +71,7 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_CI_OIDC }}
+          role-to-assume: arn:aws:iam::586981104868:role/AWS_ASSUME_ROLE_CI_OIDC
 
       - name: Set unique deployment environment type variable
         run: echo "GEOSTORE_ENV_NAME=ci${GITHUB_RUN_ID}" | tee -a $GITHUB_ENV
