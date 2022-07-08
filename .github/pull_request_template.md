@@ -12,4 +12,4 @@ Closes https://example.org/issues/1, https://example.org/issues/2.
 
 ## Reference
 
-[Code review checklist](CODING.md#Code-review-checklist)
+[Code review checklist](https://github.com/linz/geostore/blob/master/CODING.md#Checklist)

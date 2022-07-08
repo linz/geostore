@@ -147,13 +147,51 @@ aws iam delete-policy --policy-arn="${policy_arn}"
 aws iam delete-role --role-name="${role_name}"
 ```
 
-## Code review checklist
+## Code review
+
+### Typical workflow
+
+1. Author:
+   1. Double-check that the PR can't be split.
+   1. Resolve any _conflicts._
+   1. Double-check the PR template to see if any more details can be filled in.
+   1. Add the "automerge" label if it's _urgent_ or you're _confident_ it'll pass the CI pipeline.
+      This triggers a longer-running production upgrade workflow.
+   1. Click "Ready for review" if it's a _draft_ PR.
+   1. Add at least one reviewer.
+   1. Notify the reviewers separately if it's an _urgent_ fix.
+1. Reviewer:
+   1. Add comments, typically using the "Start a review" button to group an entire review together.
+      Comments should be actionable, either posing a question or suggesting a change. Kudos is
+      probably better served by other means (shout-outs FTW!), to keep the review quick and easy to
+      read.
+   1. Finish the review.
+      -  The review comment is optional, and only really needed for overall or non-code comments,
+         such as suggesting commit message or PR detail changes.
+      -  "Comment" if _all_ your comments are optional, and you'd be OK with another reviewer
+         approving unconditionally and merging without addressing any of them.
+      -  "Approve" the PR if there are no comments. This will result in an auto-merge if the PR has
+         the "automerge" label and the pipeline passes.
+      -  "Request changes" if any of your comments definitely require changing the PR contents. This
+         means you have to later approve the PR for it to actually merge.
+1. Author (if the PR is not approved yet):
+   1. Address each comment, either by changing the PR or responding to the reviewer. Beware that
+      GitHub will _hide_ parts of long conversations, and you might have to press a link repeatedly
+      to see all comments.
+   1. Re-request review, to notify the reviewers that you've finished addressing their comments.
+1. Reviewer:
+   1. Resolve conversations which don't need any further action. If a comment has not been fully
+      addressed yet, you might need to point out why. For example, a comment might apply in several
+      places, and only some of them have been resolved.
+   1. Continue as above.
+
+### Checklist
 
 This document is meant to give general hints for code reviewers. It should not be considered a
 complete set of things to consider, and should not include anything which is currently being
 validated automatically.
 
-### Dockerfiles
+#### Dockerfiles
 
 -  Don't pin `apt` package versions.
 
@@ -167,7 +205,7 @@ validated automatically.
    -  [Dependabot does not yet patch Dockerfile package installs](https://github.com/dependabot/dependabot-core/issues/2129).
       This would fix all of the issues above, probably flipping this recommendation.
 
-### Testing
+#### Testing
 
 -  Make sure the test name says what the code should do, not what it should _not_ do.
 
@@ -206,7 +244,7 @@ validated automatically.
    `unset AWS_DEFAULT_REGION AWS_PROFILE` and `mv ~/.aws{,.orig}` (undo with `mv ~/.aws{.orig,}`)
    first.
 
-### AWS Lambda
+#### AWS Lambda
 
 -  To speed up our lambdas, boto3 clients and other large pieces of setup should be initialised
    outside the main lambda handler. See
@@ -221,7 +259,7 @@ validated automatically.
    belong together, even if only a subset of them are used in multiple Lambda jobs. For example,
    constants for standard STAC keys and values.
 
-### Imports
+#### Imports
 
 -  Imports within a top-level directory should use relative imports. Rationale:
    -  Lambda jobs are deployed without the top-level `geostore` directory, so any attempt to
@@ -230,7 +268,7 @@ validated automatically.
    -  Relative imports are trivially distinguished from imports from third party packages, and are
       grouped accordingly by `isort`.
 
-### Command-line interfaces
+#### Command-line interfaces
 
 -  Mandatory parameters should be named. This way commands are self-documenting, and users don't
    have to remember the exact sequence.
@@ -251,7 +289,7 @@ validated automatically.
    output) to enable more user-friendly formatting such as titles for single values, table headings
    and aligned table columns, and pretty-printed JSON, any of which could be coloured.
 
-### Code reuse
+#### Code reuse
 
 -  Group code by relatedness, not by reuse. Basically, putting a bunch of stuff in a single file
    should be justified by more than "they are all being used in more than one place". Putting all
@@ -260,3 +298,11 @@ validated automatically.
 
    Counter-example: conftest.py is a pytest-specific file for fixtures. We don't want to change our
    configuration simply to allow splitting this up.
+
+#### Pull request
+
+-  The PR title is in conventional commit format. Rationale: We use conventional commits, and the PR
+   title becomes the commit title when squashed and merged.
+-  The PR is linked to an issue. This isn't always necessary, for example when doing small
+   refactoring or cleanup jobs, where the issue maintenance would be a significant chunk of the
+   overall work. Bug fixes and new features should always have an associated issue.
