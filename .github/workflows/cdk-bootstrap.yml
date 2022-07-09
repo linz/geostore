@@ -75,7 +75,7 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: arn:aws:iam::586981104868:role/AWS_ASSUME_ROLE_CI_OIDC
+          role-to-assume: arn:aws:iam::586981104868:role/CiOidc
 
       - name: Bootstrap CDK
         run: |
@@ -150,7 +150,7 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: arn:aws:iam::632223577832:role/AWS_ASSUME_ROLE_NON_PROD_OIDC
+          role-to-assume: arn:aws:iam::632223577832:role/NonProdOidc
 
       - name: Bootstrap CDK
         run: |
@@ -225,7 +225,7 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: arn:aws:iam::715898075157:role/AWS_ASSUME_ROLE_PROD_OIDC
+          role-to-assume: arn:aws:iam::715898075157:role/ProdOidc
 
       - name: Bootstrap CDK
         run: |

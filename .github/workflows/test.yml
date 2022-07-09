@@ -6,7 +6,7 @@ on:
 env:
   AWS_WEB_IDENTITY_TOKEN_FILE: /tmp/awscreds
   AWS_DEFAULT_REGION: ap-southeast-2
-  AWS_ROLE_ARN: arn:aws:iam::586981104868:role/AWS_ASSUME_ROLE_CI_OIDC
+  AWS_ROLE_ARN: arn:aws:iam::586981104868:role/CiOidc
 
 jobs:
   linter:
