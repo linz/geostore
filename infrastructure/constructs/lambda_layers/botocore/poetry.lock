@@ -1,6 +1,6 @@
 [[package]]
 name = "botocore"
-version = "1.27.25"
+version = "1.27.26"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
