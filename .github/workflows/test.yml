@@ -6,7 +6,6 @@ on:
 env:
   AWS_WEB_IDENTITY_TOKEN_FILE: /tmp/awscreds
   AWS_DEFAULT_REGION: ap-southeast-2
-  AWS_ROLE_ARN: arn:aws:iam::586981104868:role/CiOidc
 
 jobs:
   linter:
@@ -117,12 +116,15 @@ jobs:
       - name: Print CDK version
         run: poetry run cdk --version
 
+      - name: Get Oidc deploy role arn
+        run: cat .github/workflows/.env >> $GITHUB_ENV
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           mask-aws-account-id: true
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: ${{ env.CiOidc }}
 
       - name: Set up Boto3 with AssumeRoleWithWebIdentity for oidc connectivity
         run: |

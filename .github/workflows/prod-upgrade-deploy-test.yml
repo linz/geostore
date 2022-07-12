@@ -19,13 +19,16 @@ jobs:
         with:
           submodules: true
 
+      - name: Get Oidc deploy role arn
+        run: cat .github/workflows/.env >> $GITHUB_ENV
+
       # prod version detection
       - name: Configure production AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: arn:aws:iam::715898075157:role/ProdOidc
+          role-to-assume: ${{ env.ProdOidc }}
 
       - name: Get current production environment version
         run: |
@@ -99,7 +102,7 @@ jobs:
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
-          role-to-assume: arn:aws:iam::586981104868:role/CiOidc
+          role-to-assume: ${{ env.CiOidc }}
 
       - name: Set unique deployment environment type variable
         run: |
