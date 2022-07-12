@@ -289,6 +289,29 @@ validated automatically.
    output) to enable more user-friendly formatting such as titles for single values, table headings
    and aligned table columns, and pretty-printed JSON, any of which could be coloured.
 
+#### Documentation
+
+-  We should try to use portable
+   [Markdown syntax](https://daringfireball.net/projects/markdown/syntax). This isn't always easy -
+   even mainstream renderers like GitHub, Stack Overflow, and JetBrains IDEs disagree about subtle
+   details, which are usually only discoverable by trial and error. Rationale: As an open source
+   project, we should focus on portability where it's cheap, and only add non-portable features when
+   it's really valuable. Basically we need to balance readability and ease of editing across
+   different platforms.
+
+   Bad example: ASCII art is generally neither self-documenting nor reproducible. That is, if you
+   wanted to change a single character in a non-trivial ASCII art diagram you have several problems.
+   Which ASCII art editor was used? Since it's not self-documenting there's no way to know unless
+   you use precious documentation space for this meta-documentation. And what was the source of the
+   ASCII art? Many of them let you create a diagram which is then exported to ASCII art, but going
+   the other way is generally not possible. Bit rot is also a concern - what if the editor has
+   changed fundamentally or no longer exists? And finally, a lot of editors can't be trivially
+   automated, so any kind of updating might require manual work every time.
+
+   Good example: A [DOT file](https://graphviz.org/doc/info/lang.html) is a relatively simple
+   format, can be converted into various image formats, and the conversion is trivial to automate.
+   Including the result of such a conversion in Markdown is also trivial.
+
 #### Code reuse
 
 -  Group code by relatedness, not by reuse. Basically, putting a bunch of stuff in a single file
