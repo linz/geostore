@@ -152,6 +152,7 @@ aws iam delete-role --role-name="${role_name}"
 ### Typical workflow
 
 1. Author:
+   1. Make sure the PR title is in Conventional Commits format.
    1. Double-check that the PR can't be split.
    1. Resolve any _conflicts._
    1. Double-check the PR template to see if any more details can be filled in.
@@ -298,11 +299,3 @@ validated automatically.
 
    Counter-example: conftest.py is a pytest-specific file for fixtures. We don't want to change our
    configuration simply to allow splitting this up.
-
-#### Pull request
-
--  The PR title is in conventional commit format. Rationale: We use conventional commits, and the PR
-   title becomes the commit title when squashed and merged.
--  The PR is linked to an issue. This isn't always necessary, for example when doing small
-   refactoring or cleanup jobs, where the issue maintenance would be a significant chunk of the
-   overall work. Bug fixes and new features should always have an associated issue.
