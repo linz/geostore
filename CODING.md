@@ -152,6 +152,7 @@ aws iam delete-role --role-name="${role_name}"
 ### Typical workflow
 
 1. Author:
+   1. Make sure the PR title is in Conventional Commits format.
    1. Double-check that the PR can't be split.
    1. Resolve any _conflicts._
    1. Double-check the PR template to see if any more details can be filled in.
