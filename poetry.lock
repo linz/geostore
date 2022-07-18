@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.30"
-description = "Type annotations for boto3 1.24.30 generated with mypy-boto3-builder 7.9.0"
+version = "1.24.31"
+description = "Type annotations for boto3 1.24.31 generated with mypy-boto3-builder 7.9.1"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -1002,7 +1002,7 @@ python-versions = "*"
 
 [[package]]
 name = "mutmut"
-version = "2.4.0"
+version = "2.4.1"
 description = "mutation testing for Python 3"
 category = "dev"
 optional = false
@@ -1953,8 +1953,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.30.tar.gz", hash = "sha256:d319675d7715807ecbb5b416fba2a17a46593b2702ce04de506971c95f9a1dca"},
-    {file = "boto3_stubs-1.24.30-py3-none-any.whl", hash = "sha256:0d470fa9ce4e084f8359c20800d0d3e458128e0073de67c92eec8bee91648733"},
+    {file = "boto3-stubs-1.24.31.tar.gz", hash = "sha256:dd1e027bf894a8d4dc509681c86160c70e1974d215813bca857ebf4123a8b307"},
+    {file = "boto3_stubs-1.24.31-py3-none-any.whl", hash = "sha256:5d110c382c68a14f1117e584b134e8d7e172b5665e54292b1ad22354fa07df45"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2187,7 +2187,7 @@ multihash = [
     {file = "multihash-0.1.1.tar.gz", hash = "sha256:65d31ad24eeae0bb1ed016464afba26e269bd1c1f8af056fe4ed2a76b2e85ccb"},
 ]
 mutmut = [
-    {file = "mutmut-2.4.0.tar.gz", hash = "sha256:5ab05ffc04ed98c98d5da982a6d425875db5ca59cb7835ef55d1d694aea7d2f2"},
+    {file = "mutmut-2.4.1.tar.gz", hash = "sha256:a7c2fe0445711ade40b8ddfeb9c8f7d8b3a8e0c05bd58a4b746c1d627039356e"},
 ]
 mypy = [
     {file = "mypy-0.961-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:697540876638ce349b01b6786bc6094ccdaba88af446a9abb967293ce6eaa2b0"},
