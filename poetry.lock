@@ -1002,7 +1002,7 @@ python-versions = "*"
 
 [[package]]
 name = "mutmut"
-version = "2.4.0"
+version = "2.4.1"
 description = "mutation testing for Python 3"
 category = "dev"
 optional = false
@@ -2187,7 +2187,7 @@ multihash = [
     {file = "multihash-0.1.1.tar.gz", hash = "sha256:65d31ad24eeae0bb1ed016464afba26e269bd1c1f8af056fe4ed2a76b2e85ccb"},
 ]
 mutmut = [
-    {file = "mutmut-2.4.0.tar.gz", hash = "sha256:5ab05ffc04ed98c98d5da982a6d425875db5ca59cb7835ef55d1d694aea7d2f2"},
+    {file = "mutmut-2.4.1.tar.gz", hash = "sha256:a7c2fe0445711ade40b8ddfeb9c8f7d8b3a8e0c05bd58a4b746c1d627039356e"},
 ]
 mypy = [
     {file = "mypy-0.961-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:697540876638ce349b01b6786bc6094ccdaba88af446a9abb967293ce6eaa2b0"},
