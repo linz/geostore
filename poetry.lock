@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.31"
-description = "Type annotations for boto3 1.24.31 generated with mypy-boto3-builder 7.9.1"
+version = "1.24.32"
+description = "Type annotations for boto3 1.24.32 generated with mypy-boto3-builder 7.9.2"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
@@ -1585,7 +1585,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "slack-sdk"
-version = "3.17.2"
+version = "3.18.0"
 description = "The Slack API Platform SDK for Python"
 category = "main"
 optional = true
@@ -1721,7 +1721,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.1"
+version = "2.28.2"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1953,8 +1953,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.31.tar.gz", hash = "sha256:dd1e027bf894a8d4dc509681c86160c70e1974d215813bca857ebf4123a8b307"},
-    {file = "boto3_stubs-1.24.31-py3-none-any.whl", hash = "sha256:5d110c382c68a14f1117e584b134e8d7e172b5665e54292b1ad22354fa07df45"},
+    {file = "boto3-stubs-1.24.32.tar.gz", hash = "sha256:83c9d23865dcac5b1d9cfb3304e0ccc67e53e1bc4611711ecf39e117b051d341"},
+    {file = "boto3_stubs-1.24.32-py3-none-any.whl", hash = "sha256:cd1389b6cadf838a00a4f492d5d76281693f284ae339c3f43cf72e1d11d32a10"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2480,8 +2480,8 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 slack-sdk = [
-    {file = "slack_sdk-3.17.2-py2.py3-none-any.whl", hash = "sha256:70d5a55a5d52ba7128d5347ed995425e1f83e729667ab296035bcf6c1b13a049"},
-    {file = "slack_sdk-3.17.2.tar.gz", hash = "sha256:60302e32d48db6b4ea5453d92f23ecf3f7b843f799f61eaf271315264d7cb281"},
+    {file = "slack_sdk-3.18.0-py2.py3-none-any.whl", hash = "sha256:1bca5f1c006aef174b0e4ccc38cb8f4b1c9d595150d64dcb764f65c443e105cf"},
+    {file = "slack_sdk-3.18.0.tar.gz", hash = "sha256:429b77c123993d2aaded2917909f4a40bb2079c1d5d6d0f86c4bb2b40900433b"},
 ]
 smart-open = [
     {file = "smart_open-6.0.0-py3-none-any.whl", hash = "sha256:94afbd5058a45d4fdc4f859ed158b46054cb5ca1c019d76f6f8a60495f662129"},
@@ -2527,8 +2527,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.1.tar.gz", hash = "sha256:acd8ed78509d27bdf04cddcc05f7066dfde4d30dd7dba67b808cdb1141d62ffe"},
-    {file = "types_requests-2.28.1-py3-none-any.whl", hash = "sha256:b097692e124001f0ed5e4490245bb090f5e8e929819972f9ace84f9c3e146e8c"},
+    {file = "types-requests-2.28.2.tar.gz", hash = "sha256:398f88cd9302c796cb63d1021af2a1fb7ae507741a3d508edf8e0746d8c16a04"},
+    {file = "types_requests-2.28.2-py3-none-any.whl", hash = "sha256:c164696bfdce0123901165c5f097a6cc4f6326268c65815d4b6a57eacfec5e81"},
 ]
 types-s3transfer = [
     {file = "types-s3transfer-0.6.0.tar.gz", hash = "sha256:e6d71efb01985fc8561b951230f93c4062075b88adf293142b2d4b835c2cae63"},
