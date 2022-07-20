@@ -62,7 +62,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.32.1"
+version = "2.33.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
@@ -70,7 +70,7 @@ python-versions = "~=3.7"
 
 [package.dependencies]
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.60.1,<2.0.0"
+jsii = ">=1.62.0,<2.0.0"
 publication = ">=0.0.3"
 
 [[package]]
@@ -882,7 +882,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "jsii"
-version = "1.60.1"
+version = "1.62.0"
 description = "Python client for jsii runtime"
 category = "main"
 optional = true
@@ -1904,8 +1904,8 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.32.1.tar.gz", hash = "sha256:e08dfb292c2ecb3f1172b780020274f3538d5d53390258981d98c8f5e43fea88"},
-    {file = "aws_cdk_lib-2.32.1-py3-none-any.whl", hash = "sha256:aa6432097c23bfe140d6250673b3f78d3631e360d35e1b3c3cc259914b0dcadd"},
+    {file = "aws-cdk-lib-2.33.0.tar.gz", hash = "sha256:274669358c8b767b1a8bbb2d3de5c9e84b587c6b5f9c4545e19b6f67f2b73c0b"},
+    {file = "aws_cdk_lib-2.33.0-py3-none-any.whl", hash = "sha256:72be712d97404ae4065c160bf5aa84e2441cbea2887ac738d8fed610eee76ccc"},
 ]
 "aws-cdk.aws-batch-alpha" = [
     {file = "aws-cdk.aws-batch-alpha-2.24.0a0.tar.gz", hash = "sha256:40c7e618d069b5054f3dfde43835a1c4acf8567a481613bd3ce4a95f79619fe0"},
@@ -2127,8 +2127,8 @@ jmespath = [
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
 ]
 jsii = [
-    {file = "jsii-1.60.1-py3-none-any.whl", hash = "sha256:0f1e6c8c5f05ad2b494309664ed0268c32dab3fa2a84a4d6604ba8eeaf2b9148"},
-    {file = "jsii-1.60.1.tar.gz", hash = "sha256:615e1854a461b3bcf234ca75a48cd0a45a4e71d5913c2f270bdd9b93e033b088"},
+    {file = "jsii-1.62.0-py3-none-any.whl", hash = "sha256:d124b0f350fd206e0488d3bb83dc58832f11e64fc728fd3a10096872d8a3a938"},
+    {file = "jsii-1.62.0.tar.gz", hash = "sha256:c22ac7373260fbabdb012faba717a8a4dbd933120cee373905030fd66956a65a"},
 ]
 jsonpointer = [
     {file = "jsonpointer-2.0-py2.py3-none-any.whl", hash = "sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e"},
