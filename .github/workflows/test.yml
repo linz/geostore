@@ -163,7 +163,7 @@ jobs:
 
       - name: Destroy AWS stacks used for testing
         run: |
-          poetry run cdk destroy --force --all
+          aws cloudformation delete-stack --stack-name ci${GITHUB_RUN_ID}-geostore
         if: always()
 
   build-nix-shell:
