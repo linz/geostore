@@ -162,11 +162,11 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.35"
-description = "Type annotations for boto3 1.24.35 generated with mypy-boto3-builder 7.9.2"
+version = "1.24.39"
+description = "Type annotations for boto3 1.24.39 generated with mypy-boto3-builder 7.10.1"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 botocore-stubs = "*"
@@ -1379,7 +1379,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pystac"
-version = "1.6.0"
+version = "1.6.1"
 description = "Python library for working with Spatiotemporal Asset Catalog (STAC)."
 category = "main"
 optional = true
@@ -1389,8 +1389,8 @@ python-versions = ">=3.8"
 python-dateutil = ">=2.7.0"
 
 [package.extras]
-validation = ["jsonschema (>=3.0)"]
 orjson = ["orjson (>=3.5)"]
+validation = ["jsonschema (>=4.0.1)"]
 
 [[package]]
 name = "pytest"
@@ -1953,8 +1953,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.35.tar.gz", hash = "sha256:b99fa11e43e676072088488e43c2d61bb2cfc9b6a6af9e9b00c3377a0ef91a63"},
-    {file = "boto3_stubs-1.24.35-py3-none-any.whl", hash = "sha256:f327bec79a1437f15f1bacc5aad58e274a227b0d27f3a46cae034ed4be31ab32"},
+    {file = "boto3-stubs-1.24.39.tar.gz", hash = "sha256:5f4f00d06179a33ecd39c4eacd574f5d0c0ab9e52523e66338d7efa81f01afd9"},
+    {file = "boto3_stubs-1.24.39-py3-none-any.whl", hash = "sha256:7118ec18c1a8a93dfda61b42073e5256bedbc19529c7b45a6b31241dadf97ac2"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2352,8 +2352,8 @@ pyrsistent = [
     {file = "pyrsistent-0.17.3.tar.gz", hash = "sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e"},
 ]
 pystac = [
-    {file = "pystac-1.6.0-py3-none-any.whl", hash = "sha256:fb7f584179b6f36cc147eaeab0c995967d8c3942cc6e29b42470548574d30807"},
-    {file = "pystac-1.6.0.tar.gz", hash = "sha256:088989192142fd0b99428550349838e8ab681198d0ffc11bf8e1dac1cd65a994"},
+    {file = "pystac-1.6.1-py3-none-any.whl", hash = "sha256:4c40e6d3a832b9992e9dc2aa9c276322fbd851e441888b5fc2024397477abec8"},
+    {file = "pystac-1.6.1.tar.gz", hash = "sha256:95ef493d6a6df4d982385c1d376c8aa0d967730e8ffeeda0f78cd7372faf066a"},
 ]
 pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
