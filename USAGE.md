@@ -217,7 +217,13 @@ $ geostore dataset create --title=Auckland_2020 --description='Aerial imagery fr
 API example:
 
 ```console
+# AWS CLI version 1
 $ aws lambda invoke --function-name=datasets --payload='{"http_method": "POST", "body": {"title": "Auckland_2020", "description": "Aerial imagery from April 2020"}}' /dev/stdout
+
+# AWS CLI version 2
+$ aws lambda invoke --function-name=datasets --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "POST", "body": {"title": "Auckland_2020", "description": "Aerial imagery from April 2020"}}' /dev/stdout
+
+# Sample response:
 {"status_code": 201, "body": {"created_at": "2021-05-26T21:17:47.758448+0000", "pk": "DATASET#01F6N8MSVEY2Y6EPFZ5XR0KFW1", "title": "Auckland_2020", "updated_at": "2021-05-26T21:17:47.758538+0000", "id": "01F6N8MSVEY2Y6EPFZ5XR0KFW1"}}
 ```
 
@@ -238,10 +244,18 @@ Examples:
    ```
 
 -  List all datasets using the API:
+
    ```console
+   # AWS CLI version 1
    $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {}}' /dev/stdout
+
+   # AWS CLI version 2
+   $ aws lambda invoke --function-name=datasets --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "GET", "body": {}}' /dev/stdout
+
+   # Sample response:
    {"status_code": 200, "body": [{"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}]}
    ```
+
 -  Filter to a single dataset using the CLI:
 
    ```console
@@ -250,8 +264,15 @@ Examples:
    ```
 
 -  Filter to a single dataset using the API:
+
    ```console
+   # AWS CLI version 1
    $ aws lambda invoke --function-name=datasets --payload='{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+
+   # AWS CLI version 2
+   $ aws lambda invoke --function-name=datasets --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "GET", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+
+   # Sample response:
    {"status_code": 200, "body": {"created_at": "2021-02-01T13:38:40.776333+0000", "id": "cb8a197e649211eb955843c1de66417d", "title": "Auckland_2020", "updated_at": "2021-02-01T13:39:36.556583+0000"}}
    ```
 
@@ -273,7 +294,13 @@ $ geostore dataset delete --id=Auckland_2020
 API example:
 
 ```console
+# AWS CLI version 1
 $ aws lambda invoke --function-name=datasets --payload='{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+
+# AWS CLI version 2
+$ aws lambda invoke --function-name=datasets --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "DELETE", "body": {"id": "cb8a197e649211eb955843c1de66417d"}}' /dev/stdout
+
+# Sample response
 {"status_code": 204, "body": {}}
 ```
 
@@ -299,7 +326,13 @@ $ geostore version create --dataset-id=01FKPEP0SQG4W2QF8KSQB6EJCD --metadata-url
 API example:
 
 ```console
+# AWS CLI version 1
 $ aws lambda invoke --function-name=dataset-versions --payload='{"http_method": "POST","body": {"id": "cb8a197e649211eb955843c1de66417d","metadata_url": "s3://example-s3-url","s3_role_arn": "arn:aws:iam::1234567890:role/example-role"}}' /dev/stdout
+
+# AWS CLI version 2
+$ aws lambda invoke --function-name=datasets-versions --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "POST","body": {"id": "cb8a197e649211eb955843c1de66417d","metadata_url": "s3://example-s3-url","s3_role_arn": "arn:aws:iam::1234567890:role/example-role"}}' /dev/stdout
+
+# Sample response:
 {"status_code": 201, "body": {"dataset_version": "example_dataset_version_id", "execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}
 ```
 
@@ -322,7 +355,13 @@ $ geostore version status --execution-arn=arn:aws:states:ap-southeast-2:70236149
 API example:
 
 ```console
+# AWS CLI version 1
 $ aws lambda invoke --function-name=import-status --payload='{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' /dev/stdout
+
+# AWS CLI version 2
+$ aws lambda invoke --function-name=import-status --invocation-type RequestResponse --cli-binary-format raw-in-base64-out --payload='{"http_method": "GET", "body": {"execution_arn": "arn:aws:batch:ap-southeast-2:xxxx:job/example-arn"}}' /dev/stdout
+
+# Sample response:
 {"step_function": {"status": "Succeeded"}, "validation": {"status": "Passed", "errors": []}, "metadata_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}, "asset_upload": {"status": "Complete", "errors": {"failed_tasks": 0, "failure_reasons": []}}}
 ```
 
