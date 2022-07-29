@@ -2,6 +2,8 @@ name: Pull request
 on:
   pull_request:
     types: [opened, synchronize]
+    paths-ignore:
+      - '**.md'
 
 jobs:
   linter:
