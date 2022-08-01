@@ -162,8 +162,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.40"
-description = "Type annotations for boto3 1.24.40 generated with mypy-boto3-builder 7.10.1"
+version = "1.24.42"
+description = "Type annotations for boto3 1.24.42 generated with mypy-boto3-builder 7.10.2"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
@@ -409,6 +409,7 @@ personalize-events = ["mypy-boto3-personalize-events (>=1.24.0,<1.25.0)"]
 personalize-runtime = ["mypy-boto3-personalize-runtime (>=1.24.0,<1.25.0)"]
 pi = ["mypy-boto3-pi (>=1.24.0,<1.25.0)"]
 pinpoint = ["mypy-boto3-pinpoint (>=1.24.0,<1.25.0)"]
+sso = ["mypy-boto3-sso (>=1.24.0,<1.25.0)"]
 pinpoint-email = ["mypy-boto3-pinpoint-email (>=1.24.0,<1.25.0)"]
 pinpoint-sms-voice = ["mypy-boto3-pinpoint-sms-voice (>=1.24.0,<1.25.0)"]
 pinpoint-sms-voice-v2 = ["mypy-boto3-pinpoint-sms-voice-v2 (>=1.24.0,<1.25.0)"]
@@ -469,7 +470,6 @@ sqs = ["mypy-boto3-sqs (>=1.24.0,<1.25.0)"]
 ssm = ["mypy-boto3-ssm (>=1.24.0,<1.25.0)"]
 ssm-contacts = ["mypy-boto3-ssm-contacts (>=1.24.0,<1.25.0)"]
 ssm-incidents = ["mypy-boto3-ssm-incidents (>=1.24.0,<1.25.0)"]
-sso = ["mypy-boto3-sso (>=1.24.0,<1.25.0)"]
 sso-admin = ["mypy-boto3-sso-admin (>=1.24.0,<1.25.0)"]
 sso-oidc = ["mypy-boto3-sso-oidc (>=1.24.0,<1.25.0)"]
 stepfunctions = ["mypy-boto3-stepfunctions (>=1.24.0,<1.25.0)"]
@@ -1953,8 +1953,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.40.tar.gz", hash = "sha256:df798efdea9fc34e4bf564af133d72044e2bfcafb0c61d3b39c55832377e3648"},
-    {file = "boto3_stubs-1.24.40-py3-none-any.whl", hash = "sha256:7b85fb94c4b339985edb6b842707ab655c8fd6b960ea4ae0bc9e49cb11dae53d"},
+    {file = "boto3-stubs-1.24.42.tar.gz", hash = "sha256:04d9297fbd68dad6c310a5714b871acd372203f9d4c6e28e4ad93ef8fec3261c"},
+    {file = "boto3_stubs-1.24.42-py3-none-any.whl", hash = "sha256:25aee694c5a19e219cb0ec1bf3cdfdc1723aba1c7e99af5156750c874c625d81"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
