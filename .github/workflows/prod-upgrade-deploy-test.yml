@@ -24,7 +24,7 @@ jobs:
 
       # prod version detection
       - name: Configure production AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
@@ -98,7 +98,7 @@ jobs:
 
       # deployment
       - name: Configure CI AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
