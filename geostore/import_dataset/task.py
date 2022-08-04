@@ -121,7 +121,11 @@ class Importer:
                 ),
                 consistent_read=True,
             ):
-                LOGGER.debug(f"Adding {item.url} to manifest")
+                LOGGER.debug(
+                    f"Adding {item.url} to manifest",
+                    extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
+                )
+
                 _, key = get_bucket_and_key_from_url(item.url)
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,

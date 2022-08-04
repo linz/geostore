@@ -109,7 +109,13 @@ class ChecksumUtils:
 
         actual_hash = get_multihash_digest(ord(multihash_bytes[:1]), s3_file_object)
         if actual_hash == expected_hash:
-            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
+            self.logger.info(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.PASSED,
+                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                },
+            )
             self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)
         else:
             content = {

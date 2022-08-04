@@ -222,6 +222,7 @@ class AssetGarbageCollector:
         ):
             self.logger.debug(
                 f"Dataset: '{self.dataset_id}' Version: '{self.current_version_id}' "
-                f"Filename: '{filename}' has been marked as replaced"
+                f"Filename: '{filename}' has been marked as replaced",
+                extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
             )
             item.update(actions=[self.processing_assets_model.replaced_in_new_version.set(True)])

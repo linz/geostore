@@ -40,7 +40,8 @@ def get_s3_url_reader(
 
             logger.debug(
                 f"'{key}' is not present in the staging bucket."
-                f" Using '{geostore_key}' from the geostore bucket for validation instead."
+                f" Using '{geostore_key}' from the geostore bucket for validation instead.",
+                extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
             )
             geostore_object = geostore_s3_client.get_object(
                 Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=geostore_key
