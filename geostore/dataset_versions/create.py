@@ -51,7 +51,7 @@ LOGGER: Logger = get_log()
 def create_dataset_version(body: JsonObject) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": body, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": body, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     body_schema = {
@@ -116,7 +116,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
 
     LOGGER.debug(
         LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
-        extra={"response": step_functions_response, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={
+            "response": step_functions_response,
+            "git_commit": get_param(ParameterName.GIT_COMMIT),
+        },
     )
 
     # return arn of executing process

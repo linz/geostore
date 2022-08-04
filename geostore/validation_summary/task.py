@@ -19,7 +19,7 @@ LOGGER: Logger = get_log()
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     try:
@@ -52,6 +52,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     result = {SUCCESS_KEY: success}
     LOGGER.debug(
         LOG_MESSAGE_VALIDATION_COMPLETE,
-        extra={"outcome": Outcome.PASSED, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"outcome": Outcome.PASSED, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
     return result

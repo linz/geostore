@@ -56,7 +56,7 @@ class ChecksumUtils:
             extra={
                 "outcome": Outcome.FAILED,
                 "error": content,
-                "commit": get_param(ParameterName.GIT_COMMIT),
+                "git_commit": get_param(ParameterName.GIT_COMMIT),
             },
         )
 

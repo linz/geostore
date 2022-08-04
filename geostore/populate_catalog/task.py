@@ -48,7 +48,7 @@ StacIO.set_default(S3StacIO)
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
 
-    LOGGER.debug(dumps({EVENT_KEY: event, "commit": get_param(ParameterName.GIT_COMMIT)}))
+    LOGGER.debug(dumps({EVENT_KEY: event, "git_commit": get_param(ParameterName.GIT_COMMIT)}))
 
     for message in event[RECORDS_KEY]:
         handle_message(message[BODY_KEY])

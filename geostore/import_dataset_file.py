@@ -49,7 +49,7 @@ def get_import_result(
 ) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     task = event[TASKS_KEY][0]
@@ -94,6 +94,6 @@ def get_import_result(
     }
     LOGGER.debug(
         LOG_MESSAGE_S3_BATCH_COPY_RESULT,
-        extra={"result": result, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"result": result, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
     return result

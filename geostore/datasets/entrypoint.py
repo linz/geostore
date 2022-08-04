@@ -28,6 +28,6 @@ LOGGER: Logger = get_log()
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
     return handle_request(event, REQUEST_HANDLERS)

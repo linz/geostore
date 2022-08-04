@@ -18,7 +18,7 @@ LOGGER: Logger = get_log()
 def get_import_status(body: JsonObject) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": body, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": body, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     try:

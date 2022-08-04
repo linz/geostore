@@ -100,7 +100,7 @@ def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(
         LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
-        extra={"response": step_function_resp, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"response": step_function_resp, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     step_function_input = loads(step_function_resp["input"])
@@ -168,7 +168,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
     LOGGER.debug(
         LOG_MESSAGE_S3_BATCH_RESPONSE,
-        extra={"response": s3_batch_copy_resp, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"response": s3_batch_copy_resp, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]

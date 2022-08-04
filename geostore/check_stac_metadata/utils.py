@@ -103,7 +103,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": error_message,
-                    "commit": get_param(ParameterName.GIT_COMMIT),
+                    "git_commit": get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -121,7 +121,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": str(error),
-                    "commit": get_param(ParameterName.GIT_COMMIT),
+                    "git_commit": get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -139,7 +139,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
-                    "commit": get_param(ParameterName.GIT_COMMIT),
+                    "git_commit": get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -238,7 +238,7 @@ class STACDatasetValidator:
             }
             LOGGER.debug(
                 LOG_MESSAGE_STAC_ASSET_INFO,
-                extra={"asset": asset_dict, "commit": get_param(ParameterName.GIT_COMMIT)},
+                extra={"asset": asset_dict, "git_commit": get_param(ParameterName.GIT_COMMIT)},
             )
             self.dataset_assets.append(asset_dict)
 

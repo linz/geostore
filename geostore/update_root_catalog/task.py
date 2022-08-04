@@ -51,7 +51,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     # validate input
@@ -104,7 +104,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         )
         LOGGER.debug(
             LOG_MESSAGE_S3_DELETION_RESPONSE,
-            extra={"response": s3_response, "commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"response": s3_response, "git_commit": get_param(ParameterName.GIT_COMMIT)},
         )
 
     # Update dataset record with the latest version
