@@ -12,6 +12,7 @@ from ..api_keys import MESSAGE_KEY
 from ..check import Check
 from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DB_KEY_SEPARATOR
+from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from ..s3 import S3_URL_PREFIX
 from ..s3_utils import GeostoreS3Response
@@ -99,7 +100,11 @@ class STACDatasetValidator:
             )
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={"outcome": Outcome.FAILED, "error": error_message},
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": error_message,
+                    "commit": get_param(ParameterName.GIT_COMMIT),
+                },
             )
             return
 
@@ -113,7 +118,11 @@ class STACDatasetValidator:
         ) as error:
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={"outcome": Outcome.FAILED, "error": str(error)},
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": str(error),
+                    "commit": get_param(ParameterName.GIT_COMMIT),
+                },
             )
             return
 
@@ -127,7 +136,11 @@ class STACDatasetValidator:
             )
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={"outcome": Outcome.FAILED, "error": NO_ASSETS_FOUND_ERROR_MESSAGE},
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
+                    "commit": get_param(ParameterName.GIT_COMMIT),
+                },
             )
             return
 
@@ -223,7 +236,10 @@ class STACDatasetValidator:
                 PROCESSING_ASSET_URL_KEY: asset_url,
                 PROCESSING_ASSET_MULTIHASH_KEY: asset[STAC_FILE_CHECKSUM_KEY],
             }
-            LOGGER.debug(LOG_MESSAGE_STAC_ASSET_INFO, extra={"asset": asset_dict})
+            LOGGER.debug(
+                LOG_MESSAGE_STAC_ASSET_INFO,
+                extra={"asset": asset_dict, "commit": get_param(ParameterName.GIT_COMMIT)},
+            )
             self.dataset_assets.append(asset_dict)
 
         for link_object in object_json[STAC_LINKS_KEY]:

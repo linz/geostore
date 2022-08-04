@@ -166,14 +166,20 @@ class Importer:
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
             ClientRequestToken=uuid4().hex,
         )
-        LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response})
+        LOGGER.debug(
+            LOG_MESSAGE_S3_BATCH_RESPONSE,
+            extra={"s3_batch_response": response, "commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
         return response["JobId"]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+    )
 
     # validate input
     try:

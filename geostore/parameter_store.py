@@ -29,6 +29,7 @@ class ParameterName(Enum):
     ) -> str:
         return f"/{environment_name()}/{name.lower()}"
 
+    GIT_COMMIT = auto()
     PROCESSING_ASSETS_TABLE_NAME = auto()
     PROCESSING_DATASET_VERSION_CREATION_STEP_FUNCTION_ARN = auto()
     PROCESSING_IMPORT_ASSET_FILE_FUNCTION_TASK_ARN = auto()

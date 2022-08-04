@@ -14,6 +14,7 @@ from pystac.stac_io import StacIO
 from ..api_keys import EVENT_KEY
 from ..aws_keys import BODY_KEY
 from ..boto3_config import CONFIG
+from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import S3StacIO
 from ..resources import Resource
 from ..s3 import S3_URL_PREFIX
@@ -47,7 +48,7 @@ StacIO.set_default(S3StacIO)
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
 
-    LOGGER.debug(dumps({EVENT_KEY: event}))
+    LOGGER.debug(dumps({EVENT_KEY: event, "commit": get_param(ParameterName.GIT_COMMIT)}))
 
     for message in event[RECORDS_KEY]:
         handle_message(message[BODY_KEY])

@@ -40,7 +40,6 @@ else:
     SNSClient = object  # pragma: no mutate
     MessageAttributeValueTypeDef = dict  # pragma: no mutate
 
-
 SLACK_URL_ENV_NAME = "GEOSTORE_SLACK_NOTIFY_URL"
 
 EVENT_DETAIL_KEY = "detail"
@@ -62,7 +61,10 @@ BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+    )
 
     if (SLACK_URL_ENV_NAME in environ) and (event[EVENT_DETAIL_KEY][STEP_FUNCTION_STOPDATE_KEY]):
         post_to_slack(event)

@@ -10,6 +10,7 @@ from ..api_keys import MESSAGE_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
 from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
 from ..s3_utils import GeostoreS3Response
@@ -51,7 +52,12 @@ class ChecksumUtils:
 
     def log_failure(self, content: JsonObject) -> None:
         self.logger.error(
-            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": content}
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": content,
+                "commit": get_param(ParameterName.GIT_COMMIT),
+            },
         )
 
     def run(self, hash_key: str, range_key: str) -> None:

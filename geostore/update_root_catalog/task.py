@@ -49,7 +49,10 @@ SQS_MESSAGE_GROUP_ID = "update_root_catalog_message_group"
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+    )
 
     # validate input
     try:
@@ -99,7 +102,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
             Key=f"{event[DATASET_TITLE_KEY]}/{item.filename}",
         )
-        LOGGER.debug(LOG_MESSAGE_S3_DELETION_RESPONSE, extra={"response": s3_response})
+        LOGGER.debug(
+            LOG_MESSAGE_S3_DELETION_RESPONSE,
+            extra={"response": s3_response, "commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
     # Update dataset record with the latest version
     datasets_model = datasets_model_with_meta()
