@@ -11,6 +11,7 @@ from geostore.logging_keys import (
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
 )
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import DATASET_ID_SHORT_KEY, METADATA_URL_KEY, S3_ROLE_ARN_KEY
 
 from .aws_utils import Dataset, any_role_arn, any_s3_url
@@ -37,7 +38,10 @@ def should_log_payload() -> None:
         create_dataset_version(event)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @mark.infrastructure
@@ -60,7 +64,11 @@ def should_log_step_function_state_machine_response(start_execution_mock: MagicM
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": step_function_response}
+            LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+            extra={
+                "response": step_function_response,
+                "git_commit": get_param(ParameterName.GIT_COMMIT),
+            },
         )
 
 
@@ -77,7 +85,10 @@ def should_log_missing_argument_warning(validate_schema_mock: MagicMock) -> None
         create_dataset_version(payload)
 
         # then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.dataset_versions.create.datasets_model_with_meta")
@@ -97,4 +108,7 @@ def should_log_warning_if_dataset_does_not_exist(datasets_model_mock: MagicMock)
         create_dataset_version(payload)
 
         # then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )

@@ -11,6 +11,7 @@ from geostore.logging_keys import (
     LOG_MESSAGE_S3_BATCH_RESPONSE,
 )
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_TITLE_KEY,
@@ -51,7 +52,10 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_dataset.task.validate")
@@ -66,7 +70,10 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         lambda_handler({}, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
@@ -148,5 +155,9 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response}
+            LOG_MESSAGE_S3_BATCH_RESPONSE,
+            extra={
+                "s3_batch_response": response,
+                "git_commit": get_param(ParameterName.GIT_COMMIT),
+            },
         )

@@ -25,6 +25,7 @@ from geostore.notify_status_update.task import (
     lambda_handler,
     publish_sns_message,
 )
+from geostore.parameter_store import ParameterName, get_param
 from geostore.resources import Resource
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
@@ -201,7 +202,10 @@ def should_log_and_not_post_to_slack_when_url_not_set(
         assert not webhook_client_mock.called
 
     with subtests.test("log created"):
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": {}})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": {}, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.notify_status_update.task.get_param")

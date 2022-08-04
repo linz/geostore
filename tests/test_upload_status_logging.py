@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from geostore.api_keys import SUCCESS_KEY
 from geostore.import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     IMPORT_DATASET_KEY,
@@ -35,4 +36,7 @@ def should_log_event(get_tasks_status_mock: MagicMock) -> None:
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
