@@ -127,4 +127,7 @@ def should_log_error_when_assuming_s3_role_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+            logger_mock.assert_any_call(
+                LOG_MESSAGE_LAMBDA_FAILURE,
+                extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            )

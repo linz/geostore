@@ -105,7 +105,6 @@ def should_log_assets_added_to_manifest(
         ), patch(
             "geostore.import_dataset.task.S3CONTROL_CLIENT.create_job"
         ):
-
             expected_asset_log = f"Adding {processing_asset.url} to manifest"
             expected_metadata_log = f"Adding {metadata_processing_asset.url} to manifest"
 
@@ -123,7 +122,9 @@ def should_log_assets_added_to_manifest(
 
             # Then
             with subtests.test():
-                logger_mock.assert_any_call(expected_asset_log)
+                logger_mock.assert_any_call(
+                    expected_asset_log, extra={"git_commit": get_param(ParameterName.GIT_COMMIT)}
+                )
             with subtests.test():
                 logger_mock.assert_any_call(expected_metadata_log)
 
@@ -140,7 +141,6 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
     with Dataset() as dataset, patch(
         "geostore.import_dataset.task.LOGGER.debug"
     ) as logger_mock, patch("geostore.import_dataset.task.smart_open.open"):
-
         # When
         lambda_handler(
             {
