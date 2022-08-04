@@ -31,7 +31,10 @@ def get_import_status(body: JsonObject) -> JsonObject:
             },
         )
     except ValidationError as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.message})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": err.message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     response_body = get_import_status_given_arn(body[EXECUTION_ARN_KEY])

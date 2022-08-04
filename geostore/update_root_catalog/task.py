@@ -77,7 +77,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: error.message}
 
     dataset_key = (

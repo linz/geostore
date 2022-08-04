@@ -207,7 +207,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error.message})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error.message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: error.message}
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc

@@ -69,7 +69,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.message})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": err.message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     dataset_id = body[DATASET_ID_SHORT_KEY]
@@ -81,7 +84,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
         )
     except DoesNotExist as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.msg})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": err.msg, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' could not be found")
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))

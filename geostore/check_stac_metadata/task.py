@@ -63,14 +63,22 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         )
     except ValidationError as error:
         LOGGER.warning(
-            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": error}
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": error,
+                "git_commit": get_param(ParameterName.GIT_COMMIT),
+            },
         )
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
         s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_TITLE_KEY], LOGGER)
     except ClientError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: str(error)}
 
     asset_garbage_collector = AssetGarbageCollector(
