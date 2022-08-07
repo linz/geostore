@@ -7,6 +7,7 @@ from linz_logger import get_log
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -33,7 +34,7 @@ LOGGER: Logger = get_log()
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     # validate input
@@ -67,7 +68,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             extra={
                 "outcome": Outcome.FAILED,
                 "error": error,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
         return {ERROR_MESSAGE_KEY: error.message}
@@ -77,7 +78,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     except ClientError as error:
         LOGGER.warning(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
         return {ERROR_MESSAGE_KEY: str(error)}
 

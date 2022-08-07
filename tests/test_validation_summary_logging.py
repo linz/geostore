@@ -1,6 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START, LOG_MESSAGE_VALIDATION_COMPLETE
+from geostore.logging_keys import (
+    GIT_COMMIT,
+    LOG_MESSAGE_LAMBDA_START,
+    LOG_MESSAGE_VALIDATION_COMPLETE,
+)
 from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function import Outcome
 from geostore.step_function_keys import DATASET_ID_KEY, NEW_VERSION_ID_KEY
@@ -23,7 +27,7 @@ def should_log_event() -> None:
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_START,
-            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -40,7 +44,7 @@ def should_log_failure_result(validation_results_model_mock: MagicMock) -> None:
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={"outcome": Outcome.PASSED, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"outcome": Outcome.PASSED, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -57,5 +61,5 @@ def should_log_success_result(validation_results_model_mock: MagicMock) -> None:
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={"outcome": Outcome.PASSED, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"outcome": Outcome.PASSED, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )

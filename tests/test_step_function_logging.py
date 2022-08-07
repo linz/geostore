@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from geostore.logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_S3_BATCH_RESPONSE
 from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function import get_s3_batch_copy_status
 
@@ -33,6 +33,6 @@ def should_log_s3_batch_response(
             LOG_MESSAGE_S3_BATCH_RESPONSE,
             extra={
                 "response": s3_batch_response,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )

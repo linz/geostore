@@ -30,7 +30,7 @@ from geostore.check_files_checksums.utils import (
     ChecksumUtils,
     get_job_offset,
 )
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import (
@@ -158,7 +158,7 @@ def should_validate_given_index(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={
                 "outcome": Outcome.PASSED,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
 
@@ -233,7 +233,7 @@ def should_log_error_when_validation_fails(
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": expected_details,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
 

@@ -10,7 +10,7 @@ from linz_logger import get_log
 
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
-from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DB_KEY_SEPARATOR
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -103,7 +103,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": error_message,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -121,7 +121,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": str(error),
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -139,7 +139,7 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
             return
@@ -238,7 +238,7 @@ class STACDatasetValidator:
             }
             LOGGER.debug(
                 LOG_MESSAGE_STAC_ASSET_INFO,
-                extra={"asset": asset_dict, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+                extra={"asset": asset_dict, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
             )
             self.dataset_assets.append(asset_dict)
 

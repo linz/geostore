@@ -9,6 +9,7 @@ from pytest_subtests import SubTests
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -66,7 +67,7 @@ def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_START,
-            extra={"lambda_input": payload, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"lambda_input": payload, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -93,7 +94,7 @@ def should_return_error_when_schema_validation_fails(
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": error,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
 
@@ -129,5 +130,5 @@ def should_log_error_when_assuming_s3_role_fails(
         with subtests.test(msg="log"):
             logger_mock.assert_any_call(
                 LOG_MESSAGE_LAMBDA_FAILURE,
-                extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+                extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
             )

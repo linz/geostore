@@ -6,6 +6,7 @@ from jsonschema import ValidationError
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
 from geostore.import_status.get import get_import_status
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
@@ -44,7 +45,7 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_START,
-            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -67,7 +68,7 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error_message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -95,6 +96,6 @@ def should_log_stepfunctions_status_response(
             LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
             extra={
                 "response": describe_execution_response,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )

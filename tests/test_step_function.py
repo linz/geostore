@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 from pytest_subtests import SubTests
 
+from geostore.logging_keys import GIT_COMMIT
 from geostore.models import DB_KEY_SEPARATOR
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -53,7 +54,7 @@ def should_mark_asset_as_replaced(subtests: SubTests) -> None:
             logger_mock.debug.assert_called_once_with(
                 expected_log_message,
                 extra={
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
 

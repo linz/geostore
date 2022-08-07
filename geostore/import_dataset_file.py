@@ -8,7 +8,7 @@ from linz_logger import get_log
 
 from .aws_response import AWS_CODE_REQUEST_TIMEOUT
 from .import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from .logging_keys import LOG_MESSAGE_LAMBDA_START
+from .logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
 from .parameter_store import ParameterName, get_param
 from .s3 import get_s3_client_for_role
 from .step_function_keys import S3_ROLE_ARN_KEY
@@ -49,7 +49,7 @@ def get_import_result(
 ) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     task = event[TASKS_KEY][0]
@@ -94,6 +94,6 @@ def get_import_result(
     }
     LOGGER.debug(
         LOG_MESSAGE_S3_BATCH_COPY_RESULT,
-        extra={"result": result, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"result": result, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
     return result

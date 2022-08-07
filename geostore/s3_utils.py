@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 
+from .logging_keys import GIT_COMMIT
 from .parameter_store import ParameterName, get_param
 from .resources import Resource
 from .s3 import get_s3_client_for_role
@@ -41,7 +42,7 @@ def get_s3_url_reader(
             logger.debug(
                 f"'{key}' is not present in the staging bucket."
                 f" Using '{geostore_key}' from the geostore bucket for validation instead.",
-                extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
+                extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
             )
             geostore_object = geostore_s3_client.get_object(
                 Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=geostore_key

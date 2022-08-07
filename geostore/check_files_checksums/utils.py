@@ -9,7 +9,7 @@ from multihash import FUNCS, decode
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
-from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
@@ -56,7 +56,7 @@ class ChecksumUtils:
             extra={
                 "outcome": Outcome.FAILED,
                 "error": content,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
 
@@ -113,7 +113,7 @@ class ChecksumUtils:
                 LOG_MESSAGE_VALIDATION_COMPLETE,
                 extra={
                     "outcome": Outcome.PASSED,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
             self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)

@@ -20,7 +20,7 @@ from geostore.check_files_checksums.task import (
 )
 from geostore.check_files_checksums.utils import ARRAY_INDEX_VARIABLE_NAME
 from geostore.error_response_keys import ERROR_KEY
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, ProcessingAssetsModelBase
@@ -77,6 +77,6 @@ def should_log_missing_item(subtests: SubTests) -> None:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": expected_log,
-                    "git_commit": get_param(ParameterName.GIT_COMMIT),
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )

@@ -9,7 +9,11 @@ from linz_logger import get_log
 from .api_keys import SUCCESS_KEY
 from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from .logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE, LOG_MESSAGE_STEP_FUNCTION_RESPONSE
+from .logging_keys import (
+    GIT_COMMIT,
+    LOG_MESSAGE_S3_BATCH_RESPONSE,
+    LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+)
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from .parameter_store import ParameterName, get_param
 from .processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
@@ -100,7 +104,7 @@ def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     assert "status" in step_function_resp, step_function_resp
     LOGGER.debug(
         LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
-        extra={"response": step_function_resp, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"response": step_function_resp, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     step_function_input = loads(step_function_resp["input"])
@@ -168,7 +172,7 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
     LOGGER.debug(
         LOG_MESSAGE_S3_BATCH_RESPONSE,
-        extra={"response": s3_batch_copy_resp, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"response": s3_batch_copy_resp, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
@@ -223,6 +227,6 @@ class AssetGarbageCollector:
             self.logger.debug(
                 f"Dataset: '{self.dataset_id}' Version: '{self.current_version_id}' "
                 f"Filename: '{filename}' has been marked as replaced",
-                extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
+                extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
             )
             item.update(actions=[self.processing_assets_model.replaced_in_new_version.set(True)])

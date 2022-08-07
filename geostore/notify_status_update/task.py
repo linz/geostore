@@ -13,7 +13,7 @@ from slack_sdk.webhook.client import WebhookClient
 from ..api_responses import success_response
 from ..aws_message_attributes import DATA_TYPE_STRING
 from ..boto3_config import CONFIG
-from ..logging_keys import LOG_MESSAGE_LAMBDA_START
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
 from ..parameter_store import ParameterName, get_param
 from ..step_function import get_import_status_given_arn
 from ..step_function_keys import (
@@ -63,7 +63,7 @@ BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     if (SLACK_URL_ENV_NAME in environ) and (event[EVENT_DETAIL_KEY][STEP_FUNCTION_STOPDATE_KEY]):

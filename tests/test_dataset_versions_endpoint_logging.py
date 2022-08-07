@@ -7,6 +7,7 @@ from pytest import mark
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
 from geostore.dataset_versions.create import create_dataset_version
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
@@ -40,7 +41,7 @@ def should_log_payload() -> None:
         # Then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_START,
-            extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -67,7 +68,7 @@ def should_log_step_function_state_machine_response(start_execution_mock: MagicM
             LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
             extra={
                 "response": step_function_response,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
 
@@ -87,7 +88,7 @@ def should_log_missing_argument_warning(validate_schema_mock: MagicMock) -> None
         # then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error_message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 
@@ -110,5 +111,5 @@ def should_log_warning_if_dataset_does_not_exist(datasets_model_mock: MagicMock)
         # then
         logger_mock.assert_any_call(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error_message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error_message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )

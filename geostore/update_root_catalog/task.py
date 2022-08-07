@@ -12,6 +12,7 @@ from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_S3_DELETION_RESPONSE,
@@ -51,7 +52,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     # validate input
@@ -79,7 +80,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     except ValidationError as error:
         LOGGER.warning(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
         return {ERROR_MESSAGE_KEY: error.message}
 
@@ -107,7 +108,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         )
         LOGGER.debug(
             LOG_MESSAGE_S3_DELETION_RESPONSE,
-            extra={"response": s3_response, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"response": s3_response, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
     # Update dataset record with the latest version

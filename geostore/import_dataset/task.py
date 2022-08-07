@@ -15,6 +15,7 @@ from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_S3_BATCH_RESPONSE,
@@ -123,7 +124,7 @@ class Importer:
             ):
                 LOGGER.debug(
                     f"Adding {item.url} to manifest",
-                    extra={"git_commit": get_param(ParameterName.GIT_COMMIT)},
+                    extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
                 )
 
                 _, key = get_bucket_and_key_from_url(item.url)
@@ -174,7 +175,7 @@ class Importer:
             LOG_MESSAGE_S3_BATCH_RESPONSE,
             extra={
                 "s3_batch_response": response,
-                "git_commit": get_param(ParameterName.GIT_COMMIT),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
 
@@ -185,7 +186,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     # validate input
@@ -213,7 +214,7 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     except ValidationError as error:
         LOGGER.warning(
             LOG_MESSAGE_LAMBDA_FAILURE,
-            extra={"error": error.message, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+            extra={"error": error.message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
         return {ERROR_MESSAGE_KEY: error.message}
 

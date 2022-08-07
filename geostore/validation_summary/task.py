@@ -5,7 +5,7 @@ from linz_logger import get_log
 
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
-from ..logging_keys import LOG_MESSAGE_LAMBDA_START, LOG_MESSAGE_VALIDATION_COMPLETE
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
 from ..parameter_store import ParameterName, get_param
 from ..step_function import Outcome
@@ -19,7 +19,7 @@ LOGGER: Logger = get_log()
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
 
     try:
@@ -52,6 +52,6 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     result = {SUCCESS_KEY: success}
     LOGGER.debug(
         LOG_MESSAGE_VALIDATION_COMPLETE,
-        extra={"outcome": Outcome.PASSED, "git_commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"outcome": Outcome.PASSED, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
     )
     return result
