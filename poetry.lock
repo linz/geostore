@@ -163,8 +163,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.44"
-description = "Type annotations for boto3 1.24.44 generated with mypy-boto3-builder 7.11.1"
+version = "1.24.46"
+description = "Type annotations for boto3 1.24.46 generated with mypy-boto3-builder 7.11.3"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
@@ -968,14 +968,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "linz-logger"
-version = "0.6.0"
+version = "0.8.0"
 description = "LINZ standard Logging format"
 category = "main"
 optional = true
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-structlog = ">=20.1.0,<21.0.0"
+structlog = ">=22.1.0,<23.0.0"
 
 [[package]]
 name = "matplotlib-inline"
@@ -1629,16 +1629,16 @@ python-versions = "*"
 
 [[package]]
 name = "structlog"
-version = "20.2.0"
+version = "22.1.0"
 description = "Structured Logging for Python"
 category = "main"
 optional = true
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.extras]
-dev = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio", "pytest-randomly", "pytest (>=6.0)", "simplejson", "furo", "sphinx", "sphinx-toolbox", "twisted", "pre-commit"]
-docs = ["furo", "sphinx", "sphinx-toolbox", "twisted"]
-tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio", "pytest-randomly", "pytest (>=6.0)", "simplejson"]
+dev = ["pre-commit", "rich", "cogapp", "tomli", "coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio (>=0.17)", "pytest (>=6.0)", "simplejson", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-mermaid", "twisted"]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-mermaid", "twisted"]
+tests = ["coverage", "freezegun (>=0.2.8)", "pretend", "pytest-asyncio (>=0.17)", "pytest (>=6.0)", "simplejson"]
 
 [[package]]
 name = "toml"
@@ -1969,8 +1969,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.44.tar.gz", hash = "sha256:2f1c214dbd03acf0c861b9bf52c54fd52dfcc90eb0125810df281bff3ec4b017"},
-    {file = "boto3_stubs-1.24.44-py3-none-any.whl", hash = "sha256:e301904fa0f17dadc9d1ef98cb52ae50cfc61d265d1cd4f7bbe1ffff64e166f1"},
+    {file = "boto3-stubs-1.24.46.tar.gz", hash = "sha256:9482238ed9ea7794e6e66a41376bf75d5950f0328de09fac9d224906dcc624ef"},
+    {file = "boto3_stubs-1.24.46-py3-none-any.whl", hash = "sha256:3aa84f2925b4b50b7f47ac41a11ac05302e744cdf460cb7bcf6488319393d8a4"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2188,8 +2188,8 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:37d9c34b96cca6787fe014aeb651217944a967a5b165e2cacb6b858d2997ab84"},
 ]
 linz-logger = [
-    {file = "linz_logger-0.6.0-py3-none-any.whl", hash = "sha256:b15e59399af1e289d59e39f68ab6f9d5abcc5b648146ff6abd52aefaad3154f2"},
-    {file = "linz_logger-0.6.0.tar.gz", hash = "sha256:70460df866f33ba997d4f38ebcfcae6cb1cfff6f52d15b0cbe3f8dfece3ca27c"},
+    {file = "linz_logger-0.8.0-py3-none-any.whl", hash = "sha256:a169b62fe251c80dce16adaf87285da4ea14405c031dbb56b9b90ebbab51f783"},
+    {file = "linz_logger-0.8.0.tar.gz", hash = "sha256:80b8e637500ad7219892950fa961c0d0bcb1b966842ce602d499f57a8ba17786"},
 ]
 matplotlib-inline = [
     {file = "matplotlib-inline-0.1.3.tar.gz", hash = "sha256:a04bfba22e0d1395479f866853ec1ee28eea1485c1d69a6faf00dc3e24ff34ee"},
@@ -2507,8 +2507,8 @@ strict-rfc3339 = [
     {file = "strict-rfc3339-0.7.tar.gz", hash = "sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277"},
 ]
 structlog = [
-    {file = "structlog-20.2.0-py2.py3-none-any.whl", hash = "sha256:33dd6bd5f49355e52c1c61bb6a4f20d0b48ce0328cc4a45fe872d38b97a05ccd"},
-    {file = "structlog-20.2.0.tar.gz", hash = "sha256:af79dfa547d104af8d60f86eac12fb54825f54a46bc998e4504ef66177103174"},
+    {file = "structlog-22.1.0-py3-none-any.whl", hash = "sha256:760d37b8839bd4fe1747bed7b80f7f4de160078405f4b6a1db9270ccbfce6c30"},
+    {file = "structlog-22.1.0.tar.gz", hash = "sha256:94b29b1d62b2659db154f67a9379ec1770183933d6115d21f21aa25cfc9a7393"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
