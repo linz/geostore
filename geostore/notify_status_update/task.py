@@ -63,7 +63,7 @@ BLOCK_MAX_CHAR_LIMIT = 3000  # https://api.slack.com/reference/block-kit/blocks#
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     LOGGER.debug(
         LOG_MESSAGE_LAMBDA_START,
-        extra={"lambda_input": event, "commit": get_param(ParameterName.GIT_COMMIT)},
+        extra={"lambda_input": event, "git_commit": get_param(ParameterName.GIT_COMMIT)},
     )
 
     if (SLACK_URL_ENV_NAME in environ) and (event[EVENT_DETAIL_KEY][STEP_FUNCTION_STOPDATE_KEY]):
