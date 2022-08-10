@@ -62,7 +62,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.36.0"
+version = "2.37.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
@@ -1920,8 +1920,8 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.36.0.tar.gz", hash = "sha256:ce67f35025f4cc6de84e6c2e3c151f92ab6573b39450a02407ec11f81f20e325"},
-    {file = "aws_cdk_lib-2.36.0-py3-none-any.whl", hash = "sha256:4d0d077af4bd44b31db68af7815b120da27c319cc1bad622ac0b13f23001d85f"},
+    {file = "aws-cdk-lib-2.37.0.tar.gz", hash = "sha256:716853e3f59c2a9778f669b75953eb4f45884a45d55762552a52fc33c2190651"},
+    {file = "aws_cdk_lib-2.37.0-py3-none-any.whl", hash = "sha256:69fe9b62240d88edb7f6589e93b398dc1ec553983cca250e9ceefbca19dba96d"},
 ]
 "aws-cdk.aws-batch-alpha" = [
     {file = "aws-cdk.aws-batch-alpha-2.24.0a0.tar.gz", hash = "sha256:40c7e618d069b5054f3dfde43835a1c4acf8567a481613bd3ce4a95f79619fe0"},
