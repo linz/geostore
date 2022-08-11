@@ -161,7 +161,7 @@ def should_remove_self_links_from_metadata(
         STAC_LINKS_KEY: [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
-                STAC_HREF_KEY: CATALOG_FILENAME,
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             }
         ],
