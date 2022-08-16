@@ -66,6 +66,7 @@ class Application(Stack):
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
             datasets_table=storage.datasets_table,
+            git_commit_parameter=storage.git_commit_parameter,
         )
         Staging(self, "staging", users_role=processing.staging_users_role)
 
@@ -82,6 +83,7 @@ class Application(Stack):
             sqs_queue_parameter=processing.message_queue_name_parameter,
             storage_bucket=storage.storage_bucket,
             validation_results_table=storage.validation_results_table,
+            git_commit_parameter=storage.git_commit_parameter,
         )
 
         Notify(
@@ -91,6 +93,7 @@ class Application(Stack):
             env_name=env_name,
             state_machine=processing.state_machine,
             validation_results_table=storage.validation_results_table,
+            git_commit_parameter=storage.git_commit_parameter,
         )
 
         if self.node.try_get_context("enableLDSAccess"):

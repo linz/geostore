@@ -34,6 +34,7 @@ class API(Construct):
         sqs_queue_parameter: aws_ssm.StringParameter,
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
+        git_commit_parameter: aws_ssm.StringParameter,
     ) -> None:
         super().__init__(scope, stack_id)
 
@@ -106,6 +107,11 @@ class API(Construct):
                 validation_results_table.name_parameter: [import_status_endpoint_lambda],
                 state_machine_parameter: [dataset_versions_endpoint_lambda],
                 sqs_queue_parameter: [datasets_endpoint_lambda],
+                git_commit_parameter: [
+                    datasets_endpoint_lambda,
+                    dataset_versions_endpoint_lambda,
+                    import_status_endpoint_lambda,
+                ],
             }
         )
 

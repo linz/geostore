@@ -78,6 +78,7 @@ class Processing(Construct):
         storage_bucket: aws_s3.Bucket,
         validation_results_table: Table,
         datasets_table: Table,
+        git_commit_parameter: aws_ssm.StringParameter,
     ) -> None:
         # pylint: disable=too-many-locals, too-many-statements
 
@@ -401,6 +402,14 @@ class Processing(Construct):
                 ],
                 datasets_table.name_parameter: [update_root_catalog.lambda_function],
                 self.message_queue_name_parameter: [update_root_catalog.lambda_function],
+                git_commit_parameter: [
+                    check_stac_metadata_task.lambda_function,
+                    content_iterator_task.lambda_function,
+                    import_dataset_task.lambda_function,
+                    update_root_catalog.lambda_function,
+                    upload_status_task.lambda_function,
+                    validation_summary_task.lambda_function,
+                ],
             }
         )
 
