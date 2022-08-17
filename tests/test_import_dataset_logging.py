@@ -127,7 +127,9 @@ def should_log_assets_added_to_manifest(
                     expected_asset_log, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
                 )
             with subtests.test():
-                logger_mock.assert_any_call(expected_metadata_log)
+                logger_mock.assert_any_call(
+                    expected_metadata_log, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
+                )
 
 
 @patch("geostore.import_dataset.task.S3CONTROL_CLIENT.create_job")
