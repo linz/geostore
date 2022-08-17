@@ -163,8 +163,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.52"
-description = "Type annotations for boto3 1.24.52 generated with mypy-boto3-builder 7.11.6"
+version = "1.24.53"
+description = "Type annotations for boto3 1.24.53 generated with mypy-boto3-builder 7.11.6"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
@@ -603,7 +603,7 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-testing = ["pytest-xdist", "pytest-virtualenv", "pytest-cov", "pytest", "flake8", "sphinx"]
+testing = ["sphinx", "flake8", "pytest", "pytest-cov", "pytest-virtualenv", "pytest-xdist"]
 
 [[package]]
 name = "constructs"
@@ -716,7 +716,7 @@ sh = [
 ]
 
 [package.extras]
-trusted-deps = ["sh (==1.14.2)", "arrow (==1.2.1)", "Click (==8.0.3)"]
+trusted-deps = ["Click (==8.0.3)", "arrow (==1.2.1)", "sh (==1.14.2)"]
 
 [[package]]
 name = "glob2"
@@ -757,8 +757,8 @@ python-versions = ">=3.6"
 zipp = ">=0.5"
 
 [package.extras]
-testing = ["importlib-resources (>=1.3)", "pytest-mypy", "pytest-black (>=0.3.7)", "flufl.flake8", "pyfakefs", "pep517", "packaging", "pytest-enabler (>=1.0.1)", "pytest-cov", "pytest-flake8", "pytest-checkdocs (>=2.4)", "pytest (>=4.6)"]
-docs = ["rst.linker (>=1.9)", "jaraco.packaging (>=8.2)", "sphinx"]
+docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pep517", "pyfakefs", "flufl.flake8", "pytest-black (>=0.3.7)", "pytest-mypy", "importlib-resources (>=1.3)"]
 
 [[package]]
 name = "importlib-resources"
@@ -772,8 +772,8 @@ python-versions = ">=3.6"
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testing = ["pytest-mypy", "pytest-black (>=0.3.7)", "pytest-enabler (>=1.0.1)", "pytest-cov", "pytest-flake8", "pytest-checkdocs (>=2.4)", "pytest (>=6)"]
-docs = ["rst.linker (>=1.9)", "jaraco.packaging (>=8.2)", "sphinx"]
+docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [[package]]
 name = "iniconfig"
@@ -1598,8 +1598,8 @@ optional = true
 python-versions = ">=3.6.0"
 
 [package.extras]
-testing = ["moto (>=3,<4)", "boto3 (<=2)", "databases (>=0.5)", "psutil (>=5,<6)", "click (==8.0.4)", "black (==22.3.0)", "flake8 (>=4,<5)", "codecov (>=2,<3)", "pytest-cov (>=2,<3)", "Jinja2 (==3.0.3)", "itsdangerous (==1.1.0)", "Werkzeug (<2)", "Flask (>=1,<2)", "Flask-Sockets (>=0.2,<1)", "pytest-asyncio (<1)", "pytest (>=6.2.5,<7)"]
-optional = ["websocket-client (>=1,<2)", "websockets (>=10,<11)", "SQLAlchemy (>=1,<2)", "boto3 (<=2)", "aiohttp (>=3.7.3,<4)", "aiodns (>1.0)"]
+optional = ["aiodns (>1.0)", "aiohttp (>=3.7.3,<4)", "boto3 (<=2)", "SQLAlchemy (>=1,<2)", "websockets (>=10,<11)", "websocket-client (>=1,<2)"]
+testing = ["pytest (>=6.2.5,<7)", "pytest-asyncio (<1)", "Flask-Sockets (>=0.2,<1)", "Flask (>=1,<2)", "Werkzeug (<2)", "itsdangerous (==1.1.0)", "Jinja2 (==3.0.3)", "pytest-cov (>=2,<3)", "codecov (>=2,<3)", "flake8 (>=4,<5)", "black (==22.3.0)", "click (==8.0.4)", "psutil (>=5,<6)", "databases (>=0.5)", "boto3 (<=2)", "moto (>=3,<4)"]
 
 [[package]]
 name = "smart-open"
@@ -1816,9 +1816,9 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
 [package.extras]
-socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
-secure = ["ipaddress", "certifi", "idna (>=2.0.0)", "cryptography (>=1.3.4)", "pyOpenSSL (>=0.14)"]
 brotli = ["brotlipy (>=0.6.0)"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "virtualenv"
@@ -1971,8 +1971,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.52.tar.gz", hash = "sha256:5c799a5aca87b1aeb3d4515d92806ecf3c3e3df4e684181a1f3548f6feb04518"},
-    {file = "boto3_stubs-1.24.52-py3-none-any.whl", hash = "sha256:1d587d4ab8fc134522106e7360f841f390a4895b32824d07c684074cc56530e5"},
+    {file = "boto3-stubs-1.24.53.tar.gz", hash = "sha256:ce5102c55e822a0121d32a2c0430d930b2870eb78c134ce2ca8efb08dbbee31c"},
+    {file = "boto3_stubs-1.24.53-py3-none-any.whl", hash = "sha256:2dde640750127ae75b24e70de4496a0d7881801b02327a89fcca9b59a880de4c"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
