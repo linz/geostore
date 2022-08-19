@@ -24,9 +24,11 @@ from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.stac_format import (
     STAC_ASSETS_KEY,
     STAC_HREF_KEY,
+    STAC_ID_KEY,
     STAC_LINKS_KEY,
     STAC_MEDIA_TYPE_JSON,
     STAC_REL_KEY,
+    STAC_REL_PARENT,
     STAC_REL_ROOT,
     STAC_REL_SELF,
     STAC_TYPE_KEY,
@@ -44,8 +46,8 @@ from .aws_utils import (
     any_task_id,
 )
 from .general_generators import any_safe_file_path, any_safe_filename
-from .stac_generators import any_asset_name
-from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
+from .stac_generators import any_asset_name, any_dataset_version_id
+from .stac_objects import MINIMAL_VALID_STAC_CATALOG_OBJECT, MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 
 @patch("geostore.import_dataset_file.get_s3_client_for_role")
@@ -164,6 +166,90 @@ def should_remove_self_links_from_metadata(
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             }
+        ],
+    }
+
+    # When
+    lambda_handler(event, any_lambda_context())
+
+    # Then
+    put_object_mock.assert_any_call(
+        Bucket=target_bucket_name, Key=target_s3_key, Body=dumps(expected_put_object_body).encode()
+    )
+
+
+@patch("geostore.import_dataset_file.get_s3_client_for_role")
+@patch("geostore.import_metadata_file.task.TARGET_S3_CLIENT.put_object")
+def should_update_root_href_links_in_metadata(
+    put_object_mock: MagicMock, get_s3_client_for_role_mock: MagicMock
+) -> None:
+    # Given
+    task_id = any_task_id()
+    invocation_id = any_invocation_id()
+    invocation_schema_version = any_invocation_schema_version()
+    target_bucket_name = any_s3_bucket_name()
+    target_s3_key = any_safe_file_path()
+    parent_filename = any_safe_filename()
+
+    dataset_version = any_dataset_version_id()
+    event = {
+        TASKS_KEY: [
+            {
+                S3_BUCKET_ARN_KEY: any_s3_bucket_arn(),
+                S3_KEY_KEY: quote(
+                    dumps(
+                        {
+                            NEW_KEY_KEY: target_s3_key,
+                            ORIGINAL_KEY_KEY: any_safe_file_path(),
+                            S3_ROLE_ARN_KEY: any_role_arn(),
+                            TARGET_BUCKET_NAME_KEY: target_bucket_name,
+                        }
+                    )
+                ),
+                TASK_ID_KEY: task_id,
+            }
+        ],
+        INVOCATION_ID_KEY: invocation_id,
+        INVOCATION_SCHEMA_VERSION_KEY: invocation_schema_version,
+    }
+
+    get_s3_client_for_role_mock.return_value.get_object.return_value = {
+        S3_BODY_KEY: StringIO(
+            initial_value=dumps(
+                {
+                    **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+                    STAC_ID_KEY: dataset_version,
+                    STAC_LINKS_KEY: [
+                        {
+                            STAC_REL_KEY: STAC_REL_ROOT,
+                            STAC_HREF_KEY: any_safe_filename(),
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                        },
+                        {
+                            STAC_REL_KEY: STAC_REL_PARENT,
+                            STAC_HREF_KEY: parent_filename,
+                            STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                        },
+                    ],
+                }
+            )
+        )
+    }
+
+    expected_put_object_body = {
+        **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
+        STAC_ID_KEY: dataset_version,
+        STAC_LINKS_KEY: [
+            {
+                STAC_REL_KEY: STAC_REL_ROOT,
+                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
+            {
+                STAC_REL_KEY: STAC_REL_PARENT,
+                STAC_HREF_KEY: parent_filename,
+                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+            },
         ],
     }
 
