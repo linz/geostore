@@ -409,6 +409,9 @@ class Processing(Construct):
                     update_root_catalog.lambda_function,
                     upload_status_task.lambda_function,
                     validation_summary_task.lambda_function,
+                    check_files_checksums_single_task.job_role,
+                    check_files_checksums_array_task.job_role,
+                    populate_catalog_lambda,
                 ],
             }
         )
