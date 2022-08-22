@@ -64,7 +64,7 @@ class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
         return str(col.get_self_href())
 
     def get_item_href(self, item: Item, parent_dir: str) -> str:  # pragma: no cover
-        return str(item.get_self_href())
+        raise NotImplementedError()
 
 
 def handle_message(metadata_key: str) -> None:
