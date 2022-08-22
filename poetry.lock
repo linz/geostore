@@ -62,7 +62,7 @@ dev = ["cloudpickle", "pre-commit", "sphinx-notfound-page", "sphinx", "furo", "z
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.37.1"
+version = "2.38.1"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
@@ -1922,8 +1922,8 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.37.1.tar.gz", hash = "sha256:9b0fcf2f697e6a501e13a4f74018bdc7a3475c2dc7950a3753cb8eb1ef03c30b"},
-    {file = "aws_cdk_lib-2.37.1-py3-none-any.whl", hash = "sha256:d0d893ec0f4e5425b874f5d4ff57b13c4712040f74a36ee4ea603b1c0628e43a"},
+    {file = "aws-cdk-lib-2.38.1.tar.gz", hash = "sha256:5d56effc85fc998de5277aa87e89b2177564b43111a7e331bb8b83c0cd8e96ee"},
+    {file = "aws_cdk_lib-2.38.1-py3-none-any.whl", hash = "sha256:400062e9f021412c470cbde8125ee4db68a13af1d501a03512ef46c4a026ab2e"},
 ]
 "aws-cdk.aws-batch-alpha" = [
     {file = "aws-cdk.aws-batch-alpha-2.24.0a0.tar.gz", hash = "sha256:40c7e618d069b5054f3dfde43835a1c4acf8567a481613bd3ce4a95f79619fe0"},
