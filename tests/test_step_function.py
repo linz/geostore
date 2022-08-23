@@ -4,7 +4,9 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 from pytest_subtests import SubTests
 
+from geostore.logging_keys import GIT_COMMIT
 from geostore.models import DB_KEY_SEPARATOR
+from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from geostore.step_function import AssetGarbageCollector, get_hash_key
 from geostore.step_function_keys import CURRENT_VERSION_EMPTY_VALUE
@@ -42,7 +44,6 @@ def should_mark_asset_as_replaced(subtests: SubTests) -> None:
         asset_id=hash_key,
         url=url,
     ):
-
         # When
         AssetGarbageCollector(
             dataset_id, current_version_id, ProcessingAssetType.METADATA, logger_mock
@@ -50,7 +51,12 @@ def should_mark_asset_as_replaced(subtests: SubTests) -> None:
 
         # Then
         with subtests.test(msg="Log is recorded"):
-            logger_mock.debug.assert_called_once_with(expected_log_message)
+            logger_mock.debug.assert_called_once_with(
+                expected_log_message,
+                extra={
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
 
         actual_first_version_metadata_item = processing_assets_model.query(
             hash_key,

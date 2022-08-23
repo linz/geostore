@@ -5,7 +5,8 @@ from linz_logger import get_log
 
 from ..api_keys import SUCCESS_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from ..logging_keys import LOG_MESSAGE_LAMBDA_START
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
+from ..parameter_store import ParameterName, get_param
 from ..step_function import get_tasks_status
 from ..step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -25,7 +26,10 @@ LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     validate(
         event,

@@ -7,6 +7,7 @@ from linz_logger import get_log
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -31,7 +32,10 @@ LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     # validate input
     try:
@@ -60,14 +64,22 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         )
     except ValidationError as error:
         LOGGER.warning(
-            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": error}
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": error,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )
         return {ERROR_MESSAGE_KEY: error.message}
 
     try:
         s3_url_reader = get_s3_url_reader(event[S3_ROLE_ARN_KEY], event[DATASET_TITLE_KEY], LOGGER)
     except ClientError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: str(error)}
 
     asset_garbage_collector = AssetGarbageCollector(

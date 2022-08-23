@@ -30,7 +30,7 @@ from geostore.check_files_checksums.utils import (
     ChecksumUtils,
     get_job_offset,
 )
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.processing_assets_model import (
@@ -155,7 +155,11 @@ def should_validate_given_index(
 
     with subtests.test(msg="Log message"):
         info_log_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED}
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.PASSED,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )
 
     with subtests.test(msg="Validation result"):
@@ -226,7 +230,11 @@ def should_log_error_when_validation_fails(
         with subtests.test(msg="Log message"):
             error_log_mock.assert_any_call(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={"outcome": Outcome.FAILED, "error": expected_details},
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": expected_details,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
             )
 
     with subtests.test(msg="Validation result"):
@@ -259,7 +267,6 @@ def should_successfully_validate_asset_not_in_staging(
         Resource.STORAGE_BUCKET_NAME.resource_name,
         f"{dataset.title}/{storage_asset_filename}",
     ):
-
         hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
         results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
@@ -275,7 +282,6 @@ def should_successfully_validate_asset_not_in_staging(
         )
 
         with ProcessingAsset(hash_key, asset_staging_url, multihash=storage_asset_multihash):
-
             # When
             sys.argv = [
                 any_program_name(),

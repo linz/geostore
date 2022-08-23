@@ -15,6 +15,7 @@ from ..api_responses import error_response, success_response
 from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta, human_readable_ulid
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
@@ -49,8 +50,10 @@ LOGGER: Logger = get_log()
 
 
 def create_dataset_version(body: JsonObject) -> JsonObject:
-
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": body})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": body, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     body_schema = {
         "type": "object",
@@ -67,7 +70,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
     try:
         validate(body, body_schema)
     except ValidationError as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.message})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": err.message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
         return error_response(HTTPStatus.BAD_REQUEST, err.message)
 
     dataset_id = body[DATASET_ID_SHORT_KEY]
@@ -79,7 +85,10 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
             hash_key=f"{DATASET_ID_PREFIX}{dataset_id}", consistent_read=True
         )
     except DoesNotExist as err:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": err.msg})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": err.msg, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' could not be found")
 
     now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
@@ -112,7 +121,13 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         input=dumps(step_functions_input),
     )
 
-    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": step_functions_response})
+    LOGGER.debug(
+        LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+        extra={
+            "response": step_functions_response,
+            GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+        },
+    )
 
     # return arn of executing process
     return success_response(
