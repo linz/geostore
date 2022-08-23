@@ -412,7 +412,8 @@ class Processing(Construct):
                     check_files_checksums_single_task.job_role,
                     check_files_checksums_array_task.job_role,
                     populate_catalog_lambda,
-                    import_dataset_task.lambda_function,
+                    import_asset_file_function,
+                    import_metadata_file_function,
                 ],
             }
         )
