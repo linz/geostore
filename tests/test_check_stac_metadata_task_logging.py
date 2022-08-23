@@ -9,10 +9,12 @@ from pytest_subtests import SubTests
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.error_response_keys import ERROR_MESSAGE_KEY
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_VALIDATION_COMPLETE,
 )
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
     CURRENT_VERSION_EMPTY_VALUE,
@@ -63,7 +65,10 @@ def should_log_event_payload(get_s3_url_reader_mock: MagicMock) -> None:
     ):
         lambda_handler(payload, any_lambda_context())
 
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": payload})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": payload, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.check_stac_metadata.task.validate")
@@ -85,7 +90,12 @@ def should_return_error_when_schema_validation_fails(
         # Then
         with subtests.test(msg="log"):
             logger_mock.assert_any_call(
-                LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": error}
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": error,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
             )
 
 
@@ -118,4 +128,7 @@ def should_log_error_when_assuming_s3_role_fails(
 
         # Then
         with subtests.test(msg="log"):
-            logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+            logger_mock.assert_any_call(
+                LOG_MESSAGE_LAMBDA_FAILURE,
+                extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+            )

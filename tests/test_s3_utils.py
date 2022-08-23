@@ -14,6 +14,8 @@ from pytest import mark
 from pytest_subtests import SubTests
 
 from geostore.import_metadata_file.task import S3_BODY_KEY
+from geostore.logging_keys import GIT_COMMIT
+from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
@@ -137,7 +139,9 @@ def should_log_message_when_using_geostore_file_for_validation(
 
     # Then
     with subtests.test(msg="log"):
-        logger_mock.debug.assert_any_call(expected_message)
+        logger_mock.debug.assert_any_call(
+            expected_message, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
+        )
 
 
 @patch("geostore.s3_utils.get_s3_client_for_role")

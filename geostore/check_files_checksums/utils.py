@@ -9,7 +9,8 @@ from multihash import FUNCS, decode
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
 from ..error_response_keys import ERROR_KEY
-from ..logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
+from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import processing_assets_model_with_meta
 from ..s3 import CHUNK_SIZE
 from ..s3_utils import GeostoreS3Response
@@ -51,7 +52,12 @@ class ChecksumUtils:
 
     def log_failure(self, content: JsonObject) -> None:
         self.logger.error(
-            LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.FAILED, "error": content}
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": content,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )
 
     def run(self, hash_key: str, range_key: str) -> None:
@@ -103,7 +109,13 @@ class ChecksumUtils:
 
         actual_hash = get_multihash_digest(ord(multihash_bytes[:1]), s3_file_object)
         if actual_hash == expected_hash:
-            self.logger.info(LOG_MESSAGE_VALIDATION_COMPLETE, extra={"outcome": Outcome.PASSED})
+            self.logger.info(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.PASSED,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
             self.validation_result_factory.save(url, Check.CHECKSUM, ValidationResult.PASSED)
         else:
             content = {

@@ -7,7 +7,8 @@ from typing import Callable, MutableMapping
 from linz_logger import get_log
 
 from ..api_responses import handle_request
-from ..logging_keys import LOG_MESSAGE_LAMBDA_START
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
+from ..parameter_store import ParameterName, get_param
 from ..types import JsonObject
 from .create import create_dataset
 from .delete import delete_dataset
@@ -25,6 +26,8 @@ LOGGER: Logger = get_log()
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
-
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
     return handle_request(event, REQUEST_HANDLERS)

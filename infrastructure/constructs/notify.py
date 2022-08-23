@@ -32,6 +32,7 @@ class Notify(Construct):
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
         validation_results_table: Table,
+        git_commit_parameter: aws_ssm.StringParameter,
     ) -> None:
         super().__init__(scope, stack_id)
 
@@ -77,6 +78,7 @@ class Notify(Construct):
                 validation_results_table.name_parameter: [
                     slack_notify_function,
                 ],
+                git_commit_parameter: [slack_notify_function],
             }
         )
         step_function_topic.grant_publish(slack_notify_function)

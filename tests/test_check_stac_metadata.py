@@ -33,7 +33,7 @@ from geostore.check_stac_metadata.utils import (
     InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
-from geostore.logging_keys import LOG_MESSAGE_VALIDATION_COMPLETE
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from geostore.models import CHECK_ID_PREFIX, DB_KEY_SEPARATOR, URL_ID_PREFIX
 from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import CATALOG_FILENAME
@@ -1081,7 +1081,11 @@ def should_report_when_the_dataset_has_no_assets(
         ).run(metadata_url)
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={"outcome": Outcome.FAILED, "error": NO_ASSETS_FOUND_ERROR_MESSAGE},
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )
 
     with subtests.test(msg="Validation results"):

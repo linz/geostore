@@ -15,6 +15,7 @@ from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
 from ..import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_S3_BATCH_RESPONSE,
@@ -121,7 +122,11 @@ class Importer:
                 ),
                 consistent_read=True,
             ):
-                LOGGER.debug(f"Adding {item.url} to manifest")
+                LOGGER.debug(
+                    f"Adding {item.url} to manifest",
+                    extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+                )
+
                 _, key = get_bucket_and_key_from_url(item.url)
                 task_parameters = {
                     TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
@@ -166,14 +171,23 @@ class Importer:
             RoleArn=S3_BATCH_COPY_ROLE_ARN,
             ClientRequestToken=uuid4().hex,
         )
-        LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response})
+        LOGGER.debug(
+            LOG_MESSAGE_S3_BATCH_RESPONSE,
+            extra={
+                "s3_batch_response": response,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
+        )
 
         return response["JobId"]
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     # validate input
     try:
@@ -198,7 +212,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error.message})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error.message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: error.message}
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc

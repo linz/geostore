@@ -12,7 +12,7 @@ from pytest_subtests import SubTests
 
 from geostore.aws_keys import STATUS_CODE_KEY
 from geostore.aws_message_attributes import DATA_TYPE_STRING
-from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
 from geostore.notify_status_update.task import (
     EVENT_DETAIL_KEY,
     MESSAGE_ATTRIBUTE_DATASET_TITLE_KEY,
@@ -25,6 +25,7 @@ from geostore.notify_status_update.task import (
     lambda_handler,
     publish_sns_message,
 )
+from geostore.parameter_store import ParameterName, get_param
 from geostore.resources import Resource
 from geostore.step_function import Outcome
 from geostore.step_function_keys import (
@@ -201,7 +202,10 @@ def should_log_and_not_post_to_slack_when_url_not_set(
         assert not webhook_client_mock.called
 
     with subtests.test("log created"):
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": {}})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": {}, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.notify_status_update.task.get_param")

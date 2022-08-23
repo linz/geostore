@@ -31,7 +31,7 @@ class Storage(Construct):
             description="Deployment git branch",
         )
 
-        aws_ssm.StringParameter(
+        self.git_commit_parameter = aws_ssm.StringParameter(
             self,
             "git-commit",
             parameter_name=f"/{env_name}/git_commit",
