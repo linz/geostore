@@ -114,6 +114,7 @@ class Processing(Construct):
             self,
             "update-catalog-message-queue",
             visibility_timeout=Duration.minutes(15),
+            retention_period=Duration.minutes(20160),  # max allowed 14 days
             fifo=True,
         )
 
