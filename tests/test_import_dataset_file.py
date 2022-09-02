@@ -25,7 +25,8 @@ from geostore.import_dataset_file import (
     get_import_result,
 )
 from geostore.import_dataset_keys import NEW_KEY_KEY, ORIGINAL_KEY_KEY, TARGET_BUCKET_NAME_KEY
-from geostore.logging_keys import LOG_MESSAGE_LAMBDA_START
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_START
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import S3_ROLE_ARN_KEY
 from geostore.types import JsonObject
 
@@ -77,7 +78,10 @@ def should_log_payload(importer_mock: MagicMock) -> None:
         get_import_result(event, importer_mock)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -128,7 +132,8 @@ def should_log_result(importer_mock: MagicMock) -> None:
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_S3_BATCH_COPY_RESULT, extra={"result": expected_log_entry}
+            LOG_MESSAGE_S3_BATCH_COPY_RESULT,
+            extra={"result": expected_log_entry, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
 
 

@@ -12,6 +12,7 @@ from ..boto3_config import CONFIG
 from ..datasets_model import datasets_model_with_meta
 from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_S3_DELETION_RESPONSE,
@@ -49,7 +50,10 @@ SQS_MESSAGE_GROUP_ID = "update_root_catalog_message_group"
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
-    LOGGER.debug(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+    LOGGER.debug(
+        LOG_MESSAGE_LAMBDA_START,
+        extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     # validate input
     try:
@@ -74,7 +78,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             },
         )
     except ValidationError as error:
-        LOGGER.warning(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error})
+        LOGGER.warning(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
         return {ERROR_MESSAGE_KEY: error.message}
 
     dataset_key = (
@@ -99,7 +106,10 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
             Bucket=Resource.STORAGE_BUCKET_NAME.resource_name,
             Key=f"{event[DATASET_TITLE_KEY]}/{item.filename}",
         )
-        LOGGER.debug(LOG_MESSAGE_S3_DELETION_RESPONSE, extra={"response": s3_response})
+        LOGGER.debug(
+            LOG_MESSAGE_S3_DELETION_RESPONSE,
+            extra={"response": s3_response, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
     # Update dataset record with the latest version
     datasets_model = datasets_model_with_meta()

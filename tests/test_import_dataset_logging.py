@@ -6,11 +6,13 @@ from pytest_subtests import SubTests
 
 from geostore.import_dataset.task import lambda_handler
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_S3_BATCH_RESPONSE,
 )
 from geostore.models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import (
     DATASET_ID_KEY,
     DATASET_TITLE_KEY,
@@ -51,7 +53,10 @@ def should_log_payload(head_object_mock: MagicMock) -> None:
         lambda_handler(event, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_dataset.task.validate")
@@ -66,7 +71,10 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         lambda_handler({}, any_lambda_context())
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error_message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_dataset.task.S3_CLIENT.head_object")
@@ -98,7 +106,6 @@ def should_log_assets_added_to_manifest(
         ), patch(
             "geostore.import_dataset.task.S3CONTROL_CLIENT.create_job"
         ):
-
             expected_asset_log = f"Adding {processing_asset.url} to manifest"
             expected_metadata_log = f"Adding {metadata_processing_asset.url} to manifest"
 
@@ -116,9 +123,13 @@ def should_log_assets_added_to_manifest(
 
             # Then
             with subtests.test():
-                logger_mock.assert_any_call(expected_asset_log)
+                logger_mock.assert_any_call(
+                    expected_asset_log, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
+                )
             with subtests.test():
-                logger_mock.assert_any_call(expected_metadata_log)
+                logger_mock.assert_any_call(
+                    expected_metadata_log, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
+                )
 
 
 @patch("geostore.import_dataset.task.S3CONTROL_CLIENT.create_job")
@@ -133,7 +144,6 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
     with Dataset() as dataset, patch(
         "geostore.import_dataset.task.LOGGER.debug"
     ) as logger_mock, patch("geostore.import_dataset.task.smart_open.open"):
-
         # When
         lambda_handler(
             {
@@ -148,5 +158,9 @@ def should_log_s3_batch_response(head_object_mock: MagicMock, create_job_mock: M
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"s3_batch_response": response}
+            LOG_MESSAGE_S3_BATCH_RESPONSE,
+            extra={
+                "s3_batch_response": response,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )

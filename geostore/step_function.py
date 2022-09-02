@@ -9,8 +9,13 @@ from linz_logger import get_log
 from .api_keys import SUCCESS_KEY
 from .boto3_config import CONFIG
 from .import_file_batch_job_id_keys import ASSET_JOB_ID_KEY, METADATA_JOB_ID_KEY
-from .logging_keys import LOG_MESSAGE_S3_BATCH_RESPONSE, LOG_MESSAGE_STEP_FUNCTION_RESPONSE
+from .logging_keys import (
+    GIT_COMMIT,
+    LOG_MESSAGE_S3_BATCH_RESPONSE,
+    LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+)
 from .models import DATASET_ID_PREFIX, DB_KEY_SEPARATOR, VERSION_ID_PREFIX
+from .parameter_store import ParameterName, get_param
 from .processing_assets_model import ProcessingAssetType, processing_assets_model_with_meta
 from .step_function_keys import (
     ASSET_UPLOAD_KEY,
@@ -59,7 +64,6 @@ SUCCESS_TO_VALIDATION_OUTCOME_MAPPING = {
     None: Outcome.PENDING,
 }
 
-
 STEP_FUNCTIONS_CLIENT: SFNClient = boto3.client("stepfunctions", config=CONFIG)
 S3CONTROL_CLIENT: S3ControlClient = boto3.client("s3control", config=CONFIG)
 LOGGER: Logger = get_log()
@@ -98,7 +102,10 @@ def get_tasks_status(
 def get_import_status_given_arn(execution_arn_key: str) -> JsonObject:
     step_function_resp = STEP_FUNCTIONS_CLIENT.describe_execution(executionArn=execution_arn_key)
     assert "status" in step_function_resp, step_function_resp
-    LOGGER.debug(LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": step_function_resp})
+    LOGGER.debug(
+        LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+        extra={"response": step_function_resp, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     step_function_input = loads(step_function_resp["input"])
     step_function_output = loads(step_function_resp.get("output", "{}"))
@@ -163,7 +170,10 @@ def get_s3_batch_copy_status(s3_batch_copy_job_id: str) -> JsonObject:
         JobId=s3_batch_copy_job_id,
     )
     assert "Job" in s3_batch_copy_resp, s3_batch_copy_resp
-    LOGGER.debug(LOG_MESSAGE_S3_BATCH_RESPONSE, extra={"response": s3_batch_copy_resp})
+    LOGGER.debug(
+        LOG_MESSAGE_S3_BATCH_RESPONSE,
+        extra={"response": s3_batch_copy_resp, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+    )
 
     s3_batch_copy_status = s3_batch_copy_resp["Job"]["Status"]
     failure_reasons = s3_batch_copy_resp["Job"]["FailureReasons"]
@@ -216,6 +226,7 @@ class AssetGarbageCollector:
         ):
             self.logger.debug(
                 f"Dataset: '{self.dataset_id}' Version: '{self.current_version_id}' "
-                f"Filename: '{filename}' has been marked as replaced"
+                f"Filename: '{filename}' has been marked as replaced",
+                extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
             )
             item.update(actions=[self.processing_assets_model.replaced_in_new_version.set(True)])

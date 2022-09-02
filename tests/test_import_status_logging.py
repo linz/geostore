@@ -6,10 +6,12 @@ from jsonschema import ValidationError
 from geostore.aws_keys import BODY_KEY, HTTP_METHOD_KEY
 from geostore.import_status.get import get_import_status
 from geostore.logging_keys import (
+    GIT_COMMIT,
     LOG_MESSAGE_LAMBDA_FAILURE,
     LOG_MESSAGE_LAMBDA_START,
     LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
 )
+from geostore.parameter_store import ParameterName, get_param
 from geostore.step_function_keys import DATASET_ID_KEY, EXECUTION_ARN_KEY, NEW_VERSION_ID_KEY
 
 from .aws_utils import any_arn_formatted_string
@@ -41,7 +43,10 @@ def should_log_payload(describe_step_function_mock: MagicMock) -> None:
         get_import_status(event)
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_START, extra={"lambda_input": event})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_START,
+            extra={"lambda_input": event, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.import_status.get.validate")
@@ -61,7 +66,10 @@ def should_log_schema_validation_warning(validate_schema_mock: MagicMock) -> Non
         )
 
         # Then
-        logger_mock.assert_any_call(LOG_MESSAGE_LAMBDA_FAILURE, extra={"error": error_message})
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_LAMBDA_FAILURE,
+            extra={"error": error_message, GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
 
 
 @patch("geostore.step_function.STEP_FUNCTIONS_CLIENT.describe_execution")
@@ -85,5 +93,9 @@ def should_log_stepfunctions_status_response(
 
         # Then
         logger_mock.assert_any_call(
-            LOG_MESSAGE_STEP_FUNCTION_RESPONSE, extra={"response": describe_execution_response}
+            LOG_MESSAGE_STEP_FUNCTION_RESPONSE,
+            extra={
+                "response": describe_execution_response,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
         )
