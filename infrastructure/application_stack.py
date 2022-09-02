@@ -8,6 +8,7 @@ from geostore.environment import environment_name
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
+from .constructs.monitor import Monitor
 from .constructs.notify import Notify
 from .constructs.opentopo import OpenTopography
 from .constructs.processing import Processing
@@ -94,6 +95,13 @@ class Application(Stack):
             state_machine=processing.state_machine,
             validation_results_table=storage.validation_results_table,
             git_commit_parameter=storage.git_commit_parameter,
+        )
+
+        Monitor(
+            self,
+            "monitor",
+            botocore_lambda_layer=lambda_layers.botocore,
+            env_name=env_name,
         )
 
         if self.node.try_get_context("enableLDSAccess"):

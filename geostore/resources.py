@@ -25,3 +25,4 @@ class Resource(Enum):
     STAGING_BUCKET_NAME = "linz-geostore-staging"
     STORAGE_BUCKET_NAME = "linz-geostore"
     SNS_TOPIC_NAME = "geostore-import-status"
+    SQS_TOPIC_NAME = "geostore-update-catalog-sqs-status"
