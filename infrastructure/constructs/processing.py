@@ -126,6 +126,14 @@ class Processing(Construct):
             parameter_name=ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_NAME.value,
         )
 
+        self.message_queue_arn_parameter = aws_ssm.StringParameter(
+            self,
+            "update-catalog-message-queue-arn",
+            string_value=self.message_queue.queue_arn,
+            description=f"Update Catalog Message Queue Arn for {env_name}",
+            parameter_name=ParameterName.UPDATE_CATALOG_MESSAGE_QUEUE_ARN.value,
+        )
+
         populate_catalog_lambda = BundledLambdaFunction(
             self,
             "PopulateCatalog",
