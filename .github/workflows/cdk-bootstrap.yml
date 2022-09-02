@@ -7,7 +7,7 @@ on:
 
 jobs:
   boostrap-ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
@@ -85,7 +85,7 @@ jobs:
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
 
   boostrap-nonprod:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
@@ -163,7 +163,7 @@ jobs:
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
 
   boostrap-prod:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
