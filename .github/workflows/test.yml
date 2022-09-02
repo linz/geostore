@@ -14,7 +14,7 @@ jobs:
           submodules: 'true'
 
       - id: python-version
-        run: echo "::set-output name=id::$(cat .python-version)"
+        run: echo "::set-output name=id::3.8.13"
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
         uses: actions/setup-python@v4
@@ -63,7 +63,7 @@ jobs:
         run: echo "::set-output name=id::$(cat .nvmrc)"
 
       - id: python-version
-        run: echo "::set-output name=id::$(cat .python-version)"
+        run: echo "::set-output name=id::3.8.13"
 
       - name: Use Node.js ${{ steps.node-version.outputs.id }}
         uses: actions/setup-node@v3
