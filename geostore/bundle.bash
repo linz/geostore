@@ -17,7 +17,7 @@ work_dir="$(mktemp --directory)"
 python -m venv "${work_dir}/.venv"
 # shellcheck source=/dev/null
 . "${work_dir}/.venv/bin/activate"
-python -m pip install --quiet --cache-dir="$work_dir" --upgrade pip
+python -m pip install --quiet --cache-dir="$work_dir" --requirement=pip.txt
 python -m pip install --quiet --cache-dir="$work_dir" poetry wheel
 
 asset_root='/asset-output'
