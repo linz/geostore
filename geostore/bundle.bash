@@ -18,7 +18,8 @@ python -m venv "${work_dir}/.venv"
 # shellcheck source=/dev/null
 . "${work_dir}/.venv/bin/activate"
 python -m pip install --quiet --cache-dir="$work_dir" --requirement=pip.txt
-python -m pip install --quiet --cache-dir="$work_dir" poetry wheel
+python -m pip install --quiet --cache-dir="$work_dir" --requirement=poetry.txt
+python -m pip install --quiet --cache-dir="$work_dir" wheel
 
 asset_root='/asset-output'
 task_directory="$(basename "$1")"
