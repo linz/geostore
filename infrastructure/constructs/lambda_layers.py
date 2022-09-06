@@ -13,6 +13,10 @@ class LambdaLayers(Construct):
             self,
             f"{env_name}-botocore-lambda-layer",
             entry="infrastructure/constructs/lambda_layers/botocore",
+            bundling=aws_lambda_python_alpha.BundlingOptions(
+                # See https://github.com/aws/aws-cdk/issues/21867#issuecomment-1234233411
+                environment={"POETRY_VIRTUALENVS_IN_PROJECT": "true"}
+            ),
             compatible_runtimes=[PYTHON_RUNTIME],
             description="botocore library",
         )
