@@ -84,7 +84,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 "aws-cdk.aws-batch-alpha" = {version = "*", optional = true}
-"aws-cdk.aws-lambda-python-alpha" = {version = "*", optional = true}
+"aws-cdk.aws-lambda-python-alpha" = "^2.41.0-alpha.0"
 aws-cdk-lib = {version = "*", optional = true}
 awscli = {version = "*", optional = true}
 boto3 = "*"
