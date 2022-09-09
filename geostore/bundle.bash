@@ -17,8 +17,8 @@ work_dir="$(mktemp --directory)"
 python -m venv "${work_dir}/.venv"
 # shellcheck source=/dev/null
 . "${work_dir}/.venv/bin/activate"
-python -m pip install --quiet --cache-dir="$work_dir" --requirement=pip.txt
-python -m pip install --quiet --cache-dir="$work_dir" --requirement=poetry.txt --requirement=wheel.txt
+python -m pip install --quiet --cache-dir="$work_dir" --requirement="${script_dir}/pip.txt"
+python -m pip install --quiet --cache-dir="$work_dir" --requirement="${script_dir}/poetry.txt" --requirement="${script_dir}/wheel.txt"
 
 asset_root='/asset-output'
 task_directory="$(basename "$1")"
