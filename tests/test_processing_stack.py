@@ -372,10 +372,12 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     {
                         STAC_HREF_KEY: collection_metadata_url,
                         STAC_REL_KEY: STAC_REL_CHILD,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
                         STAC_HREF_KEY: catalog_metadata_url,
                         STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                 ],
             }
@@ -395,10 +397,26 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     },
                 },
                 STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_ITEM},
-                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
-                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_PARENT},
-                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                    {
+                        STAC_HREF_KEY: item_metadata_url,
+                        STAC_REL_KEY: STAC_REL_ITEM,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_HREF_KEY: catalog_metadata_url,
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_HREF_KEY: collection_metadata_url,
+                        STAC_REL_KEY: STAC_REL_SELF,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
                 ],
             }
         ),
@@ -417,9 +435,21 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     }
                 },
                 STAC_LINKS_KEY: [
-                    {STAC_HREF_KEY: catalog_metadata_url, STAC_REL_KEY: STAC_REL_ROOT},
-                    {STAC_HREF_KEY: collection_metadata_url, STAC_REL_KEY: STAC_REL_PARENT},
-                    {STAC_HREF_KEY: item_metadata_url, STAC_REL_KEY: STAC_REL_SELF},
+                    {
+                        STAC_HREF_KEY: catalog_metadata_url,
+                        STAC_REL_KEY: STAC_REL_ROOT,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_HREF_KEY: collection_metadata_url,
+                        STAC_REL_KEY: STAC_REL_PARENT,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
+                    {
+                        STAC_HREF_KEY: item_metadata_url,
+                        STAC_REL_KEY: STAC_REL_SELF,
+                        STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    },
                 ],
             }
         ),
@@ -486,7 +516,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
             }
 
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
@@ -556,14 +585,17 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                             {
                                 STAC_HREF_KEY: second_version_catalog_url,
                                 STAC_REL_KEY: STAC_REL_ROOT,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
                                 STAC_HREF_KEY: second_version_collection_url,
                                 STAC_REL_KEY: STAC_REL_PARENT,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
                                 STAC_HREF_KEY: second_version_item_url,
                                 STAC_REL_KEY: STAC_REL_SELF,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                         ],
                     }
@@ -612,7 +644,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_REL_KEY: STAC_REL_ROOT,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 }
 
                 while (
@@ -639,9 +670,9 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                         STAC_TITLE_KEY: dataset_title,
                         STAC_LINKS_KEY: [
                             {
-                                STAC_HREF_KEY: f"./{collection_metadata_filename}",
+                                STAC_HREF_KEY: collection_metadata_filename,
                                 STAC_REL_KEY: STAC_REL_CHILD,
-                                STAC_TITLE_KEY: collection_title,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
                                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
@@ -675,19 +706,18 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                         },
                         STAC_LINKS_KEY: [
                             {
-                                STAC_HREF_KEY: f"./{item_metadata_filename}",
+                                STAC_HREF_KEY: item_metadata_filename,
                                 STAC_REL_KEY: STAC_REL_ITEM,
+                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
                                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                                 STAC_REL_KEY: STAC_REL_ROOT,
-                                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
-                                STAC_HREF_KEY: f"./{catalog_metadata_filename}",
+                                STAC_HREF_KEY: catalog_metadata_filename,
                                 STAC_REL_KEY: STAC_REL_PARENT,
-                                STAC_TITLE_KEY: dataset_title,
                                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                         ],
@@ -704,7 +734,7 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                             third_asset_name: {
                                 LINZ_STAC_CREATED_KEY: third_asset_created,
                                 LINZ_STAC_UPDATED_KEY: third_asset_updated,
-                                STAC_HREF_KEY: f"./{third_asset_filename}",
+                                STAC_HREF_KEY: third_asset_filename,
                                 STAC_FILE_CHECKSUM_KEY: third_asset_hex_digest,
                             },
                         },
@@ -712,13 +742,11 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                             {
                                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                                 STAC_REL_KEY: STAC_REL_ROOT,
-                                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                             {
-                                STAC_HREF_KEY: f"./{collection_metadata_filename}",
+                                STAC_HREF_KEY: collection_metadata_filename,
                                 STAC_REL_KEY: STAC_REL_PARENT,
-                                STAC_TITLE_KEY: collection_title,
                                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                             },
                         ],
