@@ -49,6 +49,7 @@ def importer(
     links = metadata.get(STAC_LINKS_KEY, [])
     delete_self_links(links)
     change_href_to_basename(links)
+    update_root_link(links)
 
     return TARGET_S3_CLIENT.put_object(
         Bucket=target_bucket_name,
@@ -64,3 +65,9 @@ def change_href_to_basename(items: Iterable[Dict[str, str]]) -> None:
 
 def delete_self_links(items: List[Dict[str, str]]) -> None:
     items[:] = [item for item in items if item[STAC_REL_KEY] != STAC_REL_SELF]
+
+
+def update_root_link(items: List[Dict[str, str]]) -> None:
+    for item in items:
+        if item[STAC_REL_KEY] == "root":
+            item[STAC_HREF_KEY] = "../catalog.json"
