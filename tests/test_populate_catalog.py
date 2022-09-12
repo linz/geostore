@@ -248,7 +248,6 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
             {
                 STAC_REL_KEY: STAC_REL_CHILD,
                 STAC_HREF_KEY: f"./{collection_filename}",
-                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
@@ -295,7 +294,7 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
-                        STAC_HREF_KEY: f"./{collection_filename}",
+                        STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                         STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
                     },
                     {
@@ -386,13 +385,11 @@ def should_update_root_catalog_with_new_version_collection(subtests: SubTests) -
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
-                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
                 STAC_REL_KEY: STAC_REL_PARENT,
                 STAC_HREF_KEY: f"./{collection_filename}",
-                STAC_TITLE_KEY: dataset.title,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
         ]
@@ -584,7 +581,6 @@ def should_add_link_to_root_catalog_in_series(
                 **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
                 STAC_ID_KEY: ROOT_CATALOG_ID,
                 STAC_DESCRIPTION_KEY: ROOT_CATALOG_DESCRIPTION,
-                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_LINKS_KEY: [
                     {
                         STAC_REL_KEY: STAC_REL_ROOT,
@@ -602,7 +598,6 @@ def should_add_link_to_root_catalog_in_series(
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_HREF_KEY: f"./{CATALOG_FILENAME}",
-                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
             },
             {
