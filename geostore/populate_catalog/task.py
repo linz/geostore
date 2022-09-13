@@ -65,8 +65,8 @@ class GeostoreSTACLayoutStrategy(HrefLayoutStrategy):
         assert not is_root
         return str(col.get_self_href())
 
-    def get_item_href(self, item: Item, parent_dir: str) -> str:
-        return str(item.get_self_href())
+    def get_item_href(self, item: Item, parent_dir: str) -> str:  # pragma: no cover
+        raise NotImplementedError()
 
 
 def handle_message(metadata_key: str) -> None:
@@ -97,8 +97,4 @@ def handle_message(metadata_key: str) -> None:
     if root_catalog.get_child(dataset_metadata.id) is None:
         root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
 
-    root_catalog.normalize_hrefs(
-        f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}",
-        strategy=GeostoreSTACLayoutStrategy(),
-    )
     root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)

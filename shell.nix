@@ -2,9 +2,9 @@
     (
       fetchTarball
         {
-          name = "22.05";
-          url = "https://github.com/NixOS/nixpkgs/archive/ce6aa13369b667ac2542593170993504932eb836.tar.gz";
-          sha256 = "0d643wp3l77hv2pmg2fi7vyxn4rwy0iyr8djcw1h5x72315ck9ik";
+          name = "nixos-22.11pre405560.2da64a81275";
+          url = "https://github.com/NixOS/nixpkgs/archive/2da64a81275b68fdad38af669afeda43d401e94b.tar.gz";
+          sha256 = "1k71lmzdaa48yqkmsnd22n177qmxxi4gj2qcmdbv0mc6l4f27wd0";
         })
     { }
 }:
