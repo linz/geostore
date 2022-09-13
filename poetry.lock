@@ -65,7 +65,7 @@ name = "aws-cdk-lib"
 version = "2.41.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
-optional = false
+optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
@@ -93,7 +93,7 @@ name = "aws-cdk.aws-lambda-python-alpha"
 version = "2.41.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
@@ -534,7 +534,7 @@ name = "cattrs"
 version = "1.10.0"
 description = "Composable complex class support for attrs and dataclasses."
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
@@ -613,7 +613,7 @@ name = "constructs"
 version = "10.1.7"
 description = "A programming model for software-defined state"
 category = "main"
-optional = false
+optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
@@ -892,7 +892,7 @@ name = "jsii"
 version = "1.67.0"
 description = "Python client for jsii runtime"
 category = "main"
-optional = false
+optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
@@ -1307,7 +1307,7 @@ name = "publication"
 version = "0.0.3"
 description = "Publication helps you maintain public-api-friendly modules by preventing unintentional access to private implementation details via introspection."
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -1701,7 +1701,7 @@ name = "typeguard"
 version = "2.13.3"
 description = "Run-time type checker for Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.5.3"
 
 [package.extras]
@@ -1898,7 +1898,7 @@ validation_summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "72da2b406428a6067f383a0de0a7c4d255ed810f7241782fda483919987970b1"
+content-hash = "fdcf8f660c6f5f21afc1aa320600fc58a859aec3824dc08632aab989c2b9c92d"
 
 [metadata.files]
 appdirs = [
