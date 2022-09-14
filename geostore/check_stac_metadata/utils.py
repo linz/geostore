@@ -11,7 +11,6 @@ from pystac import Catalog, Collection, read_file
 
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
-from ..error_response_keys import ERROR_MESSAGE_KEY
 from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
 from ..models import DB_KEY_SEPARATOR
 from ..parameter_store import ParameterName, get_param
