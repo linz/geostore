@@ -13,3 +13,5 @@ class Check(Enum):
     STAGING_ACCESS = "staging bucket access"
     UNKNOWN_CLIENT_ERROR = "unknown client error"
     UNKNOWN_MULTIHASH_ERROR = "unknown multihash error"
+    UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR = "assets should be catalog or collection"
+    NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"

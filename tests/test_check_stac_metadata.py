@@ -26,10 +26,10 @@ from geostore.check_stac_metadata.stac_validators import (
 )
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.check_stac_metadata.utils import (
-    NO_ASSETS_FOUND_ERROR_MESSAGE,
     PROCESSING_ASSET_FILE_IN_STAGING_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    InvalidAssetFileError,
     InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
@@ -153,7 +153,9 @@ def should_save_non_s3_url_validation_results(
         MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), raises(
+        InvalidAssetFileError
+    ):
         # When
         lambda_handler(
             {
@@ -291,7 +293,6 @@ def should_save_file_not_found_validation_results(
     validation_results_factory_mock: MagicMock,
     get_s3_client_for_role_mock: MagicMock,
 ) -> None:
-
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         ClientErrorResponseTypeDef(
@@ -605,7 +606,6 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
-
         assert lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
@@ -1083,7 +1083,7 @@ def should_report_when_the_dataset_has_no_assets(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={
                 "outcome": Outcome.FAILED,
-                "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
+                "error": Check.NO_ASSETS_FOUND_ERROR_MESSAGE,
                 GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
@@ -1093,7 +1093,7 @@ def should_report_when_the_dataset_has_no_assets(
             metadata_url,
             Check.ASSETS_IN_DATASET,
             ValidationResult.FAILED,
-            details={MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE},
+            details={MESSAGE_KEY: Check.NO_ASSETS_FOUND_ERROR_MESSAGE},
         )
 
 

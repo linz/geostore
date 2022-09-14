@@ -7,11 +7,13 @@ from unittest.mock import MagicMock, patch
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError
+from pytest import raises
 
 from geostore.check_stac_metadata.utils import (
     LOG_MESSAGE_STAC_ASSET_INFO,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    InvalidAssetFileError,
     STACDatasetValidator,
 )
 from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
@@ -101,9 +103,10 @@ def should_log_non_s3_url_prefix_validation() -> None:
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
     ):
-        STACDatasetValidator(
-            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).run(metadata_url)
+        with raises(InvalidAssetFileError):
+            STACDatasetValidator(
+                hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+            ).run(metadata_url)
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -209,11 +212,11 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
         ).run(metadata_url)
 
-        logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={
-                "outcome": Outcome.FAILED,
-                "error": str(expected_error),
-                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-            },
-        )
+    logger_mock.assert_any_call(
+        LOG_MESSAGE_VALIDATION_COMPLETE,
+        extra={
+            "outcome": Outcome.FAILED,
+            "error": str(expected_error),
+            GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+        },
+    )
