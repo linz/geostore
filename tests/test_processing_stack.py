@@ -516,6 +516,7 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
             }
 
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
@@ -644,6 +645,7 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_REL_KEY: STAC_REL_ROOT,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
+                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 }
 
                 while (
