@@ -456,6 +456,12 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
+        imported_catalog_key = ""
+        imported_collection_key = ""
+        imported_item_key = ""
+        imported_first_asset_key = ""
+        imported_second_asset_key = ""
+        imported_third_asset_key = ""
 
         # When
         try:
