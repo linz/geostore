@@ -1,6 +1,6 @@
 [[package]]
 name = "botocore"
-version = "1.27.72"
+version = "1.27.73"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -61,8 +61,8 @@ content-hash = "26ce0f976971d757a64c19fd79088433664cc65023f276fa16ced9321cbdcf19
 
 [metadata.files]
 botocore = [
-    {file = "botocore-1.27.72-py3-none-any.whl", hash = "sha256:e29a777d261360dcb9283dfd460dc5feca3a46b7774e0c79be406d1a85673789"},
-    {file = "botocore-1.27.72.tar.gz", hash = "sha256:6184ab43a59118541b88e0ede24ccd671553323ace95bb7c8de3082a5cc581cb"},
+    {file = "botocore-1.27.73-py3-none-any.whl", hash = "sha256:0b94d1e7b1435f8ff108c74a09fe03ec88aadbfafe97e940ea415dc86ba305a3"},
+    {file = "botocore-1.27.73.tar.gz", hash = "sha256:e281e45e84d2728207d63499a37cea1dc1dde6093167ab238370ece67f6e7316"},
 ]
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
