@@ -73,8 +73,11 @@ def is_url_start_with_s3(metadata_url: str) -> bool:
 
 
 def is_instance_of_catalog_or_collection(metadata_url: str) -> bool:
-    dataset_metadata = read_file(metadata_url)
-    return isinstance(dataset_metadata, (Catalog, Collection))
+    try:
+        dataset_metadata = read_file(metadata_url)
+        return isinstance(dataset_metadata, (Catalog, Collection))
+    except InvalidAssetFileError:
+        return False
 
 
 class STACDatasetValidator:
