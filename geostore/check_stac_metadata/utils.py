@@ -67,7 +67,7 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
     return f"{dirname(parent_url)}/{url_or_path}"
 
 
-def is_url_start_with_s3(metadata_url: str) -> bool:
+def is_s3_url(metadata_url: str) -> bool:
     return metadata_url[:5] == S3_URL_PREFIX
 
 
@@ -96,7 +96,7 @@ class STACDatasetValidator:
         self.processing_assets_model = processing_assets_model_with_meta()
 
     def run(self, metadata_url: str) -> None:
-        if not is_url_start_with_s3(metadata_url):
+        if not is_s3_url(metadata_url):
             error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
                 metadata_url,
