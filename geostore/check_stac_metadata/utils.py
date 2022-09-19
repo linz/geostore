@@ -70,6 +70,11 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
 def is_url_start_with_s3(metadata_url: str) -> bool:
     return metadata_url[:5] == S3_URL_PREFIX
 
+
+def is_instance_of_catalog_or_collection(stac_type: str) -> bool:
+    return stac_type in (STAC_TYPE_COLLECTION, STAC_TYPE_CATALOG)
+
+
 class STACDatasetValidator:
     # pylint:disable=too-many-instance-attributes
     def __init__(
@@ -144,6 +149,28 @@ class STACDatasetValidator:
             )
             return
 
+        s3_response = self.get_object(metadata_url)
+        stac_type = self.get_s3_url_as_object_json(metadata_url, s3_response)[STAC_TYPE_KEY]
+        if not is_instance_of_catalog_or_collection(stac_type):
+            error_message = (
+                f"Uploaded Assets should be catalog.json or collection.json”: “{metadata_url}”"
+            )
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                ValidationResult.FAILED,
+                details={MESSAGE_KEY: error_message},
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise InvalidAssetFileError()
+
         self.process_metadata()
         self.process_assets()
 
@@ -176,39 +203,9 @@ class STACDatasetValidator:
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
         s3_response = self.get_object(url)
-        try:
-            object_json: JsonObject = load(
-                s3_response.response,
-                object_pairs_hook=self.duplicate_object_names_report_builder(url),
-            )
-        except JSONDecodeError as error:
-            self.validation_result_factory.save(
-                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
-            )
-            raise
+        object_json = self.get_s3_url_as_object_json(url, s3_response)
 
         stac_type = object_json[STAC_TYPE_KEY]
-
-        if stac_type != STAC_TYPE_COLLECTION and stac_type != STAC_TYPE_CATALOG:
-            error_message = (
-                f"Uploaded Assets should be catalog.json or collection.json”: “{url}”"
-            )
-            self.validation_result_factory.save(
-                url,
-                Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
-                ValidationResult.FAILED,
-                details={MESSAGE_KEY: error_message},
-            )
-            LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={
-                    "outcome": Outcome.FAILED,
-                    "error": Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
-                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-                },
-            )
-            raise InvalidAssetFileError()
-
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]
 
         try:
@@ -271,6 +268,19 @@ class STACDatasetValidator:
 
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
+
+    def get_s3_url_as_object_json(self, url: str, s3_response: GeostoreS3Response) -> JsonObject:
+        try:
+            object_json: JsonObject = load(
+                s3_response.response,
+                object_pairs_hook=self.duplicate_object_names_report_builder(url),
+            )
+        except JSONDecodeError as error:
+            self.validation_result_factory.save(
+                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
+            )
+            raise
+        return object_json
 
     def get_object(self, url: str) -> GeostoreS3Response:
         try:
