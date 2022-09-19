@@ -3,7 +3,6 @@ from logging import Logger
 from botocore.exceptions import ClientError
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
-from pystac.stac_io import StacIO
 
 from ..api_keys import SUCCESS_KEY
 from ..error_response_keys import ERROR_MESSAGE_KEY
@@ -15,7 +14,6 @@ from ..logging_keys import (
 )
 from ..parameter_store import ParameterName, get_param
 from ..processing_assets_model import ProcessingAssetType
-from ..pystac_io_methods import S3StacIO
 from ..s3_utils import get_s3_url_reader
 from ..step_function import AssetGarbageCollector, Outcome, get_hash_key
 from ..step_function_keys import (
@@ -31,7 +29,6 @@ from ..validation_results_model import ValidationResultFactory
 from .utils import STACDatasetValidator
 
 LOGGER: Logger = get_log()
-StacIO.set_default(S3StacIO)
 
 
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
