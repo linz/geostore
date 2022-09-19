@@ -7,7 +7,6 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 from botocore.exceptions import ClientError
 from jsonschema import Draft7Validator, ValidationError
 from linz_logger import get_log
-from pystac import Catalog, Collection, read_file
 
 from ..api_keys import MESSAGE_KEY
 from ..check import Check
@@ -70,15 +69,6 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
 
 def is_url_start_with_s3(metadata_url: str) -> bool:
     return metadata_url[:5] == S3_URL_PREFIX
-
-
-def is_instance_of_catalog_or_collection(metadata_url: str) -> bool:
-    try:
-        dataset_metadata = read_file(metadata_url)
-        return isinstance(dataset_metadata, (Catalog, Collection))
-    except InvalidAssetFileError:
-        return False
-
 
 class STACDatasetValidator:
     # pylint:disable=too-many-instance-attributes
@@ -154,26 +144,6 @@ class STACDatasetValidator:
             )
             return
 
-        if not is_instance_of_catalog_or_collection(metadata_url):
-            error_message = (
-                f"Uploaded Assets should be catalog.json or collection.json”: “{metadata_url}”"
-            )
-            self.validation_result_factory.save(
-                metadata_url,
-                Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
-                ValidationResult.FAILED,
-                details={MESSAGE_KEY: error_message},
-            )
-            LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={
-                    "outcome": Outcome.FAILED,
-                    "error": Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
-                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-                },
-            )
-            raise InvalidAssetFileError()
-
         self.process_metadata()
         self.process_assets()
 
@@ -218,6 +188,27 @@ class STACDatasetValidator:
             raise
 
         stac_type = object_json[STAC_TYPE_KEY]
+
+        if stac_type != STAC_TYPE_COLLECTION and stac_type != STAC_TYPE_CATALOG:
+            error_message = (
+                f"Uploaded Assets should be catalog.json or collection.json”: “{url}”"
+            )
+            self.validation_result_factory.save(
+                url,
+                Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                ValidationResult.FAILED,
+                details={MESSAGE_KEY: error_message},
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise InvalidAssetFileError()
+
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]
 
         try:

@@ -456,12 +456,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
-        imported_catalog_key = None
-        imported_collection_key = None
-        imported_item_key = None
-        imported_first_asset_key = None
-        imported_second_asset_key = None
-        imported_third_asset_key = None
 
         # When
         try:
@@ -522,7 +516,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                 STAC_REL_KEY: STAC_REL_ROOT,
                 STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
             }
 
             storage_bucket_prefix = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/"
@@ -609,66 +602,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 ),
                 bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
                 key=f"{second_version_key_prefix}/{item_metadata_filename}",
-            ), S3Object(
-                file_object=json_dict_to_file_object(
-                    {
-                        **deepcopy(MINIMAL_VALID_STAC_CATALOG_OBJECT),
-                        STAC_TITLE_KEY: dataset_title,
-                        STAC_EXTENSIONS_KEY: [],
-                        STAC_LINKS_KEY: [
-                            {
-                                STAC_HREF_KEY: collection_metadata_url,
-                                STAC_REL_KEY: STAC_REL_CHILD,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                            {
-                                STAC_HREF_KEY: catalog_metadata_url,
-                                STAC_REL_KEY: STAC_REL_ROOT,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                        ],
-                    }
-                ),
-                bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-                key=f"{second_version_key_prefix}/{catalog_metadata_filename}",
-            ), S3Object(
-                file_object=json_dict_to_file_object(
-                    {
-                        **collection_dict,
-                        STAC_ASSETS_KEY: {
-                            first_asset_name: {
-                                LINZ_STAC_CREATED_KEY: first_asset_created,
-                                LINZ_STAC_UPDATED_KEY: first_asset_updated,
-                                STAC_HREF_KEY: f"./{first_asset_filename}",
-                                STAC_FILE_CHECKSUM_KEY: first_asset_hex_digest,
-                            },
-                        },
-                        STAC_LINKS_KEY: [
-                            {
-                                STAC_HREF_KEY: item_metadata_url,
-                                STAC_REL_KEY: STAC_REL_ITEM,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                            {
-                                STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
-                                STAC_REL_KEY: STAC_REL_ROOT,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                            {
-                                STAC_HREF_KEY: catalog_metadata_url,
-                                STAC_REL_KEY: STAC_REL_PARENT,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                            {
-                                STAC_HREF_KEY: collection_metadata_url,
-                                STAC_REL_KEY: STAC_REL_SELF,
-                                STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                            },
-                        ],
-                    }
-                ),
-                bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-                key=f"{second_version_key_prefix}/{collection_metadata_filename}",
             ):
 
                 second_dataset_versions_response = lambda_client.invoke(
@@ -711,7 +644,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     STAC_HREF_KEY: f"../{CATALOG_FILENAME}",
                     STAC_REL_KEY: STAC_REL_ROOT,
                     STAC_TYPE_KEY: STAC_MEDIA_TYPE_JSON,
-                    STAC_TITLE_KEY: ROOT_CATALOG_TITLE,
                 }
 
                 while (
@@ -960,6 +892,7 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                     executionArn=state_machine_arn
                 )
             )["status"] == "RUNNING":
+
                 sleep(5)  # pragma: no cover
 
             assert execution["status"] == "SUCCEEDED", execution
