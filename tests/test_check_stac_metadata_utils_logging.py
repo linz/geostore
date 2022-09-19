@@ -212,11 +212,11 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
         ).run(metadata_url)
 
-    logger_mock.assert_any_call(
-        LOG_MESSAGE_VALIDATION_COMPLETE,
-        extra={
-            "outcome": Outcome.FAILED,
-            "error": str(expected_error),
-            GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-        },
-    )
+        logger_mock.assert_any_call(
+            LOG_MESSAGE_VALIDATION_COMPLETE,
+            extra={
+                "outcome": Outcome.FAILED,
+                "error": str(expected_error),
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
+        )
