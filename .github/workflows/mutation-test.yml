@@ -87,7 +87,7 @@ jobs:
       - run: poetry run mutmut run
       - run: poetry run mutmut junitxml > mutmut.xml
         if: failure()
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3.1.0
         with:
           name: mutation-test-report
           path: mutmut.xml
