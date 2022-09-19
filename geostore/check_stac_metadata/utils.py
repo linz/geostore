@@ -112,7 +112,7 @@ class STACDatasetValidator:
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
-            raise InvalidAssetFileError()
+            raise InvalidSTACRootTypeError()
         try:
             self.validate(metadata_url)
         except (
@@ -132,7 +132,7 @@ class STACDatasetValidator:
             return
 
         if not self.dataset_assets:
-            error_details = {MESSAGE_KEY: Check.NO_ASSETS_FOUND_ERROR_MESSAGE}
+            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET}
             self.validation_result_factory.save(
                 metadata_url,
                 Check.ASSETS_IN_DATASET,
@@ -143,7 +143,7 @@ class STACDatasetValidator:
                 LOG_MESSAGE_VALIDATION_COMPLETE,
                 extra={
                     "outcome": Outcome.FAILED,
-                    "error": Check.NO_ASSETS_FOUND_ERROR_MESSAGE,
+                    "error": Check.NO_ASSETS_IN_DATASET,
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
@@ -157,7 +157,7 @@ class STACDatasetValidator:
             )
             self.validation_result_factory.save(
                 metadata_url,
-                Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                Check.INVALID_STAC_ROOT_TYPE,
                 ValidationResult.FAILED,
                 details={MESSAGE_KEY: error_message},
             )
@@ -165,11 +165,11 @@ class STACDatasetValidator:
                 LOG_MESSAGE_VALIDATION_COMPLETE,
                 extra={
                     "outcome": Outcome.FAILED,
-                    "error": Check.UPLOADED_ASSETS_SHOULD_BE_CATALOG_OR_COLLECTION_ERROR,
+                    "error": Check.INVALID_STAC_ROOT_TYPE,
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
-            raise InvalidAssetFileError()
+            raise InvalidSTACRootTypeError()
 
         self.process_metadata()
         self.process_assets()
@@ -330,5 +330,5 @@ class InvalidSecurityClassificationError(Exception):
     pass
 
 
-class InvalidAssetFileError(Exception):
+class InvalidSTACRootTypeError(Exception):
     pass

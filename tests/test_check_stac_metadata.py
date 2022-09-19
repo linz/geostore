@@ -29,7 +29,7 @@ from geostore.check_stac_metadata.utils import (
     PROCESSING_ASSET_FILE_IN_STAGING_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
-    InvalidAssetFileError,
+    InvalidSTACRootTypeError,
     InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
@@ -154,7 +154,7 @@ def should_save_non_s3_url_validation_results(
     )
 
     with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), raises(
-        InvalidAssetFileError
+        InvalidSTACRootTypeError
     ):
         # When
         lambda_handler(
@@ -1083,7 +1083,7 @@ def should_report_when_the_dataset_has_no_assets(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={
                 "outcome": Outcome.FAILED,
-                "error": Check.NO_ASSETS_FOUND_ERROR_MESSAGE,
+                "error": Check.NO_ASSETS_IN_DATASET,
                 GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
@@ -1093,7 +1093,7 @@ def should_report_when_the_dataset_has_no_assets(
             metadata_url,
             Check.ASSETS_IN_DATASET,
             ValidationResult.FAILED,
-            details={MESSAGE_KEY: Check.NO_ASSETS_FOUND_ERROR_MESSAGE},
+            details={MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET},
         )
 
 
