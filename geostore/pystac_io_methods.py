@@ -7,12 +7,7 @@ from pystac.link import Link
 from pystac.stac_io import StacIO
 
 from .boto3_config import CONFIG
-from .s3_utils import (
-    calculate_s3_etag,
-    check_if_s3_object_exists,
-    get_bucket_and_key_from_url,
-    get_s3_etag,
-)
+from .s3_utils import calculate_s3_etag, get_bucket_and_key_from_url, get_s3_etag
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -41,11 +36,9 @@ class S3StacIO(StacIO):
     ) -> None:
         url = dest.href if isinstance(dest, Link) else dest
         bucket, key = get_bucket_and_key_from_url(url)
-        if check_if_s3_object_exists(bucket, key):
-            s3_etag = get_s3_etag(bucket, key, LOGGER)
-            local_etag = calculate_s3_etag(txt.encode())
 
-            if s3_etag == local_etag:
-                return
+        s3_etag = get_s3_etag(bucket, key, LOGGER)
+        local_etag = calculate_s3_etag(txt.encode())
 
-        S3_CLIENT.put_object(Bucket=bucket, Key=key, Body=txt.encode())
+        if s3_etag != local_etag:
+            S3_CLIENT.put_object(Bucket=bucket, Key=key, Body=txt.encode())

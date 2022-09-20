@@ -4,7 +4,6 @@ from os.path import basename
 from typing import Callable, Tuple
 from urllib.parse import urlparse
 
-import boto3
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 
@@ -56,31 +55,15 @@ def get_s3_url_reader(
     return s3_url_reader
 
 
-def check_if_s3_object_exists(bucket: str, key: str) -> bool:
-    s3_resource = boto3.resource("s3")
-
-    try:
-        s3_resource.Object(bucket, key).load()
-    except ClientError:
-        # 404 is most likely the response code here
-        # other response code is possible, but we return false rather than raise,
-        # thus allowing the next step to continue rather than stalling the entire process
-        return False
-
-    return True
-
-
 def get_s3_etag(s3_bucket: str, s3_object_key: str, logger: Logger) -> str:
-    s3_client = boto3.client("s3")
+    geostore_s3_client = get_s3_client_for_role(get_param(ParameterName.S3_USERS_ROLE_ARN))
 
     try:
-        s3_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key)
-        s3_etag = s3_response["ETag"].strip('"')
-        return s3_etag
+        s3_response = geostore_s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key)
+        return s3_response["ETag"]
     except ClientError as error:
         logger.error(
-            f"Unable to fetch eTag for {s3_object_key} in s3://{s3_bucket},"
-            f"due to {error}, even though object exists in bucket.",
+            f"Unable to fetch eTag for “{s3_object_key}” in s3://{s3_bucket} due to “{error}”",
             extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
         )
         # rather than raise, we return an empty string, indicating that the etag is different
@@ -90,22 +73,24 @@ def get_s3_etag(s3_bucket: str, s3_object_key: str, logger: Logger) -> str:
 
 def calculate_s3_etag(
     body: bytes,
-    # https://docs.aws.amazon.com/cli/latest/topic/s3-config.html#multipart-chunksize
+    # https://awscli.amazonaws.com/v2/documentation/api/latest/topic/s3-config.html#multipart-chunksize
     chunk_size: int = 8 * 1024 * 1024,  # Default value
 ) -> str:
 
-    md5s = []
-    data = [body[i : i + chunk_size] for i in range(0, len(body), chunk_size)]
+    if body == b"":
+        return f'"{hashlib.md5().hexdigest()}"'
 
-    for chunk in data:
-        md5s.append(hashlib.md5(chunk))
+    chunk_hashes = []
 
-    if len(md5s) < 1:
-        return f"{hashlib.md5().hexdigest()}"
+    for chunk_start in range(0, len(body), chunk_size):
+        chunk = body[chunk_start : chunk_start + chunk_size]
+        chunk_hashes.append(hashlib.md5(chunk))
 
-    if len(md5s) == 1:
-        return f"{md5s[0].hexdigest()}"
+    if len(chunk_hashes) == 1:
+        return f'"{chunk_hashes[0].hexdigest()}"'
 
-    digests = b"".join(m.digest() for m in md5s)
-    digests_md5 = hashlib.md5(digests)
-    return f"{digests_md5.hexdigest()}-{len(md5s)}"
+    hash_object = hashlib.md5()
+    for chunk_hash in chunk_hashes:
+        hash_object.update(chunk_hash.digest())
+
+    return f'"{hash_object.hexdigest()}-{len(chunk_hashes)}"'

@@ -21,12 +21,7 @@ from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.pystac_io_methods import S3StacIO
 from geostore.resources import Resource
 from geostore.s3 import S3_URL_PREFIX
-from geostore.s3_utils import (
-    calculate_s3_etag,
-    check_if_s3_object_exists,
-    get_s3_etag,
-    get_s3_url_reader,
-)
+from geostore.s3_utils import calculate_s3_etag, get_s3_etag, get_s3_url_reader
 from geostore.stac_format import (
     STAC_HREF_KEY,
     STAC_LINKS_KEY,
@@ -175,53 +170,38 @@ def should_raise_any_client_error_other_than_no_such_key(
         s3_url_reader(any_s3_url())
 
 
-@mark.infrastructure
-def should_return_true_if_object_already_exists_in_s3() -> None:
-    key_prefix = any_safe_file_path()
-    collection_metadata_filename = any_safe_filename()
-
-    collection_dict = {
-        **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
-    }
-
-    with S3Object(
-        file_object=json_dict_to_file_object(collection_dict),
-        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
-        key=f"{key_prefix}/{collection_metadata_filename}",
-    ):
-        s3_object = check_if_s3_object_exists(
-            Resource.STAGING_BUCKET_NAME.resource_name,
-            f"{key_prefix}/{collection_metadata_filename}",
-        )
-
-        assert s3_object is True
-
-
-def should_return_accurate_etag_value() -> None:
+def should_return_accurate_etag_value_for_empty_file() -> None:
     byte_representation_in_empty_file = b""
-    expected_empty_file_etag = "d41d8cd98f00b204e9800998ecf8427e"
-
-    byte_representation_in_small_file = b"01G9GZ9MX3GAYK1J28WMN4BRMG\n"
-    expected_small_file_etag = "2d0503d7761d6240b7a6bffca8ba25fa"
-
-    byte_representation_in_big_file = b"01G9GZ89WNW43XYDB481MW27SH\n"
-    expected_big_file_etag = "a591c017ff7dc7944b9b9169953937fa-4"
+    expected_empty_file_etag = '"d41d8cd98f00b204e9800998ecf8427e"'
 
     etag_from_empty_file = calculate_s3_etag(byte_representation_in_empty_file)
+
+    assert etag_from_empty_file == expected_empty_file_etag
+
+
+def should_return_accurate_etag_value_for_single_chunk_size_file() -> None:
+    byte_representation_in_small_file = b"01G9GZ9MX3GAYK1J28WMN4BRMG\n"
+    expected_small_file_etag = '"2d0503d7761d6240b7a6bffca8ba25fa"'
+
     etag_from_small_file = calculate_s3_etag(byte_representation_in_small_file)
+
+    assert etag_from_small_file == expected_small_file_etag
+
+
+def should_return_accurate_etag_value_for_multi_chunk_size_file() -> None:
+    byte_representation_in_big_file = b"01G9GZ89WNW43XYDB481MW27SH\n"
+    expected_big_file_etag = '"a591c017ff7dc7944b9b9169953937fa-4"'
+
     # parse custom chunk_size to mimic big file behaviour in test
     etag_from_big_file = calculate_s3_etag(byte_representation_in_big_file, chunk_size=8)
 
-    assert etag_from_empty_file == expected_empty_file_etag
-    assert etag_from_small_file == expected_small_file_etag
     assert etag_from_big_file == expected_big_file_etag
 
 
 @mark.infrastructure
-def should_return_etag_if_s3_object_exists_or_return_empty_string() -> None:
+def should_return_etag_if_s3_object_exists() -> None:
     key_prefix = any_safe_file_path()
     collection_metadata_filename = any_safe_filename()
-    phantom_metadata_filename = any_safe_filename()
 
     collection_dict = {
         **deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT),
@@ -229,25 +209,32 @@ def should_return_etag_if_s3_object_exists_or_return_empty_string() -> None:
 
     with S3Object(
         file_object=json_dict_to_file_object(collection_dict),
-        bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
+        bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{collection_metadata_filename}",
     ):
         s3_etag = get_s3_etag(
-            Resource.STAGING_BUCKET_NAME.resource_name,
+            Resource.STORAGE_BUCKET_NAME.resource_name,
             f"{key_prefix}/{collection_metadata_filename}",
-            get_log(),
-        )
-        phantom_etag = get_s3_etag(
-            Resource.STAGING_BUCKET_NAME.resource_name,
-            f"{key_prefix}/{phantom_metadata_filename}",
             get_log(),
         )
 
         # return mock etag string, generally 32 char or longer
         assert len(s3_etag) >= 32
 
-        # return empty string, indicating missing file
-        assert len(phantom_etag) == 0
+
+@mark.infrastructure
+def should_return_empty_string_if_s3_object_is_missing() -> None:
+    key_prefix = any_safe_file_path()
+    phantom_metadata_filename = any_safe_filename()
+
+    phantom_etag = get_s3_etag(
+        Resource.STORAGE_BUCKET_NAME.resource_name,
+        f"{key_prefix}/{phantom_metadata_filename}",
+        get_log(),
+    )
+
+    # return empty string, indicating missing file
+    assert len(phantom_etag) == 0
 
 
 @mark.infrastructure
@@ -255,7 +242,8 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
     s3_client: S3Client,
 ) -> None:
 
-    bucket = Resource.STAGING_BUCKET_NAME.resource_name
+    s3_stac_io = S3StacIO()
+    bucket = Resource.STORAGE_BUCKET_NAME.resource_name
     collection_metadata_filename = any_safe_filename()
 
     s3_obj_url = f"s3://{bucket}/{collection_metadata_filename}"
@@ -263,30 +251,22 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
 
     try:
         # Write object to bucket - v1
-        S3StacIO().write_text(dest=s3_obj_url, txt=sample_obj_str)
-
-        s3_etag_one = get_s3_etag(
-            Resource.STAGING_BUCKET_NAME.resource_name,
-            collection_metadata_filename,
-            get_log(),
-        )
-
-        assert s3_etag_one == "2d0503d7761d6240b7a6bffca8ba25fa"
+        s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
 
         s3_response = s3_client.head_object(Bucket=bucket, Key=collection_metadata_filename)
-        obj_modified_one = s3_response["LastModified"]
+        obj_version_id_one = s3_response["VersionId"]
 
         # Write same object to bucket again - v2
-        S3StacIO().write_text(dest=s3_obj_url, txt=sample_obj_str)
+        s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
         s3_response = s3_client.head_object(Bucket=bucket, Key=collection_metadata_filename)
-        obj_modified_two = s3_response["LastModified"]
+        obj_version_id_two = s3_response["VersionId"]
 
         # Ensure original object is not rewritten
-        assert obj_modified_one == obj_modified_two
+        assert obj_version_id_one == obj_version_id_two
 
     finally:
         delete_s3_key(
-            Resource.STAGING_BUCKET_NAME.resource_name,
+            Resource.STORAGE_BUCKET_NAME.resource_name,
             collection_metadata_filename,
             s3_client,
         )
