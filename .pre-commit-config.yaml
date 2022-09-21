@@ -4,6 +4,13 @@
 repos:
   - repo: local
     hooks:
+      - id: alejandra
+        name: alejandra
+        entry: alejandra
+        files: \.nix$
+        language: system
+        stages: [commit]
+
       - id: black
         name: black
         entry: black
@@ -84,12 +91,6 @@ repos:
       - id: shfmt
         files: ^\.envrc$
         types: []
-        stages: [commit]
-
-  - repo: https://github.com/nix-community/nixpkgs-fmt
-    rev: 148ec47877499e3d671f6366f9eed812db181b40 # v1.2.0
-    hooks:
-      - id: nixpkgs-fmt
         stages: [commit]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
