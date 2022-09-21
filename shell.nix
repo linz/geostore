@@ -38,6 +38,7 @@ poetryEnv.env.overrideAttrs (
       pkgs.gitFull
       pkgs.nodejs
       pkgs.python38Packages.pip
+      pkgs.python38Packages.pip-tools
       (pkgs.poetry.override {
         inherit python;
       })
