@@ -34,6 +34,7 @@ from tests.aws_utils import (
     S3Object,
     any_error_code,
     any_operation_name,
+    any_s3_bucket_name,
     any_s3_url,
     delete_s3_key,
     get_s3_role_arn,
@@ -222,19 +223,31 @@ def should_return_etag_if_s3_object_exists() -> None:
         assert len(s3_etag) >= 32
 
 
-@mark.infrastructure
-def should_return_empty_string_if_s3_object_is_missing() -> None:
-    key_prefix = any_safe_file_path()
-    phantom_metadata_filename = any_safe_filename()
+@patch("geostore.s3_utils.get_s3_client_for_role")
+def should_return_empty_string_if_s3_object_is_missing(
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+    # Given
+    bucket = any_s3_bucket_name()
+    collection_metadata_filename = any_safe_filename()
 
-    phantom_etag = get_s3_etag(
-        Resource.STORAGE_BUCKET_NAME.resource_name,
-        f"{key_prefix}/{phantom_metadata_filename}",
-        get_log(),
+    operation_name = any_operation_name()
+    error_message = any_error_message()
+    error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code="NoSuchKey", Message=error_message)
+        ),
+        operation_name,
     )
 
-    # return empty string, indicating missing file
-    assert len(phantom_etag) == 0
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
+
+    logger_mock = MagicMock()
+
+    etag = get_s3_etag(
+        s3_bucket=bucket, s3_object_key=collection_metadata_filename, logger=logger_mock
+    )
+    assert etag == ""
 
 
 @mark.infrastructure
@@ -253,12 +266,12 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
         # Write object to bucket - v1
         s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
 
-        s3_response = s3_client.head_object(Bucket=bucket, Key=collection_metadata_filename)
+        s3_response = s3_client.get_object(Bucket=bucket, Key=collection_metadata_filename)
         obj_version_id_one = s3_response["VersionId"]
 
         # Write same object to bucket again - v2
         s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
-        s3_response = s3_client.head_object(Bucket=bucket, Key=collection_metadata_filename)
+        s3_response = s3_client.get_object(Bucket=bucket, Key=collection_metadata_filename)
         obj_version_id_two = s3_response["VersionId"]
 
         # Ensure original object is not rewritten
@@ -269,4 +282,40 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
             Resource.STORAGE_BUCKET_NAME.resource_name,
             collection_metadata_filename,
             s3_client,
+        )
+
+
+@patch("geostore.s3_utils.get_s3_client_for_role")
+def should_log_error_message_if_failure_to_get_object_etag_is_other_than_no_such_key(
+    get_s3_client_for_role_mock: MagicMock, subtests: SubTests
+) -> None:
+    # Given
+    bucket = any_s3_bucket_name()
+    collection_metadata_filename = any_safe_filename()
+
+    error_code = any_error_code()
+    operation_name = any_operation_name()
+    error_message = any_error_message()
+    error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        ),
+        operation_name,
+    )
+
+    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
+
+    expected_message = (
+        f"Unable to fetch eTag for “{collection_metadata_filename}” "
+        f"in s3://{bucket} due to “{error}”"
+    )
+
+    logger_mock = MagicMock()
+
+    get_s3_etag(s3_bucket=bucket, s3_object_key=collection_metadata_filename, logger=logger_mock)
+
+    # Then
+    with subtests.test(msg="log"):
+        logger_mock.debug.assert_any_call(
+            expected_message, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
         )
