@@ -222,19 +222,34 @@ def should_return_etag_if_s3_object_exists() -> None:
         assert len(s3_etag) >= 32
 
 
-@mark.infrastructure
-def should_return_empty_string_if_s3_object_is_missing() -> None:
-    key_prefix = any_safe_file_path()
-    phantom_metadata_filename = any_safe_filename()
+@patch("geostore.s3_utils.get_s3_client_for_role")
+def should_return_empty_string_if_s3_object_is_missing(
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+    # Given
+    bucket = Resource.STORAGE_BUCKET_NAME.resource_name
+    collection_metadata_filename = any_safe_filename()
 
-    phantom_etag = get_s3_etag(
-        Resource.STORAGE_BUCKET_NAME.resource_name,
-        f"{key_prefix}/{phantom_metadata_filename}",
-        get_log(),
+    operation_name = any_operation_name()
+    error_message = any_error_message()
+    error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code="404", Message=error_message)
+        ),
+        operation_name,
     )
 
-    # return empty string, indicating missing file
-    assert len(phantom_etag) == 0
+    get_s3_client_for_role_mock.side_effect = error
+
+    logger_mock = MagicMock()
+
+    with raises(ClientError):
+        etag = get_s3_etag(
+            s3_bucket=bucket, s3_object_key=collection_metadata_filename, logger=logger_mock
+        )
+
+        # return empty string, indicating missing file
+        assert len(etag) == 0
 
 
 @mark.infrastructure
@@ -270,3 +285,32 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
             collection_metadata_filename,
             s3_client,
         )
+
+
+@patch("geostore.s3_utils.get_s3_client_for_role")
+def should_log_error_message_if_failure_to_get_object_etag_is_other_than_no_such_key(
+    get_s3_client_for_role_mock: MagicMock,
+) -> None:
+    # Given
+    bucket = Resource.STORAGE_BUCKET_NAME.resource_name
+    collection_metadata_filename = any_safe_filename()
+
+    error_code = any_error_code()
+    operation_name = any_operation_name()
+    error_message = any_error_message()
+    error = ClientError(
+        ClientErrorResponseTypeDef(
+            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        ),
+        operation_name,
+    )
+
+    get_s3_client_for_role_mock.side_effect = error
+
+    logger_mock = MagicMock()
+
+    with raises(ClientError):
+        get_s3_etag(
+            s3_bucket=bucket, s3_object_key=collection_metadata_filename, logger=logger_mock
+        )
+        logger_mock.assert_called()

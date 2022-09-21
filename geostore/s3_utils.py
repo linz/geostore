@@ -62,10 +62,11 @@ def get_s3_etag(s3_bucket: str, s3_object_key: str, logger: Logger) -> str:
         s3_response = geostore_s3_client.head_object(Bucket=s3_bucket, Key=s3_object_key)
         return s3_response["ETag"]
     except ClientError as error:
-        logger.error(
-            f"Unable to fetch eTag for “{s3_object_key}” in s3://{s3_bucket} due to “{error}”",
-            extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
-        )
+        if error.response["Error"]["Code"] != "404":
+            logger.error(
+                f"Unable to fetch eTag for “{s3_object_key}” in s3://{s3_bucket} due to “{error}”",
+                extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+            )
         # rather than raise, we return an empty string, indicating that the etag is different
         # thus allowing the next step to continue rather than stalling the entire process
         return ""
