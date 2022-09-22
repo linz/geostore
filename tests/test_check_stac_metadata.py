@@ -182,6 +182,46 @@ def should_save_non_s3_url_validation_results(
     ]
 
 
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
+@patch("geostore.check_stac_metadata.task.get_param")
+@patch("geostore.check_stac_metadata.utils.is_empty")
+def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
+    get_s3_url_reader_mock: MagicMock,
+    get_param_mock: MagicMock,
+    is_empty_dataset_asset_mock: MagicMock,
+) -> None:
+    # Given
+    validation_results_table_name = any_table_name()
+    get_param_mock.return_value = validation_results_table_name
+    s3_url = any_s3_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+    get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
+        MINIMAL_VALID_STAC_ITEM_OBJECT, file_in_staging=True
+    )
+    is_empty_dataset_asset_mock.return_value.return_value = False
+
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate"
+    ), patch("geostore.check_stac_metadata.utils.STACDatasetValidator.get_stac_type_by_url"), patch(
+        "geostore.check_stac_metadata.task.ValidationResultFactory"
+    ), raises(
+        InvalidSTACRootTypeError
+    ):
+        # When
+        lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                NEW_VERSION_ID_KEY: version_id,
+                CURRENT_VERSION_ID_KEY: CURRENT_VERSION_EMPTY_VALUE,
+                METADATA_URL_KEY: s3_url,
+                S3_ROLE_ARN_KEY: any_role_arn(),
+                DATASET_TITLE_KEY: any_dataset_title(),
+            },
+            any_lambda_context(),
+        )
+
+
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
 def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMock) -> None:
     # Given

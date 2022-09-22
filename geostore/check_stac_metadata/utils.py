@@ -71,6 +71,10 @@ def is_s3_url(metadata_url: str) -> bool:
     return metadata_url[:5] == S3_URL_PREFIX
 
 
+def is_empty(asset_list: List[Dict[str, str]]) -> bool:
+    return len(asset_list)
+
+
 def is_instance_of_catalog_or_collection(stac_type: str) -> bool:
     return stac_type in (STAC_TYPE_COLLECTION, STAC_TYPE_CATALOG)
 
@@ -131,7 +135,7 @@ class STACDatasetValidator:
             )
             return
 
-        if not self.dataset_assets:
+        if not is_empty(self.dataset_assets):
             error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET}
             self.validation_result_factory.save(
                 metadata_url,
@@ -149,8 +153,7 @@ class STACDatasetValidator:
             )
             return
 
-        s3_response = self.get_object(metadata_url)
-        stac_type = self.get_s3_url_as_object_json(metadata_url, s3_response)[STAC_TYPE_KEY]
+        stac_type = self.get_stac_type_by_url(metadata_url)
         if not is_instance_of_catalog_or_collection(stac_type):
             error_message = (
                 f"Uploaded Assets should be catalog.json or collection.json”: “{metadata_url}”"
@@ -173,6 +176,11 @@ class STACDatasetValidator:
 
         self.process_metadata()
         self.process_assets()
+
+    def get_stac_type_by_url(self, metadata_url) -> str:
+        s3_response = self.get_object(metadata_url)
+        stac_type = self.get_s3_url_as_object_json(metadata_url, s3_response)[STAC_TYPE_KEY]
+        return stac_type
 
     def process_metadata(self) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
