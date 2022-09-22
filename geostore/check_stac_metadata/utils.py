@@ -283,12 +283,12 @@ class STACDatasetValidator:
                 s3_response.response,
                 object_pairs_hook=self.duplicate_object_names_report_builder(url),
             )
+            return object_json
         except JSONDecodeError as error:
             self.validation_result_factory.save(
                 url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
             )
             raise
-        return object_json
 
     def get_object(self, url: str) -> GeostoreS3Response:
         try:
