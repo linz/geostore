@@ -10,8 +10,9 @@ class Check(Enum):
     JSON_PARSE = "JSON parse"
     JSON_SCHEMA = "JSON schema"
     NON_S3_URL = "not an s3 url"
+    NO_ASSETS_IN_DATASET = "no assets in the dataset"
     SECURITY_CLASSIFICATION = "security classification"
     STAGING_ACCESS = "staging bucket access"
     UNKNOWN_CLIENT_ERROR = "unknown client error"
     UNKNOWN_MULTIHASH_ERROR = "unknown multihash error"
-    NO_ASSETS_IN_DATASET = "no assets in the dataset"
+
