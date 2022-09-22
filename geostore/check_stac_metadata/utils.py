@@ -156,7 +156,7 @@ class STACDatasetValidator:
         stac_type = self.get_stac_type_by_url(metadata_url)
         if not is_instance_of_catalog_or_collection(stac_type):
             error_message = (
-                f"Uploaded Assets should be catalog.json or collection.json”: “{metadata_url}”"
+                f"Uploaded Assets should be catalog.json or collection.json: “{metadata_url}”"
             )
             self.validation_result_factory.save(
                 metadata_url,
