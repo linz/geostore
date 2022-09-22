@@ -6,6 +6,7 @@ class Check(Enum):
     CHECKSUM = "checksum"
     DUPLICATE_OBJECT_KEY = "duplicate asset name"
     FILE_NOT_FOUND = "file not found in staging or storage"
+    INVALID_STAC_ROOT_TYPE = "root type should be catalog or collection"
     JSON_PARSE = "JSON parse"
     JSON_SCHEMA = "JSON schema"
     NON_S3_URL = "not an s3 url"
@@ -13,5 +14,4 @@ class Check(Enum):
     STAGING_ACCESS = "staging bucket access"
     UNKNOWN_CLIENT_ERROR = "unknown client error"
     UNKNOWN_MULTIHASH_ERROR = "unknown multihash error"
-    INVALID_STAC_ROOT_TYPE = "Root type should be catalog or collection"
     NO_ASSETS_IN_DATASET = "no assets in the dataset"
