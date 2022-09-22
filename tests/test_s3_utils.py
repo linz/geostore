@@ -235,12 +235,12 @@ def should_return_empty_string_if_s3_object_is_missing(
     error_message = any_error_message()
     error = ClientError(
         ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="NoSuchKey", Message=error_message)
+            Error=ClientErrorResponseError(Code="404", Message=error_message)
         ),
         operation_name,
     )
 
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
+    get_s3_client_for_role_mock.return_value.head_object.side_effect = error
 
     logger_mock = MagicMock()
 
@@ -303,7 +303,7 @@ def should_log_error_message_if_failure_to_get_object_etag_is_other_than_no_such
         operation_name,
     )
 
-    get_s3_client_for_role_mock.return_value.get_object.side_effect = error
+    get_s3_client_for_role_mock.return_value.head_object.side_effect = error
 
     expected_message = (
         f"Unable to fetch eTag for “{collection_metadata_filename}” "
