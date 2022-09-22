@@ -24,6 +24,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pip
+    directory: /geostore
+    schedule:
+      interval: daily
+  - package-ecosystem: pip
     directory: /infrastructure/constructs/lambda_layers/botocore
     schedule:
       interval: daily
