@@ -13,7 +13,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -24,13 +24,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.4.1
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.npm
           key:
@@ -45,12 +45,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.cache/pip
           key:
@@ -61,8 +61,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
+          python -m pip install --requirement=geostore/pip.txt
+          python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
               --no-dev --no-root
@@ -91,7 +91,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -102,13 +102,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.4.1
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.npm
           key:
@@ -123,12 +123,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.cache/pip
           key:
@@ -139,8 +139,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
+          python -m pip install --requirement=geostore/pip.txt
+          python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
               --no-dev --no-root
@@ -169,7 +169,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.2
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -180,13 +180,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.4.1
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.npm
           key:
@@ -201,12 +201,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3
+        uses: actions/cache@v3.0.8
         with:
           path: ~/.cache/pip
           key:
@@ -217,8 +217,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
+          python -m pip install --requirement=geostore/pip.txt
+          python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
               --no-dev --no-root
