@@ -36,11 +36,11 @@ jobs:
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.1.24
+        uses: github/codeql-action/init@v2.1.25
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
           languages: python
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.1.24
+        uses: github/codeql-action/analyze@v2.1.25
