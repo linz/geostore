@@ -74,7 +74,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: POSIX",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Communications :: File Sharing",
     "Topic :: Scientific/Engineering :: GIS",
     "Topic :: Utilities",
@@ -82,7 +82,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 "aws-cdk.aws-batch-alpha" = {version = "*", optional = true}
 "aws-cdk.aws-lambda-python-alpha" = {version = "*", optional = true}
 aws-cdk-lib = {version = "*", optional = true}
