@@ -14,13 +14,14 @@ from mypy_boto3_s3 import S3Client
 from pytest import mark
 from pytest_subtests import SubTests
 
+from geostore.import_asset_file.task import importer
 from geostore.import_metadata_file.task import S3_BODY_KEY
 from geostore.logging_keys import GIT_COMMIT
 from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import CATALOG_FILENAME
 from geostore.pystac_io_methods import S3StacIO
 from geostore.resources import Resource
-from geostore.s3 import S3_URL_PREFIX
+from geostore.s3 import S3_URL_PREFIX, get_s3_client_for_role
 from geostore.s3_utils import calculate_s3_etag, get_s3_etag, get_s3_url_reader
 from geostore.stac_format import (
     STAC_HREF_KEY,
@@ -40,7 +41,12 @@ from tests.aws_utils import (
     get_s3_role_arn,
 )
 from tests.file_utils import json_dict_to_file_object
-from tests.general_generators import any_error_message, any_safe_file_path, any_safe_filename
+from tests.general_generators import (
+    any_error_message,
+    any_file_contents,
+    any_safe_file_path,
+    any_safe_filename,
+)
 from tests.stac_generators import any_dataset_title
 from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
@@ -171,32 +177,120 @@ def should_raise_any_client_error_other_than_no_such_key(
         s3_url_reader(any_s3_url())
 
 
-def should_return_accurate_etag_value_for_empty_file() -> None:
-    byte_representation_in_empty_file = b""
-    expected_empty_file_etag = '"d41d8cd98f00b204e9800998ecf8427e"'
+@mark.infrastructure
+def should_return_accurate_etag_value_for_empty_file(s3_client: S3Client) -> None:
+    asset_filename = any_safe_filename()
+    asset_contents = any_file_contents(byte_count=0)
+    expected_empty_file_etag = (
+        '"d41d8cd98f00b204e9800998ecf8427e"'  # we know the etag of empty file
+    )
 
-    etag_from_empty_file = calculate_s3_etag(byte_representation_in_empty_file)
+    staging_bucket = Resource.STAGING_BUCKET_NAME.resource_name
+    storage_bucket = Resource.STORAGE_BUCKET_NAME.resource_name
 
-    assert etag_from_empty_file == expected_empty_file_etag
+    local_etag = calculate_s3_etag(asset_contents)
+
+    with S3Object(
+        file_object=BytesIO(initial_bytes=asset_contents),
+        bucket_name=staging_bucket,
+        key=asset_filename,
+    ):
+        try:
+            # import from staging to storage to ensure aws hasn't changed how etag is calculated
+            importer(
+                source_bucket_name=staging_bucket,
+                original_key=asset_filename,
+                target_bucket_name=storage_bucket,
+                new_key=asset_filename,
+                source_s3_client=get_s3_client_for_role(get_s3_role_arn()),
+            )
+
+            s3_etag = get_s3_etag(
+                s3_bucket=storage_bucket, s3_object_key=f"{asset_filename}", logger=get_log()
+            )
+
+            assert (
+                local_etag == expected_empty_file_etag
+            )  # empty file etag should always be the same
+            assert local_etag == s3_etag
+        finally:
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, asset_filename, s3_client)
 
 
-def should_return_accurate_etag_value_for_single_chunk_size_file() -> None:
-    byte_representation_in_small_file = b"01G9GZ9MX3GAYK1J28WMN4BRMG\n"
-    expected_small_file_etag = '"2d0503d7761d6240b7a6bffca8ba25fa"'
+@mark.infrastructure
+def should_return_accurate_etag_value_for_single_chunk_size_file(s3_client: S3Client) -> None:
+    asset_filename = any_safe_filename()
+    asset_contents = any_file_contents(byte_count=1000000)
 
-    etag_from_small_file = calculate_s3_etag(byte_representation_in_small_file)
+    staging_bucket = Resource.STAGING_BUCKET_NAME.resource_name
+    storage_bucket = Resource.STORAGE_BUCKET_NAME.resource_name
 
-    assert etag_from_small_file == expected_small_file_etag
+    local_etag = calculate_s3_etag(asset_contents)
+
+    with S3Object(
+        file_object=BytesIO(initial_bytes=asset_contents),
+        bucket_name=staging_bucket,
+        key=f"{asset_filename}",
+    ):
+        try:
+            # import from staging to storage to ensure aws hasn't changed how etag is calculated
+            importer(
+                source_bucket_name=staging_bucket,
+                original_key=asset_filename,
+                target_bucket_name=storage_bucket,
+                new_key=asset_filename,
+                source_s3_client=get_s3_client_for_role(get_s3_role_arn()),
+            )
+
+            s3_etag = get_s3_etag(
+                s3_bucket=storage_bucket, s3_object_key=f"{asset_filename}", logger=get_log()
+            )
+
+            # ensure single chunk size file
+            assert (
+                len(local_etag) == 34
+            )  # single chunk etag is 32 char, (+2) with quotes as part of etag
+            assert local_etag == s3_etag
+        finally:
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, asset_filename, s3_client)
 
 
-def should_return_accurate_etag_value_for_multi_chunk_size_file() -> None:
-    byte_representation_in_big_file = b"01G9GZ89WNW43XYDB481MW27SH\n"
-    expected_big_file_etag = '"a591c017ff7dc7944b9b9169953937fa-4"'
+@mark.infrastructure
+def should_return_accurate_etag_value_for_multi_chunk_size_file(s3_client: S3Client) -> None:
+    asset_filename = any_safe_filename()
+    asset_contents = any_file_contents(byte_count=10000000)
 
-    # parse custom chunk_size to mimic big file behaviour in test
-    etag_from_big_file = calculate_s3_etag(byte_representation_in_big_file, chunk_size=8)
+    staging_bucket = Resource.STAGING_BUCKET_NAME.resource_name
+    storage_bucket = Resource.STORAGE_BUCKET_NAME.resource_name
 
-    assert etag_from_big_file == expected_big_file_etag
+    local_etag = calculate_s3_etag(asset_contents)
+
+    with S3Object(
+        file_object=BytesIO(initial_bytes=asset_contents),
+        bucket_name=staging_bucket,
+        key=asset_filename,
+    ):
+        try:
+            # import from staging to storage to ensure aws hasn't changed how etag is calculated
+            importer(
+                source_bucket_name=staging_bucket,
+                original_key=asset_filename,
+                target_bucket_name=storage_bucket,
+                new_key=asset_filename,
+                source_s3_client=get_s3_client_for_role(get_s3_role_arn()),
+            )
+
+            s3_etag = get_s3_etag(
+                s3_bucket=storage_bucket, s3_object_key=f"{asset_filename}", logger=get_log()
+            )
+
+            # ensure multi chunk size file
+            assert (
+                len(local_etag) >= 36
+            )  # multi chunk etag is at least 2 char more than single chunk
+            assert local_etag == s3_etag
+        finally:
+            delete_s3_key(Resource.STORAGE_BUCKET_NAME.resource_name, asset_filename, s3_client)
 
 
 @mark.infrastructure
@@ -219,8 +313,8 @@ def should_return_etag_if_s3_object_exists() -> None:
             get_log(),
         )
 
-        # return mock etag string, generally 32 char or longer
-        assert len(s3_etag) >= 32
+        # return mock etag string, generally 32 char or longer, (+2) with quotes as part of etag
+        assert len(s3_etag) >= 34
 
 
 @patch("geostore.s3_utils.get_s3_client_for_role")
@@ -260,17 +354,17 @@ def should_stop_s3stacio_from_put_object_if_locally_calculated_etag_is_identical
     collection_metadata_filename = any_safe_filename()
 
     s3_obj_url = f"s3://{bucket}/{collection_metadata_filename}"
-    sample_obj_str = "01G9GZ9MX3GAYK1J28WMN4BRMG\n"
+    asset_contents = any_file_contents()
 
     try:
         # Write object to bucket - v1
-        s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
+        s3_stac_io.write_text(dest=s3_obj_url, txt=str(asset_contents))
 
         s3_response = s3_client.get_object(Bucket=bucket, Key=collection_metadata_filename)
         obj_version_id_one = s3_response["VersionId"]
 
         # Write same object to bucket again - v2
-        s3_stac_io.write_text(dest=s3_obj_url, txt=sample_obj_str)
+        s3_stac_io.write_text(dest=s3_obj_url, txt=str(asset_contents))
         s3_response = s3_client.get_object(Bucket=bucket, Key=collection_metadata_filename)
         obj_version_id_two = s3_response["VersionId"]
 
