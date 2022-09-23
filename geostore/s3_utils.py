@@ -72,11 +72,9 @@ def get_s3_etag(s3_bucket: str, s3_object_key: str, logger: Logger) -> str:
         return ""
 
 
-def calculate_s3_etag(
-    body: bytes,
+def calculate_s3_etag(body: bytes) -> str:
     # https://awscli.amazonaws.com/v2/documentation/api/latest/topic/s3-config.html#multipart-chunksize
-    chunk_size: int = 8 * 1024 * 1024,  # Default value
-) -> str:
+    chunk_size = 8388608  # Default value is 8 * 1024 * 1024
 
     if body == b"":
         return f'"{hashlib.md5().hexdigest()}"'
