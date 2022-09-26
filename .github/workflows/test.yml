@@ -131,15 +131,10 @@ jobs:
         run: |
           poetry run cdk deploy --all --require-approval never --strict --change-set-name "ci-${GITHUB_RUN_ID}"
 
-      - name: Run non-infrastructure tests offline
+      - name: Run pytest tests online
         run: >
-          poetry run coverage run --module pytest --disable-socket -m 'not infrastructure'
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
-
-      - name: Run infrastructure tests online
-        run: >
-          poetry run coverage run --append --module pytest -m 'infrastructure' --junitxml=junit.xml
-          "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
+          poetry run coverage run --append --module pytest -n auto --dist=loadfile
+          --junitxml=junit.xml "--randomly-seed=${GITHUB_RUN_ID}" --verbosity=2
 
       - name: Archive JUnit test report
         uses: actions/upload-artifact@v3.1.0
