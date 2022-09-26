@@ -71,10 +71,6 @@ def is_s3_url(metadata_url: str) -> bool:
     return metadata_url[:5] == S3_URL_PREFIX
 
 
-def is_empty(asset_list: List[Dict[str, str]]) -> int:
-    return len(asset_list)
-
-
 def is_instance_of_catalog_or_collection(stac_type: str) -> bool:
     return stac_type in (STAC_TYPE_COLLECTION, STAC_TYPE_CATALOG)
 
@@ -130,24 +126,6 @@ class STACDatasetValidator:
                 extra={
                     "outcome": Outcome.FAILED,
                     "error": str(error),
-                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-                },
-            )
-            return
-
-        if not is_empty(self.dataset_assets):
-            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET}
-            self.validation_result_factory.save(
-                metadata_url,
-                Check.ASSETS_IN_DATASET,
-                ValidationResult.FAILED,
-                details=error_details,
-            )
-            LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={
-                    "outcome": Outcome.FAILED,
-                    "error": Check.NO_ASSETS_IN_DATASET,
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
@@ -276,6 +254,24 @@ class STACDatasetValidator:
 
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
+
+        if not self.dataset_assets:
+            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET}
+            self.validation_result_factory.save(
+                url,
+                Check.ASSETS_IN_DATASET,
+                ValidationResult.FAILED,
+                details=error_details,
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.NO_ASSETS_IN_DATASET,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            return
 
     def get_s3_url_as_object_json(self, url: str, s3_response: GeostoreS3Response) -> JsonObject:
         try:

@@ -184,11 +184,13 @@ def should_save_non_s3_url_validation_results(
 
 @patch("geostore.check_stac_metadata.task.get_s3_url_reader")
 @patch("geostore.check_stac_metadata.task.get_param")
-@patch("geostore.check_stac_metadata.utils.is_empty")
+@patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
+@patch("geostore.check_stac_metadata.utils.STACDatasetValidator.get_stac_type_by_url")
 def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
     get_s3_url_reader_mock: MagicMock,
     get_param_mock: MagicMock,
-    is_empty_dataset_asset_mock: MagicMock,
+    stac_dataset_validator_mock_validate: MagicMock,
+    get_stac_type_by_url_mock: MagicMock,
 ) -> None:
     # Given
     validation_results_table_name = any_table_name()
@@ -199,15 +201,13 @@ def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
     get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
         MINIMAL_VALID_STAC_ITEM_OBJECT, file_in_staging=True
     )
-    is_empty_dataset_asset_mock.return_value.return_value = False
+    stac_dataset_validator_mock_validate.return_value = None
+    get_stac_type_by_url_mock.return_value = "ITEM"
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
-        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate"
-    ), patch("geostore.check_stac_metadata.utils.STACDatasetValidator.get_stac_type_by_url"), patch(
-        "geostore.check_stac_metadata.task.ValidationResultFactory"
-    ), raises(
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), raises(
         InvalidSTACRootTypeError
     ):
+
         # When
         lambda_handler(
             {
