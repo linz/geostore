@@ -14,7 +14,7 @@ from pystac.stac_io import StacIO
 from ..api_keys import EVENT_KEY
 from ..aws_keys import BODY_KEY
 from ..boto3_config import CONFIG
-from ..logging_keys import GIT_COMMIT
+from ..logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_FAILURE
 from ..parameter_store import ParameterName, get_param
 from ..pystac_io_methods import S3StacIO
 from ..resources import Resource
@@ -74,27 +74,39 @@ def handle_message(metadata_key: str) -> None:
 
     storage_bucket_path = f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}"
 
-    results = S3_CLIENT.list_objects(
-        Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Prefix=CATALOG_FILENAME
-    )
+    # there could be a myriad of problems preventing catalog from being populated
+    # hence a rather broad try except exception clause is used
+    # an exception thrown here indicates stuck message(s) in the sqs queue
+    # logging is monitored by elasticsearch and alerting is set up to notify the team of a problem
+    try:
+        dataset_metadata = read_file(f"{storage_bucket_path}/{metadata_key}")
+        assert isinstance(dataset_metadata, (Catalog, Collection))
 
-    # create root catalog if it doesn't exist
-    if CONTENTS_KEY in results:
-        root_catalog = Catalog.from_file(f"{storage_bucket_path}/{CATALOG_FILENAME}")
-
-    else:
-        root_catalog = Catalog(
-            id=ROOT_CATALOG_ID,
-            title=ROOT_CATALOG_TITLE,
-            description=ROOT_CATALOG_DESCRIPTION,
-            catalog_type=CatalogType.SELF_CONTAINED,
+        results = S3_CLIENT.list_objects(
+            Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Prefix=CATALOG_FILENAME
         )
-        root_catalog.set_self_href(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
-    dataset_metadata = read_file(f"{storage_bucket_path}/{metadata_key}")
-    assert isinstance(dataset_metadata, (Catalog, Collection))
+        # create root catalog if it doesn't exist
+        if CONTENTS_KEY in results:
+            root_catalog = Catalog.from_file(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
-    if root_catalog.get_child(dataset_metadata.id) is None:
-        root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
+        else:
+            root_catalog = Catalog(
+                id=ROOT_CATALOG_ID,
+                title=ROOT_CATALOG_TITLE,
+                description=ROOT_CATALOG_DESCRIPTION,
+                catalog_type=CatalogType.SELF_CONTAINED,
+            )
+            root_catalog.set_self_href(f"{storage_bucket_path}/{CATALOG_FILENAME}")
 
-    root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
+        if root_catalog.get_child(dataset_metadata.id) is None:
+            root_catalog.add_child(child=dataset_metadata, strategy=GeostoreSTACLayoutStrategy())
+
+        root_catalog.save(catalog_type=CatalogType.SELF_CONTAINED)
+
+    except Exception as error:
+        LOGGER.warning(
+            f"{LOG_MESSAGE_LAMBDA_FAILURE}: Unable to populate catalog due to “{error}”",
+            extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+        )
+        raise

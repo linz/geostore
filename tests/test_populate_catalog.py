@@ -2,15 +2,17 @@ from copy import deepcopy
 from datetime import timedelta
 from json import load
 from time import sleep
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import smart_open
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_sqs import SQSServiceResource
-from pytest import mark
+from pytest import mark, raises
 from pytest_subtests import SubTests
 
 from geostore.aws_keys import BODY_KEY
+from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_LAMBDA_FAILURE
 from geostore.parameter_store import ParameterName, get_param
 from geostore.populate_catalog.task import (
     CATALOG_FILENAME,
@@ -18,6 +20,7 @@ from geostore.populate_catalog.task import (
     ROOT_CATALOG_DESCRIPTION,
     ROOT_CATALOG_ID,
     ROOT_CATALOG_TITLE,
+    handle_message,
     lambda_handler,
 )
 from geostore.resources import Resource
@@ -40,7 +43,7 @@ from geostore.stac_format import (
 from geostore.types import JsonList
 from geostore.update_root_catalog.task import SQS_MESSAGE_GROUP_ID
 
-from .aws_utils import Dataset, S3Object, any_lambda_context, delete_s3_key
+from .aws_utils import Dataset, S3Object, any_lambda_context, any_s3_url, delete_s3_key
 from .file_utils import json_dict_to_file_object
 from .general_generators import any_safe_filename
 from .stac_generators import any_dataset_version_id
@@ -652,3 +655,26 @@ def should_add_link_to_root_catalog_in_series(
                 expected_root_catalog_links
                 == load(smart_open.open(root_url, mode="rb"))[STAC_LINKS_KEY]
             )
+
+
+@mark.infrastructure
+@patch("geostore.populate_catalog.task.read_file")
+def should_log_error_message_when_an_exception_is_raised_trying_to_update_catalog(
+    pystac_read_file_mock: MagicMock,
+) -> None:
+
+    error = Exception()
+    expected_message = f"{LOG_MESSAGE_LAMBDA_FAILURE}: Unable to populate catalog due to “{error}”"
+
+    pystac_read_file_mock.side_effect = error
+
+    with patch("geostore.populate_catalog.task.LOGGER.warning") as logger_mock:
+        with raises(Exception):
+            handle_message(any_s3_url())
+
+        logger_mock.assert_any_call(
+            expected_message,
+            extra={
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
+        )
