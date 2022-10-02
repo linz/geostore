@@ -45,7 +45,7 @@ from geostore.update_root_catalog.task import SQS_MESSAGE_GROUP_ID
 
 from .aws_utils import Dataset, S3Object, any_lambda_context, any_s3_url, delete_s3_key
 from .file_utils import json_dict_to_file_object
-from .general_generators import any_safe_filename
+from .general_generators import any_error_message, any_exception_class, any_safe_filename
 from .stac_generators import any_dataset_version_id
 from .stac_objects import (
     MINIMAL_VALID_STAC_CATALOG_OBJECT,
@@ -662,19 +662,18 @@ def should_add_link_to_root_catalog_in_series(
 def should_log_error_message_when_an_exception_is_raised_trying_to_update_catalog(
     pystac_read_file_mock: MagicMock,
 ) -> None:
-
-    error = Exception()
+    exception_class = any_exception_class()
+    error_message = any_error_message()
+    error = exception_class(error_message)
     expected_message = f"{LOG_MESSAGE_LAMBDA_FAILURE}: Unable to populate catalog due to “{error}”"
 
     pystac_read_file_mock.side_effect = error
 
-    with patch("geostore.populate_catalog.task.LOGGER.warning") as logger_mock:
-        with raises(Exception):
-            handle_message(any_s3_url())
+    with patch("geostore.populate_catalog.task.LOGGER.warning") as logger_mock, raises(
+        exception_class
+    ):
+        handle_message(any_s3_url())
 
-        logger_mock.assert_any_call(
-            expected_message,
-            extra={
-                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-            },
-        )
+    logger_mock.assert_any_call(
+        expected_message, extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)}
+    )
