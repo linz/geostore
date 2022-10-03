@@ -27,6 +27,12 @@
 -  Add the "automerge" label to your PR if you're confident the pipeline will pass (since the
    deployment update test takes a while)
 
+## Periodic work
+
+At the start of january, run the "Update copyright year in license file" workflow manually. This
+used to be scheduled to run automatically, but we're working around a
+[bug](https://github.com/orgs/community/discussions/32197) for now.
+
 ## How to test a full import
 
 Follow this guide step by step to import a dataset from your personal test stack.
