@@ -26,7 +26,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.9
         with:
           path: ~/.npm
           key:
@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.9
         with:
           path: ~/.cache/pip
           key:
@@ -92,7 +92,7 @@ jobs:
           name: mutation-test-report
           path: mutmut.xml
         if: failure()
-      - uses: mikepenz/action-junit-report@v3.5.0
+      - uses: mikepenz/action-junit-report@v3.5.1
         if: failure()
         with:
           report_paths: mutmut.xml
