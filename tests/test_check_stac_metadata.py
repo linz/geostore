@@ -186,11 +186,13 @@ def should_save_non_s3_url_validation_results(
 @patch("geostore.check_stac_metadata.task.get_param")
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.get_stac_type_by_url")
+@patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta")
 def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
     get_s3_url_reader_mock: MagicMock,
     get_param_mock: MagicMock,
     stac_dataset_validator_mock_validate: MagicMock,
     get_stac_type_by_url_mock: MagicMock,
+    processing_assets_model_with_meta_mock: MagicMock,
 ) -> None:
     # Given
     validation_results_table_name = any_table_name()
@@ -202,9 +204,14 @@ def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
         MINIMAL_VALID_STAC_ITEM_OBJECT, file_in_staging=True
     )
     stac_dataset_validator_mock_validate.return_value = None
+    processing_assets_model_with_meta_mock.return_value = None
     get_stac_type_by_url_mock.return_value = "ITEM"
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), raises(
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.task.ValidationResultFactory"
+    ), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.check_if_contains_assets"
+    ), raises(
         InvalidSTACRootTypeError
     ):
 
@@ -646,6 +653,7 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
+
         assert lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,
@@ -1133,7 +1141,7 @@ def should_report_when_the_dataset_has_no_assets(
             metadata_url,
             Check.ASSETS_IN_DATASET,
             ValidationResult.FAILED,
-            details={MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET},
+            details={MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET.value},
         )
 
 

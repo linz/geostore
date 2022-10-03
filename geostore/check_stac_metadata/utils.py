@@ -115,11 +115,13 @@ class STACDatasetValidator:
             raise InvalidSTACRootTypeError()
         try:
             self.validate(metadata_url)
+            self.check_if_contains_assets(metadata_url)
         except (
             ClientError,
             InvalidSecurityClassificationError,
             JSONDecodeError,
             ValidationError,
+            NoAssetInTheDataset,
         ) as error:
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -255,24 +257,6 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
 
-        if not self.dataset_assets:
-            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET}
-            self.validation_result_factory.save(
-                url,
-                Check.ASSETS_IN_DATASET,
-                ValidationResult.FAILED,
-                details=error_details,
-            )
-            LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={
-                    "outcome": Outcome.FAILED,
-                    "error": Check.NO_ASSETS_IN_DATASET,
-                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-                },
-            )
-            return
-
     def get_s3_url_as_object_json(self, url: str, s3_response: GeostoreS3Response) -> JsonObject:
         try:
             object_json: JsonObject = load(
@@ -329,10 +313,33 @@ class STACDatasetValidator:
 
         return report_duplicate_object_names
 
+    def check_if_contains_assets(self, metadata_url: str) -> None:
+        if not self.dataset_assets:
+            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET.value}
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.ASSETS_IN_DATASET,
+                ValidationResult.FAILED,
+                details=error_details,
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.NO_ASSETS_IN_DATASET,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise NoAssetInTheDataset
+
 
 class InvalidSecurityClassificationError(Exception):
     pass
 
 
 class InvalidSTACRootTypeError(Exception):
+    pass
+
+
+class NoAssetInTheDataset(Exception):
     pass
