@@ -26,10 +26,10 @@ from geostore.check_stac_metadata.stac_validators import (
 )
 from geostore.check_stac_metadata.task import lambda_handler
 from geostore.check_stac_metadata.utils import (
-    NO_ASSETS_FOUND_ERROR_MESSAGE,
     PROCESSING_ASSET_FILE_IN_STAGING_KEY,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    InvalidSTACRootTypeError,
     InvalidSecurityClassificationError,
     STACDatasetValidator,
 )
@@ -153,7 +153,9 @@ def should_save_non_s3_url_validation_results(
         MINIMAL_VALID_STAC_COLLECTION_OBJECT, file_in_staging=True
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), raises(
+        InvalidSTACRootTypeError
+    ):
         # When
         lambda_handler(
             {
@@ -178,6 +180,53 @@ def should_save_non_s3_url_validation_results(
             details={MESSAGE_KEY: f"URL doesn't start with “{S3_URL_PREFIX}”: “{non_s3_url}”"},
         ),
     ]
+
+
+@patch("geostore.check_stac_metadata.task.get_s3_url_reader")
+@patch("geostore.check_stac_metadata.task.get_param")
+@patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
+@patch("geostore.check_stac_metadata.utils.STACDatasetValidator.get_stac_type_by_url")
+@patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta")
+def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
+    get_s3_url_reader_mock: MagicMock,
+    get_param_mock: MagicMock,
+    stac_dataset_validator_mock_validate: MagicMock,
+    get_stac_type_by_url_mock: MagicMock,
+    processing_assets_model_with_meta_mock: MagicMock,
+) -> None:
+    # Given
+    validation_results_table_name = any_table_name()
+    get_param_mock.return_value = validation_results_table_name
+    s3_url = any_s3_url()
+    dataset_id = any_dataset_id()
+    version_id = any_dataset_version_id()
+    get_s3_url_reader_mock.return_value.return_value = MockGeostoreS3Response(
+        MINIMAL_VALID_STAC_ITEM_OBJECT, file_in_staging=True
+    )
+    stac_dataset_validator_mock_validate.return_value = None
+    processing_assets_model_with_meta_mock.return_value = None
+    get_stac_type_by_url_mock.return_value = "ITEM"
+
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.task.ValidationResultFactory"
+    ), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.check_if_contains_assets"
+    ), raises(
+        InvalidSTACRootTypeError
+    ):
+
+        # When
+        lambda_handler(
+            {
+                DATASET_ID_KEY: dataset_id,
+                NEW_VERSION_ID_KEY: version_id,
+                CURRENT_VERSION_ID_KEY: CURRENT_VERSION_EMPTY_VALUE,
+                METADATA_URL_KEY: s3_url,
+                S3_ROLE_ARN_KEY: any_role_arn(),
+                DATASET_TITLE_KEY: any_dataset_title(),
+            },
+            any_lambda_context(),
+        )
 
 
 @patch("geostore.check_stac_metadata.task.ValidationResultFactory")
@@ -291,7 +340,6 @@ def should_save_file_not_found_validation_results(
     validation_results_factory_mock: MagicMock,
     get_s3_client_for_role_mock: MagicMock,
 ) -> None:
-
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
         ClientErrorResponseTypeDef(
@@ -1083,7 +1131,7 @@ def should_report_when_the_dataset_has_no_assets(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={
                 "outcome": Outcome.FAILED,
-                "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
+                "error": Check.NO_ASSETS_IN_DATASET,
                 GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
             },
         )
@@ -1093,7 +1141,7 @@ def should_report_when_the_dataset_has_no_assets(
             metadata_url,
             Check.ASSETS_IN_DATASET,
             ValidationResult.FAILED,
-            details={MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE},
+            details={MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET.value},
         )
 
 
