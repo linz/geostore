@@ -393,6 +393,7 @@ class Processing(Construct):
                     check_stac_metadata_task.lambda_function,
                     check_files_checksums_single_task.job_role,
                     check_files_checksums_array_task.job_role,
+                    populate_catalog_lambda,
                 ],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,

@@ -1,11 +1,13 @@
+from logging import Logger
 from typing import TYPE_CHECKING, Any, Union
 
 import boto3
+from linz_logger import get_log
 from pystac.link import Link
 from pystac.stac_io import StacIO
 
 from .boto3_config import CONFIG
-from .s3_utils import get_bucket_and_key_from_url
+from .s3_utils import calculate_s3_etag, get_bucket_and_key_from_url, get_s3_etag
 
 if TYPE_CHECKING:
     # When type checking we want to use the third party package's stub
@@ -15,6 +17,7 @@ else:
     S3Client = object  # pragma: no mutate
 
 S3_CLIENT: S3Client = boto3.client("s3", config=CONFIG)
+LOGGER: Logger = get_log()
 
 
 class S3StacIO(StacIO):
@@ -33,4 +36,9 @@ class S3StacIO(StacIO):
     ) -> None:
         url = dest.href if isinstance(dest, Link) else dest
         bucket, key = get_bucket_and_key_from_url(url)
-        S3_CLIENT.put_object(Bucket=bucket, Key=key, Body=txt.encode())
+
+        s3_etag = get_s3_etag(bucket, key, LOGGER)
+        local_etag = calculate_s3_etag(txt.encode())
+
+        if s3_etag != local_etag:
+            S3_CLIENT.put_object(Bucket=bucket, Key=key, Body=txt.encode())
