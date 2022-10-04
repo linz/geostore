@@ -6,7 +6,7 @@ class Check(Enum):
     CHECKSUM = "checksum"
     DUPLICATE_OBJECT_KEY = "duplicate asset name"
     FILE_NOT_FOUND = "file not found in staging or storage"
-    INVALID_STAC_ROOT_TYPE = "root type should be catalog or collection"
+    INVALID_STAC_ROOT_TYPE = "root type must be catalog or collection"
     JSON_PARSE = "JSON parse"
     JSON_SCHEMA = "JSON schema"
     NON_S3_URL = "not an s3 url"

@@ -102,20 +102,19 @@ def should_log_non_s3_url_prefix_validation() -> None:
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
-    ):
-        with raises(InvalidSTACRootTypeError):
-            STACDatasetValidator(
-                hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-            ).run(metadata_url)
+    ), raises(InvalidSTACRootTypeError):
+        STACDatasetValidator(
+            hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
+        ).run(metadata_url)
 
-        logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={
-                "outcome": Outcome.FAILED,
-                "error": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
-                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-            },
-        )
+    logger_mock.assert_any_call(
+        LOG_MESSAGE_VALIDATION_COMPLETE,
+        extra={
+            "outcome": Outcome.FAILED,
+            "error": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
+            GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+        },
+    )
 
 
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
