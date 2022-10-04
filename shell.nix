@@ -9,19 +9,12 @@
     { }
 }:
 let
-  python = pkgs.python38;
+  python = pkgs.python39;
   projectDir = builtins.path { path = ./.; name = "geostore"; };
 
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
-      linz-logger = super.linz-logger.overridePythonAttrs (
-        old: {
-          buildInputs = (old.buildInputs or [ ]) ++ [
-            self.poetry
-          ];
-        }
-      );
       mypy = super.mypy.overridePythonAttrs (old: {
         patches = [ ];
         MYPY_USE_MYPYC = false;
@@ -37,7 +30,8 @@ poetryEnv.env.overrideAttrs (
       pkgs.docker
       pkgs.gitFull
       pkgs.nodejs
-      pkgs.python38Packages.pip
+      pkgs.python39Packages.pip
+      pkgs.python39Packages.pip-tools
       (pkgs.poetry.override {
         inherit python;
       })

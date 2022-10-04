@@ -1,8 +1,6 @@
 name: Bootstrap Geostore AWS accounts with latest version
 
 on:
-  schedule:
-    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
@@ -13,7 +11,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -24,13 +22,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -50,7 +48,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:
@@ -91,7 +89,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -102,13 +100,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -128,7 +126,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:
@@ -169,7 +167,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -180,13 +178,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -206,7 +204,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:

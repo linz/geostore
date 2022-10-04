@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
           submodules: 'true'
@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:
@@ -55,7 +55,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           submodules: 'true'
 
@@ -66,13 +66,13 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Node.js ${{ steps.node-version.outputs.id }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: ${{ steps.node-version.outputs.id }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -92,7 +92,7 @@ jobs:
           python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:
@@ -174,7 +174,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
 
       - uses: cachix/install-nix-action@v17
       - uses: cachix/cachix-action@v10
