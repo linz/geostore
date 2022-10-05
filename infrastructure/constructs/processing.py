@@ -10,7 +10,7 @@ from aws_cdk import (
     aws_stepfunctions,
 )
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
-from aws_cdk.aws_stepfunctions import Wait, WaitTime
+from aws_cdk.aws_stepfunctions import Errors, Wait, WaitTime
 from constructs import Construct
 
 from geostore.api_keys import SUCCESS_KEY
@@ -393,6 +393,7 @@ class Processing(Construct):
                     check_stac_metadata_task.lambda_function,
                     check_files_checksums_single_task.job_role,
                     check_files_checksums_array_task.job_role,
+                    populate_catalog_lambda,
                 ],
                 validation_results_table.name_parameter: [
                     check_stac_metadata_task.lambda_function,
@@ -439,7 +440,10 @@ class Processing(Construct):
         ############################################################################################
         # STATE MACHINE
         dataset_version_creation_definition = (
-            check_stac_metadata_task.next(content_iterator_task)
+            check_stac_metadata_task.add_catch(
+                errors=[Errors.TASKS_FAILED], handler=validation_summary_task
+            )
+            .next(content_iterator_task)
             .next(
                 aws_stepfunctions.Choice(self, "check_files_checksums_maybe_array")
                 .when(

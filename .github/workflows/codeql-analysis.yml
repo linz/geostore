@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
 
       - name: Get configuration
         run: |
@@ -34,11 +34,11 @@ jobs:
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.1.25
+        uses: github/codeql-action/init@v2.1.26
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
           languages: python
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.1.25
+        uses: github/codeql-action/analyze@v2.1.26

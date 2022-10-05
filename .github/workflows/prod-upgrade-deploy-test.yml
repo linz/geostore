@@ -15,7 +15,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           submodules: true
 
@@ -35,7 +35,7 @@ jobs:
           echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
       - name: Checkout to current production version
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           ref: ${{ env.PROD_VERSION }}
           clean: false
@@ -55,7 +55,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -76,7 +76,7 @@ jobs:
           python-version: ${{ env.PROD_PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:
@@ -115,7 +115,7 @@ jobs:
           poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
       - name: Checkout to current pull request version
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
         with:
           ref: ${{ env.GITHUB_SHA }}
           clean: false
@@ -134,7 +134,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.npm
           key:
@@ -155,7 +155,7 @@ jobs:
           python-version: ${{ env.HEAD_PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: ~/.cache/pip
           key:

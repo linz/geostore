@@ -40,8 +40,6 @@ from .stac_validators import (
     STACItemSchemaValidator,
 )
 
-NO_ASSETS_FOUND_ERROR_MESSAGE = "No assets found in dataset"
-
 LOGGER: Logger = get_log()
 
 STAC_TYPE_VALIDATION_MAP: Dict[str, Draft7Validator] = {
@@ -69,6 +67,14 @@ def maybe_convert_relative_url_to_absolute(url_or_path: str, parent_url: str) ->
     return f"{dirname(parent_url)}/{url_or_path}"
 
 
+def is_s3_url(metadata_url: str) -> bool:
+    return metadata_url[:5] == S3_URL_PREFIX
+
+
+def is_instance_of_catalog_or_collection(stac_type: str) -> bool:
+    return stac_type in (STAC_TYPE_COLLECTION, STAC_TYPE_CATALOG)
+
+
 class STACDatasetValidator:
     # pylint:disable=too-many-instance-attributes
     def __init__(
@@ -90,7 +96,7 @@ class STACDatasetValidator:
         self.processing_assets_model = processing_assets_model_with_meta()
 
     def run(self, metadata_url: str) -> None:
-        if metadata_url[:5] != S3_URL_PREFIX:
+        if not is_s3_url(metadata_url):
             error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
             self.validation_result_factory.save(
                 metadata_url,
@@ -106,15 +112,16 @@ class STACDatasetValidator:
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
-            return
-
+            raise InvalidSTACRootTypeError()
         try:
             self.validate(metadata_url)
+            self.check_if_contains_assets(metadata_url)
         except (
             ClientError,
             InvalidSecurityClassificationError,
             JSONDecodeError,
             ValidationError,
+            NoAssetInTheDataset,
         ) as error:
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -126,26 +133,34 @@ class STACDatasetValidator:
             )
             return
 
-        if not self.dataset_assets:
-            error_details = {MESSAGE_KEY: NO_ASSETS_FOUND_ERROR_MESSAGE}
+        stac_type = self.get_stac_type_by_url(metadata_url)
+        if not is_instance_of_catalog_or_collection(stac_type):
+            error_message = (
+                f"Uploaded Assets should be catalog.json or collection.json: “{metadata_url}”"
+            )
             self.validation_result_factory.save(
                 metadata_url,
-                Check.ASSETS_IN_DATASET,
+                Check.INVALID_STAC_ROOT_TYPE,
                 ValidationResult.FAILED,
-                details=error_details,
+                details={MESSAGE_KEY: error_message},
             )
             LOGGER.error(
                 LOG_MESSAGE_VALIDATION_COMPLETE,
                 extra={
                     "outcome": Outcome.FAILED,
-                    "error": NO_ASSETS_FOUND_ERROR_MESSAGE,
+                    "error": Check.INVALID_STAC_ROOT_TYPE,
                     GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
                 },
             )
-            return
+            raise InvalidSTACRootTypeError()
 
         self.process_metadata()
         self.process_assets()
+
+    def get_stac_type_by_url(self, metadata_url: str) -> str:
+        s3_response = self.get_object(metadata_url)
+        stac_type: str = self.get_s3_url_as_object_json(metadata_url, s3_response)[STAC_TYPE_KEY]
+        return stac_type
 
     def process_metadata(self) -> None:
         for index, metadata_file in enumerate(self.dataset_metadata):
@@ -176,16 +191,7 @@ class STACDatasetValidator:
     def validate(self, url: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
         s3_response = self.get_object(url)
-        try:
-            object_json: JsonObject = load(
-                s3_response.response,
-                object_pairs_hook=self.duplicate_object_names_report_builder(url),
-            )
-        except JSONDecodeError as error:
-            self.validation_result_factory.save(
-                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
-            )
-            raise
+        object_json = self.get_s3_url_as_object_json(url, s3_response)
 
         stac_type = object_json[STAC_TYPE_KEY]
         validator = STAC_TYPE_VALIDATION_MAP[stac_type]
@@ -251,6 +257,19 @@ class STACDatasetValidator:
             if next_url not in self.traversed_urls:
                 self.validate(next_url)
 
+    def get_s3_url_as_object_json(self, url: str, s3_response: GeostoreS3Response) -> JsonObject:
+        try:
+            object_json: JsonObject = load(
+                s3_response.response,
+                object_pairs_hook=self.duplicate_object_names_report_builder(url),
+            )
+            return object_json
+        except JSONDecodeError as error:
+            self.validation_result_factory.save(
+                url, Check.JSON_PARSE, ValidationResult.FAILED, details={MESSAGE_KEY: str(error)}
+            )
+            raise
+
     def get_object(self, url: str) -> GeostoreS3Response:
         try:
             s3_response = self.url_reader(url)
@@ -294,6 +313,33 @@ class STACDatasetValidator:
 
         return report_duplicate_object_names
 
+    def check_if_contains_assets(self, metadata_url: str) -> None:
+        if not self.dataset_assets:
+            error_details = {MESSAGE_KEY: Check.NO_ASSETS_IN_DATASET.value}
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.ASSETS_IN_DATASET,
+                ValidationResult.FAILED,
+                details=error_details,
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.NO_ASSETS_IN_DATASET,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise NoAssetInTheDataset
+
 
 class InvalidSecurityClassificationError(Exception):
+    pass
+
+
+class InvalidSTACRootTypeError(Exception):
+    pass
+
+
+class NoAssetInTheDataset(Exception):
     pass
