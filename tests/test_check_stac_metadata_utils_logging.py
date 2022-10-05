@@ -7,11 +7,13 @@ from unittest.mock import MagicMock, patch
 from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 from jsonschema import ValidationError
+from pytest import raises
 
 from geostore.check_stac_metadata.utils import (
     LOG_MESSAGE_STAC_ASSET_INFO,
     PROCESSING_ASSET_MULTIHASH_KEY,
     PROCESSING_ASSET_URL_KEY,
+    InvalidSTACRootTypeError,
     STACDatasetValidator,
 )
 from geostore.logging_keys import GIT_COMMIT, LOG_MESSAGE_VALIDATION_COMPLETE
@@ -100,19 +102,19 @@ def should_log_non_s3_url_prefix_validation() -> None:
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.error") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
-    ):
+    ), raises(InvalidSTACRootTypeError):
         STACDatasetValidator(
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
         ).run(metadata_url)
 
-        logger_mock.assert_any_call(
-            LOG_MESSAGE_VALIDATION_COMPLETE,
-            extra={
-                "outcome": Outcome.FAILED,
-                "error": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
-                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-            },
-        )
+    logger_mock.assert_any_call(
+        LOG_MESSAGE_VALIDATION_COMPLETE,
+        extra={
+            "outcome": Outcome.FAILED,
+            "error": f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”",
+            GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+        },
+    )
 
 
 @patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate")
