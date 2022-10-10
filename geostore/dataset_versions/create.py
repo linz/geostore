@@ -1,5 +1,5 @@
 """Dataset versions handler function."""
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from json import dumps
 from logging import Logger
@@ -91,7 +91,7 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         )
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' could not be found")
 
-    now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
+    now = datetime.fromisoformat(body.get(NOW_KEY, datetime.now(tz=timezone.utc).isoformat()))
     dataset_version_id = human_readable_ulid(from_timestamp(now))
     current_dataset_version = dataset.current_dataset_version or CURRENT_VERSION_EMPTY_VALUE
 
