@@ -188,12 +188,12 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
         # When
         try:
-            dataset_response = invoke_dataset_lambda_function(dataset_title, lambda_client)
+            dataset_response = invoke_dataset_lambda_function(lambda_client, dataset_title)
             dataset_payload = load(dataset_response["Payload"])
             dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
 
             dataset_versions_response = invoke_dataset_version_lambda_function(
-                dataset_id, lambda_client, root_metadata_file.url
+                lambda_client, dataset_id, root_metadata_file.url
             )
 
             dataset_versions_payload = load(dataset_versions_response["Payload"])
@@ -859,13 +859,13 @@ def should_end_step_function_successfully_when_non_collection_or_catalog_submitt
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ) as s3_metadata_file:
-        dataset_response = invoke_dataset_lambda_function(dataset_title, lambda_client)
+        dataset_response = invoke_dataset_lambda_function(lambda_client, dataset_title)
         dataset_payload = load(dataset_response["Payload"])
         dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
 
         # When creating a dataset version
         dataset_version_creation_response = invoke_dataset_version_lambda_function(
-            dataset_id, lambda_client, s3_metadata_file.url
+            lambda_client, dataset_id, s3_metadata_file.url
         )
         response_payload = load(dataset_version_creation_response["Payload"])
         with subtests.test(msg="Dataset Versions endpoint status code"):
@@ -887,7 +887,7 @@ def should_end_step_function_successfully_when_non_collection_or_catalog_submitt
 
 
 def invoke_dataset_version_lambda_function(
-    dataset_id: str, lambda_client: LambdaClient, url: str
+    lambda_client: LambdaClient, dataset_id: str, metadata_url: str
 ) -> InvocationResponseTypeDef:
     return lambda_client.invoke(
         FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -896,7 +896,7 @@ def invoke_dataset_version_lambda_function(
                 HTTP_METHOD_KEY: "POST",
                 BODY_KEY: {
                     DATASET_ID_SHORT_KEY: dataset_id,
-                    METADATA_URL_KEY: url,
+                    METADATA_URL_KEY: metadata_url,
                     S3_ROLE_ARN_KEY: get_s3_role_arn(),
                 },
             }
@@ -905,7 +905,7 @@ def invoke_dataset_version_lambda_function(
 
 
 def invoke_dataset_lambda_function(
-    dataset_title: str, lambda_client: LambdaClient
+    lambda_client: LambdaClient, dataset_title: str
 ) -> InvocationResponseTypeDef:
     return lambda_client.invoke(
         FunctionName=Resource.DATASETS_ENDPOINT_FUNCTION_NAME.resource_name,
@@ -959,13 +959,13 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         key=f"{key_prefix}/{metadata_filename}",
     ) as s3_metadata_file:
 
-        dataset_response = invoke_dataset_lambda_function(dataset_title, lambda_client)
+        dataset_response = invoke_dataset_lambda_function(lambda_client, dataset_title)
         dataset_payload = load(dataset_response["Payload"])
         dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
 
         # When creating a dataset version
         dataset_version_creation_response = invoke_dataset_version_lambda_function(
-            dataset_id, lambda_client, s3_metadata_file.url
+            lambda_client, dataset_id, s3_metadata_file.url
         )
 
         response_payload = load(dataset_version_creation_response["Payload"])
