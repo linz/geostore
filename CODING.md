@@ -198,6 +198,21 @@ This document is meant to give general hints for code reviewers. It should not b
 complete set of things to consider, and should not include anything which is currently being
 validated automatically.
 
+#### Time zones
+
+-  Only use time zone-aware datetimes.
+
+   Bad examples:
+   [`datetime.utcnow()` and `datetime.utcfromtimestamp()` return datetimes without a time zone](https://blog.ganssle.io/articles/2019/11/utcnow.html),
+   despite `utc` in the name.
+
+   Good examples: `datetime.now(tz=timezone.utc)` and
+   `datetime.fromtimestamp(timestamp, tz=timezone.utc)`.
+
+   Rationale: When doing anything with time zone-naive datetimes they are considered to be in the
+   same time zone as the local machine clock, which is not what you'd ever want when programming for
+   another system.
+
 #### Dockerfiles
 
 -  Don't pin `apt` package versions.
