@@ -94,12 +94,12 @@ linz-logger = {version = "*", optional = true}
 multihash = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
 pystac = {version = "*", optional = true}
+python-ulid = {version = "*", optional = true}
 single-source = "*"
 slack-sdk = {version = "*", extras = ["models", "webhook"], optional = true}
 smart-open = {version = "*", extras = ["s3"], optional = true}
 strict-rfc3339 = {optional = true, version = "*"}
 typer = "*"
-ulid-py = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -156,13 +156,13 @@ datasets = [
     "linz-logger",
     "pynamodb",
     "pystac",
-    "ulid-py",
+    "python-ulid",
 ]
 dataset_versions = [
     "jsonschema",
     "linz-logger",
     "pynamodb",
-    "ulid-py",
+    "python-ulid",
 ]
 import_asset_file = [
     "linz-logger",
@@ -173,7 +173,7 @@ import_dataset = [
     "linz-logger",
     "pynamodb",
     "smart-open",
-    "ulid-py",
+    "python-ulid",
 ]
 import_metadata_file = [
     "linz-logger",
@@ -198,7 +198,7 @@ update_root_catalog = [
     "jsonschema",
     "linz-logger",
     "pynamodb",
-    "ulid-py"
+    "python-ulid"
 ]
 upload_status = [
     "jsonschema",

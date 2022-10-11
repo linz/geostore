@@ -4,7 +4,9 @@ from typing import Any, Dict, Optional, Tuple, Type
 from pynamodb.attributes import UTCDateTimeAttribute, UnicodeAttribute
 from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
 from pynamodb.models import MetaModel, Model
-from ulid import ULID, new
+from ulid import ULID
+from ulid.base32 import encode_randomness
+from ulid.constants import TIMESTAMP_LEN
 
 from .aws_keys import AWS_DEFAULT_REGION_KEY
 from .clock import now
@@ -21,8 +23,8 @@ def human_readable_ulid(ulid: ULID) -> str:
     ULIDs have millisecond timestamps, but strftime can only format microseconds, so we need to chop
     off the last three characters.
     """
-    datetime_string = ulid.timestamp().datetime.strftime("%Y-%m-%dT%H-%M-%S-%f")[:-3]
-    return f"{datetime_string}Z_{ulid.randomness()}"
+    datetime_string = ulid.datetime.strftime("%Y-%m-%dT%H-%M-%S-%f")[:-3]
+    return f"{datetime_string}Z_{encode_randomness(ulid.bytes[TIMESTAMP_LEN :])}"
 
 
 class DatasetsTitleIdx(GlobalSecondaryIndex["DatasetsModelBase"]):  # type: ignore[no-untyped-call]
@@ -45,7 +47,7 @@ class DatasetsModelBase(Model):
     id = UnicodeAttribute(
         hash_key=True,
         attr_name="pk",
-        default_for_new=lambda: f"{DATASET_ID_PREFIX}{new()}",
+        default_for_new=lambda: f"{DATASET_ID_PREFIX}{ULID()}",
     )
     title = UnicodeAttribute()
     created_at = UTCDateTimeAttribute(default_for_new=now)
