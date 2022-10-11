@@ -1729,7 +1729,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.9"
+version = "2.28.11.2"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -2526,8 +2526,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.9.tar.gz", hash = "sha256:feaf581bd580497a47fe845d506fa3b91b484cf706ff27774e87659837de9962"},
-    {file = "types_requests-2.28.9-py3-none-any.whl", hash = "sha256:86cb66d3de2f53eac5c09adc42cf6547eefbd0c7e1210beca1ee751c35d96083"},
+    {file = "types-requests-2.28.11.2.tar.gz", hash = "sha256:fdcd7bd148139fb8eef72cf4a41ac7273872cad9e6ada14b11ff5dfdeee60ed3"},
+    {file = "types_requests-2.28.11.2-py3-none-any.whl", hash = "sha256:14941f8023a80b16441b3b46caffcbfce5265fd14555844d6029697824b5a2ef"},
 ]
 types-s3transfer = [
     {file = "types-s3transfer-0.6.0.tar.gz", hash = "sha256:e6d71efb01985fc8561b951230f93c4062075b88adf293142b2d4b835c2cae63"},
