@@ -322,7 +322,7 @@ def should_create_dataset_version(subtests: SubTests) -> None:
             f"^({DATASET_VERSION_ID_REGEX})\tarn:aws:states:{AWS_REGION}:\\d+:execution:.*:\\1\n$",
             result.stdout,
             flags=MULTILINE,
-        )
+        ), result.stdout
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""
@@ -486,7 +486,7 @@ def should_print_version_information(subtests: SubTests) -> None:
 
     # Then
     with subtests.test(msg="should print version number to standard output"):
-        assert match(r"^\d+\.\d+\.\d+\n$", result.stdout, flags=MULTILINE)
+        assert match(r"^\d+\.\d+\.\d+\n$", result.stdout, flags=MULTILINE), result.stdout
 
     with subtests.test(msg="should print nothing to standard error"):
         assert result.stderr == ""
