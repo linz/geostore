@@ -9,7 +9,7 @@ RUN apt-get update \
     && pip install --no-cache-dir --requirement=pip.txt \
     && pip install --no-cache-dir --requirement=poetry.txt
 ARG task
-RUN poetry install --extras=${task} --no-dev --no-root
+RUN poetry install --extras=${task} --no-root --only=main
 
 
 FROM ubuntu:22.04
