@@ -953,13 +953,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "linz-logger"
-version = "0.8.0"
+version = "0.9.0"
 description = "LINZ standard Logging format"
 category = "main"
 optional = true
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
+python-ulid = ">=1.1.0,<2.0.0"
 structlog = ">=22.1.0,<23.0.0"
 
 [[package]]
@@ -2174,8 +2175,8 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:37d9c34b96cca6787fe014aeb651217944a967a5b165e2cacb6b858d2997ab84"},
 ]
 linz-logger = [
-    {file = "linz_logger-0.8.0-py3-none-any.whl", hash = "sha256:a169b62fe251c80dce16adaf87285da4ea14405c031dbb56b9b90ebbab51f783"},
-    {file = "linz_logger-0.8.0.tar.gz", hash = "sha256:80b8e637500ad7219892950fa961c0d0bcb1b966842ce602d499f57a8ba17786"},
+    {file = "linz_logger-0.9.0-py3-none-any.whl", hash = "sha256:31cd8ea27fbf79330727b10f3fae242afc59a7399833c4ff0cb3392869f616c0"},
+    {file = "linz_logger-0.9.0.tar.gz", hash = "sha256:e8282540c305fab3645f9315dadf9eb68d33f9c0bcdea0586662333fd1836425"},
 ]
 matplotlib-inline = [
     {file = "matplotlib-inline-0.1.3.tar.gz", hash = "sha256:a04bfba22e0d1395479f866853ec1ee28eea1485c1d69a6faf00dc3e24ff34ee"},
