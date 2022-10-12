@@ -54,31 +54,31 @@ tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy"
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.41.0a0"
+version = "2.45.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.41.0,<3.0.0"
+aws-cdk-lib = ">=2.45.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.67.0,<2.0.0"
+jsii = ">=1.68.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
-name = "aws-cdk.aws-lambda-python-alpha"
-version = "2.41.0a0"
+name = "aws-cdk-aws-lambda-python-alpha"
+version = "2.45.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.41.0,<3.0.0"
+aws-cdk-lib = ">=2.45.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.67.0,<2.0.0"
+jsii = ">=1.68.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -1860,20 +1860,20 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 
 [extras]
 cdk = ["aws-cdk.aws-batch-alpha", "aws-cdk.aws-lambda-python-alpha", "aws-cdk-lib", "awscli", "cattrs"]
-check_files_checksums = ["linz-logger", "multihash", "pynamodb"]
-check_stac_metadata = ["jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
-content_iterator = ["jsonschema", "linz-logger", "pynamodb"]
-dataset_versions = ["jsonschema", "linz-logger", "pynamodb", "python-ulid"]
+check-files-checksums = ["linz-logger", "multihash", "pynamodb"]
+check-stac-metadata = ["jsonschema", "linz-logger", "pynamodb", "strict-rfc3339"]
+content-iterator = ["jsonschema", "linz-logger", "pynamodb"]
+dataset-versions = ["jsonschema", "linz-logger", "pynamodb", "python-ulid"]
 datasets = ["jsonschema", "linz-logger", "pynamodb", "pystac", "python-ulid"]
-import_asset_file = ["linz-logger", "smart-open"]
-import_dataset = ["jsonschema", "linz-logger", "pynamodb", "smart-open", "python-ulid"]
-import_metadata_file = ["linz-logger"]
-import_status = ["jsonschema", "linz-logger", "pynamodb"]
-notify_status_update = ["jsonschema", "linz-logger", "pynamodb", "slack-sdk"]
-populate_catalog = ["jsonschema", "linz-logger", "pystac"]
-update_root_catalog = ["jsonschema", "linz-logger", "pynamodb", "python-ulid"]
-upload_status = ["jsonschema", "linz-logger", "pynamodb"]
-validation_summary = ["jsonschema", "linz-logger", "pynamodb"]
+import-asset-file = ["linz-logger", "smart-open"]
+import-dataset = ["jsonschema", "linz-logger", "pynamodb", "smart-open", "python-ulid"]
+import-metadata-file = ["linz-logger"]
+import-status = ["jsonschema", "linz-logger", "pynamodb"]
+notify-status-update = ["jsonschema", "linz-logger", "pynamodb", "slack-sdk"]
+populate-catalog = ["jsonschema", "linz-logger", "pystac"]
+update-root-catalog = ["jsonschema", "linz-logger", "pynamodb", "python-ulid"]
+upload-status = ["jsonschema", "linz-logger", "pynamodb"]
+validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
@@ -1902,12 +1902,12 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 aws-cdk-aws-batch-alpha = [
-    {file = "aws-cdk.aws-batch-alpha-2.41.0a0.tar.gz", hash = "sha256:0d1adab9eb927e5a00f2c79cd37661997d565400de7bcb63dc725f310f4fdfdb"},
-    {file = "aws_cdk.aws_batch_alpha-2.41.0a0-py3-none-any.whl", hash = "sha256:c81c4f13bb49465b92d2fa4206fe61944d55570d8cf78aa112a0c86c2d026969"},
+    {file = "aws-cdk.aws-batch-alpha-2.45.0a0.tar.gz", hash = "sha256:e6d0ba0c488097867ad060cd746253a000771f2c72e3f49f5b11851d7f63af22"},
+    {file = "aws_cdk.aws_batch_alpha-2.45.0a0-py3-none-any.whl", hash = "sha256:eb9f38c66e1cbd4e87c7b36711fc4b4de7ffdd555820e012ab98d995f0cada8a"},
 ]
-"aws-cdk.aws-lambda-python-alpha" = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.41.0a0.tar.gz", hash = "sha256:8322afede76c85d04fef34f82bef6fec965ae3d04b3867e8d218be40f5261d38"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.41.0a0-py3-none-any.whl", hash = "sha256:95bc2b30aea8795f3934c201ff47ef01493d96099bfafc8cb2aa3225a0741f55"},
+aws-cdk-aws-lambda-python-alpha = [
+    {file = "aws-cdk.aws-lambda-python-alpha-2.45.0a0.tar.gz", hash = "sha256:47158087bf19717f45d030ba4242a8b436ffdb68f8ad13eb99eb0f2a65f4eab5"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.45.0a0-py3-none-any.whl", hash = "sha256:fd068da3dc0b81fdd577d45c5cb44a44c4b02057018ea0c999f342b4c8c9e2d4"},
 ]
 aws-cdk-lib = [
     {file = "aws-cdk-lib-2.45.0.tar.gz", hash = "sha256:ed4166498205a6507666a9fdb69f5dbeffa11cd69bf7e98b279ec305e4970374"},
