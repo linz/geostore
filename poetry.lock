@@ -97,20 +97,6 @@ publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
-name = "aws-cdk-lib"
-version = "2.41.0"
-description = "Version 2 of the AWS Cloud Development Kit library"
-category = "main"
-optional = false
-python-versions = "~=3.7"
-
-[package.dependencies]
-constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.67.0,<2.0.0"
-publication = ">=0.0.3"
-typeguard = ">=2.13.3,<2.14.0"
-
-[[package]]
 name = "awscli"
 version = "1.19.53"
 description = "Universal Command Line Environment for AWS."
