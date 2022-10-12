@@ -1595,7 +1595,7 @@ testing = ["Flask (>=1,<2)", "Flask-Sockets (>=0.2,<1)", "Jinja2 (==3.0.3)", "We
 
 [[package]]
 name = "smart-open"
-version = "6.1.0"
+version = "6.2.0"
 description = "Utils for streaming large files (S3, HDFS, GCS, Azure Blob Storage, gzip, bz2...)"
 category = "main"
 optional = true
@@ -2481,8 +2481,8 @@ slack-sdk = [
     {file = "slack_sdk-3.19.1.tar.gz", hash = "sha256:5db78a3ed3c58b3b0a2bdbe40bac43c7b00edcbc12ff6a7778ac5cbe3a3a2899"},
 ]
 smart-open = [
-    {file = "smart_open-6.1.0-py3-none-any.whl", hash = "sha256:1a5315659844085a1ba7ec40d080c1d084ba8535ec113160d692fe8a0e032417"},
-    {file = "smart_open-6.1.0.tar.gz", hash = "sha256:c8fd9e9f90f0e285f1346481b0ae0fb57bd04b1138826c5e826ee98b2029d7f3"},
+    {file = "smart_open-6.2.0-py3-none-any.whl", hash = "sha256:088bf00f9327c71e549bc2f86567d3320df5d89667f009ce1c16568976068ef7"},
+    {file = "smart_open-6.2.0.tar.gz", hash = "sha256:1b4df5c8365218f3852c507451920ccad606c80b0acb4e67508e50ba9b5d2632"},
 ]
 strict-rfc3339 = [
     {file = "strict-rfc3339-0.7.tar.gz", hash = "sha256:5cad17bedfc3af57b399db0fed32771f18fc54bbd917e85546088607ac5e1277"},
