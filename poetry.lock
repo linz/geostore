@@ -53,18 +53,19 @@ tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympl
 tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "six"]
 
 [[package]]
-name = "aws-cdk.aws-batch-alpha"
-version = "2.24.0a0"
+name = "aws-cdk-aws-batch-alpha"
+version = "2.41.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.24.0,<3.0.0"
+aws-cdk-lib = ">=2.41.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.58.0,<2.0.0"
+jsii = ">=1.67.0,<2.0.0"
 publication = ">=0.0.3"
+typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk.aws-lambda-python-alpha"
@@ -1899,9 +1900,9 @@ attrs = [
     {file = "attrs-21.4.0-py2.py3-none-any.whl", hash = "sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4"},
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
-"aws-cdk.aws-batch-alpha" = [
-    {file = "aws-cdk.aws-batch-alpha-2.24.0a0.tar.gz", hash = "sha256:40c7e618d069b5054f3dfde43835a1c4acf8567a481613bd3ce4a95f79619fe0"},
-    {file = "aws_cdk.aws_batch_alpha-2.24.0a0-py3-none-any.whl", hash = "sha256:cb5264022fd550299bfca6431abf48454b35e982f8f0362f554a9d9b388096f3"},
+aws-cdk-aws-batch-alpha = [
+    {file = "aws-cdk.aws-batch-alpha-2.41.0a0.tar.gz", hash = "sha256:0d1adab9eb927e5a00f2c79cd37661997d565400de7bcb63dc725f310f4fdfdb"},
+    {file = "aws_cdk.aws_batch_alpha-2.41.0a0-py3-none-any.whl", hash = "sha256:c81c4f13bb49465b92d2fa4206fe61944d55570d8cf78aa112a0c86c2d026969"},
 ]
 "aws-cdk.aws-lambda-python-alpha" = [
     {file = "aws-cdk.aws-lambda-python-alpha-2.41.0a0.tar.gz", hash = "sha256:8322afede76c85d04fef34f82bef6fec965ae3d04b3867e8d218be40f5261d38"},
