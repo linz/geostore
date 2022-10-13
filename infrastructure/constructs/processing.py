@@ -441,7 +441,9 @@ class Processing(Construct):
         # STATE MACHINE
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
-                errors=[Errors.TASKS_FAILED], handler=validation_summary_task
+                errors=[Errors.TASKS_FAILED],
+                handler=validation_summary_task,
+                result_path="$.error-info",
             )
             .next(content_iterator_task)
             .next(

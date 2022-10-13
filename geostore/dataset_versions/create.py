@@ -1,5 +1,5 @@
 """Dataset versions handler function."""
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from json import dumps
 from logging import Logger
@@ -9,7 +9,7 @@ import boto3
 from jsonschema import ValidationError, validate
 from linz_logger import get_log
 from pynamodb.exceptions import DoesNotExist
-from ulid import from_timestamp
+from ulid import ULID
 
 from ..api_responses import error_response, success_response
 from ..boto3_config import CONFIG
@@ -91,8 +91,8 @@ def create_dataset_version(body: JsonObject) -> JsonObject:
         )
         return error_response(HTTPStatus.NOT_FOUND, f"dataset '{dataset_id}' could not be found")
 
-    now = datetime.fromisoformat(body.get(NOW_KEY, datetime.utcnow().isoformat()))
-    dataset_version_id = human_readable_ulid(from_timestamp(now))
+    now = datetime.fromisoformat(body.get(NOW_KEY, datetime.now(tz=timezone.utc).isoformat()))
+    dataset_version_id = human_readable_ulid(ULID.from_datetime(now))
     current_dataset_version = dataset.current_dataset_version or CURRENT_VERSION_EMPTY_VALUE
 
     processing_assets_model = processing_assets_model_with_meta()

@@ -19,7 +19,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -29,16 +29,16 @@ jobs:
           python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-dev --no-root
+              --no-root --only=main
           echo "CODEQL_PYTHON=$(python -m poetry run which python)" >> $GITHUB_ENV
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.1.26
+        uses: github/codeql-action/init@v2.1.27
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
           languages: python
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.1.26
+        uses: github/codeql-action/analyze@v2.1.27

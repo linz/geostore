@@ -43,7 +43,7 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -63,7 +63,7 @@ jobs:
           python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-dev --no-root
+              --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -121,7 +121,7 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -141,7 +141,7 @@ jobs:
           python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-dev --no-root
+              --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -199,7 +199,7 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.2.0
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -219,7 +219,7 @@ jobs:
           python -m pip install --requirement=geostore/poetry.txt
           python -m poetry install \
               --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-dev --no-root
+              --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
