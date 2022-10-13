@@ -95,26 +95,10 @@ class STACDatasetValidator:
 
         self.processing_assets_model = processing_assets_model_with_meta()
 
-    def run(self, metadata_url: str) -> None:
-        if not is_s3_url(metadata_url):
-            error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
-            self.validation_result_factory.save(
-                metadata_url,
-                Check.NON_S3_URL,
-                ValidationResult.FAILED,
-                details={MESSAGE_KEY: error_message},
-            )
-            LOGGER.error(
-                LOG_MESSAGE_VALIDATION_COMPLETE,
-                extra={
-                    "outcome": Outcome.FAILED,
-                    "error": error_message,
-                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-                },
-            )
-            raise InvalidSTACRootTypeError()
+    def run(self, metadata_url: str, dataset_id: str) -> None:
+        self.check_if_s3_url(metadata_url)
         try:
-            self.validate(metadata_url)
+            self.validate(metadata_url, dataset_id)
             self.check_if_contains_assets(metadata_url)
         except (
             ClientError,
@@ -133,6 +117,12 @@ class STACDatasetValidator:
             )
             return
 
+        self.check_if_url_catalog_or_collection(metadata_url)
+
+        self.process_metadata()
+        self.process_assets()
+
+    def check_if_url_catalog_or_collection(self, metadata_url: str) -> None:
         stac_type = self.get_stac_type_by_url(metadata_url)
         if not is_instance_of_catalog_or_collection(stac_type):
             error_message = (
@@ -154,8 +144,24 @@ class STACDatasetValidator:
             )
             raise InvalidSTACRootTypeError()
 
-        self.process_metadata()
-        self.process_assets()
+    def check_if_s3_url(self, metadata_url: str) -> None:
+        if not is_s3_url(metadata_url):
+            error_message = f"URL doesn't start with “{S3_URL_PREFIX}”: “{metadata_url}”"
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.NON_S3_URL,
+                ValidationResult.FAILED,
+                details={MESSAGE_KEY: error_message},
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": error_message,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise InvalidSTACRootTypeError()
 
     def get_stac_type_by_url(self, metadata_url: str) -> str:
         s3_response = self.get_object(metadata_url)
@@ -188,7 +194,7 @@ class STACDatasetValidator:
                 multihash=asset[PROCESSING_ASSET_MULTIHASH_KEY],
             ).save()
 
-    def validate(self, url: str) -> None:  # pylint: disable=too-complex
+    def validate(self, url: str, dataset_id: str) -> None:  # pylint: disable=too-complex
         self.traversed_urls.append(url)
         s3_response = self.get_object(url)
         object_json = self.get_s3_url_as_object_json(url, s3_response)
@@ -207,22 +213,8 @@ class STACDatasetValidator:
             )
             raise
 
-        security_classification = object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY)
-        if (
-            security_classification is not None
-            and security_classification != LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED
-        ):
-            self.validation_result_factory.save(
-                url,
-                Check.SECURITY_CLASSIFICATION,
-                ValidationResult.FAILED,
-                details={
-                    MESSAGE_KEY: "Expected security classification of "
-                    f"'{LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED}'. "
-                    f"Got '{security_classification}'."
-                },
-            )
-            raise InvalidSecurityClassificationError(security_classification)
+        self.validate_dataset_id(object_json, dataset_id, url)
+        self.validate_security_classification(object_json, url)
 
         self.validation_result_factory.save(url, Check.JSON_SCHEMA, ValidationResult.PASSED)
 
@@ -255,7 +247,25 @@ class STACDatasetValidator:
             next_url = maybe_convert_relative_url_to_absolute(link_object[STAC_HREF_KEY], url)
 
             if next_url not in self.traversed_urls:
-                self.validate(next_url)
+                self.validate(next_url, dataset_id)
+
+    def validate_security_classification(self, object_json: JsonObject, url: str) -> None:
+        security_classification = object_json.get(LINZ_STAC_SECURITY_CLASSIFICATION_KEY)
+        if (
+            security_classification is not None
+            and security_classification != LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED
+        ):
+            self.validation_result_factory.save(
+                url,
+                Check.SECURITY_CLASSIFICATION,
+                ValidationResult.FAILED,
+                details={
+                    MESSAGE_KEY: "Expected security classification of "
+                    f"'{LINZ_STAC_SECURITY_CLASSIFICATION_UNCLASSIFIED}'. "
+                    f"Got '{security_classification}'."
+                },
+            )
+            raise InvalidSecurityClassificationError(security_classification)
 
     def get_s3_url_as_object_json(self, url: str, s3_response: GeostoreS3Response) -> JsonObject:
         try:
@@ -332,6 +342,26 @@ class STACDatasetValidator:
             )
             raise NoAssetInTheDataset
 
+    def validate_dataset_id(
+        self, object_json: JsonObject, dataset_id: str, metadata_url: str
+    ) -> None:
+        if object_json["id"] != dataset_id:
+            self.validation_result_factory.save(
+                metadata_url,
+                Check.DATASET_ID_AND_STAC_ID_NOT_THE_SAME,
+                ValidationResult.FAILED,
+                details={MESSAGE_KEY: "Dataset id and STAC id must be the same"},
+            )
+            LOGGER.error(
+                LOG_MESSAGE_VALIDATION_COMPLETE,
+                extra={
+                    "outcome": Outcome.FAILED,
+                    "error": Check.DATASET_ID_AND_STAC_ID_NOT_THE_SAME,
+                    GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+                },
+            )
+            raise InvalidSTACId
+
 
 class InvalidSecurityClassificationError(Exception):
     pass
@@ -342,4 +372,8 @@ class InvalidSTACRootTypeError(Exception):
 
 
 class NoAssetInTheDataset(Exception):
+    pass
+
+
+class InvalidSTACId(Exception):
     pass

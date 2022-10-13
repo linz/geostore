@@ -25,6 +25,7 @@ from geostore.stac_format import (
     STAC_ASSETS_KEY,
     STAC_FILE_CHECKSUM_KEY,
     STAC_HREF_KEY,
+    STAC_ID_KEY,
 )
 from geostore.step_function import Outcome
 
@@ -42,7 +43,7 @@ from .general_generators import (
     any_past_datetime_string,
     any_safe_filename,
 )
-from .stac_generators import any_asset_name, any_hex_multihash
+from .stac_generators import any_asset_name, any_dataset_id, any_hex_multihash
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
@@ -72,10 +73,10 @@ def should_log_assets() -> None:
 
     with patch("geostore.check_stac_metadata.utils.LOGGER.debug") as logger_mock, patch(
         "geostore.check_stac_metadata.utils.processing_assets_model_with_meta"
-    ):
+    ), patch("geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"):
         STACDatasetValidator(
             any_hash_key(), url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).validate(metadata_url)
+        ).validate(metadata_url, any_dataset_id())
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_STAC_ASSET_INFO,
@@ -105,7 +106,7 @@ def should_log_non_s3_url_prefix_validation() -> None:
     ), raises(InvalidSTACRootTypeError):
         STACDatasetValidator(
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).run(metadata_url)
+        ).run(metadata_url, MINIMAL_VALID_STAC_COLLECTION_OBJECT[STAC_ID_KEY])
 
     logger_mock.assert_any_call(
         LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -141,7 +142,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     ):
         STACDatasetValidator(
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).run(metadata_url)
+        ).run(metadata_url, MINIMAL_VALID_STAC_COLLECTION_OBJECT[STAC_ID_KEY])
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -174,7 +175,7 @@ def should_log_schema_mismatch_validation(validate_mock: MagicMock) -> None:
     ):
         STACDatasetValidator(
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).run(metadata_url)
+        ).run(metadata_url, MINIMAL_VALID_STAC_COLLECTION_OBJECT[STAC_ID_KEY])
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
@@ -209,7 +210,7 @@ def should_log_json_parse_validation(validate_mock: MagicMock) -> None:
     ):
         STACDatasetValidator(
             hash_key, url_reader, MockAssetGarbageCollector(), MockValidationResultFactory()
-        ).run(metadata_url)
+        ).run(metadata_url, any_dataset_id())
 
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,

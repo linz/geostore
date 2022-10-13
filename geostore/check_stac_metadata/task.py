@@ -99,5 +99,5 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
         hash_key, s3_url_reader, asset_garbage_collector, validation_result_factory
     )
 
-    validator.run(event[METADATA_URL_KEY])
+    validator.run(event[METADATA_URL_KEY], event[DATASET_ID_KEY])
     return {SUCCESS_KEY: True}

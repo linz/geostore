@@ -274,14 +274,16 @@ def should_report_duplicate_asset_names(validation_results_factory_mock: MagicMo
         }
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         # When
         STACDatasetValidator(
             any_hash_key(),
             url_reader,
             MockAssetGarbageCollector(),
             validation_results_factory_mock,
-        ).validate(metadata_url)
+        ).validate(metadata_url, any_dataset_id())
 
     # Then
     validation_results_factory_mock.save.assert_any_call(
@@ -413,7 +415,9 @@ def should_save_json_schema_validation_results_per_file(subtests: SubTests) -> N
         file_object=json_dict_to_file_object(invalid_stac_object),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=invalid_child_key,
-    ) as invalid_child_s3_object:
+    ) as invalid_child_s3_object, patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         # When
         assert lambda_handler(
             {
@@ -499,6 +503,7 @@ def should_insert_asset_urls_and_checksums_into_database(subtests: SubTests) -> 
         expected_hash_key = get_hash_key(dataset_id, version_id)
 
         metadata_stac_object = deepcopy(MINIMAL_VALID_STAC_COLLECTION_OBJECT)
+        metadata_stac_object[STAC_ID_KEY] = dataset_id
         metadata_stac_object[STAC_ASSETS_KEY] = {
             any_asset_name(): {
                 LINZ_STAC_CREATED_KEY: any_past_datetime_string(),
@@ -652,6 +657,8 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
         ),
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
+    ), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
     ):
 
         assert lambda_handler(
@@ -758,7 +765,9 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
         "geostore/check_stac_metadata/"
         f"{LINZ_STAC_EXTENSIONS_LOCAL_PATH}/{LINZ_SCHEMA_URL_DIRECTORY}/examples/*.json"
     ):
-        with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle:
+        with subtests.test(msg=path), open(path, encoding="utf-8") as file_handle, patch(
+            "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+        ):
             stac_object = load(file_handle)
 
             for asset in stac_object.get("assets", {}).values():
@@ -775,7 +784,7 @@ def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
                 url_reader,
                 MockAssetGarbageCollector(),
                 MockValidationResultFactory(),
-            ).validate(path)
+            ).validate(path, any_dataset_id())
 
 
 def should_treat_minimal_catalog_as_valid() -> None:
@@ -845,13 +854,15 @@ def should_validate_metadata_files_recursively() -> None:
         }
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         STACDatasetValidator(
             any_hash_key(),
             url_reader,
             MockAssetGarbageCollector(),
             MockValidationResultFactory(),
-        ).validate(parent_url)
+        ).validate(parent_url, any_dataset_id())
 
     assert url_reader.mock_calls == [call(parent_url), call(child_url)]
 
@@ -897,13 +908,15 @@ def should_only_validate_each_file_once() -> None:
         call_limit=3,
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         STACDatasetValidator(
             any_hash_key(),
             url_reader,
             MockAssetGarbageCollector(),
             MockValidationResultFactory(),
-        ).validate(root_url)
+        ).validate(root_url, any_dataset_id())
 
     assert url_reader.mock_calls == [call(root_url), call(child_url), call(item_url)]
 
@@ -953,7 +966,9 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
         {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         validator = STACDatasetValidator(
             any_hash_key(),
             url_reader,
@@ -961,14 +976,14 @@ def should_collect_assets_from_validated_collection_metadata_files(subtests: Sub
             MockValidationResultFactory(),
         )
 
-    # When
-    validator.validate(metadata_url)
+        # When
+        validator.validate(metadata_url, any_dataset_id())
 
-    # Then
-    with subtests.test():
-        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
-    with subtests.test():
-        assert validator.dataset_metadata == expected_metadata
+        # Then
+        with subtests.test():
+            assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+        with subtests.test():
+            assert validator.dataset_metadata == expected_metadata
 
 
 def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests) -> None:
@@ -1014,7 +1029,9 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
         {metadata_url: MockGeostoreS3Response(stac_object, file_in_staging=file_in_staging)}
     )
 
-    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"):
+    with patch("geostore.check_stac_metadata.utils.processing_assets_model_with_meta"), patch(
+        "geostore.check_stac_metadata.utils.STACDatasetValidator.validate_dataset_id"
+    ):
         validator = STACDatasetValidator(
             any_hash_key(),
             url_reader,
@@ -1022,12 +1039,12 @@ def should_collect_assets_from_validated_item_metadata_files(subtests: SubTests)
             MockValidationResultFactory(),
         )
 
-    validator.validate(metadata_url)
+        validator.validate(metadata_url, any_dataset_id())
 
-    with subtests.test():
-        assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
-    with subtests.test():
-        assert validator.dataset_metadata == expected_metadata
+        with subtests.test():
+            assert _sort_assets(validator.dataset_assets) == _sort_assets(expected_assets)
+        with subtests.test():
+            assert validator.dataset_metadata == expected_metadata
 
 
 def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTests) -> None:
@@ -1050,7 +1067,7 @@ def should_raise_exception_when_loading_not_unclassified_dataset(subtests: SubTe
 
     with subtests.test("Error raised is correct"):
         with raises(InvalidSecurityClassificationError, match=security_classification):
-            validator.validate(metadata_url)
+            validator.validate(metadata_url, MINIMAL_VALID_STAC_COLLECTION_OBJECT[STAC_ID_KEY])
 
     with subtests.test("Error is part of results"):
         assert mock_validation_result_factory.mock_calls == [
@@ -1089,7 +1106,7 @@ def should_report_invalid_json(validation_results_factory_mock: MagicMock) -> No
 
     # When
     with raises(JSONDecodeError):
-        validator.validate(metadata_url)
+        validator.validate(metadata_url, any_dataset_id())
 
     # Then
     assert validation_results_factory_mock.mock_calls == [
@@ -1126,7 +1143,7 @@ def should_report_when_the_dataset_has_no_assets(
             url_reader,
             MockAssetGarbageCollector(),
             validation_results_factory_mock,
-        ).run(metadata_url)
+        ).run(metadata_url, MINIMAL_VALID_STAC_COLLECTION_OBJECT[STAC_ID_KEY])
         logger_mock.assert_any_call(
             LOG_MESSAGE_VALIDATION_COMPLETE,
             extra={
