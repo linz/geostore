@@ -111,7 +111,7 @@ then
     poetry install \
         --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
         --no-root \
-        --remove-untracked
+        --sync
 fi
 
 if [[ -n "${hooks-}" ]]
