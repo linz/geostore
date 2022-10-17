@@ -80,7 +80,7 @@ class BatchJobQueue(Construct):
             launch_template_name=cloudformation_launch_template.launch_template_name
         )
 
-        # use existing VPC in LINZ AWS account.
+        # use existing VPC in Toitū Te Whenua LINZ AWS account.
         # VPC with these tags is required to exist in AWS account before being deployed.
         # A VPC will not be deployed by this project.
         vpc = aws_ec2.Vpc.from_lookup(

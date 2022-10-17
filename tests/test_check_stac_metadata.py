@@ -747,8 +747,8 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
 
 def should_treat_linz_example_json_files_as_valid(subtests: SubTests) -> None:
     """
-    We need to make sure this repo updates the reference to the latest LINZ schema when updating the
-    submodule.
+    We need to make sure this repo updates the reference to the latest Toitū Te Whenua LINZ schema
+    when updating the submodule.
 
 
     We only support fetching `s3://…` and relative URLs, so in the below we change all of them to be
