@@ -46,7 +46,7 @@ ignore_missing_imports = true
 [tool.poetry]
 name = "geostore"
 version = "0.1.7"
-description = "Central storage, management and access for important geospatial datasets developed by LINZ"
+description = "Central storage, management and access for important geospatial datasets developed by Toitū Te Whenua LINZ"
 authors = [
     "Bill M. Nelson <bmnelson@linz.govt.nz>",
     "Daniel Silk <dsilk@linz.govt.nz>",

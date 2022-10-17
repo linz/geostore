@@ -100,7 +100,7 @@ Follow this guide step by step to import a dataset from your personal test stack
        --policy="{\"Id\": \"Policy$(date +%s)\", \"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"Stmt$(date +%s)\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectAcl\", \"s3:GetObjectTagging\"], \"Effect\": \"Allow\", \"Resource\": \"arn:aws:s3:::${bucket_name}/*\", \"Principal\": {\"AWS\": [\"${role_arn}\"]}}]}"
    ```
 
-1. Log in to any LINZ AWS account:
+1. Log in to an AWS account:
 
    ```shell
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"
@@ -343,9 +343,3 @@ validated automatically.
 
    Counter-example: conftest.py is a pytest-specific file for fixtures. We don't want to change our
    configuration simply to allow splitting this up.
-
-#### Dependabot
-
--  When Dependabot updates any Python dependencies in pip/requirements.txt formatted files, make
-   sure to run `./generate-requirements-files.bash` with the relevant path to update the version of
-   all its dependencies.

@@ -17,16 +17,16 @@
 [![shellcheck: passing](https://img.shields.io/badge/shellcheck-passing-brightgreen)](https://www.shellcheck.net/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
-LINZ central storage, management and access solution for important geospatial datasets. Developed by
-[Land Information New Zealand](https://github.com/linz).
+Central storage, management and access solution for important geospatial datasets. Developed by
+[Toitū Te Whenua Land Information New Zealand](https://github.com/linz).
 
 ## Prerequisites
 
 ### Geostore VPC
 
-A Geostore VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
-managed internally by the IT team. If you are deploying this application outside LINZ, you will need
-to create a VPC with the following tags:
+A Geostore VPC must exist in your AWS account before deploying this application. At Toitū Te Whenua
+LINZ, VPCs are managed internally by the IT team. If you are deploying this application outside
+Toitū Te Whenua LINZ, you will need to create a VPC with the following tags:
 
 -  "ApplicationName": "geostore"
 -  "ApplicationLayer": "networking"
@@ -41,8 +41,8 @@ This infrastructure by default includes some Toitū Te Whenua LINZ-specific part
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
--  `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage
-   bucket.
+-  `enableLDSAccess`: if true, gives Toitū Te Whenua LINZ Data Service/Koordinates read access to
+   the storage bucket.
 -  `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
 
 ## Development setup
@@ -163,7 +163,7 @@ have access to Dependabot alerts.)
    [named AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
    with permission to deploy stacks
 
-   -  [Instructions for LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
+   -  [Instructions for Toitū Te Whenua LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 
 1. Environment variables
 
@@ -212,6 +212,27 @@ If you `export AWS_PROFILE=<AWS-PROFILE-NAME>` you won't need the `--profile=<AW
 arguments above.
 
 ## Development
+
+### Third party updates
+
+When Dependabot updates any Python dependencies in pip requirements files (`*.txt`), make sure to
+run `./generate-requirements-files.bash` with the relevant path to update the version of all its
+dependencies. Sometimes this will _revert_ the file to the previous state, which means that specific
+dependency update is _not_ compatible with the rest of the packages in the same file. For example,
+say `geostore/pip.txt` lists a package `foo`, which depends on `bar~=1.0`. This information is not
+part of the requirements file, so Dependabot might update `bar` to version 2.0, not being aware that
+it's incompatible with the current version of `foo`. `generate-requirements-files.bash` effectively
+re-checks this, creating a file with a compatible set of dependencies, which may mean reverting the
+update done by Dependabot. In this case, simply close the Dependabot PR.
+
+We're using poetry2nix to generate a Nix derivation from the `poetry.lock` file, to allow people to
+develop this project with either Nix or Poetry[^1]. Sometimes package updates will break the Nix
+shell, usually because Python packages don't list all their build dependencies. These need to be set
+up as a `poetry2nix` _override._ First try upgrading nixpkgs using `./bump-nixpkgs.bash` and
+re-running `nix-shell`; maybe the latest stable poetry2nix already has an override for this package.
+If not, you either have to work one out yourself (see
+[upstream overrides](https://github.com/nix-community/poetry2nix/tree/master/overrides)) or
+[report it](https://github.com/nix-community/poetry2nix/issues).
 
 ### Adding or updating Python dependencies
 
@@ -328,3 +349,8 @@ limit the commands to the specific dataset!_
    1. Run `aws s3 rm --recursive s3://linz-geostore/DATASET_TITLE/`.
    1. Ask AWS support to remove the delete markers returned by
       `aws s3api list-object-versions --bucket=linz-geostore --prefix=DATASET_TITLE/ | jq .DeleteMarkers`.
+
+[^1]:
+
+When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
+behaviour.
