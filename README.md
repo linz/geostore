@@ -17,16 +17,16 @@
 [![shellcheck: passing](https://img.shields.io/badge/shellcheck-passing-brightgreen)](https://www.shellcheck.net/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
-LINZ central storage, management and access solution for important geospatial datasets. Developed by
-[Land Information New Zealand](https://github.com/linz).
+Central storage, management and access solution for important geospatial datasets. Developed by
+[Toitū Te Whenua Land Information New Zealand](https://github.com/linz).
 
 ## Prerequisites
 
 ### Geostore VPC
 
-A Geostore VPC must exist in your AWS account before deploying this application. AT LINZ, VPCs are
-managed internally by the IT team. If you are deploying this application outside LINZ, you will need
-to create a VPC with the following tags:
+A Geostore VPC must exist in your AWS account before deploying this application. At Toitū Te Whenua
+LINZ, VPCs are managed internally by the IT team. If you are deploying this application outside
+Toitū Te Whenua LINZ, you will need to create a VPC with the following tags:
 
 -  "ApplicationName": "geostore"
 -  "ApplicationLayer": "networking"
@@ -41,8 +41,8 @@ This infrastructure by default includes some Toitū Te Whenua LINZ-specific part
 settings in cdk.json. To disable these, simply remove the context entries or set them to `false`.
 The settings are:
 
--  `enableLDSAccess`: if true, gives LINZ Data Service/Koordinates read access to the storage
-   bucket.
+-  `enableLDSAccess`: if true, gives Toitū Te Whenua LINZ Data Service/Koordinates read access to
+   the storage bucket.
 -  `enableOpenTopographyAccess`: if true, gives OpenTopography read access to the storage bucket.
 
 ## Development setup
@@ -163,7 +163,7 @@ have access to Dependabot alerts.)
    [named AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
    with permission to deploy stacks
 
-   -  [Instructions for LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
+   -  [Instructions for Toitū Te Whenua LINZ employees](https://confluence.linz.govt.nz/display/GEOD/Login+to+AWS+Service+Accounts+via+Azure+in+Command+Line)
 
 1. Environment variables
 

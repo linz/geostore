@@ -100,7 +100,7 @@ Follow this guide step by step to import a dataset from your personal test stack
        --policy="{\"Id\": \"Policy$(date +%s)\", \"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"Stmt$(date +%s)\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectAcl\", \"s3:GetObjectTagging\"], \"Effect\": \"Allow\", \"Resource\": \"arn:aws:s3:::${bucket_name}/*\", \"Principal\": {\"AWS\": [\"${role_arn}\"]}}]}"
    ```
 
-1. Log in to any LINZ AWS account:
+1. Log in to an AWS account:
 
    ```shell
    aws-azure-login --no-prompt --profile="$AWS_PROFILE"

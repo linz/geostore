@@ -118,15 +118,15 @@ Example of AWS service account authentication and authorization in to Geostore u
    export AWS_PROFILE=li-geostore-prod
    ```
 
-Example of assuming the Geostore roles from a LINZ AWS account:
+Example of assuming the Geostore roles from a Toitū Te Whenua LINZ AWS account:
 
--  Choose any LINZ AWS account to assume the role from
+-  Choose any Toitū Te Whenua LINZ AWS account to assume the role from
 
    ```bash
    export SOURCE_PROFILE=<YOUR_AWS_SOURCE_PROFILE> # e.g. li-small-apps-nonprod
    ```
 
--  Log in to any LINZ AWS account:
+-  Log in to any Toitū Te Whenua LINZ AWS account:
 
    ```bash
    aws-azure-login --profile="$SOURCE_PROFILE"
