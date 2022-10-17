@@ -12,6 +12,11 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
+      jsonschema = super.jsonschema.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatch-fancy-pypi-readme ];
+        }
+      );
       mypy = super.mypy.overridePythonAttrs (old: {
         patches = [ ];
         MYPY_USE_MYPYC = false;
