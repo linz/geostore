@@ -954,7 +954,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 [[package]]
 name = "linz-logger"
 version = "0.9.0"
-description = "LINZ standard Logging format"
+description = "Toitū Te Whenua LINZ standard Logging format"
 category = "main"
 optional = true
 python-versions = ">=3.8,<4.0"
