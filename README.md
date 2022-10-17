@@ -215,11 +215,11 @@ arguments above.
 
 ### Adding or updating Python dependencies
 
-To add a development-only package: `poetry add --dev PACKAGE='*'`
+To add a development-only package: `poetry add --dev --lock PACKAGE='*'`
 
 To add a production package:
 
-1. Install the package using `poetry add --optional PACKAGE='*'`.
+1. Add the package using `poetry add --lock --optional PACKAGE='*'`.
 1. Put the package in alphabetical order within the list.
 1. Mention the package in the relevant lists in `[tool.poetry.extras]`.
 
@@ -229,9 +229,9 @@ To add a production package:
 
    1. Check out a new branch on top of origin/master:
       `git checkout -b update-python-packages origin/master`.
-   1. Update the Python packages: `poetry update`. The rest of the steps are only necessary if this
-      step changes poetry.lock. Otherwise you can just change back to the original branch and delete
-      "update-python-packages".
+   1. Update the Python packages: `poetry update --lock`. The rest of the steps are only necessary
+      if this step changes poetry.lock. Otherwise you can just change back to the original branch
+      and delete "update-python-packages".
    1. Commit, push and create pull request.
    1. Check out the branch where you originally wanted to run `poetry add`.
    1. Rebase the branch onto the package update branch: `git rebase update-python-packages`.
