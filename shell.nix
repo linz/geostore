@@ -1,11 +1,8 @@
 { pkgs ? import
     (
-      fetchTarball
-        {
-          name = "nixos-22.11pre405560.2da64a81275";
-          url = "https://github.com/NixOS/nixpkgs/archive/2da64a81275b68fdad38af669afeda43d401e94b.tar.gz";
-          sha256 = "1k71lmzdaa48yqkmsnd22n177qmxxi4gj2qcmdbv0mc6l4f27wd0";
-        })
+      fetchTarball (
+        builtins.fromJSON (
+          builtins.readFile ./nixpkgs.json)))
     { }
 }:
 let
@@ -15,6 +12,11 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
+      jsonschema = super.jsonschema.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatch-fancy-pypi-readme ];
+        }
+      );
       mypy = super.mypy.overridePythonAttrs (old: {
         patches = [ ];
         MYPY_USE_MYPYC = false;

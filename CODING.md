@@ -343,9 +343,3 @@ validated automatically.
 
    Counter-example: conftest.py is a pytest-specific file for fixtures. We don't want to change our
    configuration simply to allow splitting this up.
-
-#### Dependabot
-
--  When Dependabot updates any Python dependencies in pip/requirements.txt formatted files, make
-   sure to run `./generate-requirements-files.bash` with the relevant path to update the version of
-   all its dependencies.
