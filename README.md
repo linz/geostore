@@ -351,6 +351,5 @@ limit the commands to the specific dataset!_
       `aws s3api list-object-versions --bucket=linz-geostore --prefix=DATASET_TITLE/ | jq .DeleteMarkers`.
 
 [^1]:
-
-When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
-behaviour.
+    When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
+    behaviour.
