@@ -61,16 +61,16 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.45.0a0"
+version = "2.46.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.45.0,<3.0.0"
+aws-cdk-lib = ">=2.46.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.68.0,<2.0.0"
+jsii = ">=1.69.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -1722,7 +1722,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.19.1"
+version = "2.8.19.2"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1900,8 +1900,8 @@ aws-cdk-aws-batch-alpha = [
     {file = "aws_cdk.aws_batch_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:136b602b2b9fe19c829c58f28c121e8834d0f9c8a0da10b0c2e0a8d9b3030e07"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.45.0a0.tar.gz", hash = "sha256:47158087bf19717f45d030ba4242a8b436ffdb68f8ad13eb99eb0f2a65f4eab5"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.45.0a0-py3-none-any.whl", hash = "sha256:fd068da3dc0b81fdd577d45c5cb44a44c4b02057018ea0c999f342b4c8c9e2d4"},
+    {file = "aws-cdk.aws-lambda-python-alpha-2.46.0a0.tar.gz", hash = "sha256:1b1c9383237bcc4e7c545b7a2e857649dd506bae9f8019e50428a6440cd5d461"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:8bf82b57b7f249db97f315fbe3a134ff8f46d26ed30b520ab301a7dc093d0501"},
 ]
 aws-cdk-lib = [
     {file = "aws-cdk-lib-2.46.0.tar.gz", hash = "sha256:ec2c6055d64a0574533fcbcdc2006ee32a23d38a5755bc4b99fd1796124b1de5"},
@@ -2516,8 +2516,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.19.1.tar.gz", hash = "sha256:d642f7af2bb99fe78f5a776fd0ca4e32932720047f400e25ad62bc2a5b18dc94"},
-    {file = "types_python_dateutil-2.8.19.1-py3-none-any.whl", hash = "sha256:a560f63b31ece652e891f9659216fb315abd6dc169f9356c077d11b4f432aa7d"},
+    {file = "types-python-dateutil-2.8.19.2.tar.gz", hash = "sha256:e6e32ce18f37765b08c46622287bc8d8136dc0c562d9ad5b8fd158c59963d7a7"},
+    {file = "types_python_dateutil-2.8.19.2-py3-none-any.whl", hash = "sha256:3f4dbe465e7e0c6581db11fd7a4855d1355b78712b3f292bd399cd332247e9c0"},
 ]
 types-requests = [
     {file = "types-requests-2.28.11.2.tar.gz", hash = "sha256:fdcd7bd148139fb8eef72cf4a41ac7273872cad9e6ada14b11ff5dfdeee60ed3"},
