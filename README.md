@@ -350,6 +350,28 @@ limit the commands to the specific dataset!_
    1. Ask AWS support to remove the delete markers returned by
       `aws s3api list-object-versions --bucket=linz-geostore --prefix=DATASET_TITLE/ | jq .DeleteMarkers`.
 
+## Geostore Release
+
+### Versioning and Frequency
+
+We aim to release at the end of each agile sprint (fortnightly), or whenever required (e.g. bugfix,
+feature rollout). Each release triggers a production deployment via GitHub Actions.
+
+Geostore follows [semantic versioning](http://semver.org/). The release is tagged with
+`release-major.minor.patch` (e.g. release-0.11.0).
+
+### Steps
+
+The simplest way to deploy a release is to follow the process
+[recommended by GitHub](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
+Release notes can be automatically generated from GitHub. This is optional and provides a list of
+commit titles since the last release. Commits from dependabot are excluded from automatically
+generated release notes, as specified in `.github/release.yml`. You should always check the release
+notes and update accordingly as needed.
+
+Note: Geostore has no rollback process. Any fixes will need to be carried out in a roll forward
+basis.
+
 [^1]:
     When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
     behaviour.
