@@ -373,6 +373,5 @@ Note: Geostore has no rollback process. Any fixes will need to be carried out in
 basis.
 
 [^1]:
-
-When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
-behaviour.
+    When using Nix, make sure to remove the `.venv` directory. Mixing Nix and Poetry leads to weird
+    behaviour.
