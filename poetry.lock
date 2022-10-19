@@ -46,31 +46,31 @@ tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy 
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.45.0a0"
+version = "2.46.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.45.0,<3.0.0"
+aws-cdk-lib = ">=2.46.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.68.0,<2.0.0"
+jsii = ">=1.69.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.45.0a0"
+version = "2.46.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.45.0,<3.0.0"
+aws-cdk-lib = ">=2.46.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.68.0,<2.0.0"
+jsii = ">=1.69.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -149,8 +149,8 @@ s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.92"
-description = "Type annotations for boto3 1.24.92 generated with mypy-boto3-builder 7.11.10"
+version = "1.24.93"
+description = "Type annotations for boto3 1.24.93 generated with mypy-boto3-builder 7.11.10"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
@@ -1364,11 +1364,11 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyrsistent"
-version = "0.17.3"
+version = "0.18.1"
 description = "Persistent/Functional/Immutable data structures"
 category = "main"
 optional = true
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 
 [[package]]
 name = "pystac"
@@ -1899,12 +1899,12 @@ attrs = [
     {file = "attrs-22.1.0.tar.gz", hash = "sha256:29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6"},
 ]
 aws-cdk-aws-batch-alpha = [
-    {file = "aws-cdk.aws-batch-alpha-2.45.0a0.tar.gz", hash = "sha256:e6d0ba0c488097867ad060cd746253a000771f2c72e3f49f5b11851d7f63af22"},
-    {file = "aws_cdk.aws_batch_alpha-2.45.0a0-py3-none-any.whl", hash = "sha256:eb9f38c66e1cbd4e87c7b36711fc4b4de7ffdd555820e012ab98d995f0cada8a"},
+    {file = "aws-cdk.aws-batch-alpha-2.46.0a0.tar.gz", hash = "sha256:9089b9cdf6d7608f560c704f5f5fb8e153a60d03f2ac305b889366928b84f9ab"},
+    {file = "aws_cdk.aws_batch_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:136b602b2b9fe19c829c58f28c121e8834d0f9c8a0da10b0c2e0a8d9b3030e07"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.45.0a0.tar.gz", hash = "sha256:47158087bf19717f45d030ba4242a8b436ffdb68f8ad13eb99eb0f2a65f4eab5"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.45.0a0-py3-none-any.whl", hash = "sha256:fd068da3dc0b81fdd577d45c5cb44a44c4b02057018ea0c999f342b4c8c9e2d4"},
+    {file = "aws-cdk.aws-lambda-python-alpha-2.46.0a0.tar.gz", hash = "sha256:1b1c9383237bcc4e7c545b7a2e857649dd506bae9f8019e50428a6440cd5d461"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:8bf82b57b7f249db97f315fbe3a134ff8f46d26ed30b520ab301a7dc093d0501"},
 ]
 aws-cdk-lib = [
     {file = "aws-cdk-lib-2.46.0.tar.gz", hash = "sha256:ec2c6055d64a0574533fcbcdc2006ee32a23d38a5755bc4b99fd1796124b1de5"},
@@ -1946,8 +1946,8 @@ boto3 = [
     {file = "boto3-1.17.53.tar.gz", hash = "sha256:1d26f6e7ae3c940cb07119077ac42485dcf99164350da0ab50d0f5ad345800cd"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.92.tar.gz", hash = "sha256:362da47ea811839cd227fb58b8cd9bfdc8d792389d54e4f468671f186e1c123f"},
-    {file = "boto3_stubs-1.24.92-py3-none-any.whl", hash = "sha256:c8c2dcec69f7d2b43c3e54ac51655144d1e9d31fd2e47d29213ab80d1293c34f"},
+    {file = "boto3-stubs-1.24.93.tar.gz", hash = "sha256:5cbba1123dde552938e78a1eaa5d71cef8b2dd9009fa0e41aa647a51b4a9ae26"},
+    {file = "boto3_stubs-1.24.93-py3-none-any.whl", hash = "sha256:8608e5ead5cb05856bacbf338cb7e408d053b48bffbf8e3a0794ba41e91a6dac"},
 ]
 botocore = [
     {file = "botocore-1.20.53-py2.py3-none-any.whl", hash = "sha256:d5e70d17b91c9b5867be7d6de0caa7dde9ed789bed62f03ea9b60718dc9350bf"},
@@ -2337,7 +2337,27 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pyrsistent = [
-    {file = "pyrsistent-0.17.3.tar.gz", hash = "sha256:2e636185d9eb976a18a8a8e96efce62f2905fea90041958d8cc2a189756ebf3e"},
+    {file = "pyrsistent-0.18.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df46c854f490f81210870e509818b729db4488e1f30f2a1ce1698b2295a878d1"},
+    {file = "pyrsistent-0.18.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5d45866ececf4a5fff8742c25722da6d4c9e180daa7b405dc0a2a2790d668c26"},
+    {file = "pyrsistent-0.18.1-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4ed6784ceac462a7d6fcb7e9b663e93b9a6fb373b7f43594f9ff68875788e01e"},
+    {file = "pyrsistent-0.18.1-cp310-cp310-win32.whl", hash = "sha256:e4f3149fd5eb9b285d6bfb54d2e5173f6a116fe19172686797c056672689daf6"},
+    {file = "pyrsistent-0.18.1-cp310-cp310-win_amd64.whl", hash = "sha256:636ce2dc235046ccd3d8c56a7ad54e99d5c1cd0ef07d9ae847306c91d11b5fec"},
+    {file = "pyrsistent-0.18.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:e92a52c166426efbe0d1ec1332ee9119b6d32fc1f0bbfd55d5c1088070e7fc1b"},
+    {file = "pyrsistent-0.18.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d7a096646eab884bf8bed965bad63ea327e0d0c38989fc83c5ea7b8a87037bfc"},
+    {file = "pyrsistent-0.18.1-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cdfd2c361b8a8e5d9499b9082b501c452ade8bbf42aef97ea04854f4a3f43b22"},
+    {file = "pyrsistent-0.18.1-cp37-cp37m-win32.whl", hash = "sha256:7ec335fc998faa4febe75cc5268a9eac0478b3f681602c1f27befaf2a1abe1d8"},
+    {file = "pyrsistent-0.18.1-cp37-cp37m-win_amd64.whl", hash = "sha256:6455fc599df93d1f60e1c5c4fe471499f08d190d57eca040c0ea182301321286"},
+    {file = "pyrsistent-0.18.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:fd8da6d0124efa2f67d86fa70c851022f87c98e205f0594e1fae044e7119a5a6"},
+    {file = "pyrsistent-0.18.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7bfe2388663fd18bd8ce7db2c91c7400bf3e1a9e8bd7d63bf7e77d39051b85ec"},
+    {file = "pyrsistent-0.18.1-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0e3e1fcc45199df76053026a51cc59ab2ea3fc7c094c6627e93b7b44cdae2c8c"},
+    {file = "pyrsistent-0.18.1-cp38-cp38-win32.whl", hash = "sha256:b568f35ad53a7b07ed9b1b2bae09eb15cdd671a5ba5d2c66caee40dbf91c68ca"},
+    {file = "pyrsistent-0.18.1-cp38-cp38-win_amd64.whl", hash = "sha256:d1b96547410f76078eaf66d282ddca2e4baae8964364abb4f4dcdde855cd123a"},
+    {file = "pyrsistent-0.18.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:f87cc2863ef33c709e237d4b5f4502a62a00fab450c9e020892e8e2ede5847f5"},
+    {file = "pyrsistent-0.18.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6bc66318fb7ee012071b2792024564973ecc80e9522842eb4e17743604b5e045"},
+    {file = "pyrsistent-0.18.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:914474c9f1d93080338ace89cb2acee74f4f666fb0424896fcfb8d86058bf17c"},
+    {file = "pyrsistent-0.18.1-cp39-cp39-win32.whl", hash = "sha256:1b34eedd6812bf4d33814fca1b66005805d3640ce53140ab8bbb1e2651b0d9bc"},
+    {file = "pyrsistent-0.18.1-cp39-cp39-win_amd64.whl", hash = "sha256:e24a828f57e0c337c8d8bb9f6b12f09dfdf0273da25fda9e314f0b684b415a07"},
+    {file = "pyrsistent-0.18.1.tar.gz", hash = "sha256:d4d61f8b993a7255ba714df3aca52700f8125289f84f704cf80916517c46eb96"},
 ]
 pystac = [
     {file = "pystac-1.6.1-py3-none-any.whl", hash = "sha256:4c40e6d3a832b9992e9dc2aa9c276322fbd851e441888b5fc2024397477abec8"},
