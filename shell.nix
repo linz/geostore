@@ -12,6 +12,20 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
+      black = super.black.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
+            self.hatch-fancy-pypi-readme
+            self.hatchling
+            self.hatch-vcs
+          ];
+        }
+      );
+      idna = super.idna.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
+        }
+      );
       jsonschema = super.jsonschema.overridePythonAttrs (
         old: {
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatch-fancy-pypi-readme ];
