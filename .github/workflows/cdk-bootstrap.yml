@@ -82,6 +82,11 @@ jobs:
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
 
+      - name: Report current bootstrap version
+        run:
+          aws ssm get-parameter --name /cdk-bootstrap/hnb659fds/version --query Parameter.Value | jq
+          --raw-output .
+
   boostrap-nonprod:
     runs-on: ubuntu-20.04
     permissions:
@@ -160,6 +165,11 @@ jobs:
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
 
+      - name: Report current bootstrap version
+        run:
+          aws ssm get-parameter --name /cdk-bootstrap/hnb659fds/version --query Parameter.Value | jq
+          --raw-output .
+
   boostrap-prod:
     runs-on: ubuntu-20.04
     permissions:
@@ -237,3 +247,8 @@ jobs:
       - name: Bootstrap CDK
         run: |
           poetry run cdk bootstrap aws://unknown-account/ap-southeast-2
+
+      - name: Report current bootstrap version
+        run:
+          aws ssm get-parameter --name /cdk-bootstrap/hnb659fds/version --query Parameter.Value | jq
+          --raw-output .
