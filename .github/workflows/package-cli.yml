@@ -43,7 +43,7 @@ jobs:
         run: poetry build
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: packages
           path: dist/*
