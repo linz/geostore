@@ -104,6 +104,7 @@ typer = "*"
 [tool.poetry.dev-dependencies]
 black = "*"
 boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
+cdk-nag = "*"
 gitlint = "*"
 ipdb = "*"
 isort = "*"

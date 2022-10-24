@@ -577,6 +577,21 @@ attrs = ">=20"
 exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 
 [[package]]
+name = "cdk-nag"
+version = "2.19.0"
+description = "Check CDK v2 applications for best practices using a combination on available rule packs."
+category = "dev"
+optional = false
+python-versions = "~=3.7"
+
+[package.dependencies]
+aws-cdk-lib = ">=2.21.0,<3.0.0"
+constructs = ">=10.0.5,<11.0.0"
+jsii = ">=1.70.0,<2.0.0"
+publication = ">=0.0.3"
+typeguard = ">=2.13.3,<2.14.0"
+
+[[package]]
 name = "certifi"
 version = "2022.9.24"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1930,8 +1945,8 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "~3.9"
-content-hash = "88f7a9cb6a1e0c547eb68eb44100b46098f074f5ddf754c85cab9679522095f8"
+python-versions = "^3.9"
+content-hash = "23349f7d2246f1d0dd3815e37c44a71259f1a869193f348a91a642de8d859584"
 
 [metadata.files]
 appnope = [
@@ -2024,6 +2039,10 @@ botocore-stubs = [
 cattrs = [
     {file = "cattrs-22.2.0-py3-none-any.whl", hash = "sha256:bc12b1f0d000b9f9bee83335887d532a1d3e99a833d1bf0882151c97d3e68c21"},
     {file = "cattrs-22.2.0.tar.gz", hash = "sha256:f0eed5642399423cf656e7b66ce92cdc5b963ecafd041d1b24d136fdde7acf6d"},
+]
+cdk-nag = [
+    {file = "cdk-nag-2.19.0.tar.gz", hash = "sha256:d9f6a1814d0d51de38ee0de34019547f5a649710c487ff42c3ec543d7dbee0b3"},
+    {file = "cdk_nag-2.19.0-py3-none-any.whl", hash = "sha256:a205e9e259711e94f14cbd7d499b6bb36a539299600e2f90290895471a72a3d3"},
 ]
 certifi = [
     {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},

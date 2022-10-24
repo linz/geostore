@@ -1,7 +1,8 @@
 """
 CDK application entry point file.
 """
-from aws_cdk import App, Tags
+from aws_cdk import App, Aspects, Tags
+from cdk_nag import AwsSolutionsChecks
 
 from geostore.environment import environment_name
 from infrastructure.application_stack import Application
@@ -13,6 +14,7 @@ def main() -> None:
 
     env_name = environment_name()
     Application(app, f"{env_name}-geostore")
+    Aspects.of(app).add(AwsSolutionsChecks(verbose=True))
 
     # tag all resources in stack
     Tags.of(app).add("CostCentre", "100005")
