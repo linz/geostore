@@ -19,6 +19,7 @@ class Staging(Construct):
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
+            enforce_ssl=True,
         )
         staging_bucket.grant_read(users_role)
 
