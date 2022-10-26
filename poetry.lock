@@ -46,14 +46,14 @@ tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy 
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.46.0a0"
+version = "2.47.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.46.0,<3.0.0"
+aws-cdk-lib = ">=2.47.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
 jsii = ">=1.69.0,<2.0.0"
 publication = ">=0.0.3"
@@ -61,14 +61,14 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.46.0a0"
+version = "2.47.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.46.0,<3.0.0"
+aws-cdk-lib = ">=2.47.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
 jsii = ">=1.69.0,<2.0.0"
 publication = ">=0.0.3"
@@ -1849,7 +1849,7 @@ python-versions = "*"
 
 [[package]]
 name = "zipp"
-version = "3.9.0"
+version = "3.10.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
 optional = false
@@ -1899,12 +1899,12 @@ attrs = [
     {file = "attrs-22.1.0.tar.gz", hash = "sha256:29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6"},
 ]
 aws-cdk-aws-batch-alpha = [
-    {file = "aws-cdk.aws-batch-alpha-2.46.0a0.tar.gz", hash = "sha256:9089b9cdf6d7608f560c704f5f5fb8e153a60d03f2ac305b889366928b84f9ab"},
-    {file = "aws_cdk.aws_batch_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:136b602b2b9fe19c829c58f28c121e8834d0f9c8a0da10b0c2e0a8d9b3030e07"},
+    {file = "aws-cdk.aws-batch-alpha-2.47.0a0.tar.gz", hash = "sha256:aaf13807d8181f70c63f337cfcb838b98712856e195163cc885e5deeb0e514ba"},
+    {file = "aws_cdk.aws_batch_alpha-2.47.0a0-py3-none-any.whl", hash = "sha256:bfac68c7537457708a73b00c1a036389b4d60962da7db5ac427f993f5b5551d6"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.46.0a0.tar.gz", hash = "sha256:1b1c9383237bcc4e7c545b7a2e857649dd506bae9f8019e50428a6440cd5d461"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.46.0a0-py3-none-any.whl", hash = "sha256:8bf82b57b7f249db97f315fbe3a134ff8f46d26ed30b520ab301a7dc093d0501"},
+    {file = "aws-cdk.aws-lambda-python-alpha-2.47.0a0.tar.gz", hash = "sha256:27895c0d42859d61e81e3d17a129115305fe97832714102ff28db7d3742b77c2"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.47.0a0-py3-none-any.whl", hash = "sha256:7adfcbd67089a43d95e66ae79dc337cdb3e999aa019c45d34bcb31c60c06f191"},
 ]
 aws-cdk-lib = [
     {file = "aws-cdk-lib-2.47.0.tar.gz", hash = "sha256:c9b1626c7afc42ceaee547558efe88439dd1447b18c7837db153e03fb8186167"},
@@ -2589,6 +2589,6 @@ wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
 ]
 zipp = [
-    {file = "zipp-3.9.0-py3-none-any.whl", hash = "sha256:972cfa31bc2fedd3fa838a51e9bc7e64b7fb725a8c00e7431554311f180e9980"},
-    {file = "zipp-3.9.0.tar.gz", hash = "sha256:3a7af91c3db40ec72dd9d154ae18e008c69efe8ca88dde4f9a731bb82fe2f9eb"},
+    {file = "zipp-3.10.0-py3-none-any.whl", hash = "sha256:4fcb6f278987a6605757302a6e40e896257570d11c51628968ccb2a47e80c6c1"},
+    {file = "zipp-3.10.0.tar.gz", hash = "sha256:7a7262fd930bd3e36c50b9a64897aec3fafff3dfdeec9623ae22b40e93f99bb8"},
 ]
