@@ -1,4 +1,5 @@
 from aws_cdk import RemovalPolicy, Tags, aws_iam, aws_s3
+from cdk_nag import NagSuppressions
 from constructs import Construct
 
 from geostore.resources import Resource
@@ -21,6 +22,17 @@ class Staging(Construct):
             removal_policy=RemovalPolicy.DESTROY,
             enforce_ssl=True,
         )
+
+        NagSuppressions.add_resource_suppressions(
+            staging_bucket,
+            suppressions=[
+                {
+                    "id": "AwsSolutions-S3",
+                    "reason": "Geostore is not storing any sensitive data.",
+                }
+            ],
+        )
+
         staging_bucket.grant_read(users_role)
 
         Tags.of(self).add("ApplicationLayer", "staging")

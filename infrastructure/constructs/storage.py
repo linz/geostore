@@ -2,6 +2,7 @@
 Geostore AWS resources definitions.
 """
 from aws_cdk import Tags, aws_dynamodb, aws_iam, aws_s3, aws_ssm
+from cdk_nag import NagSuppressions
 from constructs import Construct
 
 from geostore.datasets_model import DatasetsTitleIdx
@@ -59,6 +60,16 @@ class Storage(Construct):
             versioned=True,
             removal_policy=REMOVAL_POLICY,
             enforce_ssl=True,
+        )
+
+        NagSuppressions.add_resource_suppressions(
+            self.storage_bucket,
+            suppressions=[
+                {
+                    "id": "AwsSolutions-S3",
+                    "reason": "Geostore is not storing any sensitive data.",
+                }
+            ],
         )
 
         s3_users_role = aws_iam.Role(
