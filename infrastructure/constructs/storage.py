@@ -58,6 +58,7 @@ class Storage(Construct):
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             versioned=True,
             removal_policy=REMOVAL_POLICY,
+            enforce_ssl=True,
         )
 
         s3_users_role = aws_iam.Role(
