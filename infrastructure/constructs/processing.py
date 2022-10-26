@@ -13,6 +13,7 @@ from aws_cdk import (
 )
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_stepfunctions import Errors, Wait, WaitTime
+from cdk_nag import NagSuppressions
 from constructs import Construct
 
 from geostore.api_keys import SUCCESS_KEY
@@ -120,7 +121,21 @@ class Processing(Construct):
             fifo=True,
             enforce_ssl=True,
         )
-
+        NagSuppressions.add_resource_suppressions(
+            self.message_queue,
+            suppressions=[
+                {
+                    "id": "AwsSolutions-SQS2",
+                    "reason": "Geostore is not transporting any sensitive data.",
+                },
+                {
+                    "id": "AwsSolutions-SQS3",
+                    "reason": "Dead Letter Queue removed "
+                    "because all messages should be processed. "
+                    "Bad SQS messages should be alerted via lambda logs.",
+                },
+            ],
+        )
         self.message_queue_name_parameter = aws_ssm.StringParameter(
             self,
             "update-catalog-message-queue-name",
