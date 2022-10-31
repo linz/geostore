@@ -21,6 +21,11 @@ let
           ];
         }
       );
+      exceptiongroup = super.exceptiongroup.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-scm ];
+        }
+      );
       idna = super.idna.overridePythonAttrs (
         old: {
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];

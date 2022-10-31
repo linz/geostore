@@ -1,5 +1,5 @@
 {
-  "name": "release-22.05-2022-10-14T15-12-55Z",
-  "url": "https://github.com/NixOS/nixpkgs/archive/3e3ef781eab85d41e4b6f0c2a4e7ed5d22aab04c.tar.gz",
-  "sha256": "19h67w81mknj6izcah2hicgjnh318b83hvgpap5kwzx8hzx01hhg"
+  "name": "release-22.05-2022-10-27T10-42-29Z",
+  "url": "https://github.com/NixOS/nixpkgs/archive/0a773b4ddf75c41c08a46f5c979f435bbfa6f6cb.tar.gz",
+  "sha256": "0vf73j9179h4wxyj9yx8mkxnnngzrva49176raw3fnlrnb94s2sg"
 }
