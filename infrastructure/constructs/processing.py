@@ -115,6 +115,7 @@ class Processing(Construct):
             "update-catalog-message-queue",
             visibility_timeout=Duration.minutes(15),
             fifo=True,
+            enforce_ssl=True,
         )
 
         self.message_queue_name_parameter = aws_ssm.StringParameter(
