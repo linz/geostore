@@ -10,9 +10,17 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      - name: Check out repository
+      - name: Checkout repository
+        if: ${{ github.event_name == 'push' }}
         uses: actions/checkout@v3.1.0
         with:
+          submodules: 'true'
+
+      - name: Checkout repository
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/checkout@v3.1.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
           submodules: 'true'
 
       - id: python-version
