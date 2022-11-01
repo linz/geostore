@@ -76,7 +76,7 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.47.0"
+version = "2.49.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
@@ -84,7 +84,7 @@ python-versions = "~=3.7"
 
 [package.dependencies]
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.69.0,<2.0.0"
+jsii = ">=1.70.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -1004,7 +1004,7 @@ python-versions = "*"
 
 [[package]]
 name = "mutmut"
-version = "2.4.1"
+version = "2.4.2"
 description = "mutation testing for Python 3"
 category = "dev"
 optional = false
@@ -1435,11 +1435,11 @@ pytest = ">=3.6.3"
 
 [[package]]
 name = "pytest-subtests"
-version = "0.8.0"
+version = "0.9.0"
 description = "unittest subTest() support and subtests fixture"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 pytest = ">=7.0"
@@ -1912,8 +1912,8 @@ aws-cdk-aws-lambda-python-alpha = [
     {file = "aws_cdk.aws_lambda_python_alpha-2.47.0a0-py3-none-any.whl", hash = "sha256:7adfcbd67089a43d95e66ae79dc337cdb3e999aa019c45d34bcb31c60c06f191"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.47.0.tar.gz", hash = "sha256:c9b1626c7afc42ceaee547558efe88439dd1447b18c7837db153e03fb8186167"},
-    {file = "aws_cdk_lib-2.47.0-py3-none-any.whl", hash = "sha256:1f1a2e2309625d304a14b388ee0fedb0dffc15eef14dac65e33b10f6c73bf75c"},
+    {file = "aws-cdk-lib-2.49.0.tar.gz", hash = "sha256:9146f03988aff823cb5b561090875c311d733bf1786859c706381e9b49f6adb7"},
+    {file = "aws_cdk_lib-2.49.0-py3-none-any.whl", hash = "sha256:c9c197463e2685aa67248c2cea2a4d3f15e33a3c19250aa34e754e455295417b"},
 ]
 awscli = [
     {file = "awscli-1.19.53-py2.py3-none-any.whl", hash = "sha256:cebe94ffdaa2dcc8c63eb31844df1f267a01e3c3376d47edbcf927e216438fca"},
@@ -2194,7 +2194,7 @@ multihash = [
     {file = "multihash-0.1.1.tar.gz", hash = "sha256:65d31ad24eeae0bb1ed016464afba26e269bd1c1f8af056fe4ed2a76b2e85ccb"},
 ]
 mutmut = [
-    {file = "mutmut-2.4.1.tar.gz", hash = "sha256:a7c2fe0445711ade40b8ddfeb9c8f7d8b3a8e0c05bd58a4b746c1d627039356e"},
+    {file = "mutmut-2.4.2.tar.gz", hash = "sha256:fb79411983a55de9f0271c1a3fa31be85ae30f33ade1ab04630f4c7e2dee65a7"},
 ]
 mypy = [
     {file = "mypy-0.982-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:5085e6f442003fa915aeb0a46d4da58128da69325d8213b4b35cc7054090aed5"},
@@ -2381,8 +2381,8 @@ pytest-socket = [
     {file = "pytest_socket-0.5.1-py3-none-any.whl", hash = "sha256:8726fd47b83b127451532b6d570c5b6c4cd204fca363936509b1f53195de6f4f"},
 ]
 pytest-subtests = [
-    {file = "pytest-subtests-0.8.0.tar.gz", hash = "sha256:46eb376022e926950816ccc23502de3277adcc1396652ddb3328ce0289052c4d"},
-    {file = "pytest_subtests-0.8.0-py3-none-any.whl", hash = "sha256:4e28ca52cf7a46645c1ded7933745b69334cdc97a412ed4431f7be7cef9a0994"},
+    {file = "pytest-subtests-0.9.0.tar.gz", hash = "sha256:c0317cd5f6a5eb3e957e89dbe4fc3322a9afddba2db8414355ed2a2cb91a844e"},
+    {file = "pytest_subtests-0.9.0-py3-none-any.whl", hash = "sha256:f5f616b92c13405909d210569d6d3914db6fe156333ff5426534f97d5b447861"},
 ]
 pytest-timeout = [
     {file = "pytest-timeout-2.1.0.tar.gz", hash = "sha256:c07ca07404c612f8abbe22294b23c368e2e5104b521c1790195561f37e1ac3d9"},
