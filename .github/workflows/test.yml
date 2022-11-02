@@ -7,9 +7,10 @@ jobs:
   linter:
     runs-on: ubuntu-20.04
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3.1.0
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
           submodules: 'true'
 
@@ -54,9 +55,10 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3.1.0
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           submodules: 'true'
 
       - id: node-version
@@ -175,6 +177,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3.1.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: cachix/install-nix-action@v18
       - uses: cachix/cachix-action@v12

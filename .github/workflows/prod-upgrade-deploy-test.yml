@@ -14,9 +14,10 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3.1.0
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
 
       - name: Get Oidc deploy role arn
@@ -117,7 +118,7 @@ jobs:
       - name: Checkout to current pull request version
         uses: actions/checkout@v3.1.0
         with:
-          ref: ${{ env.GITHUB_SHA }}
+          ref: ${{ github.event.pull_request.head.sha }}
           clean: false
           submodules: true
 
