@@ -14,7 +14,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3.1.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
