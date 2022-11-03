@@ -69,6 +69,12 @@ repos:
       - id: shellcheck
         stages: [commit]
 
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: 8ff64568b1048dd46f5a286f81b16899fe740f64 # v3.5.1-1
+    hooks:
+      - id: shfmt
+        stages: [commit]
+
   - repo: https://github.com/nix-community/nixpkgs-fmt
     rev: 148ec47877499e3d671f6366f9eed812db181b40 # v1.2.0
     hooks:

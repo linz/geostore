@@ -2,8 +2,7 @@
 
 set -o errexit -o noclobber -o nounset -o pipefail
 
-if [[ "$#" -lt 1 ]]
-then
+if [[ $# -lt 1 ]]; then
     cat >&2 <<'EOF'
 Synopsis: ./bundle.bash DIRECTORY
 Example: ./bundle.bash datasets
@@ -24,7 +23,7 @@ asset_root='/asset-output'
 task_directory="$(basename "$1")"
 requirements_file="${work_dir}/requirements.txt"
 # `--without-hashes` works around https://github.com/python-poetry/poetry/issues/1584
-poetry export --extras="$task_directory" --without-hashes | grep --invert-match '^botocore==' > "$requirements_file"
+poetry export --extras="$task_directory" --without-hashes | grep --invert-match '^botocore==' >"$requirements_file"
 pip install --quiet --cache-dir="$work_dir" --no-deps --requirement="$requirements_file" --target="$asset_root"
 
 mkdir --parents "${asset_root}/geostore/${1}"
