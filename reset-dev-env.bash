@@ -3,7 +3,7 @@
 set -o errexit -o noclobber -o nounset -o pipefail
 
 usage() {
-    cat >&2 << 'EOF'
+    cat >&2 <<'EOF'
 ./reset-dev-env.bash --all
 ./reset-dev-env.bash [--delete] [--hooks] [--node] [--python] [--submodule]
 ./reset-dev-env.bash --help
@@ -17,79 +17,73 @@ arguments="$(getopt --options '' \
 eval set -- "$arguments"
 unset arguments
 
-while true
-do
+while true; do
     case "$1" in
-        --all)
-            delete=1
-            hooks=1
-            node=1
-            python=1
-            submodule=1
-            shift
-            ;;
-        --delete)
-            delete=1
-            shift
-            ;;
-        --help)
-            usage
-            exit
-            ;;
-        --hooks)
-            hooks=1
-            shift
-            ;;
-        --node)
-            node=1
-            shift
-            ;;
-        --python)
-            python=1
-            shift
-            ;;
-        --submodule)
-            submodule=1
-            shift
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            printf 'Not implemented: %q\n' "$1" >&2
-            exit 1
-            ;;
+    --all)
+        delete=1
+        hooks=1
+        node=1
+        python=1
+        submodule=1
+        shift
+        ;;
+    --delete)
+        delete=1
+        shift
+        ;;
+    --help)
+        usage
+        exit
+        ;;
+    --hooks)
+        hooks=1
+        shift
+        ;;
+    --node)
+        node=1
+        shift
+        ;;
+    --python)
+        python=1
+        shift
+        ;;
+    --submodule)
+        submodule=1
+        shift
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        printf 'Not implemented: %q\n' "$1" >&2
+        exit 1
+        ;;
     esac
 done
 
-if [[ -z "${hooks-}" ]] \
-    && [[ -z "${node-}" ]] \
-    && [[ -z "${python-}" ]] \
-    && [[ -z "${submodule-}" ]]
-then
+if [[ -z ${hooks-} ]] &&
+    [[ -z ${node-} ]] &&
+    [[ -z ${python-} ]] &&
+    [[ -z ${submodule-} ]]; then
     usage
     exit 1
 fi
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-if [[ -n "${delete-}" ]]
-then
+if [[ -n ${delete-} ]]; then
     echo "Cleaning Git repository"
     git clean -d --exclude='.idea' --force -x
 fi
 
-if [[ -n "${submodule-}" ]]
-then
+if [[ -n ${submodule-} ]]; then
     echo "Updating submodules"
     git submodule update --init
 fi
 
-if [[ -n "${node-}" ]]
-then
-    if [[ -n "${delete-}" ]]
-    then
+if [[ -n ${node-} ]]; then
+    if [[ -n ${delete-} ]]; then
         echo "Removing Node.js packages"
         rm --force --recursive ./node_modules
     fi
@@ -98,10 +92,8 @@ then
     npm ci
 fi
 
-if [[ -n "${python-}" ]]
-then
-    if [[ -n "${delete-}" ]]
-    then
+if [[ -n ${python-} ]]; then
+    if [[ -n ${delete-} ]]; then
         echo "Removing Python packages"
         rm --force --recursive ./.venv
     fi
@@ -114,8 +106,7 @@ then
         --sync
 fi
 
-if [[ -n "${hooks-}" ]]
-then
+if [[ -n ${hooks-} ]]; then
     echo "Installing Git hooks"
 
     # shellcheck source=/dev/null

@@ -3,7 +3,7 @@
 set -o errexit -o noclobber -o nounset -o pipefail
 shopt -s failglob inherit_errexit
 
-if [[ "$#" -eq 0 ]]; then
+if [[ $# -eq 0 ]]; then
     cat >&2 <<'EOF'
 Synopsis: ./generate-requirements-files.bash PATH [PATH…]
 
