@@ -50,6 +50,7 @@ poetryEnv.env.overrideAttrs (
       pkgs.cargo
       pkgs.docker
       pkgs.gitFull
+      pkgs.go
       pkgs.nodejs
       pkgs.python39Packages.pip
       pkgs.python39Packages.pip-tools
