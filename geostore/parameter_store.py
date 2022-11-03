@@ -22,9 +22,8 @@ LOG_MESSAGE_PARAMETER_NOT_FOUND = "Parameter:DoesNotExist"
 
 
 class ParameterName(Enum):
-    # Use @staticmethod instead of all the ignores on the next line once we move to Python 3.9
-    # <https://github.com/python/mypy/issues/7591>.
-    def _generate_next_value_(  # type: ignore[misc,override] # pylint:disable=no-self-argument,no-member
+    @staticmethod
+    def _generate_next_value_(
         name: str, _start: int, _count: int, _last_values: Sequence[str]
     ) -> str:
         return f"/{environment_name()}/{name.lower()}"
