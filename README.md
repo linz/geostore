@@ -117,11 +117,13 @@ One-time setup which generally assumes that you're in the project directory.
    1. Add yourself to the "docker" group: `sudo usermod --append --groups=docker "$USER"`
    1. Log out and back in to enable the new group
 6. [Install project Node.js](https://github.com/nvm-sh/nvm#long-term-support): `nvm install`
-7. Run `./reset-dev-env.bash --all` to install packages.
-8. Enable the dev environment: `. activate-dev-env.bash`.
-9. Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications). (This
-   is optional since it currently can't be set per repository or organisation, so it affects any
-   repos where you have access to Dependabot alerts.)
+7. [Install Go](https://go.dev/doc/install). This is required for running `pre-commit`
+   ([shfmt](https://github.com/mvdan/sh#shfmt) hook)
+8. Run `./reset-dev-env.bash --all` to install packages.
+9. Enable the dev environment: `. activate-dev-env.bash`.
+10.   Optional: Enable [Dependabot alerts by email](https://github.com/settings/notifications).
+      (This is optional since it currently can't be set per repository or organisation, so it
+      affects any repos where you have access to Dependabot alerts.)
 
 Re-run `./reset-dev-env.bash` when packages change. One easy way to use it pretty much seamlessly is
 to run it before every workday, with a crontab entry like this template:
