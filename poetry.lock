@@ -791,7 +791,6 @@ python-versions = ">=2.7"
 [package.dependencies]
 decorator = {version = "*", markers = "python_version > \"3.6\""}
 ipython = {version = ">=7.17.0", markers = "python_version > \"3.6\""}
-setuptools = "*"
 toml = {version = ">=0.10.2", markers = "python_version > \"3.6\""}
 
 [[package]]
@@ -1774,7 +1773,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-six"
-version = "1.16.21.1"
+version = "1.16.21.2"
 description = "Typing stubs for six"
 category = "dev"
 optional = false
@@ -2584,8 +2583,8 @@ types-s3transfer = [
     {file = "types_s3transfer-0.6.0-py3-none-any.whl", hash = "sha256:8d1fb95aacc55e012c31d7c3e4370e2c1e9fcad29585941d9e0832435368a737"},
 ]
 types-six = [
-    {file = "types-six-1.16.21.1.tar.gz", hash = "sha256:186e3ae992462310d2db4668582db636eae7561f8d3e528fc57d1e9424469109"},
-    {file = "types_six-1.16.21.1-py3-none-any.whl", hash = "sha256:5183af144636a9dababf77cce98808b5222eb7d30922f25075c1d62adc852e7d"},
+    {file = "types-six-1.16.21.2.tar.gz", hash = "sha256:cd5cf566bd7883bc10863f298487a5b204142b33629c97af9799670cc95a6d8e"},
+    {file = "types_six-1.16.21.2-py3-none-any.whl", hash = "sha256:45c5290bd7b216ef0af195d5f9f048b4ce5230650cb76c1ffc3067b7fd83dd77"},
 ]
 types-toml = [
     {file = "types-toml-0.10.8.tar.gz", hash = "sha256:b7e7ea572308b1030dc86c3ba825c5210814c2825612ec679eb7814f8dd9295a"},
