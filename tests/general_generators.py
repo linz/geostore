@@ -1,8 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from http import HTTPStatus
 from os import urandom
 from random import choice, randrange
 from string import ascii_letters, ascii_uppercase, digits, printable
 from typing import Type
+from uuid import uuid4
+
+from mypy_boto3_lambda.type_defs import ResponseMetadataTypeDef
 
 REFERENCE_DATETIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -64,6 +68,30 @@ def any_https_url() -> str:
 
 def any_file_contents(byte_count: int = 10) -> bytes:
     return urandom(byte_count)
+
+
+def any_request_id() -> str:
+    """Arbitrary-length string"""
+    return uuid4().hex
+
+
+def any_http_status_code() -> int:
+    return choice(list(HTTPStatus))
+
+
+def any_retry_attempts() -> int:
+    """Arbitrary-length integer"""
+    return randrange(10)
+
+
+def any_response_metadata() -> ResponseMetadataTypeDef:
+    return {
+        "RequestId": any_request_id(),
+        "HostId": any_host(),
+        "HTTPStatusCode": any_http_status_code(),
+        "HTTPHeaders": {},
+        "RetryAttempts": any_retry_attempts(),
+    }
 
 
 def any_error_message() -> str:
