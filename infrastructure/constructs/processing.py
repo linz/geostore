@@ -59,6 +59,7 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
+from .lambda_config import RETENTION_DAYS
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -442,9 +443,7 @@ class Processing(Construct):
         ############################################################################################
         # STATE MACHINE
 
-        log_group = aws_logs.LogGroup(
-            self, "state machine logs", retention=aws_logs.RetentionDays.THREE_MONTHS
-        )
+        log_group = aws_logs.LogGroup(self, "state machine logs", retention=RETENTION_DAYS)
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
                 errors=[Errors.TASKS_FAILED],
