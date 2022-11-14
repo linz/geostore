@@ -558,6 +558,16 @@ class Processing(Construct):
             ),
         )
 
+        NagSuppressions.add_resource_suppressions(
+            self.state_machine,
+            suppressions=[
+                {
+                    "id": "AwsSolutions-SF2",
+                    "reason": "Enabling AWS X-Ray tracing could be costly. "
+                    "We could enable this when the need arises.",
+                }
+            ],
+        )
         self.state_machine_parameter = aws_ssm.StringParameter(
             self,
             "state machine arn",
