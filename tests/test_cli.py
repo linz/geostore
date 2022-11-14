@@ -1,13 +1,15 @@
+import io
 from copy import deepcopy
 from hashlib import sha256
 from http import HTTPStatus
 from io import BytesIO
-from json import loads
+from json import dumps, loads
 from os import environ
 from re import MULTILINE, match
 from unittest.mock import ANY, MagicMock, patch
 
 from botocore.exceptions import NoCredentialsError, NoRegionError
+from botocore.response import StreamingBody
 from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
 from pytest import mark
 from pytest_subtests import SubTests
@@ -56,7 +58,13 @@ from .aws_utils import (
     any_s3_url,
 )
 from .file_utils import json_dict_to_file_object
-from .general_generators import any_dictionary_key, any_file_contents, any_name, any_safe_filename
+from .general_generators import (
+    any_dictionary_key,
+    any_file_contents,
+    any_name,
+    any_response_metadata,
+    any_safe_filename,
+)
 from .stac_generators import (
     any_asset_name,
     any_dataset_description,
@@ -74,6 +82,14 @@ DATASET_VERSION_ID_REGEX = (
 AWS_REGION = environ[AWS_DEFAULT_REGION_KEY]
 
 CLI_RUNNER = CliRunner(mix_stderr=False)
+
+
+def get_response_object(status_code: int, body: JsonObject) -> JsonObject:
+    return {STATUS_CODE_KEY: status_code, BODY_KEY: body}
+
+
+def stream_contents(contents: bytes) -> StreamingBody:
+    return StreamingBody(io.BytesIO(contents), len(contents))
 
 
 @mark.infrastructure
@@ -138,13 +154,15 @@ def should_report_dataset_creation_success(
     response_payload_object = get_response_object(
         HTTPStatus.CREATED, {DATASET_ID_SHORT_KEY: dataset_id}
     )
-    response_payload = json_dict_to_file_object(response_payload_object)
+    response_payload_encode = dumps(response_payload_object).encode()
+    response_payload = stream_contents(response_payload_encode)
     boto3_client_mock.return_value.invoke.return_value = InvocationResponseTypeDef(
         StatusCode=HTTPStatus.OK,
         FunctionError="",
         LogResult="",
         Payload=response_payload,
         ExecutedVersion=LAMBDA_EXECUTED_VERSION,
+        ResponseMetadata=any_response_metadata(),
     )
 
     # When
@@ -220,12 +238,15 @@ def should_report_arbitrary_dataset_creation_failure(
     # Given an arbitrary error
     response_body = {any_dictionary_key(): any_name()}
     response_object = get_response_object(HTTPStatus.TOO_MANY_REQUESTS, response_body)
+    response_encode = dumps(response_object).encode()
+    response_payload = stream_contents(response_encode)
     boto3_client_mock.return_value.invoke.return_value = InvocationResponseTypeDef(
         StatusCode=HTTPStatus.BAD_REQUEST,
         FunctionError="",
         LogResult="",
-        Payload=json_dict_to_file_object(response_object),
+        Payload=response_payload,
         ExecutedVersion=LAMBDA_EXECUTED_VERSION,
+        ResponseMetadata=any_response_metadata(),
     )
 
     # When
@@ -352,12 +373,15 @@ def should_print_version_import_status_verbatim(
         ASSET_UPLOAD_KEY: {STATUS_KEY: Outcome.SKIPPED.value, ERRORS_KEY: []},
     }
     response_object = get_response_object(HTTPStatus.OK, response_body)
+    response_encode = dumps(response_object).encode()
+    response_payload = stream_contents(response_encode)
     boto3_client_mock.return_value.invoke.return_value = InvocationResponseTypeDef(
         StatusCode=HTTPStatus.OK,
         FunctionError="",
         LogResult="",
-        Payload=json_dict_to_file_object(response_object),
+        Payload=response_payload,
         ExecutedVersion=LAMBDA_EXECUTED_VERSION,
+        ResponseMetadata=any_response_metadata(),
     )
 
     result = CLI_RUNNER.invoke(
@@ -423,10 +447,6 @@ def should_get_version_import_status(subtests: SubTests) -> None:
 
     with subtests.test(msg="should indicate success via exit code"):
         assert status_result.exit_code == 0, status_result
-
-
-def get_response_object(status_code: int, body: JsonObject) -> JsonObject:
-    return {STATUS_CODE_KEY: status_code, BODY_KEY: body}
 
 
 @patch("geostore.cli.handle_api_request")
