@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_dynamodb,
     aws_iam,
     aws_lambda_python_alpha,
+    aws_logs,
     aws_s3,
     aws_sqs,
     aws_ssm,
@@ -440,6 +441,8 @@ class Processing(Construct):
 
         ############################################################################################
         # STATE MACHINE
+
+        log_group = aws_logs.LogGroup(self, "state machine logs")
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
                 errors=[Errors.TASKS_FAILED],
@@ -522,6 +525,9 @@ class Processing(Construct):
             self,
             f"{env_name}-dataset-version-creation",
             definition=dataset_version_creation_definition,
+            logs=aws_stepfunctions.LogOptions(
+                destination=log_group, level=aws_stepfunctions.LogLevel.ALL
+            ),
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(
