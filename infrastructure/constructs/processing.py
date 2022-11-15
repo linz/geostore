@@ -443,7 +443,12 @@ class Processing(Construct):
         ############################################################################################
         # STATE MACHINE
 
-        log_group = aws_logs.LogGroup(self, "state machine logs", retention=RETENTION_DAYS)
+        log_group = aws_logs.LogGroup(
+            self,
+            "state machine logs",
+            log_group_name=f"/aws/vendedlogs/states/geostore-{ENV_NAME_VARIABLE_NAME}/stepfunctions",  # pylint:disable=line-too-long
+            retention=RETENTION_DAYS,
+        )
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
                 errors=[Errors.TASKS_FAILED],
