@@ -9,6 +9,7 @@ from .lambda_config import (
     DEFAULT_LAMBDA_MAX_MEMORY_MEBIBYTES,
     DEFAULT_LAMBDA_TIMEOUT,
     PYTHON_RUNTIME,
+    RETENTION_DAYS,
 )
 
 
@@ -33,6 +34,7 @@ class LambdaEndpoint(aws_lambda.Function):
             code=bundled_code(package_name),
             layers=[botocore_lambda_layer],
             memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEBIBYTES,
+            log_retention=RETENTION_DAYS,
         )
 
         self.add_environment(ENV_NAME_VARIABLE_NAME, env_name)
