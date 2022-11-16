@@ -1767,7 +1767,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-toml"
-version = "0.10.8"
+version = "0.10.8.1"
 description = "Typing stubs for toml"
 category = "dev"
 optional = false
@@ -2569,8 +2569,8 @@ types-six = [
     {file = "types_six-1.16.21.3-py3-none-any.whl", hash = "sha256:0f231cc67813264a733d2aca3b588fa74a2cea827e08ce2532b974a2ddafe5b0"},
 ]
 types-toml = [
-    {file = "types-toml-0.10.8.tar.gz", hash = "sha256:b7e7ea572308b1030dc86c3ba825c5210814c2825612ec679eb7814f8dd9295a"},
-    {file = "types_toml-0.10.8-py3-none-any.whl", hash = "sha256:8300fd093e5829eb9c1fba69cee38130347d4b74ddf32d0a7df650ae55c2b599"},
+    {file = "types-toml-0.10.8.1.tar.gz", hash = "sha256:171bdb3163d79a520560f24ba916a9fc9bff81659c5448a9fea89240923722be"},
+    {file = "types_toml-0.10.8.1-py3-none-any.whl", hash = "sha256:b7b5c4977f96ab7b5ac06d8a6590d17c0bf252a96efc03b109c2711fb3e0eafd"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.7.tar.gz", hash = "sha256:cfd1fbbe4ba9a605ed148294008aac8a7b8b7472651d1cc357d507ae5962e3d2"},
