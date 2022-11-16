@@ -59,6 +59,7 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
+from .lambda_config import RETENTION_DAYS
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -442,7 +443,6 @@ class Processing(Construct):
         ############################################################################################
         # STATE MACHINE
 
-        log_group = aws_logs.LogGroup(self, "state machine logs")
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
                 errors=[Errors.TASKS_FAILED],
@@ -521,9 +521,18 @@ class Processing(Construct):
             )
         )
 
+        state_machine_id = f"{env_name}-dataset-import"
+
+        log_group = aws_logs.LogGroup(
+            self,
+            "state-machine-logs",
+            log_group_name=f"/aws/vendedlogs/states/{state_machine_id}",
+            retention=RETENTION_DAYS,
+        )
+
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            f"{env_name}-dataset-version-creation",
+            state_machine_id,
             definition=dataset_version_creation_definition,
             logs=aws_stepfunctions.LogOptions(
                 destination=log_group, level=aws_stepfunctions.LogLevel.ALL
