@@ -443,7 +443,6 @@ class Processing(Construct):
         ############################################################################################
         # STATE MACHINE
 
-        log_group = aws_logs.LogGroup(self, "state machine logs", retention=RETENTION_DAYS)
         dataset_version_creation_definition = (
             check_stac_metadata_task.add_catch(
                 errors=[Errors.TASKS_FAILED],
@@ -522,9 +521,18 @@ class Processing(Construct):
             )
         )
 
+        state_machine_id = f"{env_name}-dataset-import"
+
+        log_group = aws_logs.LogGroup(
+            self,
+            "state-machine-logs",
+            log_group_name=f"/aws/vendedlogs/states/{state_machine_id}",
+            retention=RETENTION_DAYS,
+        )
+
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            f"{env_name}-dataset-version-creation",
+            state_machine_id,
             definition=dataset_version_creation_definition,
             logs=aws_stepfunctions.LogOptions(
                 destination=log_group, level=aws_stepfunctions.LogLevel.ALL
