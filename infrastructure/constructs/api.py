@@ -1,4 +1,5 @@
 from aws_cdk import (
+    RemovalPolicy,
     Tags,
     aws_iam,
     aws_lambda_python_alpha,
@@ -9,6 +10,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
+from geostore.environment import is_production
 from geostore.resources import Resource
 
 from .common import grant_parameter_read_access
@@ -67,6 +69,11 @@ class API(Construct):
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
+
+        if not is_production():
+            datasets_endpoint_lambda.log_group.apply_removal_policy(RemovalPolicy.DESTROY)
+            dataset_versions_endpoint_lambda.log_group.apply_removal_policy(RemovalPolicy.DESTROY)
+
         processing_assets_table.grant_read_write_data(dataset_versions_endpoint_lambda)
         processing_assets_table.grant(dataset_versions_endpoint_lambda, "dynamodb:DescribeTable")
 
@@ -88,6 +95,9 @@ class API(Construct):
             users_role=api_users_role,
             botocore_lambda_layer=botocore_lambda_layer,
         )
+
+        if not is_production():
+            import_status_endpoint_lambda.log_group.apply_removal_policy(RemovalPolicy.DESTROY)
 
         validation_results_table.grant_read_data(import_status_endpoint_lambda)
         validation_results_table.grant(
