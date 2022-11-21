@@ -45,6 +45,45 @@ tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900
 tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
+name = "aws-cdk-asset-awscli-v1"
+version = "2.2.11"
+description = "A library that contains the AWS CLI for use in Lambda Layers"
+category = "main"
+optional = true
+python-versions = "~=3.7"
+
+[package.dependencies]
+jsii = ">=1.71.0,<2.0.0"
+publication = ">=0.0.3"
+typeguard = ">=2.13.3,<2.14.0"
+
+[[package]]
+name = "aws-cdk-asset-kubectl-v20"
+version = "2.1.1"
+description = "A library that contains kubectl for use in Lambda Layers"
+category = "main"
+optional = true
+python-versions = "~=3.7"
+
+[package.dependencies]
+jsii = ">=1.70.0,<2.0.0"
+publication = ">=0.0.3"
+typeguard = ">=2.13.3,<2.14.0"
+
+[[package]]
+name = "aws-cdk-asset-node-proxy-agent-v5"
+version = "2.0.17"
+description = "@aws-cdk/asset-node-proxy-agent-v5"
+category = "main"
+optional = true
+python-versions = "~=3.7"
+
+[package.dependencies]
+jsii = ">=1.71.0,<2.0.0"
+publication = ">=0.0.3"
+typeguard = ">=2.13.3,<2.14.0"
+
+[[package]]
 name = "aws-cdk-aws-batch-alpha"
 version = "2.50.0a0"
 description = "The CDK Construct Library for AWS::Batch"
@@ -76,15 +115,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.50.0"
+version = "2.51.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
+"aws-cdk.asset-awscli-v1" = ">=2.2.9,<3.0.0"
+"aws-cdk.asset-kubectl-v20" = ">=2.1.1,<3.0.0"
+"aws-cdk.asset-node-proxy-agent-v5" = ">=2.0.15,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.69.0,<2.0.0"
+jsii = ">=1.71.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -697,18 +739,18 @@ python-versions = ">=2.7, !=3.0, !=3.1, !=3.2, !=3.3, !=3.4, <4"
 
 [[package]]
 name = "gitlint"
-version = "0.17.0"
+version = "0.18.0"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-gitlint-core = {version = "0.17.0", extras = ["trusted-deps"]}
+gitlint-core = {version = "0.18.0", extras = ["trusted-deps"]}
 
 [[package]]
 name = "gitlint-core"
-version = "0.17.0"
+version = "0.18.0"
 description = "Git commit message linter written in python, checks your commit messages for style."
 category = "dev"
 optional = false
@@ -884,7 +926,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "jsii"
-version = "1.70.0"
+version = "1.71.0"
 description = "Python client for jsii runtime"
 category = "main"
 optional = true
@@ -1593,7 +1635,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "slack-sdk"
-version = "3.19.3"
+version = "3.19.4"
 description = "The Slack API Platform SDK for Python"
 category = "main"
 optional = true
@@ -1733,7 +1775,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.19.3"
+version = "2.8.19.4"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1906,6 +1948,18 @@ attrs = [
     {file = "attrs-22.1.0-py2.py3-none-any.whl", hash = "sha256:86efa402f67bf2df34f51a335487cf46b1ec130d02b8d39fd248abfd30da551c"},
     {file = "attrs-22.1.0.tar.gz", hash = "sha256:29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6"},
 ]
+aws-cdk-asset-awscli-v1 = [
+    {file = "aws-cdk.asset-awscli-v1-2.2.11.tar.gz", hash = "sha256:8eb174bbe0e98585e8dade5de42574ad1746c3b52f6b4dd1efa7fa53183f36a6"},
+    {file = "aws_cdk.asset_awscli_v1-2.2.11-py3-none-any.whl", hash = "sha256:94489e30c30acc15d9371147ff44558889aa8c9b7b5d9db98ded66a34d017292"},
+]
+aws-cdk-asset-kubectl-v20 = [
+    {file = "aws-cdk.asset-kubectl-v20-2.1.1.tar.gz", hash = "sha256:9834cdb150c5590aea4e5eba6de2a89b4c60617451181c524810c5a75154565c"},
+    {file = "aws_cdk.asset_kubectl_v20-2.1.1-py3-none-any.whl", hash = "sha256:a2fad1a5a35a94a465efe60859f91e45dacc33261fb9bbf1cf9bbc6e2f70e9d6"},
+]
+aws-cdk-asset-node-proxy-agent-v5 = [
+    {file = "aws-cdk.asset-node-proxy-agent-v5-2.0.17.tar.gz", hash = "sha256:d0b039e5be3b2d1aa6b632d070c975c3a936920f182a9906e9eb7de9fa28b391"},
+    {file = "aws_cdk.asset_node_proxy_agent_v5-2.0.17-py3-none-any.whl", hash = "sha256:c622ca308959edf679452d85811e1d60afb85deb06a6446cc541cbb7fede6fe5"},
+]
 aws-cdk-aws-batch-alpha = [
     {file = "aws-cdk.aws-batch-alpha-2.50.0a0.tar.gz", hash = "sha256:7fda50c41f5a00d39f780c4ecf653c11638cb98d392f8ab68fa981510b83b83e"},
     {file = "aws_cdk.aws_batch_alpha-2.50.0a0-py3-none-any.whl", hash = "sha256:1664895c84a248b81606520dd6d478a92d3f12fa0051c56c77f5887f1fecb370"},
@@ -1915,8 +1969,8 @@ aws-cdk-aws-lambda-python-alpha = [
     {file = "aws_cdk.aws_lambda_python_alpha-2.50.0a0-py3-none-any.whl", hash = "sha256:ea14529b35ab5ed8368fbe01c194adcf175a54301bd83f3d57497bdb415534a5"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.50.0.tar.gz", hash = "sha256:60a44b4045cbe1ab33e001d62ded579a45b5f6b011c612f6804c109666807918"},
-    {file = "aws_cdk_lib-2.50.0-py3-none-any.whl", hash = "sha256:8f9157c906485308631edbf398a77641e5986aaccba73c3254502138a340a79a"},
+    {file = "aws-cdk-lib-2.51.0.tar.gz", hash = "sha256:292db2f37062e9c19429d977c02567eb5adb310ce2c157782c8ca20d2b129e8b"},
+    {file = "aws_cdk_lib-2.51.0-py3-none-any.whl", hash = "sha256:24f48a0143d2fc0712d0becfd2c09ff3e51ea609d1996a7fa1e4ea933e242bac"},
 ]
 awscli = [
     {file = "awscli-1.19.53-py2.py3-none-any.whl", hash = "sha256:cebe94ffdaa2dcc8c63eb31844df1f267a01e3c3376d47edbcf927e216438fca"},
@@ -2083,12 +2137,12 @@ fqdn = [
     {file = "fqdn-1.5.1.tar.gz", hash = "sha256:105ed3677e767fb5ca086a0c1f4bb66ebc3c100be518f0e0d755d9eae164d89f"},
 ]
 gitlint = [
-    {file = "gitlint-0.17.0-py2.py3-none-any.whl", hash = "sha256:46469d5db3f3bca72fa946c159d0733dc8c75211309477676295cf2d80d177b4"},
-    {file = "gitlint-0.17.0.tar.gz", hash = "sha256:8c10c6b404d255b43ddc4a2f5f13bcb10284bc162adfb2c03b10708309009189"},
+    {file = "gitlint-0.18.0-py2.py3-none-any.whl", hash = "sha256:77ad954738b400019c1bc51241abdae5fea28c81d1586ef9fe133b96b503531e"},
+    {file = "gitlint-0.18.0.tar.gz", hash = "sha256:b0edf947a9202ace282d084bbf481a1d0fdb2fba40e32dd4a520bfd3ef6d3963"},
 ]
 gitlint-core = [
-    {file = "gitlint-core-0.17.0.tar.gz", hash = "sha256:772dfd33effaa8515ca73e901466aa938c19ced894bec6783d19691f57429691"},
-    {file = "gitlint_core-0.17.0-py2.py3-none-any.whl", hash = "sha256:cb99ccd736a698b910385211203bda94bf4ce29086d0c08f8f58a18c40a98377"},
+    {file = "gitlint-core-0.18.0.tar.gz", hash = "sha256:b032eb574f7399aec6a5246a78810bacb7ce9c9fd2d9e4375950549196cae681"},
+    {file = "gitlint_core-0.18.0-py2.py3-none-any.whl", hash = "sha256:6434ca13360e448f9a7b00d24651aabab9b3a1875b4590d20e1d6cb55c78444f"},
 ]
 glob2 = [
     {file = "glob2-0.7.tar.gz", hash = "sha256:85c3dbd07c8aa26d63d7aacee34fa86e9a91a3873bc30bf62ec46e531f92ab8c"},
@@ -2137,8 +2191,8 @@ jmespath = [
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
 ]
 jsii = [
-    {file = "jsii-1.70.0-py3-none-any.whl", hash = "sha256:d0867c0d2f60ceda1664c026033ae34ea36178c7027315e577ded13043827664"},
-    {file = "jsii-1.70.0.tar.gz", hash = "sha256:9fc57ff37868364ba3417b26dc97189cd0cc71282196a3f4765768c067354be0"},
+    {file = "jsii-1.71.0-py3-none-any.whl", hash = "sha256:0f081498d9f2a12850577caedebe604e4b6e98e7fb20c3bbcca05a5ab8bd0f0b"},
+    {file = "jsii-1.71.0.tar.gz", hash = "sha256:e8fedaf077c192917f1d43100b2bbb5d107e4393b713f8ca2814d7653d64a026"},
 ]
 jsonpointer = [
     {file = "jsonpointer-2.0-py2.py3-none-any.whl", hash = "sha256:ff379fa021d1b81ab539f5ec467c7745beb1a5671463f9dcc2b2d458bd361c1e"},
@@ -2507,8 +2561,8 @@ six = [
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 slack-sdk = [
-    {file = "slack_sdk-3.19.3-py2.py3-none-any.whl", hash = "sha256:316574ffaf0f5c55bd08476b0a34f3bd2caa9b90b814859bc22922f25934d3aa"},
-    {file = "slack_sdk-3.19.3.tar.gz", hash = "sha256:88ddf46f42f95568cffbab8c69de7e7bfacce9b13829d9214a8aee2b70b0a4b7"},
+    {file = "slack_sdk-3.19.4-py2.py3-none-any.whl", hash = "sha256:71e222f5a55d2f704638602f0883def9d331539462edc6d9cb88f83044fbce70"},
+    {file = "slack_sdk-3.19.4.tar.gz", hash = "sha256:67b05e636fee6e2cb2ed140fc79cb1cd370a7a983ec6e60fdebaf83e48a53383"},
 ]
 smart-open = [
     {file = "smart_open-6.2.0-py3-none-any.whl", hash = "sha256:088bf00f9327c71e549bc2f86567d3320df5d89667f009ce1c16568976068ef7"},
@@ -2554,8 +2608,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.19.3.tar.gz", hash = "sha256:a313284df5ed3fd078303262edc0efde28998cd08e5061ef1ccc0bb5fef4d2da"},
-    {file = "types_python_dateutil-2.8.19.3-py3-none-any.whl", hash = "sha256:ce6af1bdf0aca6b7dc8815a664f0e8b55da91ff7851102cf87c87178e7c8e7ec"},
+    {file = "types-python-dateutil-2.8.19.4.tar.gz", hash = "sha256:351a8ca9afd4aea662f87c1724d2e1ae59f9f5f99691be3b3b11d2393cd3aaa1"},
+    {file = "types_python_dateutil-2.8.19.4-py3-none-any.whl", hash = "sha256:722a55be8e2eeff749c3e166e7895b0e2f4d29ab4921c0cff27aa6b997d7ee2e"},
 ]
 types-requests = [
     {file = "types-requests-2.28.11.4.tar.gz", hash = "sha256:d4f342b0df432262e9e326d17638eeae96a5881e78e7a6aae46d33870d73952e"},
