@@ -1,9 +1,11 @@
 from os import environ
 
 from aws_cdk import (
+    RemovalPolicy,
     aws_events,
     aws_events_targets,
     aws_iam,
+    aws_kms,
     aws_lambda_python_alpha,
     aws_sns,
     aws_ssm,
@@ -16,6 +18,7 @@ from geostore.notify_status_update.task import SLACK_URL_ENV_NAME
 from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 
+from .aws_managed_key_policy import AWS_MANAGED_KEY_POLICY
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -62,6 +65,12 @@ class Notify(Construct):
             scope,
             "geostore-stepfunction-status-topic",
             topic_name=Resource.SNS_TOPIC_NAME.resource_name,
+            master_key=aws_kms.Key(
+                self,
+                "AWS Managed KMS Encryption Key",
+                policy=AWS_MANAGED_KEY_POLICY,
+                removal_policy=RemovalPolicy.DESTROY,
+            ),
         )
         sns_topic_arn_parameter = aws_ssm.StringParameter(
             self,
