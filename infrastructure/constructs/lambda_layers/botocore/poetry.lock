@@ -1,6 +1,6 @@
 [[package]]
 name = "botocore"
-version = "1.29.15"
+version = "1.29.16"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -56,13 +56,13 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9,<3.10"
+python-versions = "~3.9"
 content-hash = "92176b3eafd22453239cf3e9e7fcefb9e0a3c0af572a1d46403aee00f8e7d931"
 
 [metadata.files]
 botocore = [
-    {file = "botocore-1.29.15-py3-none-any.whl", hash = "sha256:02cfa6d060c50853a028b36ada96f4ddb225948bf9e7e0a4dc5b72f9e3878f15"},
-    {file = "botocore-1.29.15.tar.gz", hash = "sha256:7d4e148870c98bbaab04b0c85b4d3565fc00fec6148cab9da96ab4419dbfb941"},
+    {file = "botocore-1.29.16-py3-none-any.whl", hash = "sha256:271b599e6cfe214405ed50d41cd967add1d5d469383dd81ff583bc818b47f59b"},
+    {file = "botocore-1.29.16.tar.gz", hash = "sha256:8cfcc10f2f1751608c3cec694f2d6b5e16ebcd50d0a104f9914d5616227c62e9"},
 ]
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
