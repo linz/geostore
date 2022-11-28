@@ -100,16 +100,16 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.50.0a0"
+version = "2.51.0a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.50.0,<3.0.0"
+aws-cdk-lib = ">=2.51.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.69.0,<2.0.0"
+jsii = ">=1.71.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -1965,8 +1965,8 @@ aws-cdk-aws-batch-alpha = [
     {file = "aws_cdk.aws_batch_alpha-2.50.0a0-py3-none-any.whl", hash = "sha256:1664895c84a248b81606520dd6d478a92d3f12fa0051c56c77f5887f1fecb370"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.50.0a0.tar.gz", hash = "sha256:15c6c05864c5459736a8a85fb474bd1dc9ea4ef24e8acc2e2bf83d1e0ab00087"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.50.0a0-py3-none-any.whl", hash = "sha256:ea14529b35ab5ed8368fbe01c194adcf175a54301bd83f3d57497bdb415534a5"},
+    {file = "aws-cdk.aws-lambda-python-alpha-2.51.0a0.tar.gz", hash = "sha256:b01bee3da89e32b7babe4e26fff37e9015df218d0850a15a9fe7a44ec29cda4b"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.51.0a0-py3-none-any.whl", hash = "sha256:f9680809ac6bf306933c2f94329ccc6d147d4d4ab1c51280e0bc34c1c5b5aea2"},
 ]
 aws-cdk-lib = [
     {file = "aws-cdk-lib-2.51.0.tar.gz", hash = "sha256:292db2f37062e9c19429d977c02567eb5adb310ce2c157782c8ca20d2b129e8b"},
