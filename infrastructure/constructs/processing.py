@@ -1,5 +1,6 @@
 from aws_cdk import (
     Duration,
+    RemovalPolicy,
     Tags,
     aws_dynamodb,
     aws_iam,
@@ -33,7 +34,7 @@ from geostore.content_iterator.task import (
     NEXT_ITEM_KEY,
     RESULTS_TABLE_NAME_KEY,
 )
-from geostore.environment import ENV_NAME_VARIABLE_NAME
+from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
 from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 from geostore.step_function_keys import (
@@ -82,7 +83,7 @@ class Processing(Construct):
         datasets_table: Table,
         git_commit_parameter: aws_ssm.StringParameter,
     ) -> None:
-        # pylint: disable=too-many-locals, too-many-statements
+        # pylint: disable=too-many-locals, too-many-statements, too-complex
 
         super().__init__(scope, stack_id)
 
@@ -529,6 +530,9 @@ class Processing(Construct):
             log_group_name=f"/aws/vendedlogs/states/{state_machine_id}",
             retention=RETENTION_DAYS,
         )
+
+        if not is_production():
+            log_group.apply_removal_policy(RemovalPolicy.DESTROY)
 
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
