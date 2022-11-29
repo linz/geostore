@@ -4,6 +4,15 @@
 repos:
   - repo: local
     hooks:
+      - id: bandit
+        name: bandit
+        description: 'Bandit is a tool for finding common security issues in Python code'
+        entry: bandit
+        args: ['--configfile', 'pyproject.toml']
+        language: system
+        types: [python]
+        stages: [commit]
+
       - id: black
         name: black
         entry: black

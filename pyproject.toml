@@ -2,6 +2,9 @@
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.bandit]
+exclude_dirs = [".venv", "cdk.out", "node_modules", "tests"]
+
 [tool.black]
 line-length = 100
 
@@ -102,6 +105,7 @@ strict-rfc3339 = {optional = true, version = "*"}
 typer = "*"
 
 [tool.poetry.dev-dependencies]
+bandit = {version = "*", extras = ["toml"]}
 black = "*"
 boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
 gitlint = "*"

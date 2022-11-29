@@ -16,6 +16,7 @@
 [![Python: 3.9](https://img.shields.io/badge/Python-3.9-blue)](https://www.python.org/)
 [![shellcheck: passing](https://img.shields.io/badge/shellcheck-passing-brightgreen)](https://www.shellcheck.net/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 
 Central storage, management and access solution for important geospatial datasets. Developed by
 [Toitū Te Whenua Land Information New Zealand](https://github.com/linz).
