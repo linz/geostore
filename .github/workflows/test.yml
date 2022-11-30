@@ -180,7 +180,8 @@ jobs:
         run: |
           aws logs describe-log-groups --log-group-name-prefix='/aws/lambda/ci' --output=text --no-paginate | \
           awk -v date="$(($(date --date='1 week ago' +%s)*1000))" '{ if ($3 < date) print $4}' | \
-          xargs --no-run-if-empty --verbose -I{} aws logs delete-log-group --log-group-name={}
+          xargs --no-run-if-empty --verbose -I{} aws logs delete-log-group --log-group-name={} || \
+          [[ $? -eq 123 ]]
         if: always()
 
   build-nix-shell:
