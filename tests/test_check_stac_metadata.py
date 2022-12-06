@@ -106,9 +106,9 @@ from .stac_objects import (
 )
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 
 @patch("geostore.check_stac_metadata.task.STACDatasetValidator.validate")
@@ -301,7 +301,7 @@ def should_save_staging_access_validation_results(
 ) -> None:
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
-        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
+        _ClientErrorResponseTypeDef(Error=_ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
     get_s3_url_reader_mock.return_value.side_effect = expected_error
@@ -342,8 +342,8 @@ def should_save_file_not_found_validation_results(
 ) -> None:
     validation_results_table_name = get_param(ParameterName.STORAGE_VALIDATION_RESULTS_TABLE_NAME)
     expected_error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
         ),
         operation_name="get_object",
     )
