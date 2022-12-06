@@ -55,6 +55,7 @@ repos:
         language: system
         stages: [commit]
         types: [toml]
+        exclude: ^.*\.lock
 
       - id: pylint
         name: pylint
