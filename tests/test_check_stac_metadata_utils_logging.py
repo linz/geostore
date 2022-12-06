@@ -46,9 +46,9 @@ from .stac_generators import any_asset_name, any_hex_multihash
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 
 def should_log_assets() -> None:
@@ -123,7 +123,7 @@ def should_log_staging_access_validation(validate_mock: MagicMock) -> None:
     hash_key = any_hash_key()
 
     expected_error = ClientError(
-        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code="TEST", Message="TEST")),
+        _ClientErrorResponseTypeDef(Error=_ClientErrorResponseError(Code="TEST", Message="TEST")),
         operation_name="get_object",
     )
     validate_mock.side_effect = expected_error

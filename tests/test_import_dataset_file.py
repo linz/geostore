@@ -42,9 +42,9 @@ from .aws_utils import (
 from .general_generators import any_error_message, any_safe_file_path
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 
 @patch("geostore.import_metadata_file.task.importer")
@@ -145,7 +145,7 @@ def should_treat_timeout_as_a_temporary_failure(importer_mock: MagicMock) -> Non
     invocation_schema_version = any_invocation_schema_version()
 
     importer_mock.side_effect = ClientError(
-        ClientErrorResponseTypeDef(Error=ClientErrorResponseError(Code=AWS_CODE_REQUEST_TIMEOUT)),
+        _ClientErrorResponseTypeDef(Error=_ClientErrorResponseError(Code=AWS_CODE_REQUEST_TIMEOUT)),
         any_operation_name(),
     )
 
@@ -201,8 +201,8 @@ def should_treat_unknown_error_code_as_permanent_failure(importer_mock: MagicMoc
     operation_name = any_operation_name()
 
     importer_mock.side_effect = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code=error_code, Message=error_message)
         ),
         operation_name,
     )
