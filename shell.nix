@@ -12,34 +12,84 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
-      black = super.black.overridePythonAttrs (
+      aws-cdk-asset-awscli-v1 = super.aws-cdk-asset-awscli-v1.overridePythonAttrs (
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-            self.hatch-fancy-pypi-readme
-            self.hatchling
-            self.hatch-vcs
-          ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
-      exceptiongroup = super.exceptiongroup.overridePythonAttrs (
+      aws-cdk-asset-kubectl-v20 = super.aws-cdk-asset-kubectl-v20.overridePythonAttrs (
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-scm ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
-      idna = super.idna.overridePythonAttrs (
+      aws-cdk-asset-node-proxy-agent-v5 = super.aws-cdk-asset-node-proxy-agent-v5.overridePythonAttrs (
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
-      jsonschema = super.jsonschema.overridePythonAttrs (
+      aws-cdk-aws-batch-alpha = super.aws-cdk-aws-batch-alpha.overridePythonAttrs (
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatch-fancy-pypi-readme ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
-      mypy = super.mypy.overridePythonAttrs (old: {
-        patches = [ ];
-        MYPY_USE_MYPYC = false;
-      });
+      aws-cdk-aws-lambda-python-alpha = super.aws-cdk-aws-lambda-python-alpha.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      aws-cdk-lib = super.aws-cdk-lib.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      constructs = super.constructs.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      jsii = super.jsii.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      mypy-boto3-ssm = super.mypy-boto3-ssm.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      mypy-boto3-stepfunctions = super.mypy-boto3-stepfunctions.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      mypy-boto3-sts = super.mypy-boto3-sts.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      pystac = super.pystac.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      python-ulid = super.python-ulid.override {
+        preferWheel = true;
+      };
+      types-pkg-resources = super.types-pkg-resources.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      types-python-dateutil = super.types-python-dateutil.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
+      types-six = super.types-six.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
+        }
+      );
     });
   };
 in
