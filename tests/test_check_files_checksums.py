@@ -79,9 +79,9 @@ from .stac_generators import (
 SHA256_CHECKSUM_BYTE_COUNT = 32
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 
 def should_return_offset_from_array_index_variable() -> None:
@@ -419,8 +419,8 @@ def should_save_file_not_found_validation_results(
     )
 
     expected_error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code="NoSuchKey", Message="TEST")
         ),
         operation_name="get_object",
     )
@@ -475,8 +475,8 @@ def should_log_arbitrary_client_errors() -> None:
     error_code = "TODO"
     error_message = "ALSOTODO"
     expected_error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code=error_code, Message=error_message)
         ),
         operation_name="get_object",
     )
