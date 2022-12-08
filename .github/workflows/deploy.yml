@@ -20,9 +20,7 @@ jobs:
           submodules: 'true'
 
       - name: Get configuration
-        run: |
-          echo "NODE_VERSION=$(cat .nvmrc)" | tee -a $GITHUB_ENV
-          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
+        run: echo "NODE_VERSION=$(cat .nvmrc)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3.5.1
@@ -45,31 +43,15 @@ jobs:
       - name: Add local Node packages to PATH
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
-      - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: cachix/install-nix-action@v18
 
-      - name: Cache pip
-        uses: actions/cache@v3.0.11
+      - uses: cachix/cachix-action@v12
         with:
-          path: ~/.cache/pip
-          key:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{
-            hashFiles('./poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --requirement=geostore/pip.txt
-          python -m pip install --requirement=geostore/poetry.txt
-          python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root --only=main
+          name: linz
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Print CDK version
-        run: poetry run cdk --version
+        run: nix-shell --pure --run 'cdk --version'
 
       - name: Get Oidc deploy role arn
         run: cat .github/workflows/.env >> $GITHUB_ENV
@@ -85,8 +67,9 @@ jobs:
 
       - name: (NonProd) Deploy AWS stacks
         if: github.repository == 'linz/geostore' && github.ref == 'refs/heads/master'
-        run: |
-          poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
+        run:
+          nix-shell --run 'cdk deploy --all --require-approval never --change-set-name
+          "ci-${GITHUB_RUN_ID}"'
         env:
           GEOSTORE_ENV_NAME: nonprod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
@@ -108,8 +91,7 @@ jobs:
         if: >
           github.repository == 'linz/geostore' && (startsWith(github.ref, 'refs/heads/release-') ||
           startsWith(github.ref, 'refs/tags/release-'))
-        run: |
-          poetry run cdk diff -c aws-cdk:enableDiffNoFail=true
+        run: nix-shell --pure --run 'cdk diff -c aws-cdk:enableDiffNoFail=true'
         env:
           GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:
@@ -119,8 +101,8 @@ jobs:
       - name: (Prod) Deploy AWS stacks (only on release tag)
         if: github.repository == 'linz/geostore' && startsWith(github.ref, 'refs/tags/release-')
         run:
-          poetry run cdk deploy --all --require-approval never --change-set-name
-          "ci-${GITHUB_RUN_ID}"
+          nix-shell --run 'cdk deploy --all --require-approval never --change-set-name
+          "ci-${GITHUB_RUN_ID}"'
         env:
           GEOSTORE_ENV_NAME: prod
           GEOSTORE_SAML_IDENTITY_PROVIDER_ARN:

@@ -103,30 +103,8 @@ strict-rfc3339 = {optional = true, version = "*"}
 typer = "*"
 
 [tool.poetry.dev-dependencies]
-black = "*"
 boto3-stubs = {version = "*", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
-gitlint = "*"
-ipdb = "*"
-isort = "*"
 language-formatters-pre-commit-hooks = "*"
-mutmut = "*"
-mypy = "*"
-pre-commit = "*"
-pylint = "*"
-pytest = "*"
-pytest-randomly = "*"
-pytest-socket = "*"
-pytest-subtests = "*"
-pytest-timeout = "*"
-types-pkg-resources = "*"
-types-python-dateutil = "*"
-types-requests = "*"
-types-six = "*"
-types-toml = "*"
-
-[tool.poetry.dev-dependencies.coverage]
-version = "*"
-extras = ["toml"]
 
 [tool.poetry.extras]
 cdk = [

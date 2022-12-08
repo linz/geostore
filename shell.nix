@@ -100,13 +100,32 @@ poetryEnv.env.overrideAttrs (
       pkgs.cargo
       pkgs.docker
       pkgs.gitFull
+      pkgs.gitlint
       pkgs.go
+      pkgs.isort
+      pkgs.mutmut
+      pkgs.mypy
       pkgs.nodejs
-      pkgs.python39Packages.pip
-      pkgs.python39Packages.pip-tools
       (pkgs.poetry.override {
         inherit python;
       })
+      pkgs.pre-commit
+      pkgs.pylint
+      pkgs.python39Packages.black
+      pkgs.python39Packages.coverage
+      pkgs.python39Packages.boto3
+      pkgs.python39Packages.ipdb
+      pkgs.python39Packages.pip
+      pkgs.python39Packages.pip-tools
+      pkgs.python39Packages.pytest
+      pkgs.python39Packages.pytest-randomly
+      pkgs.python39Packages.pytest-socket
+      pkgs.python39Packages.pytest-subtests
+      pkgs.python39Packages.pytest-timeout
+      pkgs.python39Packages.types-python-dateutil
+      pkgs.python39Packages.types-requests
+      pkgs.python39Packages.types-setuptools
+      pkgs.python39Packages.types-toml
       pkgs.which
     ];
     shellHook = ''

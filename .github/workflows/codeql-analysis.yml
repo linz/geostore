@@ -25,23 +25,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Get configuration
-        run: |
-          echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
+      - uses: cachix/install-nix-action@v18
 
-      - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
+      - uses: cachix/cachix-action@v12
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          name: linz
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --requirement=geostore/pip.txt
-          python -m pip install --requirement=geostore/poetry.txt
-          python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root --only=main
-          echo "CODEQL_PYTHON=$(python -m poetry run which python)" >> $GITHUB_ENV
+      - name: Set CodeQL Python version
+        run: echo "CODEQL_PYTHON=$(python -m nix-shell --pure --run 'which python')" >> $GITHUB_ENV
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
