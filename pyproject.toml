@@ -92,6 +92,7 @@ cattrs = {version = "*", optional = true}
 jsonschema = {version = "*", extras = ["format"], optional = true}
 linz-logger = {version = "*", optional = true}
 multihash = {version = "*", optional = true}
+packaging = {version = "*", optional = true}
 pynamodb = {version = "*", optional = true}
 pystac = {version = "*", optional = true}
 python-ulid = {version = "*", optional = true}
@@ -143,6 +144,7 @@ check_files_checksums = [
 check_stac_metadata = [
     "jsonschema",
     "linz-logger",
+    "packaging",
     "pynamodb",
     "strict-rfc3339",
 ]

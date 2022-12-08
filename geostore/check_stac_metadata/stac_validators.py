@@ -1,4 +1,3 @@
-from distutils.version import StrictVersion
 from functools import cached_property, lru_cache
 from json import load
 from os import scandir
@@ -8,6 +7,7 @@ from re import fullmatch
 from jsonschema import Draft7Validator, FormatChecker, RefResolver
 from jsonschema._utils import URIDict
 from jsonschema.validators import extend
+from packaging.version import parse
 
 from ..stac_format import LINZ_STAC_EXTENSIONS_LOCAL_PATH
 from ..types import JsonObject
@@ -41,7 +41,7 @@ def get_latest_extension_schema_version(extension_path: str) -> str:
     for directory in directories:
         if directory.is_dir() and fullmatch(r"v\d+\.\d+\.\d+", directory.name):
             versions.append(directory.name[1:])
-    return sorted(versions, key=StrictVersion, reverse=True)[0]
+    return sorted(versions, key=parse, reverse=True)[0]
 
 
 FILE_STAC_SCHEMA_PATH = "file/v2.0.0/schema.json"
