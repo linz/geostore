@@ -1,11 +1,9 @@
 from aws_cdk import (
     Duration,
-    RemovalPolicy,
     Tags,
     aws_dynamodb,
     aws_iam,
     aws_lambda_python_alpha,
-    aws_logs,
     aws_s3,
     aws_sqs,
     aws_ssm,
@@ -34,7 +32,7 @@ from geostore.content_iterator.task import (
     NEXT_ITEM_KEY,
     RESULTS_TABLE_NAME_KEY,
 )
-from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
+from geostore.environment import ENV_NAME_VARIABLE_NAME
 from geostore.parameter_store import ParameterName
 from geostore.resources import Resource
 from geostore.step_function_keys import (
@@ -60,7 +58,6 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
-from .lambda_config import RETENTION_DAYS
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -83,7 +80,7 @@ class Processing(Construct):
         datasets_table: Table,
         git_commit_parameter: aws_ssm.StringParameter,
     ) -> None:
-        # pylint: disable=too-many-locals, too-many-statements, too-complex
+        # pylint: disable=too-many-locals, too-many-statements
 
         super().__init__(scope, stack_id)
 
@@ -522,25 +519,10 @@ class Processing(Construct):
             )
         )
 
-        state_machine_id = f"{env_name}-dataset-import"
-
-        log_group = aws_logs.LogGroup(
-            self,
-            "state-machine-logs",
-            log_group_name=f"/aws/vendedlogs/states/{state_machine_id}",
-            retention=RETENTION_DAYS,
-        )
-
-        if not is_production():
-            log_group.apply_removal_policy(RemovalPolicy.DESTROY)
-
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            state_machine_id,
+            f"{env_name}-dataset-version-creation",
             definition=dataset_version_creation_definition,
-            logs=aws_stepfunctions.LogOptions(
-                destination=log_group, level=aws_stepfunctions.LogLevel.ALL
-            ),
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(
