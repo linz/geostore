@@ -19,7 +19,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.2.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
@@ -40,7 +40,7 @@ jobs:
           echo "PROD_VERSION=$(aws ssm get-parameter --name /prod/version --query Parameter.Value --output text || true)" | tee -a $GITHUB_ENV
 
       - name: Checkout to current production version
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.2.0
         with:
           ref: ${{ env.PROD_VERSION }}
           clean: false
@@ -120,7 +120,7 @@ jobs:
           poetry run cdk deploy --all --require-approval never --change-set-name "ci-${GITHUB_RUN_ID}"
 
       - name: Checkout to current pull request version
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.2.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           clean: false
