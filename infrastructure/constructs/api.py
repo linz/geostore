@@ -1,12 +1,4 @@
-from aws_cdk import (
-    Tags,
-    aws_iam,
-    aws_lambda_python_alpha,
-    aws_s3,
-    aws_sqs,
-    aws_ssm,
-    aws_stepfunctions,
-)
+from aws_cdk import Tags, aws_iam, aws_s3, aws_sqs, aws_ssm, aws_stepfunctions
 from constructs import Construct
 
 from geostore.resources import Resource
@@ -24,7 +16,6 @@ class API(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         datasets_table: Table,
         env_name: str,
         processing_assets_table: Table,
@@ -56,7 +47,6 @@ class API(Construct):
             package_name="datasets",
             env_name=env_name,
             users_role=api_users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         dataset_versions_endpoint_lambda = LambdaEndpoint(
@@ -65,7 +55,6 @@ class API(Construct):
             package_name="dataset_versions",
             env_name=env_name,
             users_role=api_users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
         )
         processing_assets_table.grant_read_write_data(dataset_versions_endpoint_lambda)
         processing_assets_table.grant(dataset_versions_endpoint_lambda, "dynamodb:DescribeTable")
@@ -86,7 +75,6 @@ class API(Construct):
             package_name="import_status",
             env_name=env_name,
             users_role=api_users_role,
-            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         validation_results_table.grant_read_data(import_status_endpoint_lambda)

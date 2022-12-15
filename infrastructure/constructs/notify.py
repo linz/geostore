@@ -1,14 +1,6 @@
 from os import environ
 
-from aws_cdk import (
-    aws_events,
-    aws_events_targets,
-    aws_iam,
-    aws_lambda_python_alpha,
-    aws_sns,
-    aws_ssm,
-    aws_stepfunctions,
-)
+from aws_cdk import aws_events, aws_events_targets, aws_iam, aws_sns, aws_ssm, aws_stepfunctions
 from constructs import Construct
 
 from geostore.environment import ENV_NAME_VARIABLE_NAME
@@ -28,7 +20,6 @@ class Notify(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         state_machine: aws_stepfunctions.StateMachine,
         validation_results_table: Table,
@@ -43,7 +34,6 @@ class Notify(Construct):
             extra_environment={
                 ENV_NAME_VARIABLE_NAME: env_name,
             },
-            botocore_lambda_layer=botocore_lambda_layer,
         )
         if SLACK_URL_ENV_NAME in environ:
             slack_notify_function.add_environment(

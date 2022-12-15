@@ -1,6 +1,6 @@
 from typing import Mapping, Optional
 
-from aws_cdk import Duration, aws_lambda, aws_lambda_python_alpha
+from aws_cdk import Duration, aws_lambda
 from constructs import Construct
 
 from .backend import BACKEND_DIRECTORY
@@ -21,7 +21,6 @@ class BundledLambdaFunction(aws_lambda.Function):
         *,
         directory: str,
         extra_environment: Optional[Mapping[str, str]],
-        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         timeout: Duration = DEFAULT_LAMBDA_TIMEOUT,
         reserved_concurrent_executions: Optional[int] = None,
     ):
@@ -36,7 +35,6 @@ class BundledLambdaFunction(aws_lambda.Function):
             handler=f"{BACKEND_DIRECTORY}.{directory}.task.lambda_handler",
             runtime=PYTHON_RUNTIME,
             environment=environment,
-            layers=[botocore_lambda_layer],
             timeout=timeout,
             memory_size=DEFAULT_LAMBDA_MAX_MEMORY_MEBIBYTES,
             reserved_concurrent_executions=reserved_concurrent_executions,

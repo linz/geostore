@@ -3,7 +3,6 @@ from aws_cdk import (
     Tags,
     aws_dynamodb,
     aws_iam,
-    aws_lambda_python_alpha,
     aws_s3,
     aws_sqs,
     aws_ssm,
@@ -71,7 +70,6 @@ class Processing(Construct):
         scope: Construct,
         stack_id: str,
         *,
-        botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         env_name: str,
         principal: aws_iam.PrincipalBase,
         s3_role_arn_parameter: aws_ssm.StringParameter,
@@ -131,7 +129,6 @@ class Processing(Construct):
             "PopulateCatalog",
             directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
-            botocore_lambda_layer=botocore_lambda_layer,
             timeout=Duration.minutes(15),
             reserved_concurrent_executions=1,
         )
@@ -146,7 +143,6 @@ class Processing(Construct):
             self,
             "CheckStacMetadata",
             directory="check_stac_metadata",
-            botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
         assert check_stac_metadata_task.lambda_function.role
@@ -166,7 +162,6 @@ class Processing(Construct):
             self,
             "ContentIterator",
             directory="content_iterator",
-            botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{CONTENT_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
@@ -256,7 +251,6 @@ class Processing(Construct):
             self,
             "GetValidationSummary",
             directory="validation_summary",
-            botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
@@ -272,7 +266,6 @@ class Processing(Construct):
             directory="import_asset_file",
             invoker=import_dataset_role,
             env_name=env_name,
-            botocore_lambda_layer=botocore_lambda_layer,
             timeout=Duration.minutes(15),
         )
         import_metadata_file_function = ImportFileFunction(
@@ -280,14 +273,12 @@ class Processing(Construct):
             directory="import_metadata_file",
             invoker=import_dataset_role,
             env_name=env_name,
-            botocore_lambda_layer=botocore_lambda_layer,
         )
 
         import_dataset_task = LambdaTask(
             self,
             "ImportDataset",
             directory="import_dataset",
-            botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{IMPORT_DATASET_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
@@ -312,7 +303,6 @@ class Processing(Construct):
             self,
             "GetUploadStatus",
             directory="upload_status",
-            botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{UPLOAD_STATUS_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
@@ -347,7 +337,6 @@ class Processing(Construct):
             self,
             "UpdateDatasetCatalog",
             directory="update_root_catalog",
-            botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             result_path=f"$.{UPDATE_DATASET_KEY}",
         )

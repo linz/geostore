@@ -6,7 +6,6 @@ from aws_cdk import Environment, Stack, aws_iam
 from geostore.environment import environment_name
 
 from .constructs.api import API
-from .constructs.lambda_layers import LambdaLayers
 from .constructs.lds import LDS
 from .constructs.notify import Notify
 from .constructs.opentopo import OpenTopography
@@ -54,12 +53,9 @@ class Application(Stack):
 
         storage = Storage(self, "storage", env_name=env_name)
 
-        lambda_layers = LambdaLayers(self, "lambda-layers", env_name=env_name)
-
         processing = Processing(
             self,
             "processing",
-            botocore_lambda_layer=lambda_layers.botocore,
             env_name=env_name,
             principal=principal,
             s3_role_arn_parameter=storage.s3_role_arn_parameter,
@@ -73,7 +69,6 @@ class Application(Stack):
         API(
             self,
             "api",
-            botocore_lambda_layer=lambda_layers.botocore,
             datasets_table=storage.datasets_table,
             env_name=env_name,
             processing_assets_table=processing.processing_assets_table,
@@ -89,7 +84,6 @@ class Application(Stack):
         Notify(
             self,
             "notify",
-            botocore_lambda_layer=lambda_layers.botocore,
             env_name=env_name,
             state_machine=processing.state_machine,
             validation_results_table=storage.validation_results_table,
