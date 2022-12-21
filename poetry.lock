@@ -2033,7 +2033,7 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a872745ba30a173c9fd3bc947c8e3c8f03bba794d066bc78302e512e1f37389b"
+content-hash = "35cfe6de18afcd868655472b5b95188b0e918d207aa0054bd5394fd3f10b57fc"
 
 [metadata.files]
 appnope = [
