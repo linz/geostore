@@ -34,7 +34,7 @@ if [[ -e "${script_dir}/.venv/bin/activate" ]]; then
     . "${script_dir}/.venv/bin/activate"
 fi
 
-if ! diff <(python <<<'import platform; print(platform.python_version())' | cut --delimiter=. --fields=1-2) <(cut --delimiter=. --fields=1-2 "${script_dir}/.python-version"); then
+if ! diff <(python <<<'import platform; print(platform.python_version())' | cut --delimiter=. --fields=1-2) <(grep '^python = ".*"$' pyproject.toml | cut --delimiter='"' --fields=2 | cut --delimiter=. --fields=1-2); then
     # shellcheck disable=SC2016
     echo 'Wrong major/minor version of Python detected. Please run `pyenv install` to update Python and then reset the dev env.' >&2
     exit 4

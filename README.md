@@ -292,8 +292,8 @@ deployed instances. At the moment the available versions are constrained by the 
    used in the [Dockerfile](geostore/Dockerfile)
 -  The [AWS base images](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html) used as
    [Lambda runtimes](infrastructure/constructs/lambda_config.py)
--  The [pyenv versions](https://github.com/pyenv/pyenv) used for
-   [local development](.python-version)
+-  The [Python versions](https://github.com/pyenv/pyenv) used for
+   [local development](pyproject.toml)
 -  The [supported Poetry versions](https://python-poetry.org/docs/#system-requirements) used for all
    [dependencies](pyproject.toml)
 

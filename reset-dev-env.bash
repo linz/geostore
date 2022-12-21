@@ -99,7 +99,7 @@ if [[ -n ${python-} ]]; then
     fi
 
     echo "Installing Python packages"
-    poetry env use "$(cat .python-version)"
+    poetry env use "$(grep '^python = ".*"$' pyproject.toml | cut --delimiter='"' --fields=2)"
     poetry install \
         --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
         --no-root \
