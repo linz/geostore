@@ -13,7 +13,7 @@ class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
         scope: Construct,
         construct_id: str,
         *,
-        directory: str,
+        lambda_directory: str,
         botocore_lambda_layer: aws_lambda_python_alpha.PythonLayerVersion,
         result_path: Optional[str] = JsonPath.DISCARD,
         extra_environment: Optional[Mapping[str, str]] = None,
@@ -21,7 +21,7 @@ class LambdaTask(aws_stepfunctions_tasks.LambdaInvoke):
         self.lambda_function = BundledLambdaFunction(
             scope,
             f"{construct_id}Function",
-            directory=directory,
+            lambda_directory=lambda_directory,
             extra_environment=extra_environment,
             botocore_lambda_layer=botocore_lambda_layer,
         )
