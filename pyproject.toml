@@ -80,6 +80,11 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
+exclude = [
+    "geostore/*.txt",
+    "geostore/Dockerfile",
+    "geostore/bundle.bash",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
