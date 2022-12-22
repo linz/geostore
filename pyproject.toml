@@ -88,7 +88,7 @@ exclude = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-"aws-cdk.aws-batch-alpha" = {version = "2.54.0a0", optional = true}
+"aws-cdk.aws-batch-alpha" = {version = "2.55.1a0", optional = true}
 "aws-cdk.aws-lambda-python-alpha" = {version = "2.54.0a0", optional = true}
 aws-cdk-lib = {version = "2.55.1", optional = true}
 awscli = {version = "1.27.34", optional = true}

@@ -100,16 +100,16 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.54.0a0"
+version = "2.55.1a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.54.0,<3.0.0"
+aws-cdk-lib = ">=2.55.1,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.71.0,<2.0.0"
+jsii = ">=1.72.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -2033,7 +2033,7 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "81d4b22207a05112612f732532ac6cff122e88548b56a5da1147bf9a3f1d5196"
+content-hash = "34423f28074759bb774e05dea624251faaa04458a3516433340597790e7d5b9a"
 
 [metadata.files]
 appnope = [
@@ -2069,8 +2069,8 @@ aws-cdk-asset-node-proxy-agent-v5 = [
     {file = "aws_cdk.asset_node_proxy_agent_v5-2.0.38-py3-none-any.whl", hash = "sha256:0add1debe24e566b8d2cf713ca85eb5e82c42de00f737dfbf02e18e22220a41b"},
 ]
 aws-cdk-aws-batch-alpha = [
-    {file = "aws-cdk.aws-batch-alpha-2.54.0a0.tar.gz", hash = "sha256:be31e3312eff3346764b917c426bc3502e3e9f1fb6ed6b840e026fcd28047fe6"},
-    {file = "aws_cdk.aws_batch_alpha-2.54.0a0-py3-none-any.whl", hash = "sha256:b30c8fcd2e9809d5743337dd15bfd30a0587a5ec4020d489b798372a455ce08d"},
+    {file = "aws-cdk.aws-batch-alpha-2.55.1a0.tar.gz", hash = "sha256:478106542e137fe6d34b83a3c6fe8bbf5bf8e81ce32ddeb6aa14204186e9d40e"},
+    {file = "aws_cdk.aws_batch_alpha-2.55.1a0-py3-none-any.whl", hash = "sha256:7d036c030e7b40a0640fb74615b5ed6aa712f735c66a9c48da78dc03e6c7bc48"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
     {file = "aws-cdk.aws-lambda-python-alpha-2.54.0a0.tar.gz", hash = "sha256:ff8c4cc3774844b80fd3f320b1a6b29f804d0bf303210f850da81b80c4e337cb"},
