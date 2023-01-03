@@ -169,7 +169,7 @@ jobs:
         run:
           yes | ./clear-s3-buckets.bash ${GEOSTORE_ENV_NAME}-linz-geostore
           ${GEOSTORE_ENV_NAME}-linz-geostore-staging
-        if: failure()
+        if: failure() || cancelled()
 
       - name: Destroy AWS stacks used for testing
         run: |
