@@ -89,10 +89,10 @@ exclude = [
 [tool.poetry.dependencies]
 python = "^3.9"
 "aws-cdk.aws-batch-alpha" = {version = "2.54.0a0", optional = true}
-"aws-cdk.aws-lambda-python-alpha" = {version = "2.54.0a0", optional = true}
-aws-cdk-lib = {version = "2.55.1", optional = true}
-awscli = {version = "1.27.34", optional = true}
-boto3 = "1.26.33"
+"aws-cdk.aws-lambda-python-alpha" = {version = "2.56.0a0", optional = true}
+aws-cdk-lib = {version = "2.56.0", optional = true}
+awscli = {version = "1.27.36", optional = true}
+boto3 = "1.26.35"
 cattrs = {version = "22.2.0", optional = true}
 jsonschema = {version = "4.17.3", extras = ["format"], optional = true}
 linz-logger = {version = "0.11.0", optional = true}
