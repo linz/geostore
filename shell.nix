@@ -47,6 +47,11 @@ let
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
+      filelock = super.filelock.overridePythonAttrs (
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatchling self.hatch-vcs ];
+        }
+      );
       jsii = super.jsii.overridePythonAttrs (
         old: {
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools ];
