@@ -131,7 +131,7 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.56.0"
+version = "2.59.0"
 description = "Version 2 of the AWS Cloud Development Kit library"
 category = "main"
 optional = true
@@ -1480,7 +1480,7 @@ name = "pyrsistent"
 version = "0.19.3"
 description = "Persistent/Functional/Immutable data structures"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [[package]]
@@ -2034,7 +2034,7 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "34a2aa14c931a76331c617c84ddb45be8171dac7bccb3a197170211f3e614409"
+content-hash = "482f4872fc225871b638fd38e7d966ec4784f4d2ae94c6286b5606fd0e4846d0"
 
 [metadata.files]
 appnope = [
@@ -2078,8 +2078,8 @@ aws-cdk-aws-lambda-python-alpha = [
     {file = "aws_cdk.aws_lambda_python_alpha-2.56.0a0-py3-none-any.whl", hash = "sha256:a3ad322bccabbe8b526803ff2d209686d868a29f6b3f95bca8d6bd78cb0e6077"},
 ]
 aws-cdk-lib = [
-    {file = "aws-cdk-lib-2.56.0.tar.gz", hash = "sha256:6b359d97513c39f3847959495c8337eb25b272ff4c2b93a71dee4a2551331e33"},
-    {file = "aws_cdk_lib-2.56.0-py3-none-any.whl", hash = "sha256:fae279efcfc4a6e276759a0deed6c0ee6751e27727538540010ad9081d409e5b"},
+    {file = "aws-cdk-lib-2.59.0.tar.gz", hash = "sha256:1faeced63e37a4caa58472ba368664e3aea935b3193ccbc3f4f55a81d93b59d1"},
+    {file = "aws_cdk_lib-2.59.0-py3-none-any.whl", hash = "sha256:0f8718be6951facac8044c286e49c6459a00a833d9d8c56274f27af41ed194c6"},
 ]
 awscli = [
     {file = "awscli-1.27.36-py3-none-any.whl", hash = "sha256:887bb43c6f3eec5f25e8c851e1b700aef449cf32d8b702a89bfb989c4e4fb9cd"},
