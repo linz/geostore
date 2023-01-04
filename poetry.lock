@@ -101,16 +101,16 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.54.0a0"
+version = "2.56.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 
 [package.dependencies]
-aws-cdk-lib = ">=2.54.0,<3.0.0"
+aws-cdk-lib = ">=2.56.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
-jsii = ">=1.71.0,<2.0.0"
+jsii = ">=1.72.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -1480,7 +1480,7 @@ name = "pyrsistent"
 version = "0.19.3"
 description = "Persistent/Functional/Immutable data structures"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.7"
 
 [[package]]
@@ -2034,7 +2034,7 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "34a2aa14c931a76331c617c84ddb45be8171dac7bccb3a197170211f3e614409"
+content-hash = "fbd007dbc19dbf438aabf6b633de7777cbb2419d413479e994683c543d9159f0"
 
 [metadata.files]
 appnope = [
@@ -2070,8 +2070,8 @@ aws-cdk-asset-node-proxy-agent-v5 = [
     {file = "aws_cdk.asset_node_proxy_agent_v5-2.0.38-py3-none-any.whl", hash = "sha256:0add1debe24e566b8d2cf713ca85eb5e82c42de00f737dfbf02e18e22220a41b"},
 ]
 aws-cdk-aws-batch-alpha = [
-    {file = "aws-cdk.aws-batch-alpha-2.54.0a0.tar.gz", hash = "sha256:be31e3312eff3346764b917c426bc3502e3e9f1fb6ed6b840e026fcd28047fe6"},
-    {file = "aws_cdk.aws_batch_alpha-2.54.0a0-py3-none-any.whl", hash = "sha256:b30c8fcd2e9809d5743337dd15bfd30a0587a5ec4020d489b798372a455ce08d"},
+    {file = "aws-cdk.aws-batch-alpha-2.56.0a0.tar.gz", hash = "sha256:479cd33765a1028411bcd699b936194e2731b2276634a9166522e81e37be3d7f"},
+    {file = "aws_cdk.aws_batch_alpha-2.56.0a0-py3-none-any.whl", hash = "sha256:f208392b399b7fa483ab6aed6474ff289cc54c184d95f24c5684f0d97a5a99f3"},
 ]
 aws-cdk-aws-lambda-python-alpha = [
     {file = "aws-cdk.aws-lambda-python-alpha-2.56.0a0.tar.gz", hash = "sha256:66866e4e509119725839311fbd860d031fdc98c8fbc87b4bd1aa61606112d216"},
