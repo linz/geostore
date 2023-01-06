@@ -22,7 +22,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -105,7 +105,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
@@ -188,7 +188,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
