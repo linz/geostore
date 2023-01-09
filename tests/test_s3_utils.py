@@ -56,9 +56,9 @@ from tests.stac_generators import any_dataset_title
 from tests.stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 # https://docs.aws.amazon.com/AmazonS3/latest/API/API_Object.html
 # single chunk etag is 32 characters in length, (+2) with quotes as they are part of etag
@@ -135,8 +135,8 @@ def should_log_message_when_using_geostore_file_for_validation(
     operation_name = any_operation_name()
     error_message = any_error_message()
     error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="NoSuchKey", Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code="NoSuchKey", Message=error_message)
         ),
         operation_name,
     )
@@ -176,8 +176,8 @@ def should_raise_any_client_error_other_than_no_such_key(
     operation_name = any_operation_name()
     error_message = any_error_message()
     error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code=error_code, Message=error_message)
         ),
         operation_name,
     )
@@ -350,8 +350,8 @@ def should_return_none_etag_if_s3_object_is_missing(
     operation_name = any_operation_name()
     error_message = any_error_message()
     error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code="404", Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code="404", Message=error_message)
         ),
         operation_name,
     )
@@ -413,8 +413,8 @@ def should_log_error_message_if_failure_to_get_object_etag_is_other_than_no_such
     operation_name = any_operation_name()
     error_message = any_error_message()
     error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code=error_code, Message=error_message)
         ),
         operation_name,
     )

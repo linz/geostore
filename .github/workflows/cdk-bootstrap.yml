@@ -5,13 +5,13 @@ on:
 
 jobs:
   boostrap-ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -22,13 +22,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.npm
           key:
@@ -43,12 +43,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.cache/pip
           key:
@@ -88,13 +88,13 @@ jobs:
           --raw-output .
 
   boostrap-nonprod:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -105,13 +105,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.npm
           key:
@@ -126,12 +126,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.cache/pip
           key:
@@ -171,13 +171,13 @@ jobs:
           --raw-output .
 
   boostrap-prod:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -188,13 +188,13 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.npm
           key:
@@ -209,12 +209,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.cache/pip
           key:

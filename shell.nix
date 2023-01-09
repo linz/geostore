@@ -12,34 +12,18 @@ let
   poetryEnv = pkgs.poetry2nix.mkPoetryEnv {
     inherit python projectDir;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
-      black = super.black.overridePythonAttrs (
+      filelock = super.filelock.overridePythonAttrs (
+        # In poetry2nix >1.39.1
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-            self.hatch-fancy-pypi-readme
-            self.hatchling
-            self.hatch-vcs
-          ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatchling self.hatch-vcs ];
         }
       );
-      exceptiongroup = super.exceptiongroup.overridePythonAttrs (
+      python-ulid = super.python-ulid.overridePythonAttrs (
+        # https://github.com/nix-community/poetry2nix/pull/931
         old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-scm ];
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools-scm ];
         }
       );
-      idna = super.idna.overridePythonAttrs (
-        old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.flit-core ];
-        }
-      );
-      jsonschema = super.jsonschema.overridePythonAttrs (
-        old: {
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatch-fancy-pypi-readme ];
-        }
-      );
-      mypy = super.mypy.overridePythonAttrs (old: {
-        patches = [ ];
-        MYPY_USE_MYPYC = false;
-      });
     });
   };
 in

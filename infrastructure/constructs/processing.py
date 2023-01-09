@@ -4,7 +4,6 @@ from aws_cdk import (
     aws_dynamodb,
     aws_iam,
     aws_lambda_python_alpha,
-    aws_logs,
     aws_s3,
     aws_sqs,
     aws_ssm,
@@ -59,7 +58,6 @@ from .batch_submit_job_task import BatchSubmitJobTask
 from .bundled_lambda_function import BundledLambdaFunction
 from .common import grant_parameter_read_access
 from .import_file_function import ImportFileFunction
-from .lambda_config import RETENTION_DAYS
 from .lambda_task import LambdaTask
 from .roles import MAX_SESSION_DURATION
 from .s3_policy import ALLOW_DESCRIBE_ANY_S3_JOB
@@ -131,7 +129,7 @@ class Processing(Construct):
         populate_catalog_lambda = BundledLambdaFunction(
             self,
             "PopulateCatalog",
-            directory="populate_catalog",
+            lambda_directory="populate_catalog",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             botocore_lambda_layer=botocore_lambda_layer,
             timeout=Duration.minutes(15),
@@ -147,7 +145,7 @@ class Processing(Construct):
         check_stac_metadata_task = LambdaTask(
             self,
             "CheckStacMetadata",
-            directory="check_stac_metadata",
+            lambda_directory="check_stac_metadata",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
         )
@@ -167,7 +165,7 @@ class Processing(Construct):
         content_iterator_task = LambdaTask(
             self,
             "ContentIterator",
-            directory="content_iterator",
+            lambda_directory="content_iterator",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{CONTENT_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -257,7 +255,7 @@ class Processing(Construct):
         validation_summary_task = LambdaTask(
             self,
             "GetValidationSummary",
-            directory="validation_summary",
+            lambda_directory="validation_summary",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{VALIDATION_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -271,7 +269,7 @@ class Processing(Construct):
 
         import_asset_file_function = ImportFileFunction(
             self,
-            directory="import_asset_file",
+            lambda_directory="import_asset_file",
             invoker=import_dataset_role,
             env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
@@ -279,7 +277,7 @@ class Processing(Construct):
         )
         import_metadata_file_function = ImportFileFunction(
             self,
-            directory="import_metadata_file",
+            lambda_directory="import_metadata_file",
             invoker=import_dataset_role,
             env_name=env_name,
             botocore_lambda_layer=botocore_lambda_layer,
@@ -288,7 +286,7 @@ class Processing(Construct):
         import_dataset_task = LambdaTask(
             self,
             "ImportDataset",
-            directory="import_dataset",
+            lambda_directory="import_dataset",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{IMPORT_DATASET_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -313,7 +311,7 @@ class Processing(Construct):
         upload_status_task = LambdaTask(
             self,
             "GetUploadStatus",
-            directory="upload_status",
+            lambda_directory="upload_status",
             botocore_lambda_layer=botocore_lambda_layer,
             result_path=f"$.{UPLOAD_STATUS_KEY}",
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
@@ -348,7 +346,7 @@ class Processing(Construct):
         update_root_catalog = LambdaTask(
             self,
             "UpdateDatasetCatalog",
-            directory="update_root_catalog",
+            lambda_directory="update_root_catalog",
             botocore_lambda_layer=botocore_lambda_layer,
             extra_environment={ENV_NAME_VARIABLE_NAME: env_name},
             result_path=f"$.{UPDATE_DATASET_KEY}",
@@ -521,22 +519,10 @@ class Processing(Construct):
             )
         )
 
-        state_machine_id = f"{env_name}-dataset-import"
-
-        log_group = aws_logs.LogGroup(
-            self,
-            "state-machine-logs",
-            log_group_name=f"/aws/vendedlogs/states/{state_machine_id}",
-            retention=RETENTION_DAYS,
-        )
-
         self.state_machine = aws_stepfunctions.StateMachine(
             self,
-            state_machine_id,
+            f"{env_name}-dataset-version-creation",
             definition=dataset_version_creation_definition,
-            logs=aws_stepfunctions.LogOptions(
-                destination=log_group, level=aws_stepfunctions.LogLevel.ALL
-            ),
         )
 
         self.state_machine_parameter = aws_ssm.StringParameter(

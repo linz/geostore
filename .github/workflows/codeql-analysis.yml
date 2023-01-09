@@ -12,16 +12,16 @@ concurrency:
 
 jobs:
   CodeQL-Build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout repository
         if: ${{ github.event_name == 'push' }}
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
 
       - name: Checkout repository
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -30,7 +30,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -45,11 +45,11 @@ jobs:
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.1.33
+        uses: github/codeql-action/init@v2.1.37
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
           languages: python
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.1.33
+        uses: github/codeql-action/analyze@v2.1.37

@@ -85,7 +85,7 @@ def calculate_s3_etag(body: bytes) -> str:
 
     for chunk_start in range(0, len(body), s3_default_chunk_size):
         chunk = body[chunk_start : chunk_start + s3_default_chunk_size]
-        chunk_hashes.append(hashlib.md5(chunk))
+        chunk_hashes.append(hashlib.md5(chunk, usedforsecurity=False))
 
     # file smaller than s3_default_chunk_size has one chunk
     if len(chunk_hashes) == 1:
@@ -95,7 +95,7 @@ def calculate_s3_etag(body: bytes) -> str:
         if len(body) < s3_default_chunk_size:
             return f'"{chunk_hashes[0].hexdigest()}"'
 
-    hash_object = hashlib.md5()
+    hash_object = hashlib.md5(usedforsecurity=False)
     for chunk_hash in chunk_hashes:
         hash_object.update(chunk_hash.digest())
 

@@ -39,9 +39,9 @@ from .stac_generators import any_dataset_id, any_dataset_title, any_dataset_vers
 from .stac_objects import MINIMAL_VALID_STAC_COLLECTION_OBJECT
 
 if TYPE_CHECKING:
-    from botocore.exceptions import ClientErrorResponseError, ClientErrorResponseTypeDef
+    from botocore.exceptions import _ClientErrorResponseError, _ClientErrorResponseTypeDef
 else:
-    ClientErrorResponseError = ClientErrorResponseTypeDef = dict
+    _ClientErrorResponseError = _ClientErrorResponseTypeDef = dict
 
 MINIMAL_PAYLOAD = {
     DATASET_ID_KEY: any_dataset_id(),
@@ -108,8 +108,8 @@ def should_log_error_when_assuming_s3_role_fails(
     operation_name = any_operation_name()
     error_message = any_error_message()
     error = ClientError(
-        ClientErrorResponseTypeDef(
-            Error=ClientErrorResponseError(Code=error_code, Message=error_message)
+        _ClientErrorResponseTypeDef(
+            Error=_ClientErrorResponseError(Code=error_code, Message=error_message)
         ),
         operation_name,
     )

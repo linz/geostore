@@ -9,10 +9,10 @@ concurrency:
 
 jobs:
   linter:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0 # this is to enable gitlint to check all PR commit messages
@@ -22,12 +22,12 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.cache/pip
           key:
@@ -54,13 +54,13 @@ jobs:
           poetry run pre-commit run --all-files
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: 'true'
@@ -72,13 +72,13 @@ jobs:
         run: echo "::set-output name=id::$(cat .python-version)"
 
       - name: Use Node.js ${{ steps.node-version.outputs.id }}
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: ${{ steps.node-version.outputs.id }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.npm
           key:
@@ -93,12 +93,12 @@ jobs:
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
       - name: Use Python ${{ steps.python-version.outputs.id }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ steps.python-version.outputs.id }}
 
       - name: Cache pip
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ~/.cache/pip
           key:
@@ -169,18 +169,26 @@ jobs:
         run:
           yes | ./clear-s3-buckets.bash ${GEOSTORE_ENV_NAME}-linz-geostore
           ${GEOSTORE_ENV_NAME}-linz-geostore-staging
-        if: failure()
+        if: failure() || cancelled()
 
       - name: Destroy AWS stacks used for testing
         run: |
           aws cloudformation delete-stack --stack-name ci${GITHUB_RUN_ID}-geostore
         if: always()
 
+      - name: Delete CloudWatch Log Groups over a week old
+        run: |
+          aws logs describe-log-groups --log-group-name-prefix='/aws/lambda/ci' --output=text --no-paginate | \
+          awk -v date="$(($(date --date='1 week ago' +%s)*1000))" '{ if ($3 < date) print $4}' | \
+          xargs --no-run-if-empty --verbose -I{} aws logs delete-log-group --log-group-name={} || \
+          [[ $? -eq 123 ]]
+        if: always()
+
   build-nix-shell:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -190,4 +198,4 @@ jobs:
           name: linz
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - run: nix-shell --pure --run true
+      - run: nix-shell --pure --run 'black --version'

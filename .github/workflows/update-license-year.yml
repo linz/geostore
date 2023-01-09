@@ -5,11 +5,11 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.3.0
         with:
           fetch-depth: 0
-      - uses: FantasticFiasco/action-update-license-year@v2.2.2
+      - uses: FantasticFiasco/action-update-license-year@v2.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
