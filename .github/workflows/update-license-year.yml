@@ -7,9 +7,9 @@ jobs:
   run:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         with:
           fetch-depth: 0
-      - uses: FantasticFiasco/action-update-license-year@v2.2.2
+      - uses: FantasticFiasco/action-update-license-year@v2.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

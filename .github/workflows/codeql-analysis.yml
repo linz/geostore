@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout repository
         if: ${{ github.event_name == 'push' }}
-        uses: actions/checkout@v3.2.0
+        uses: actions/checkout@v3.3.0
 
       - name: Checkout repository
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v3.2.0
+        uses: actions/checkout@v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -30,7 +30,7 @@ jobs:
           echo "PYTHON_VERSION=$(cat .python-version)" | tee -a $GITHUB_ENV
 
       - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4.3.1
+        uses: actions/setup-python@v4.4.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
