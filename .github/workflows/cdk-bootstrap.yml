@@ -28,7 +28,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.npm
           key:
@@ -48,7 +48,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.cache/pip
           key:
@@ -111,7 +111,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.npm
           key:
@@ -131,7 +131,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.cache/pip
           key:
@@ -194,7 +194,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.npm
           key:
@@ -214,7 +214,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: ~/.cache/pip
           key:
