@@ -1,9 +1,12 @@
+import atexit
+import shutil
 from os import environ
 
 import constructs
 from aws_cdk import Environment, Stack, aws_iam
 
 from geostore.environment import environment_name
+from infrastructure.constructs.bundled_code import LambdaPackaging
 
 from .constructs.api import API
 from .constructs.lambda_layers import LambdaLayers
@@ -103,3 +106,8 @@ class Application(Stack):
             OpenTopography(
                 self, "opentopography", env_name=env_name, storage_bucket=storage.storage_bucket
             )
+
+        # Remove temp lambda packaging directory at exit to purge pip packages
+        # Reusing pip packages would speed things up, but also makes things
+        # harder to troubleshoot when there is a change in one of the Python packages
+        atexit.register(lambda: shutil.rmtree(LambdaPackaging.directory))
