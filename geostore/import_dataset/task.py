@@ -86,102 +86,6 @@ JOB_REPORT_FORMAT: JobReportFormatType = "Report_CSV_20180820"
 JOB_REPORT_SCOPE: JobReportScopeType = "AllTasks"
 
 
-class Importer:
-    # pylint:disable=too-few-public-methods
-    def __init__(  # pylint:disable=too-many-arguments
-        self,
-        dataset_id: str,
-        dataset_title: str,
-        version_id: str,
-        source_bucket_name: str,
-        s3_role_arn: str,
-    ):
-        self.dataset_id = dataset_id
-        self.version_id = version_id
-        self.source_bucket_name = source_bucket_name
-        self.dataset_title = dataset_title
-        self.s3_role_arn = s3_role_arn
-
-    def run(self, task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
-        manifest_key = f"manifests/{self.version_id}_{processing_asset_type.value}.csv"
-        with smart_open.open(
-            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{manifest_key}", "w"
-        ) as s3_manifest:
-            processing_assets_model = processing_assets_model_with_meta()
-
-            for item in processing_assets_model.query(
-                (
-                    f"{DATASET_ID_PREFIX}{self.dataset_id}"
-                    f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{self.version_id}"
-                ),
-                range_key_condition=processing_assets_model.sk.startswith(
-                    f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
-                ),
-                filter_condition=(
-                    processing_assets_model.exists_in_staging == True  # pylint: disable=C0121
-                ),
-                consistent_read=True,
-            ):
-                LOGGER.debug(
-                    f"Adding {item.url} to manifest",
-                    extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
-                )
-
-                _, key = get_bucket_and_key_from_url(item.url)
-                task_parameters = {
-                    TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
-                    ORIGINAL_KEY_KEY: key,
-                    NEW_KEY_KEY: f"{self.dataset_title}/{basename(key)}",
-                    S3_ROLE_ARN_KEY: self.s3_role_arn,
-                }
-                row = ",".join([self.source_bucket_name, quote(dumps(task_parameters))])
-                s3_manifest.write(f"{row}\n")
-
-        manifest_s3_object = S3_CLIENT.head_object(
-            Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=manifest_key
-        )
-        assert "ETag" in manifest_s3_object, manifest_s3_object
-        manifest_location_spec = JobManifestLocationTypeDef(
-            ObjectArn=f"{STORAGE_BUCKET_ARN}/{manifest_key}", ETag=manifest_s3_object["ETag"]
-        )
-
-        account_number = get_account_number()
-
-        # trigger s3 batch copy operation
-        response = S3CONTROL_CLIENT.create_job(
-            AccountId=account_number,
-            ConfirmationRequired=False,
-            Operation=JobOperationTypeDef(
-                LambdaInvoke=LambdaInvokeOperationTypeDef(FunctionArn=task_arn)
-            ),
-            Manifest=JobManifestTypeDef(
-                Spec=JobManifestSpecTypeDef(
-                    Format=JOB_MANIFEST_FORMAT, Fields=JOB_MANIFEST_FIELD_NAMES
-                ),
-                Location=manifest_location_spec,
-            ),
-            Report=JobReportTypeDef(
-                Enabled=True,
-                Bucket=STORAGE_BUCKET_ARN,
-                Format=JOB_REPORT_FORMAT,
-                Prefix=f"reports/{self.version_id}",
-                ReportScope=JOB_REPORT_SCOPE,
-            ),
-            Priority=1,
-            RoleArn=S3_BATCH_COPY_ROLE_ARN,
-            ClientRequestToken=uuid4().hex,
-        )
-        LOGGER.debug(
-            LOG_MESSAGE_S3_BATCH_RESPONSE,
-            extra={
-                "s3_batch_response": response,
-                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
-            },
-        )
-
-        return response["JobId"]
-
-
 def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
     """Main Lambda entry point."""
     LOGGER.debug(
@@ -220,14 +124,86 @@ def lambda_handler(event: JsonObject, _context: bytes) -> JsonObject:
 
     source_bucket_name = urlparse(event[METADATA_URL_KEY]).netloc
 
-    importer = Importer(
-        event[DATASET_ID_KEY],
-        event[DATASET_TITLE_KEY],
-        event[NEW_VERSION_ID_KEY],
-        source_bucket_name,
-        event[S3_ROLE_ARN_KEY],
-    )
-    asset_job_id = importer.run(IMPORT_ASSET_FILE_TASK_ARN, ProcessingAssetType.DATA)
-    metadata_job_id = importer.run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)
+    def run(task_arn: str, processing_asset_type: ProcessingAssetType) -> str:
+        manifest_key = f"manifests/{event[NEW_VERSION_ID_KEY]}_{processing_asset_type.value}.csv"
+        with smart_open.open(
+            f"{S3_URL_PREFIX}{Resource.STORAGE_BUCKET_NAME.resource_name}/{manifest_key}", "w"
+        ) as s3_manifest:
+            processing_assets_model = processing_assets_model_with_meta()
+
+            for item in processing_assets_model.query(
+                (
+                    f"{DATASET_ID_PREFIX}{event[DATASET_ID_KEY]}"
+                    f"{DB_KEY_SEPARATOR}{VERSION_ID_PREFIX}{event[NEW_VERSION_ID_KEY]}"
+                ),
+                range_key_condition=processing_assets_model.sk.startswith(
+                    f"{processing_asset_type.value}{DB_KEY_SEPARATOR}"
+                ),
+                filter_condition=(
+                    processing_assets_model.exists_in_staging == True  # pylint: disable=C0121
+                ),
+                consistent_read=True,
+            ):
+                LOGGER.debug(
+                    f"Adding {item.url} to manifest",
+                    extra={GIT_COMMIT: get_param(ParameterName.GIT_COMMIT)},
+                )
+
+                _, key = get_bucket_and_key_from_url(item.url)
+                task_parameters = {
+                    TARGET_BUCKET_NAME_KEY: Resource.STORAGE_BUCKET_NAME.resource_name,
+                    ORIGINAL_KEY_KEY: key,
+                    NEW_KEY_KEY: f"{event[DATASET_TITLE_KEY]}/{basename(key)}",
+                    S3_ROLE_ARN_KEY: event[S3_ROLE_ARN_KEY],
+                }
+                row = ",".join([source_bucket_name, quote(dumps(task_parameters))])
+                s3_manifest.write(f"{row}\n")
+
+        manifest_s3_object = S3_CLIENT.head_object(
+            Bucket=Resource.STORAGE_BUCKET_NAME.resource_name, Key=manifest_key
+        )
+        assert "ETag" in manifest_s3_object, manifest_s3_object
+        manifest_location_spec = JobManifestLocationTypeDef(
+            ObjectArn=f"{STORAGE_BUCKET_ARN}/{manifest_key}", ETag=manifest_s3_object["ETag"]
+        )
+
+        account_number = get_account_number()
+
+        # trigger s3 batch copy operation
+        response = S3CONTROL_CLIENT.create_job(
+            AccountId=account_number,
+            ConfirmationRequired=False,
+            Operation=JobOperationTypeDef(
+                LambdaInvoke=LambdaInvokeOperationTypeDef(FunctionArn=task_arn)
+            ),
+            Manifest=JobManifestTypeDef(
+                Spec=JobManifestSpecTypeDef(
+                    Format=JOB_MANIFEST_FORMAT, Fields=JOB_MANIFEST_FIELD_NAMES
+                ),
+                Location=manifest_location_spec,
+            ),
+            Report=JobReportTypeDef(
+                Enabled=True,
+                Bucket=STORAGE_BUCKET_ARN,
+                Format=JOB_REPORT_FORMAT,
+                Prefix=f"reports/{event[NEW_VERSION_ID_KEY]}",
+                ReportScope=JOB_REPORT_SCOPE,
+            ),
+            Priority=1,
+            RoleArn=S3_BATCH_COPY_ROLE_ARN,
+            ClientRequestToken=uuid4().hex,
+        )
+        LOGGER.debug(
+            LOG_MESSAGE_S3_BATCH_RESPONSE,
+            extra={
+                "s3_batch_response": response,
+                GIT_COMMIT: get_param(ParameterName.GIT_COMMIT),
+            },
+        )
+
+        return response["JobId"]
+
+    asset_job_id = run(IMPORT_ASSET_FILE_TASK_ARN, ProcessingAssetType.DATA)
+    metadata_job_id = run(IMPORT_METADATA_FILE_TASK_ARN, ProcessingAssetType.METADATA)
 
     return {ASSET_JOB_ID_KEY: asset_job_id, METADATA_JOB_ID_KEY: metadata_job_id}
