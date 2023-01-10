@@ -1,4 +1,5 @@
 from contextlib import AbstractContextManager
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import BytesIO
 from json import dumps
@@ -244,7 +245,8 @@ def processing_assets_model_with_meta_mock(
     exists_in_staging: Optional[bool],
 ) -> Type[ProcessingAssetsModelBase]:
     class ProcessingAssetsModelMock(ProcessingAssetsModelBase):
-        class Meta:  # pylint:disable=too-few-public-methods
+        @dataclass
+        class Meta:
             table_name = any_table_name()
 
         @classmethod
@@ -340,11 +342,10 @@ class S3Object(AbstractContextManager):  # type: ignore[type-arg]
 # Special-purpose mocks
 
 
+@dataclass
 class MockGeostoreS3Response:
-    # pylint: disable=too-few-public-methods
-    def __init__(self, response: Union[JsonObject, StreamingBody], file_in_staging: bool):
-        self.response = response
-        self.file_in_staging = file_in_staging
+    response: Union[JsonObject, StreamingBody]
+    file_in_staging: bool
 
 
 class MockJSONURLReader(Mock):
