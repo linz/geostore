@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from os import environ
 from typing import Any, Dict, Optional, Tuple, Type
 
@@ -30,7 +31,8 @@ def human_readable_ulid(ulid: ULID) -> str:
 class DatasetsTitleIdx(GlobalSecondaryIndex["DatasetsModelBase"]):  # type: ignore[no-untyped-call]
     """Dataset title global index."""
 
-    class Meta:  # pylint:disable=too-few-public-methods
+    @dataclass
+    class Meta:
         """Meta class."""
 
         index_name = "datasets_title"

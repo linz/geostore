@@ -1,4 +1,5 @@
 import hashlib
+from dataclasses import dataclass
 from logging import Logger
 from os.path import basename
 from typing import Callable, Optional, Tuple
@@ -20,11 +21,10 @@ def get_bucket_and_key_from_url(url: str) -> Tuple[str, str]:
     return parsed.netloc, parsed.path[1:]
 
 
+@dataclass
 class GeostoreS3Response:
-    # pylint: disable=too-few-public-methods
-    def __init__(self, response: StreamingBody, file_in_staging: bool):
-        self.response = response
-        self.file_in_staging = file_in_staging
+    response: StreamingBody
+    file_in_staging: bool
 
 
 def get_s3_url_reader(

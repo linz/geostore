@@ -1,4 +1,5 @@
 """Dataset object DynamoDB model."""
+from dataclasses import dataclass
 from enum import Enum
 from os import environ
 from typing import Optional, Type
@@ -32,7 +33,8 @@ def processing_assets_model_with_meta(
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
 
     class ProcessingAssetsModel(ProcessingAssetsModelBase):
-        class Meta:  # pylint:disable=too-few-public-methods
+        @dataclass
+        class Meta:
             table_name = assets_table_name
             region = environ[AWS_DEFAULT_REGION_KEY]
 
