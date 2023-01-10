@@ -83,7 +83,6 @@ classifiers = [
 exclude = [
     "geostore/*.txt",
     "geostore/Dockerfile",
-    "geostore/bundle.bash",
 ]
 
 [tool.poetry.dependencies]
