@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 from os import environ
 from typing import Any, Dict, Optional, Tuple, Type
@@ -21,7 +22,8 @@ class ValidationResult(Enum):
 class ValidationOutcomeIdx(  # type: ignore[no-untyped-call]
     GlobalSecondaryIndex["ValidationResultsModelBase"]
 ):
-    class Meta:  # pylint:disable=too-few-public-methods
+    @dataclass
+    class Meta:
 
         index_name = "validation_outcome"
         read_capacity_units = 1
