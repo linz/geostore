@@ -1,10 +1,13 @@
 from os.path import join
+from pathlib import Path
+from subprocess import check_call
 
 from aws_cdk import aws_batch_alpha, aws_ecs, aws_iam
 from constructs import Construct
 
 from geostore.aws_keys import AWS_DEFAULT_REGION_KEY
 from geostore.environment import ENV_NAME_VARIABLE_NAME, is_production
+from infrastructure.constructs.bundled_code import LambdaPackaging
 
 from .backend import BACKEND_DIRECTORY
 
@@ -24,9 +27,27 @@ class TaskJobDefinition(aws_batch_alpha.JobDefinition):
         else:
             batch_job_definition_memory_limit = 500
 
+        python_version_path = Path(__file__).parent / "../../.python-version"
+        with python_version_path.open() as python_version:
+            docker_python_version = python_version.read().rstrip()
+
+        check_call(
+            [
+                "poetry",
+                "export",
+                f"--extras={directory}",
+                "--without-hashes",
+                f"--output={LambdaPackaging.directory}/{directory}.txt",
+            ]
+        )
+
         image = aws_ecs.ContainerImage.from_asset(
             directory=".",
-            build_args={"task": directory},
+            build_args={
+                "python_version": docker_python_version,
+                "task": directory,
+                "packaging": LambdaPackaging.directory,
+            },
             file=join(BACKEND_DIRECTORY, "Dockerfile"),
         )
 
