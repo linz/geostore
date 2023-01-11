@@ -100,10 +100,7 @@ if [[ -n ${python-} ]]; then
 
     echo "Installing Python packages"
     poetry env use "$(cat .python-version)"
-    poetry install \
-        --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-        --no-root \
-        --sync
+    poetry install --all-extras --no-root --sync
 fi
 
 if [[ -n ${hooks-} ]]; then

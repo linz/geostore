@@ -13,16 +13,16 @@ jobs:
         with:
           submodules: true
 
-      - id: node-version
-        run: echo "::set-output name=id::$(cat .nvmrc)"
+      - name: Get Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
 
-      - id: python-version
-        run: echo "::set-output name=id::$(cat .python-version)"
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> "$GITHUB_ENV"
 
-      - name: Use Node.js ${{ steps.node-version.outputs.id }}
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ${{ steps.node-version.outputs.id }}
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
       - name: Cache Node.js packages
@@ -39,20 +39,19 @@ jobs:
       - name: Add local Node packages to PATH
         run: echo "./node_modules/.bin:$PATH" >> $GITHUB_PATH
 
-      - name: Use Python ${{ steps.python-version.outputs.id }}
+      - name: Use Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4.4.0
         with:
-          python-version: ${{ steps.python-version.outputs.id }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
         uses: actions/cache@v3.2.3
         with:
           path: ~/.cache/pip
           key:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id
-            }}-${{ hashFiles('./poetry.lock') }}
-          restore-keys:
-            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ steps.python-version.outputs.id }}-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-${{
+            hashFiles('./poetry.lock') }}
+          restore-keys: ${{ runner.os }}-pip-${{ secrets.CACHE_SEED }}-${{ env.PYTHON_VERSION }}-
 
       - name: Upgrade pip
         run: python -m pip install --requirement=geostore/pip.txt
@@ -61,10 +60,7 @@ jobs:
         run: python -m pip install --requirement=geostore/poetry.txt
 
       - name: Install Python dependencies
-        run:
-          python -m poetry install --extras="$(sed --quiet
-          '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data
-          's/\n/ /g;s/ $//')" --no-root
+        run: python -m poetry install --all-extras --no-root
 
       - name: Get Oidc deploy role arn
         run: cat .github/workflows/.env >> $GITHUB_ENV
