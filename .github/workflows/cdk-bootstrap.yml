@@ -61,9 +61,7 @@ jobs:
         run: |
           python -m pip install --requirement=geostore/pip.txt
           python -m pip install --requirement=geostore/poetry.txt
-          python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root --only=main
+          python -m poetry install --all-extras --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -144,9 +142,7 @@ jobs:
         run: |
           python -m pip install --requirement=geostore/pip.txt
           python -m pip install --requirement=geostore/poetry.txt
-          python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root --only=main
+          python -m poetry install --all-extras --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
@@ -227,9 +223,7 @@ jobs:
         run: |
           python -m pip install --requirement=geostore/pip.txt
           python -m pip install --requirement=geostore/poetry.txt
-          python -m poetry install \
-              --extras="$(sed --quiet '/\[tool\.poetry\.extras\]/,/^\[/{s/^\(.*\) = \[/\1/p}' pyproject.toml | sed --null-data 's/\n/ /g;s/ $//')" \
-              --no-root --only=main
+          python -m poetry install --all-extras --no-root --only=main
 
       - name: Print CDK version
         run: poetry run cdk --version
