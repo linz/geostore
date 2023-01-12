@@ -1671,18 +1671,15 @@ setuptools = "*"
 
 [[package]]
 name = "packaging"
-version = "21.3"
+version = "23.0"
 description = "Core utilities for Python packages"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
-    {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
+    {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
+    {file = "packaging-23.0.tar.gz", hash = "sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97"},
 ]
-
-[package.dependencies]
-pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "parso"
@@ -1928,21 +1925,6 @@ botocore = ">=1.12.54"
 
 [package.extras]
 signals = ["blinker (>=1.3,<2.0)"]
-
-[[package]]
-name = "pyparsing"
-version = "3.0.9"
-description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-category = "main"
-optional = false
-python-versions = ">=3.6.8"
-files = [
-    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
-    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
-]
-
-[package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyrsistent"
@@ -2844,4 +2826,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "5ffa8b445d7275d7d4125db55d1fa166136e4e4b9008b7bcb36ce94e564bda69"
+content-hash = "20bc901d31e6fe75b23bc659e1d50f68b2e4744d051ef4bb8b4902e705c75db2"
