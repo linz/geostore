@@ -135,18 +135,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-batch-alpha"
-version = "2.59.0a0"
+version = "2.60.0a0"
 description = "The CDK Construct Library for AWS::Batch"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 files = [
-    {file = "aws-cdk.aws-batch-alpha-2.59.0a0.tar.gz", hash = "sha256:bff9bb67f21fbf12daedea52f1a341e285b0b93140f997343dab75efd3e8a380"},
-    {file = "aws_cdk.aws_batch_alpha-2.59.0a0-py3-none-any.whl", hash = "sha256:a4caac8cb2c3f2b5cc81cb3ce7f9c4a4d8c03897596ec46612698310957c07c6"},
+    {file = "aws-cdk.aws-batch-alpha-2.60.0a0.tar.gz", hash = "sha256:9393003139097141ee25d645fba19dc7e0cf7a16c0155bd18de5310705c89a96"},
+    {file = "aws_cdk.aws_batch_alpha-2.60.0a0-py3-none-any.whl", hash = "sha256:cdef40dfd256c567227b899967b3b40228f16f7018279f9d6b229e8f464ecc20"},
 ]
 
 [package.dependencies]
-aws-cdk-lib = ">=2.59.0,<3.0.0"
+aws-cdk-lib = ">=2.60.0,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
 jsii = ">=1.72.0,<2.0.0"
 publication = ">=0.0.3"
@@ -2826,4 +2826,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4c15898817dff5a20ca324ea3716264510f777133fff148f81feff099252944c"
+content-hash = "e1698d3c8b52eb6cefde1de1b3188d9ec8434b9a506c7dc0b9cb032f8a7b8d0e"
