@@ -421,9 +421,9 @@ tomli==2.0.1 \
 tomlkit==0.11.6 \
     --hash=sha256:07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b \
     --hash=sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73
-trove-classifiers==2022.12.22 \
-    --hash=sha256:f0013fd4ce06cfae879a2580ab6acc3d51ec93ecb364d6c061b6c77b44dd72de \
-    --hash=sha256:fe0fe3f085987161aee2a5a853c7cc7cdf64515c5965d57ad968fdd8cc3b0362
+trove-classifiers==2023.1.12 \
+    --hash=sha256:b10b3cbdefc342fbce9aa5b49907c7df4b33b14252a8e0ee4122cbf918a5cab4 \
+    --hash=sha256:eba460d83260fcf3648d7c8acbf2204344fd785f890fbaecb6864a7fb9f0692e
 urllib3==1.26.14 \
     --hash=sha256:076907bf8fd355cde77728471316625a4d2f7e713c125f51953bb5b3eecf4f72 \
     --hash=sha256:75edcdc2f7d85b137124a6c3c9fc3933cdeaa12ecb9a6a959f22797a0feca7e1
