@@ -262,18 +262,18 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.53"
+version = "1.26.56"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.53-py3-none-any.whl", hash = "sha256:c8ca16f1849db1499e2c0585a4d79c850928a232987af089a7a68efb11d29da7"},
-    {file = "boto3-1.26.53.tar.gz", hash = "sha256:665d3226383dc393e59a41f1a82cd34b63d87236a1fff63e7c3af7cab2f416d0"},
+    {file = "boto3-1.26.56-py3-none-any.whl", hash = "sha256:72214a08f337d29a1300d7861872f60ea41016b2a8ad8094fab20d783c8cf1ae"},
+    {file = "boto3-1.26.56.tar.gz", hash = "sha256:0ff8667fbfda8390cab2718a4d129374a6ddd6fd1913f79777fd4498f93c84f1"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.53,<1.30.0"
+botocore = ">=1.29.56,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -2826,4 +2826,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "885ca658d91d096b2b4098f319a1924a88c8ecf404a3c675795f5744573e5a2b"
+content-hash = "40ab4c4ec700fa8144f403ec1492ad7938c1e01dd421c067ed268d73081c8fd1"
