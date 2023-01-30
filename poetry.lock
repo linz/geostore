@@ -1910,14 +1910,14 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pynamodb"
-version = "5.3.4"
+version = "5.3.5"
 description = "A Pythonic Interface to DynamoDB"
 category = "main"
 optional = true
 python-versions = ">=3.6"
 files = [
-    {file = "pynamodb-5.3.4-py3-none-any.whl", hash = "sha256:af85814ffa32075c1bd8f01a5281470c7f1dd92f81ea8689f87443cf5e900798"},
-    {file = "pynamodb-5.3.4.tar.gz", hash = "sha256:3991239810c2a3d8bb3503783b787c47dc304566258e0793ae0b1d61909d1a3f"},
+    {file = "pynamodb-5.3.5-py3-none-any.whl", hash = "sha256:d19e0df665c94e1653edb9717467872be3baf4af792bf032b4e6b1173c8548ce"},
+    {file = "pynamodb-5.3.5.tar.gz", hash = "sha256:cdb3fa7d2133a99225e5668df0f770ab9d9c3342cc9b37d32e7b90604d5efb88"},
 ]
 
 [package.dependencies]
@@ -2826,4 +2826,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "69c83a30c732adcb7183ce938adfa783eb5f3d24cbf4b2c6e308748955d3a3dc"
+content-hash = "3bce924d2940848aba7836c201a0868df55a810618b7a857ad7328acb2a1784e"
