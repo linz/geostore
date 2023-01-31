@@ -194,18 +194,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "awscli"
-version = "1.27.59"
+version = "1.27.60"
 description = "Universal Command Line Environment for AWS."
 category = "main"
 optional = true
 python-versions = ">= 3.7"
 files = [
-    {file = "awscli-1.27.59-py3-none-any.whl", hash = "sha256:739069babd9a493147530488ec5f6219ac098ed73e7e082634974b0132909a5f"},
-    {file = "awscli-1.27.59.tar.gz", hash = "sha256:0df545bd6238ef3a9182e7c9218c20edd40a9a31b0ad0450db59891e13cab214"},
+    {file = "awscli-1.27.60-py3-none-any.whl", hash = "sha256:57c3d536db89403726be8daff9df53451c9562a1c9dac94e4c995a413b434af0"},
+    {file = "awscli-1.27.60.tar.gz", hash = "sha256:6ef5d5e846fe87e9c949e2fd4bbbeea832215dfcd650b4526a131e4626121bd7"},
 ]
 
 [package.dependencies]
-botocore = "1.29.59"
+botocore = "1.29.60"
 colorama = ">=0.2.5,<0.4.5"
 docutils = ">=0.10,<0.17"
 PyYAML = ">=3.10,<5.5"
@@ -650,14 +650,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.59"
+version = "1.29.60"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.59-py3-none-any.whl", hash = "sha256:5533644ddefaccfaa98460a63eb73e61a46aad019771226d103b1054b0df6103"},
-    {file = "botocore-1.29.59.tar.gz", hash = "sha256:bc75d41c5eecf624a2f9875483135aa78088a50c8d29847793f92756697cfed5"},
+    {file = "botocore-1.29.60-py3-none-any.whl", hash = "sha256:c4ae251e7df0cf01d893eb945bc8f23c14989ed349775a8e16c949f08a068f9a"},
+    {file = "botocore-1.29.60.tar.gz", hash = "sha256:a21217ccf4613c9ebbe4c3192e13ba91d46be642560e39a16406662a398a107b"},
 ]
 
 [package.dependencies]
@@ -2826,4 +2826,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "5c13794f1dfa8de58d31c4739bb6db5098af9a36502fc74a540795d06bb5884d"
+content-hash = "145baf718196ec5eeeee5c7df04e221a8288f8837655dea0d11cadbc1221f33d"
