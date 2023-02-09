@@ -89,7 +89,7 @@ exclude = [
 python = "^3.9"
 "aws-cdk.aws-batch-alpha" = {version = "2.63.2a0", optional = true}
 "aws-cdk.aws-lambda-python-alpha" = {version = "2.63.2a0", optional = true}
-aws-cdk-lib = {version = "2.63.2", optional = true}
+aws-cdk-lib = {version = "2.64.0", optional = true}
 awscli = {version = "1.27.66", optional = true}
 boto3 = "1.26.66"
 cattrs = {version = "22.2.0", optional = true}
