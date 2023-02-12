@@ -19,9 +19,15 @@ let
         }
       );
       python-ulid = super.python-ulid.overridePythonAttrs (
-        # https://github.com/nix-community/poetry2nix/pull/931
+        # In poetry2nix >1.39.1
         old: {
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools-scm ];
+        }
+      );
+      virtualenv = super.virtualenv.overridePythonAttrs (
+        # https://github.com/nix-community/poetry2nix/pull/985
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatchling self.hatch-vcs ];
         }
       );
     });
