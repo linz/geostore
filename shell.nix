@@ -24,6 +24,12 @@ let
           nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.setuptools-scm ];
         }
       );
+      virtualenv = super.virtualenv.overridePythonAttrs (
+        # https://github.com/nix-community/poetry2nix/pull/985
+        old: {
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ self.hatchling self.hatch-vcs ];
+        }
+      );
     });
   };
 in
