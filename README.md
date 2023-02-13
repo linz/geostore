@@ -150,7 +150,7 @@ Re-run `. activate-dev-env.bash` in each shell.
 
 Restart your `nix-shell` when packages change.
 
-When setting up the project SDK point it to `.run/python`, which is a symlink to the latest Nix
+When setting up the project SDK point it to `.venv/bin/python`, which is a symlink to the latest Nix
 shell Python executable.
 
 ### Optional
