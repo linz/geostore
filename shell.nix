@@ -51,7 +51,7 @@ poetryEnv.env.overrideAttrs (
     ];
     shellHook = ''
       . ${projectDir + "/activate-dev-env.bash"}
-      ln --force --no-dereference --symbolic ${poetryEnv.interpreter} ./.run/python
+      ln --force --no-dereference --symbolic ${poetryEnv} .venv
       cat <<'EOF'
       Welcome to the Geostore development environment!
 
