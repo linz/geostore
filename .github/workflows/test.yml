@@ -194,7 +194,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: cachix/install-nix-action@v19
+      - uses: cachix/install-nix-action@v20
       - uses: cachix/cachix-action@v12
         with:
           name: linz
