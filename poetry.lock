@@ -2595,14 +2595,14 @@ types-awscrt = "*"
 
 [[package]]
 name = "types-six"
-version = "1.16.21.4"
+version = "1.16.21.6"
 description = "Typing stubs for six"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-six-1.16.21.4.tar.gz", hash = "sha256:daaf1b506137d37257fad7a747857c57d5331611919d0d94b8195a06bdbc02af"},
-    {file = "types_six-1.16.21.4-py3-none-any.whl", hash = "sha256:3849354bd07b9274436aaa7d5d834594d8f0aa74581f88c632188c58f2abed23"},
+    {file = "types-six-1.16.21.6.tar.gz", hash = "sha256:7b6a60ef6b46bc954903fc588161c09183b7a33ee5ebfba556174fa649f4c1e0"},
+    {file = "types_six-1.16.21.6-py3-none-any.whl", hash = "sha256:15b24f0ca13b7c2ec6448ec4d96e8691899525989e53802e99bc5b4c2574382f"},
 ]
 
 [[package]]
@@ -2828,4 +2828,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6b374426dcd705b9f62ecb5cdcc6f02a2c7ad7043eac75e3a575dde5af8c9c33"
+content-hash = "336e90c4c858a617881d9a72819b40bb06aa81f9b3bc77455fa31edc86763a90"
