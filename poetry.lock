@@ -2024,14 +2024,14 @@ pytest = "*"
 
 [[package]]
 name = "pytest-socket"
-version = "0.5.1"
+version = "0.6.0"
 description = "Pytest Plugin to disable socket calls during tests"
 category = "dev"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "pytest-socket-0.5.1.tar.gz", hash = "sha256:7c4b81dc6a51cbc0093f11791de00ff4a15ac698f5da96879a80f5d9ad4179b6"},
-    {file = "pytest_socket-0.5.1-py3-none-any.whl", hash = "sha256:8726fd47b83b127451532b6d570c5b6c4cd204fca363936509b1f53195de6f4f"},
+    {file = "pytest_socket-0.6.0-py3-none-any.whl", hash = "sha256:cca72f134ff01e0023c402e78d31b32e68da3efdf3493bf7788f8eba86a6824c"},
+    {file = "pytest_socket-0.6.0.tar.gz", hash = "sha256:363c1d67228315d4fc7912f1aabfd570de29d0e3db6217d61db5728adacd7138"},
 ]
 
 [package.dependencies]
@@ -2828,4 +2828,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0e6dcaf7dfcbd6a556dc1788f9480c51731764a17ef68f7d2ec87edea36f59ea"
+content-hash = "6b374426dcd705b9f62ecb5cdcc6f02a2c7ad7043eac75e3a575dde5af8c9c33"
