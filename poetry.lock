@@ -2607,14 +2607,14 @@ files = [
 
 [[package]]
 name = "types-toml"
-version = "0.10.8.1"
+version = "0.10.8.5"
 description = "Typing stubs for toml"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-toml-0.10.8.1.tar.gz", hash = "sha256:171bdb3163d79a520560f24ba916a9fc9bff81659c5448a9fea89240923722be"},
-    {file = "types_toml-0.10.8.1-py3-none-any.whl", hash = "sha256:b7b5c4977f96ab7b5ac06d8a6590d17c0bf252a96efc03b109c2711fb3e0eafd"},
+    {file = "types-toml-0.10.8.5.tar.gz", hash = "sha256:bf80fce7d2d74be91148f47b88d9ae5adeb1024abef22aa2fdbabc036d6b8b3c"},
+    {file = "types_toml-0.10.8.5-py3-none-any.whl", hash = "sha256:2432017febe43174af0f3c65f03116e3d3cf43e7e1406b8200e106da8cf98992"},
 ]
 
 [[package]]
@@ -2828,4 +2828,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4c48c86e8582a3f9fd946799ad9451f1071a309e643459748f79d1ca23bdcdd9"
+content-hash = "5cc111c578bca34f534ea170da649fa6a76c9fe1bf1e206219f5db1b41fe2e30"
