@@ -154,18 +154,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.66.0a0"
+version = "2.66.1a0"
 description = "The CDK Construct Library for AWS Lambda in Python"
 category = "main"
 optional = true
 python-versions = "~=3.7"
 files = [
-    {file = "aws-cdk.aws-lambda-python-alpha-2.66.0a0.tar.gz", hash = "sha256:061a07abf942e477a7cf9ec8d3a5484f9af183f1a52bddcbc75eb1367ac83662"},
-    {file = "aws_cdk.aws_lambda_python_alpha-2.66.0a0-py3-none-any.whl", hash = "sha256:fa769dfad8ce2461e8f46ca0c752f41cc8d64c4890fa56eaa3675f0b4f0b09ef"},
+    {file = "aws-cdk.aws-lambda-python-alpha-2.66.1a0.tar.gz", hash = "sha256:7229080682ddda7dfbf1be616842d384b79de7e9eabad4cf5781acc46dfc0ddc"},
+    {file = "aws_cdk.aws_lambda_python_alpha-2.66.1a0-py3-none-any.whl", hash = "sha256:fac78b9751d157e6283c4b1a0faa6f6524101509997fc081e5395e3cd3ad2aba"},
 ]
 
 [package.dependencies]
-aws-cdk-lib = ">=2.66.0,<3.0.0"
+aws-cdk-lib = ">=2.66.1,<3.0.0"
 constructs = ">=10.0.0,<11.0.0"
 jsii = ">=1.75.0,<2.0.0"
 publication = ">=0.0.3"
@@ -2834,4 +2834,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "b69a2a20aa2a9fc7e32c56d99ac3cee0a97a29e8e1e8a811758260c8f4ee211a"
+content-hash = "f5d22a65261b1c33582407ef40cabdb375ca2a8739559df9f53aaddfb98687ac"
