@@ -1308,14 +1308,14 @@ six = "*"
 
 [[package]]
 name = "language-formatters-pre-commit-hooks"
-version = "2.5.0"
+version = "2.7.0"
 description = "List of pre-commit hooks meant to format your source code."
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "language_formatters_pre_commit_hooks-2.5.0-py2.py3-none-any.whl", hash = "sha256:7f4b4a84ea5818c79ca5bbafe1f218c3b720f8b8c28adf37196cab105bb63c0c"},
-    {file = "language_formatters_pre_commit_hooks-2.5.0.tar.gz", hash = "sha256:a74c28bc86aebb213802159e68a852ee15e48048e9140dcb64d5c9d7ab8083fe"},
+    {file = "language_formatters_pre_commit_hooks-2.7.0-py2.py3-none-any.whl", hash = "sha256:0f182f1292ffc7eb8cd87c73944748e5eab88e8a33cb191ccdc469518f098d89"},
+    {file = "language_formatters_pre_commit_hooks-2.7.0.tar.gz", hash = "sha256:dbb28e380530009a8ec19457d244b2d53ac36c8b30c889bb5979d58c9c78c2dd"},
 ]
 
 [package.dependencies]
@@ -1323,8 +1323,7 @@ config-formatter = "*"
 packaging = "*"
 requests = "*"
 "ruamel.yaml" = "*"
-toml-sort = "*"
-tomlkit = "*"
+toml-sort = ">=0.22.0"
 
 [[package]]
 name = "lazy-object-proxy"
@@ -2444,18 +2443,18 @@ files = [
 
 [[package]]
 name = "toml-sort"
-version = "0.20.1"
+version = "0.22.4"
 description = "Toml sorting library"
 category = "dev"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "toml-sort-0.20.1.tar.gz", hash = "sha256:bce9023787c6f15ebbdf22d0b05eab928c047b164f65d393a25c27ac060bd7e1"},
-    {file = "toml_sort-0.20.1-py3-none-any.whl", hash = "sha256:c5f5923969cbbf3b391dea47687733143d342ea438619790ee49d055052fd0f5"},
+    {file = "toml_sort-0.22.4-py3-none-any.whl", hash = "sha256:84439fb472101a980a1a761eafce6cc6ddeedf61d678c8611b359ed63555f8f7"},
+    {file = "toml_sort-0.22.4.tar.gz", hash = "sha256:d8be05f2758d9dc3890014031bd4dd34de1a88ef2c9a1619c9ade169fdc76bb5"},
 ]
 
 [package.dependencies]
-tomlkit = ">=0.8.0"
+tomlkit = ">=0.11.2"
 
 [[package]]
 name = "tomli"
@@ -2835,4 +2834,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "48099e4db79a78bb5cd6d341a825ab27ff102aecca0fea2ce26644dcd70701ed"
+content-hash = "997685a2c40e8abc0b82ed05d245d35b5d43f88b65a9fc5e2cad2072578730a9"
