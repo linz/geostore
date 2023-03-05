@@ -1,11 +1,6 @@
-{ pkgs ? import
-    (
-      fetchTarball (
-        builtins.fromJSON (
-          builtins.readFile ./nixpkgs.json)))
-    { }
-}:
 let
+  sources = import ./nix/sources.nix;
+  pkgs = import sources.nixpkgs { };
   python = pkgs.python39;
   projectDir = builtins.path { path = ./.; name = "geostore"; };
 
@@ -41,6 +36,7 @@ poetryEnv.env.overrideAttrs (
       pkgs.docker
       pkgs.gitFull
       pkgs.go
+      pkgs.niv
       pkgs.nodejs
       pkgs.python39Packages.pip
       pkgs.python39Packages.pip-tools

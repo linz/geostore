@@ -230,9 +230,9 @@ update done by Dependabot. In this case, simply close the Dependabot PR.
 We're using poetry2nix to generate a Nix derivation from the `poetry.lock` file, to allow people to
 develop this project with either Nix or Poetry[^1]. Sometimes package updates will break the Nix
 shell, usually because Python packages don't list all their build dependencies. These need to be set
-up as a `poetry2nix` _override._ First try upgrading nixpkgs using `./bump-nixpkgs.bash` and
-re-running `nix-shell`; maybe the latest stable poetry2nix already has an override for this package.
-If not, you either have to work one out yourself (see
+up as a `poetry2nix` _override._ First try upgrading nixpkgs using `niv update` and re-running
+`nix-shell`; maybe the latest stable poetry2nix already has an override for this package. If not,
+you either have to work one out yourself (see
 [upstream overrides](https://github.com/nix-community/poetry2nix/tree/master/overrides)) or
 [report it](https://github.com/nix-community/poetry2nix/issues).
 
