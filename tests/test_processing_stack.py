@@ -185,7 +185,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{root_metadata_filename}",
     ) as root_metadata_file:
-
         # When
         try:
             dataset_response = invoke_dataset_lambda_function(lambda_client, dataset_title)
@@ -205,7 +204,6 @@ def should_successfully_run_dataset_version_creation_process_with_single_asset(
 
             dataset_versions_body = dataset_versions_payload[BODY_KEY]
             with subtests.test(msg="Should complete Step Function successfully"):
-
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
@@ -436,7 +434,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
-
         # When
         try:
             dataset_response = lambda_client.invoke(
@@ -471,7 +468,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
             first_dataset_version = first_dataset_versions_body[NEW_VERSION_ID_KEY]
 
             with subtests.test(msg="Should complete Step Function successfully"):
-
                 # Then poll for State Machine State
                 while (
                     execution := step_functions_client.describe_execution(
@@ -583,7 +579,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                 bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
                 key=f"{second_version_key_prefix}/{item_metadata_filename}",
             ):
-
                 second_dataset_versions_response = lambda_client.invoke(
                     FunctionName=Resource.DATASET_VERSIONS_ENDPOINT_FUNCTION_NAME.resource_name,
                     Payload=dumps(
@@ -601,7 +596,6 @@ def should_successfully_run_dataset_version_creation_process_and_again_with_part
                     BODY_KEY
                 ]
                 with subtests.test(msg="Should complete Step Function successfully"):
-
                     # Then poll for State Machine State
                     while (
                         execution := step_functions_client.describe_execution(
@@ -797,7 +791,6 @@ def should_end_step_function_successfully_when_non_collection_or_catalog_submitt
     step_functions_client: SFNClient,
     subtests: SubTests,
 ) -> None:
-
     # pylint:disable=too-many-locals
     key_prefix = any_safe_file_path()
     dataset_title = any_dataset_title()
@@ -880,7 +873,6 @@ def should_end_step_function_successfully_when_non_collection_or_catalog_submitt
                     executionArn=state_machine_arn
                 )
             )["status"] == "RUNNING":
-
                 sleep(5)  # pragma: no cover
 
             assert execution["status"] == "SUCCEEDED", execution
@@ -958,7 +950,6 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{metadata_filename}",
     ) as s3_metadata_file:
-
         dataset_response = invoke_dataset_lambda_function(lambda_client, dataset_title)
         dataset_payload = load(dataset_response["Payload"])
         dataset_id = dataset_payload[BODY_KEY][DATASET_ID_SHORT_KEY]
@@ -981,7 +972,6 @@ def should_not_copy_files_when_there_is_a_checksum_mismatch(
                     executionArn=state_machine_arn
                 )
             )["status"] == "RUNNING":
-
                 sleep(5)  # pragma: no cover
 
             assert execution["status"] == "SUCCEEDED", execution

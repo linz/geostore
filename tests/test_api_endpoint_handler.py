@@ -11,7 +11,6 @@ from geostore.types import JsonObject
 
 
 def should_return_required_property_error_when_missing_http_method() -> None:
-
     response = handle_request({BODY_KEY: {}}, MagicMock())
 
     assert response == {

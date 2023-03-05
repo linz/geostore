@@ -214,7 +214,6 @@ def should_raise_invalid_stack_root_type_error_for_non_collection_or_catalog(
     ), raises(
         InvalidSTACRootTypeError
     ):
-
         # When
         lambda_handler(
             {
@@ -653,7 +652,6 @@ def should_successfully_validate_partially_uploaded_dataset(subtests: SubTests) 
         bucket_name=Resource.STAGING_BUCKET_NAME.resource_name,
         key=f"{key_prefix}/{item_metadata_filename}",
     ):
-
         assert lambda_handler(
             {
                 DATASET_ID_KEY: dataset_id,

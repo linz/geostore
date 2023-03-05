@@ -107,7 +107,6 @@ def should_succeed_and_trigger_sqs_catalog_update_and_save_latest_version(
 def should_delete_s3_files_that_dont_exist_in_new_version(
     s3_client: S3Client,
 ) -> None:
-
     filename = f"{any_safe_filename()}.json"
     s3_url = f"{any_s3_url()}/{filename}"
 
@@ -123,7 +122,6 @@ def should_delete_s3_files_that_dont_exist_in_new_version(
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.title}/{filename}",
     ) as dataset_metadata, patch("geostore.update_root_catalog.task.SQS_RESOURCE"):
-
         current_hash_key = get_hash_key(dataset.dataset_id, current_version_id)
 
         with ProcessingAsset(

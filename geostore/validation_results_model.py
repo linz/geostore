@@ -24,7 +24,6 @@ class ValidationOutcomeIdx(  # type: ignore[no-untyped-call]
 ):
     @dataclass
     class Meta:
-
         index_name = "validation_outcome"
         read_capacity_units = 1
         write_capacity_units = 1
@@ -80,7 +79,6 @@ def validation_results_model_with_meta(
 
 class ValidationResultFactory:  # pylint:disable=too-few-public-methods
     def __init__(self, hash_key: str, results_table_name: str):
-
         self.hash_key = hash_key
         self.validation_results_model = validation_results_model_with_meta(
             results_table_name=results_table_name
