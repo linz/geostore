@@ -245,7 +245,6 @@ def should_publish_sns_message(get_param_mock: MagicMock) -> None:
 def should_launch_notify_slack_endpoint_lambda_function(
     lambda_client: LambdaClient, events_client: EventBridgeClient
 ) -> None:
-
     notify_status_lambda_arn = events_client.list_targets_by_rule(
         Rule=Resource.CLOUDWATCH_RULE_NAME.resource_name
     )["Targets"][0]["Arn"]

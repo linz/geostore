@@ -18,7 +18,6 @@ class Table(aws_dynamodb.Table):
         parameter_name: ParameterName,
         sort_key: Optional[aws_dynamodb.Attribute] = None,
     ):
-
         super().__init__(
             scope,
             construct_id,

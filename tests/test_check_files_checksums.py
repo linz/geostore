@@ -343,7 +343,6 @@ def should_mark_asset_as_replaced_in_new_version() -> None:
         Resource.STAGING_BUCKET_NAME.resource_name,
         f"{any_safe_file_path()}/{storage_asset_filename}",
     ) as asset_s3_object:
-
         new_hash_key = get_hash_key(dataset.dataset_id, dataset_version_id)
         current_hash_key = get_hash_key(dataset.dataset_id, current_dataset_version_id)
         assets_table_name = get_param(ParameterName.PROCESSING_ASSETS_TABLE_NAME)
@@ -368,7 +367,6 @@ def should_mark_asset_as_replaced_in_new_version() -> None:
             multihash=storage_asset_multihash,
             exists_in_staging=True,
         ):
-
             # When
             sys.argv = [
                 any_program_name(),
@@ -404,7 +402,6 @@ def should_save_file_not_found_validation_results(
     processing_assets_model_mock: MagicMock,
     get_s3_client_for_role_mock: MagicMock,
 ) -> None:
-
     dataset_version_id = any_dataset_version_id()
     storage_asset_filename = any_safe_filename()
 

@@ -370,7 +370,6 @@ def should_return_none_etag_if_s3_object_is_missing(
 def should_not_overwrite_s3_file_when_etag_is_unchanged(
     s3_client: S3Client,
 ) -> None:
-
     s3_stac_io = S3StacIO()
     bucket = Resource.STORAGE_BUCKET_NAME.resource_name
     collection_metadata_filename = any_safe_filename()

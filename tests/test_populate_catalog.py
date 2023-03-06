@@ -76,7 +76,6 @@ def should_create_new_root_catalog_if_doesnt_exist(subtests: SubTests, s3_client
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=f"{dataset.title}/{catalog_filename}",
     ) as dataset_metadata:
-
         expected_root_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
@@ -226,7 +225,6 @@ def should_update_root_catalog_with_new_version_catalog(subtests: SubTests) -> N
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=CATALOG_FILENAME,
     ):
-
         expected_root_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
@@ -470,7 +468,6 @@ def should_not_add_duplicate_child_link_to_root(subtests: SubTests) -> None:
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=CATALOG_FILENAME,
     ):
-
         expected_root_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,
@@ -596,7 +593,6 @@ def should_add_link_to_root_catalog_in_series(
         bucket_name=Resource.STORAGE_BUCKET_NAME.resource_name,
         key=CATALOG_FILENAME,
     ) as root_catalog:
-
         expected_root_catalog_links: JsonList = [
             {
                 STAC_REL_KEY: STAC_REL_ROOT,

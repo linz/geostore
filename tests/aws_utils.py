@@ -487,7 +487,6 @@ def wait_for_s3_batch_job_completion(
             JobId=s3_batch_job_arn,
         )
     )["Job"]["Status"] not in S3_BATCH_JOB_FINAL_STATES:
-
         assert (  # pragma: no cover
             datetime.now() < process_timeout
         ), f"S3 Batch process {job_result['Job']['JobId']} hasn't completed, process timed out."
