@@ -70,7 +70,7 @@ jobs:
         run: cat .github/workflows/.env >> $GITHUB_ENV
 
       - name: (CI) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v2.0.0
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
@@ -151,7 +151,7 @@ jobs:
         run: cat .github/workflows/.env >> $GITHUB_ENV
 
       - name: (Non-Prod) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v2.0.0
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
@@ -232,7 +232,7 @@ jobs:
         run: cat .github/workflows/.env >> $GITHUB_ENV
 
       - name: (Prod) Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v2.0.0
         with:
           aws-region: ap-southeast-2
           mask-aws-account-id: true
