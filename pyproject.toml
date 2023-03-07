@@ -90,7 +90,7 @@ aws-cdk-lib = {version = "2.67.0", optional = true}
 "aws-cdk.aws-batch-alpha" = {version = "2.67.0a0", optional = true}
 "aws-cdk.aws-lambda-python-alpha" = {version = "2.67.0a0", optional = true}
 awscli = {version = "1.27.84", optional = true}
-boto3 = "1.26.83"
+boto3 = "1.26.84"
 cattrs = {version = "22.2.0", optional = true}
 jsonschema = {version = "4.17.3", extras = ["format"], optional = true}
 linz-logger = {version = "0.11.0", optional = true}
