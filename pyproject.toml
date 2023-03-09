@@ -193,7 +193,7 @@ validation_summary = [
 
 [tool.poetry.group.dev.dependencies]
 black = "23.1.0"
-boto3-stubs = {version = "1.26.86", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
+boto3-stubs = {version = "1.26.87", extras = ["batch", "dynamodb", "events", "lambda", "lambda-python", "s3", "s3control", "sns", "sqs", "ssm", "stepfunctions", "sts"]}
 coverage = {version = "7.2.1", extras = ["toml"]}
 gitlint = "0.18.0"
 ipdb = "0.13.11"
