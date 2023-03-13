@@ -2371,14 +2371,14 @@ files = [
 
 [[package]]
 name = "slack-sdk"
-version = "3.20.1"
+version = "3.20.2"
 description = "The Slack API Platform SDK for Python"
 category = "main"
 optional = true
 python-versions = ">=3.6.0"
 files = [
-    {file = "slack_sdk-3.20.1-py2.py3-none-any.whl", hash = "sha256:a23aa223fe52238196000afddef380292ea27148846ba31cc80c3fbc018bcfc8"},
-    {file = "slack_sdk-3.20.1.tar.gz", hash = "sha256:0ba2eca9f0aeb66cc893a768e7ad2cdd74260c394b9b51666d4b665664d0cadd"},
+    {file = "slack_sdk-3.20.2-py2.py3-none-any.whl", hash = "sha256:224fcb4fef9575226e76555d9a0acdbd93d7596a416bc3ae7b443b3b64e9f0e3"},
+    {file = "slack_sdk-3.20.2.tar.gz", hash = "sha256:f61db1f6e49dd2ee84e82ddb5d1c5db7a5987b8be9ba975dc00799334c84f8cd"},
 ]
 
 [package.extras]
@@ -2864,4 +2864,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "62a6a341e9059bb2c79f8d88a922a371357c2b934883ee7e4cfa6e072c352a6c"
+content-hash = "726906309010fc9c9c45272b2d4278512a3716764412d48f1c718f975aeb6468"
