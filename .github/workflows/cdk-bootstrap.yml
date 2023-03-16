@@ -11,7 +11,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -92,7 +92,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -173,7 +173,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           submodules: 'true'
           fetch-depth: 0
