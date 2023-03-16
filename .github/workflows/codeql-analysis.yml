@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout repository
         if: ${{ github.event_name == 'push' }}
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
 
       - name: Checkout repository
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -43,11 +43,11 @@ jobs:
 
         # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.2.6
+        uses: github/codeql-action/init@v2.2.7
         with:
           config-file: ./.github/codeql/codeql-config.yml
           setup-python-dependencies: false
           languages: python
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.2.6
+        uses: github/codeql-action/analyze@v2.2.7
