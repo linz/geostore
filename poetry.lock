@@ -1342,14 +1342,14 @@ six = "*"
 
 [[package]]
 name = "language-formatters-pre-commit-hooks"
-version = "2.7.0"
+version = "2.8.0"
 description = "List of pre-commit hooks meant to format your source code."
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "language_formatters_pre_commit_hooks-2.7.0-py2.py3-none-any.whl", hash = "sha256:0f182f1292ffc7eb8cd87c73944748e5eab88e8a33cb191ccdc469518f098d89"},
-    {file = "language_formatters_pre_commit_hooks-2.7.0.tar.gz", hash = "sha256:dbb28e380530009a8ec19457d244b2d53ac36c8b30c889bb5979d58c9c78c2dd"},
+    {file = "language_formatters_pre_commit_hooks-2.8.0-py2.py3-none-any.whl", hash = "sha256:d7a88f8ee9739c301dfe3091fab0b3907dca466f4ab508d3e783d5c228072dd7"},
+    {file = "language_formatters_pre_commit_hooks-2.8.0.tar.gz", hash = "sha256:9df6216413856014b7677181d08cbe5f1922df213bb941545f4ed361498aebc6"},
 ]
 
 [package.dependencies]
@@ -2864,4 +2864,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "25e2ede791a7dca14ea3dd94130a2983005a18ad98377cac3a5f6117b20c3db5"
+content-hash = "0d0d326581fea8dfcb0bf18b48361e1e1558940d383d1c87a72bcb7d563e7105"

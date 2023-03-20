@@ -198,7 +198,7 @@ coverage = {version = "7.2.2", extras = ["toml"]}
 gitlint = "0.18.0"
 ipdb = "0.13.13"
 isort = "5.12.0"
-language-formatters-pre-commit-hooks = "2.7.0"
+language-formatters-pre-commit-hooks = "2.8.0"
 mutmut = "2.4.3"
 mypy = "1.1.1"
 pre-commit = "3.1.1"
