@@ -2000,14 +2000,14 @@ files = [
 
 [[package]]
 name = "pystac"
-version = "1.6.1"
+version = "1.7.1"
 description = "Python library for working with Spatiotemporal Asset Catalog (STAC)."
 category = "main"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "pystac-1.6.1-py3-none-any.whl", hash = "sha256:4c40e6d3a832b9992e9dc2aa9c276322fbd851e441888b5fc2024397477abec8"},
-    {file = "pystac-1.6.1.tar.gz", hash = "sha256:95ef493d6a6df4d982385c1d376c8aa0d967730e8ffeeda0f78cd7372faf066a"},
+    {file = "pystac-1.7.1-py3-none-any.whl", hash = "sha256:6c81b213291fd25adca2e0e4ddcf7b111154e1a59d0d14d9f02c5df87649f164"},
+    {file = "pystac-1.7.1.tar.gz", hash = "sha256:a01da05cb29d0eb995a11e32a6d15067f653ceb8c64f61f912ac99c7e9ff4f2e"},
 ]
 
 [package.dependencies]
@@ -2015,6 +2015,7 @@ python-dateutil = ">=2.7.0"
 
 [package.extras]
 orjson = ["orjson (>=3.5)"]
+urllib3 = ["urllib3 (>=1.26)"]
 validation = ["jsonschema (>=4.0.1)"]
 
 [[package]]
@@ -2864,4 +2865,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "25e2ede791a7dca14ea3dd94130a2983005a18ad98377cac3a5f6117b20c3db5"
+content-hash = "2d81868aa2be404bc16a2f8939ec0b1efe65ff761d3682c60149b8d29315cf40"
