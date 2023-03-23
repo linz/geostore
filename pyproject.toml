@@ -86,7 +86,7 @@ repository = "https://github.com/linz/geostore"
 version = "0.1.7"
 
 [tool.poetry.dependencies]
-aws-cdk-lib = {version = "2.69.0", optional = true}
+aws-cdk-lib = {version = "2.70.0", optional = true}
 "aws-cdk.aws-batch-alpha" = {version = "2.68.0a0", optional = true}
 "aws-cdk.aws-lambda-python-alpha" = {version = "2.68.0a0", optional = true}
 awscli = {version = "1.27.93", optional = true}
