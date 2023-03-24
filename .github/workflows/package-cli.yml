@@ -16,13 +16,13 @@ jobs:
     steps:
       - name: Checkout repository
         if: ${{ github.event_name == 'push' }}
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           submodules: 'true'
 
       - name: Checkout repository
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: 'true'
