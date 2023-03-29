@@ -194,18 +194,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "awscli"
-version = "1.27.93"
+version = "1.27.101"
 description = "Universal Command Line Environment for AWS."
 category = "main"
 optional = true
 python-versions = ">= 3.7"
 files = [
-    {file = "awscli-1.27.93-py3-none-any.whl", hash = "sha256:d4bb3f3f3fc465e4d5a089cf0e5e72dc1125c8749fe9fb2b03210eab45919c60"},
-    {file = "awscli-1.27.93.tar.gz", hash = "sha256:06e62a19e9f4443ce13be0df827956bf7c3f7c9e745cfa74edf5da72f810d63e"},
+    {file = "awscli-1.27.101-py3-none-any.whl", hash = "sha256:6780a917adb60d9ee4d2ca9f25b833baacad6344d53c50274360396ed1782980"},
+    {file = "awscli-1.27.101.tar.gz", hash = "sha256:c4ec0ba025f2310be62686630f54c6c28ffce1dc54e730f42329355ea5a9117a"},
 ]
 
 [package.dependencies]
-botocore = "1.29.93"
+botocore = "1.29.101"
 colorama = ">=0.2.5,<0.4.5"
 docutils = ">=0.10,<0.17"
 PyYAML = ">=3.10,<5.5"
@@ -670,14 +670,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.93"
+version = "1.29.101"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.93-py3-none-any.whl", hash = "sha256:39c2ad2d44c7e1ef25a98e957b63fa760b87bcf32423a033dceeb359976c37d7"},
-    {file = "botocore-1.29.93.tar.gz", hash = "sha256:940201ae2f5edbf4ccbf1066e345cf7f5224568bd702fa9e80a92e5c479fa649"},
+    {file = "botocore-1.29.101-py3-none-any.whl", hash = "sha256:60c7a7bf8e2a288735e507007a6769be03dc24815f7dc5c7b59b12743f4a31cf"},
+    {file = "botocore-1.29.101.tar.gz", hash = "sha256:7bb60d9d4c49500df55dfb6005c16002703333ff5f69dada565167c8d493dfd5"},
 ]
 
 [package.dependencies]
@@ -2864,4 +2864,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "25e2ede791a7dca14ea3dd94130a2983005a18ad98377cac3a5f6117b20c3db5"
+content-hash = "8e8e804bd430688092bb5f6b5b7c518682dacc19a5d44938efb4d4c16c6f1cf4"
