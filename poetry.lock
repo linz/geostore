@@ -194,18 +194,18 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "awscli"
-version = "1.27.93"
+version = "1.27.104"
 description = "Universal Command Line Environment for AWS."
 category = "main"
 optional = true
 python-versions = ">= 3.7"
 files = [
-    {file = "awscli-1.27.93-py3-none-any.whl", hash = "sha256:d4bb3f3f3fc465e4d5a089cf0e5e72dc1125c8749fe9fb2b03210eab45919c60"},
-    {file = "awscli-1.27.93.tar.gz", hash = "sha256:06e62a19e9f4443ce13be0df827956bf7c3f7c9e745cfa74edf5da72f810d63e"},
+    {file = "awscli-1.27.104-py3-none-any.whl", hash = "sha256:64c5c7b3ca939bc2e8f92ba8077cf2350b456b3f51b15ee6db7bf41375ed0c65"},
+    {file = "awscli-1.27.104.tar.gz", hash = "sha256:7c8d549c99ce6b4d5508b114d9a991e15d5f01316c9e8b37b4c0e21204ce261a"},
 ]
 
 [package.dependencies]
-botocore = "1.29.93"
+botocore = "1.29.104"
 colorama = ">=0.2.5,<0.4.5"
 docutils = ">=0.10,<0.17"
 PyYAML = ">=3.10,<5.5"
@@ -670,14 +670,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.93"
+version = "1.29.104"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.93-py3-none-any.whl", hash = "sha256:39c2ad2d44c7e1ef25a98e957b63fa760b87bcf32423a033dceeb359976c37d7"},
-    {file = "botocore-1.29.93.tar.gz", hash = "sha256:940201ae2f5edbf4ccbf1066e345cf7f5224568bd702fa9e80a92e5c479fa649"},
+    {file = "botocore-1.29.104-py3-none-any.whl", hash = "sha256:932bfbf580a2ae53f471df4bfbebce531985ee27468cf7c37d7ccfb3cf8bc9e4"},
+    {file = "botocore-1.29.104.tar.gz", hash = "sha256:7e7a01cef10b1daa9cb01ec25a15e831e7359fc43d1b591359710f203c3620a8"},
 ]
 
 [package.dependencies]
@@ -2864,4 +2864,4 @@ validation-summary = ["jsonschema", "linz-logger", "pynamodb"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "25e2ede791a7dca14ea3dd94130a2983005a18ad98377cac3a5f6117b20c3db5"
+content-hash = "103f04e7010253b36e5cfe7d21da3f75afee9825cbfc98d7e67d21eb34375847"
